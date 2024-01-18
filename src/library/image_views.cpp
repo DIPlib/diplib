@@ -1,5 +1,5 @@
 /*
- * (c)2014-2022, Cris Luengo.
+ * (c)2014-2024, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -91,8 +91,6 @@ Image::View::View( Image reference, Image mask ) : reference_( std::move( refere
       mask_.TensorToSpatial( 0 );
    }
    DIP_STACK_TRACE_THIS( mask_.CheckIsMask( reference_.Sizes(), Option::AllowSingletonExpansion::DONT_ALLOW, Option::ThrowException::DO_THROW ));
-   // A valid view always has at least one pixel, so we need to ensure this is the case there
-   DIP_THROW_IF( !Any( mask ).As< bool >(), "The mask image selects no pixels" );
 }
 
 Image::View::View( Image reference, UnsignedArray const& indices ) : reference_( std::move( reference )) {
@@ -872,6 +870,14 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::View" ) {
    DOCTEST_CHECK( dip::Count( img[ 2 ] ) == 4 );
    coords.pop_back();
    DOCTEST_CHECK_THROWS( viewC = src.At( coords ));
+
+   // Testing the case of a mask image that selects no pixels
+   mask.Fill( false );
+   img.Fill( 0 );
+   img.At( mask ) = 1;
+   DOCTEST_CHECK( dip::Count( img[ 0 ] ) == 0 );
+   dip::Image out = img.At( mask );
+   DOCTEST_CHECK( !out.IsForged() );
 }
 
 #endif // DIP_CONFIG_ENABLE_DOCTEST

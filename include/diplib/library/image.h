@@ -1,5 +1,5 @@
 /*
- * (c)2014-2023, Cris Luengo.
+ * (c)2014-2024, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -2243,8 +2243,14 @@ class DIP_NO_EXPORT Image {
       ///
       /// `this` must be forged and be of equal size as `mask`. `mask` is a binary image.
       ///
-      /// If mask has no set pixels (i.e. it selects nothing) an exception will be thrown. A valid output always
-      /// references at least one pixel.
+      /// If mask has no set pixels (i.e. it selects nothing) the `View` object created will cast to a
+      /// \ref image_representation "raw image". For example:
+      /// ```cpp
+      /// dip::Image mask = img.Similar( dip::BIN );
+      /// mask.Fill( false );
+      /// img.At( mask ) = 0;  // This is valid, we write the value 0 to none of the pixels of img.
+      /// dip::Image out = img.At( mask );  // This is also valid, but out will be a raw image.
+      /// ```
       DIP_NODISCARD View At( Image mask ) const;
 
       /// \brief Creates a 1D image view containing the pixels selected by `coordinates`.

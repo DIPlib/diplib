@@ -34,6 +34,10 @@ title: "Changes DIPlib 3.x.x"
 - Member functions of `dip::Distribution` return `ConstSample` or `ConstIterator` when the distribution object
   is const. See [issue #135](https://github.com/DIPlib/diplib/issues/138).
 
+- DIPlib 3.4.1 changed the behavior of generating a view of an image using a mask when the mask was empty
+  (i.e. selected no pixels). This fixed one issue, but created many more: `img.At(mask)=0` stopped working
+  when the mask happened to be empty, which is unexpected and very inconvenient (as this syntax is quite common).
+  Now an empty view can be generated again, but when cast to an image, a raw image is generated.
 
 
 
