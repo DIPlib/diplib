@@ -69,9 +69,9 @@ and the status bar.
      - *SPA*: image color space; this disregards the mapping.
      - *RGB*: RGB color space, from any 3 tensor elements.
      - *GRY*: Single grey value.
-     - *SEQ*: Single value mapped to a sequential blue-yellow colormap.
-     - *DIV*: Single value mapped to a divergent blue-red colormap. Use for symmetric mappings.
-     - *CYC*: Single value mapped to a cyclic colormap. Use for angles.
+     - *SEQ*: Single value mapped to a sequential blue-magenta-yellow colormap.
+     - *DIV*: Single value mapped to a divergent blue-grey-yellow colormap. Use for symmetric mappings.
+     - *CYC*: Single value mapped to a cyclic magenta-yellow-green-blue colormap. Use for angles.
      - *LBL*: Single value mapped to sequentially disparate colors. Use for labels.
 
   2. *Mapping*, being
