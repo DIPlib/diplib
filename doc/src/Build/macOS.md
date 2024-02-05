@@ -24,21 +24,23 @@ press <key>Command</key> \<Command>-\<Space> to bring up the *Spotlight* search 
 and press \<Enter>. Alternatively, in *Finder*, go to the 'Applications' folder, find the 'Utilities' folder in it,
 and the 'Terminal' app inside it.
 
-\section macos_silicon Computers with an Apple Silicon chip (M1, M1 Pro)
+\section macos_silicon Computers with an Apple Silicon chip (M1 and M2 processors)
 
 If you are building *DIPlib* for use in C++ or *Python* on a Apple Silicon computer, you don't need to do anything
-special. The instructions below will result in native (arm64) binaries that will work well with the arm64 version
-of *Python* and with your own arm64 programs. If you already have *Homebrew* installed,
+special. The instructions below will result in native (aarch64) binaries that will work well with the aarch64 version
+of *Python* and with your own aarch64 programs. If you already have *Homebrew* installed,
 make sure it is the Apple Silicon native version (installed in `/opt/homebrew/`, not in `/usr/local/`),
 so that all libraries and so forth that you install use the same architecture.
 Note that it is possible to run two versions of *Homebrew* side by side.
 
-However, if you are building *DIPlib* for use in *MATLAB* (the *DIPimage* toolbox),
-then you need to make sure that you build for the x86_64 architecture (Intel),
-otherwise they will not work with *MATLAB*.
-This means that all the instructions below need to be run in the x86_64 compatibility mode (through Rosetta 2,
-which is an emulation layer).
+The latest versions of *MATLAB* run natively on Apple Silicon, again no special instructions are needed. But if
+you are running an older version of *MATLAB* for the x86_64 architecture (Intel), then you need to build *DIPlib*
+and *DIPimage* for that same x86_64 architecture.
 
+\subsection macos_silicon_cross_compile Cross-compiling for the x86_64 architecture on an Apple Silicon Mac.
+
+There are two ways to cross-compile *DIPlib* for the x86_64 architecture. We recommend running all the instructions
+below in x86_64 compatibility mode (through Rosetta 2, which is an emulation layer).
 Rosetta 2 can be installed by launching any program that is built for the x86_64 architecture,
 if you have *MATLAB* running, you already have Rosetta 2 installed. You can install Rosetta 2 manually
 by typing the following in a terminal window:
@@ -47,8 +49,7 @@ by typing the following in a terminal window:
 softwareupdate --install-rosetta
 ```
 
-One simple way to build *DIPlib* for the x86_64 architecture is to open a terminal in x86_64 emulation mode,
-and running all instructions below in that terminal.
+Simply open a terminal in x86_64 emulation mode, and run all instructions below in that terminal.
 In particular, installing *Homebrew* in such a terminal results in a x86_64 version of *Homebrew*,
 which installs in `/usr/local/`.
 All tools and libraries installed by this version of *Homebrew* will be for the x86_64 architecture.
@@ -58,14 +59,14 @@ You can open a terminal in x86_64 emulation mode in various ways, the simplest i
 arch -x86_64 zsh
 ```
 
-This starts a new shell in the current terminal window. `exit` will exit this shell, returning  you to the previous,
+This starts a new shell in the current terminal window. `exit` will exit this shell, returning you to the previous,
 native shell in that same terminal window.
 
-Alternatively, you can add `-DCMAKE_OSX_ARCHITECTURES=x86_64` to your `cmake` command
-(see ["Building"](#macos_building) below).
+A second way to cross-compile *DIPlib* for the x86_64 architecture is by adding
+`-DCMAKE_OSX_ARCHITECTURES=x86_64` to your `cmake` command (see ["Building"](#macos_building) below).
 This will have all tools run in native mode, but cross-compile to produce x86_64 binaries.
 This works, but I had trouble getting *CMake* to identify the right version of all the libraries,
-and attempting to link to arm64 libraries, which of course doesn't work.
+and attempting to link to aarch64 libraries, which of course doesn't work.
 I was able to build *DIPimage* this way, by disabling all optional components that depend on external libraries.
 
 \section macos_xcode *Xcode*
@@ -127,17 +128,17 @@ If you want to enable parallel processing within *DIPlib*, you have two options:
 
 1. Install the *OpenMP* library for use with *Xcode*'s *Clang*:
 
-   ```bash
-   brew install libomp
-   ```
+    ```bash
+    brew install libomp
+    ```
 
-   You will need at least *CMake* version 3.12 for this to work (*Homebrew*'s version is suitable).
+    You will need at least *CMake* version 3.12 for this to work (*Homebrew*'s version is suitable).
 
-1. Install *GCC*:
+2. Install *GCC*:
 
-   ```bash
-   brew install gcc
-   ```
+    ```bash
+    brew install gcc
+    ```
 
 In our experience, *Clang* is faster at compiling, but *GCC* usually produces slightly faster code.
 
