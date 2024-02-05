@@ -193,7 +193,7 @@ class DFT {
       dip::uint BufferSize() const { return 0; }
 
    private:
-      void* plan_ = nullptr;
+      void* plan_ = nullptr; // Using void* to avoid referencing types in external libraries that the user might not want to include directly.
       dip::uint nfft_ = 0;
       bool inverse_ = false;
       Option::DFTOptions options_ = {};
