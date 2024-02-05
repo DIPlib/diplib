@@ -76,6 +76,9 @@ title: "Changes DIPlib 3.x.x"
 
 ### Changed functionality
 
+- `dip.Show()` now uses the *DIPlib* color maps by default, taken from `dip.ApplyColorMap()`. The names recognized by
+  that function can be used for the `colormap` parameter. Other names are still passed to Matplotlib.
+
 (See also changes to *DIPlib*.)
 
 ### Bug fixes

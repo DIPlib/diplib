@@ -17,43 +17,12 @@
 The portion of the PyDIP module that contains Python code.
 """
 
-from .PyDIP_bin import Image, ImageDisplay
+from .PyDIP_bin import Image, ImageDisplay, ApplyColorMap
 import importlib.util
 import warnings
 
 hasMatPlotLib = importlib.util.find_spec('matplotlib')
 _reportedPlotLib = False
-
-
-# Label color map from the function of the same name in DIPimage:
-def _label_colormap():
-    if hasMatPlotLib:
-        import matplotlib
-        import numpy as np
-
-        cm = np.array([
-            [1.0000, 0.0000, 0.0000],
-            [0.0000, 1.0000, 0.0000],
-            [0.0000, 0.0000, 1.0000],
-            [1.0000, 1.0000, 0.0000],
-            [0.0000, 1.0000, 1.0000],
-            [1.0000, 0.0000, 1.0000],
-            [1.0000, 0.3333, 0.0000],
-            [0.6667, 1.0000, 0.0000],
-            [0.0000, 0.6667, 1.0000],
-            [0.3333, 0.0000, 1.0000],
-            [1.0000, 0.0000, 0.6667],
-            [1.0000, 0.6667, 0.0000],
-            [0.0000, 1.0000, 0.5000],
-            [0.0000, 0.3333, 1.0000],
-            [0.6667, 0.0000, 1.0000],
-            [1.0000, 0.0000, 0.3333],
-        ])
-        n = len(cm)
-        index = list(i % n for i in range(0, 255))
-        cm = np.concatenate((np.array([[0, 0, 0]]), cm[index]))
-        return matplotlib.colors.ListedColormap(cm)
-    return None
 
 
 def Show(img, range=(), complexMode='abs', projectionMode='mean', coordinates=(),
@@ -72,25 +41,22 @@ def Show(img, range=(), complexMode='abs', projectionMode='mean', coordinates=()
         - `'s12bit'`: use the `(-2**11,12**11-1)` range.
         - `'s16bit'`: use the `(-2**15,12**15-1)` range.
         - `'angle'`: use the `(0,2*pi)` range, with folding of out-of-
-            range values by modulo operation. Additionally, it sets the
-            color map such that 0 and 2*pi are shown in the same color.
+            range values by modulo operation. Additionally, it applies the
+            `'cyclic'` color map.
         - `'orientation'`: use the `(0,pi)` range, with folding of out-of-
-            range values by modulo operation. Additionally, it sets the
-            color map such that 0 and pi are shown in the same color.
+            range values by modulo operation. Additionally, it applies the
+            `'cyclic'` color map.
         - `'lin'` or `'all'`: use the range from lowest to highest value in
             `img`. This is the default.
         - `'percentile'`: use the range from 5th to 95th percentile value
             in `img`.
         - `'base'` or `'based'`: like 'lin', but setting the value of 0 to
-            the middle of the output range. Additionally, it sets the color
-            map to `'coolwarm'`, such that negative and positive values
-            have blue and red colors, respectively, and 0 is a neutral
-            grey.
+            the middle of the output range. Additionally, it applies the
+            `'diverging'` color map.
         - `'log'`: use a logarithmic mapping.
         - `'modulo'` or `'labels'`: use the `(0,255)` range, with folding
             of out-of-range values by modulo operation. Additionally, it
-            sets the color map such that nearby values get very different
-            colors. This mode is suitable for labeled images.
+            applies the `'label'` color map.
     complexMode -- a string indicating how to convert complex values to
         real values for display. One of `'abs'` or `'magnitude'`,
         `'phase'`, `'real'`, `'imag'`. The default is `'abs'`.
@@ -102,7 +68,11 @@ def Show(img, range=(), complexMode='abs', projectionMode='mean', coordinates=()
         out of a multi-dimensional image.
     dim1 -- Image dimension to be shown along x-axis of display.
     dim2 -- Image dimension to be shown along y-axis of display.
-    colormap -- Name of a color map to use for display.
+    colormap -- Name of a color map to use for display. If it is one of
+        `'grey'`, `'saturation'`, `'linear'`, `'diverging'`, `'cyclic'` or
+        `'label'`, then the DIPlib color map of that name is retrieved
+        through `dip.ApplyColorMap`. Otherwise, it is the name of a color
+        map from Matplotlib.
     extent -- Tuple of floats, (left, right, top, bottom), indicating the
         centroids of the top-left and bottom-right pixel centers. The first
         two values correspond to `dim1`, the last two correspond to `dim2`.
@@ -191,15 +161,16 @@ def Show(img, range=(), complexMode='abs', projectionMode='mean', coordinates=()
         out = np.asarray(out)
         if colormap == '':
             if range == 'base' or range == 'based':
-                colormap = 'coolwarm'
+                colormap = 'diverging'
             elif range == 'modulo' or range == 'labels':
-                colormap = 'labels'
+                colormap = 'label'
             elif range == 'angle' or range == 'orientation':
-                colormap = 'hsv'
+                colormap = 'cyclic'
             else:
-                colormap = 'gray'
-        if colormap == 'labels':
-            cmap = _label_colormap()
+                colormap = 'grey'
+        if colormap in {'grey', 'saturation', 'linear', 'diverging', 'cyclic', 'label'}:
+            cmap = np.asarray(ApplyColorMap(np.arange(256), colormap)) / 255
+            cmap = matplotlib.colors.ListedColormap(cmap)
         else:
             cmap = pp.get_cmap(colormap)
         if extent:
