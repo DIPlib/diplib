@@ -187,6 +187,12 @@ make pip_install
 ```
 
 Note that it is necessary to install the *DIPlib* libraries before running the `pip_install` target.
+If this target fails with `pip` complaining about a non-existent file, one possible cause is building on a system
+with a newer version of macOS and an older version of Python. The wheel will be created for the newer macOS, but
+Python will expect a wheel matching the macOS version that Python was built on. Adding `-DCMAKE_OSX_DEPLOYMENT_TARGET=12`
+to the `cmake` command and rebuilding the whole project would fix this issue (the 12 there being the version of
+macOS used to build you Python binaries, the error message will show what version you need to build for).
+\[Also, binaries built for an older macOS will work on a newer macOS, but not the other way around\].
 
 We recommend you additionally specify the `-DCMAKE_CXX_FLAGS="-march=native"` option to `cmake`.
 This will enable additional optimizations that are specific to your computer.
