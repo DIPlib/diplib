@@ -41,6 +41,13 @@ title: "Changes DIPlib 3.x.x"
 
 - Equality comparison of `dip::PixelSize` objects was documented to use a tolerance, but it wasn't using one. 
 
+### Updated dependencies
+
+- Updated included *zlib* to version 1.3.1. This version no longer uses K&R function declarations, which generated
+  lots of warnings in newer compilers.
+
+
+
 
 ## Changes to *DIPimage*
 
@@ -104,8 +111,8 @@ title: "Changes DIPlib 3.x.x"
 
 - `SliceViewer` properties given as `DimensionArray`s are now properly converted to Python buffers
   again.
-- Maintaining a `SliceViewer` handle after a window has been closed no longer
-  causes a crash.
+
+- Maintaining a `SliceViewer` handle after a window has been closed no longer causes a crash.
 
 
 

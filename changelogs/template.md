@@ -11,6 +11,8 @@ title: "Changes DIPlib 3.x.x"
 
 ### Bug fixes
 
+### Updated dependencies
+
 
 
 

@@ -141,9 +141,9 @@ limitations under the License.
   see [`dependencies/libtiff/COPYRIGHT`](dependencies/libtiff/COPYRIGHT)
 
 - *zlib* (used by *libics* and *LibTIFF*, its use can be disabled)  
-  Copyright 1995-2017 Jean-loup Gailly and Mark Adler  
+  Copyright 1995-2022 Jean-loup Gailly and Mark Adler  
   zlib Licence  
-  see [`dependencies/zlib/LICENSE.txt`](dependencies/zlib/LICENSE.txt)
+  see [`dependencies/zlib/LICENSE`](dependencies/zlib/LICENSE)
 
 - *libjpeg* (its use can be disabled)  
   Copyright 1991-2018, Thomas G. Lane, Guido Vollbeding  
