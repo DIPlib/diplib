@@ -140,15 +140,20 @@ limitations under the License.
   2-Clause BSD-like Licence  
   see [`dependencies/libtiff/COPYRIGHT`](dependencies/libtiff/COPYRIGHT)
 
-- *zlib* (used by *libics* and *LibTIFF*, its use can be disabled)  
-  Copyright 1995-2022 Jean-loup Gailly and Mark Adler  
-  zlib Licence  
-  see [`dependencies/zlib/LICENSE`](dependencies/zlib/LICENSE)
-
 - *libjpeg* (its use can be disabled)  
   Copyright 1991-2018, Thomas G. Lane, Guido Vollbeding  
   Custom BSD-like Licence  
   see [`dependencies/libjpeg/README`](dependencies/libjpeg/README)
+
+- *libspng* (its use can be disabled)  
+  Copyright 2018-2023, Randy  
+  2-Clause BSD-like Licence  
+  see [`dependencies/libspng/LICENSE`](dependencies/libspng/LICENSE)
+
+- *zlib* (used by *libics*, *LibTIFF* and *libspng*, its use can be disabled)  
+  Copyright 1995-2022 Jean-loup Gailly and Mark Adler  
+  zlib Licence  
+  see [`dependencies/zlib/LICENSE`](dependencies/zlib/LICENSE)
 
 - *pybind11* (only used in the *Python* bindings)  
   Copyright 2016 Wenzel Jakob  

@@ -149,6 +149,19 @@ if(DIP_ENABLE_TIFF)
    target_compile_definitions(DIP PRIVATE DIP_CONFIG_HAS_TIFF)
 endif()
 
+# libspng
+set(DIP_ENABLE_PNG ON CACHE BOOL "Enable PNG file support")
+if(DIP_ENABLE_PNG AND NOT DIP_ENABLE_ZLIB)
+   message(WARNING "PNG cannot be enabled without also enabling zlib -- disabling PNG.")
+   set(DIP_ENABLE_PNG OFF CACHE BOOL "Enable PNG file support" FORCE)
+endif()
+if(DIP_ENABLE_PNG)
+   add_subdirectory("${PROJECT_SOURCE_DIR}/dependencies/libspng" "${PROJECT_BINARY_DIR}/libspng" EXCLUDE_FROM_ALL)
+   target_link_libraries(DIP PRIVATE spng_static)
+   target_include_directories(DIP PRIVATE $<TARGET_PROPERTY:spng_static,INTERFACE_INCLUDE_DIRECTORIES>) # these need to come before system include directories
+   target_compile_definitions(DIP PRIVATE DIP_CONFIG_HAS_PNG)
+endif()
+
 # FFTW or PocketFFT for Fourier transforms
 find_package(FFTW3)
 if(FFTW3_FOUND)
