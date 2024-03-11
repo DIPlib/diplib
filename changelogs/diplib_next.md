@@ -11,6 +11,10 @@ title: "Changes DIPlib 3.x.x"
 
 - Added `dip::Distribution::ConstSample` as an unmutable version of `dip::Distribution::Sample`.
 
+- Added functions `dip::ImageReadPNG()`, `dip::ImageReadPNGInfo()`, `dip::ImageIsPNG()` and `dip::ImageWritePNG()`.
+  The functions `dip::ImageRead()` and `dip::ImageWrite()` now recognize PNG files. Previously, PNG files could only
+  be read through *DIPjavaio* with Bio-Formats.
+
 ### Changed functionality
 
 - The 'diverging' color map in `dip::ApplyColorMap()` switched from CET-D08 to CET-D07 (i.e. using yellow
@@ -82,10 +86,15 @@ title: "Changes DIPlib 3.x.x"
 
 ### New functionality
 
+- Added functions `dip.ImageReadPNG()`, `dip.ImageReadPNGInfo()`, `dip.ImageIsPNG()` and `dip.ImageWritePNG()`.
+
 ### Changed functionality
 
 - `dip.Show()` now uses the *DIPlib* color maps by default, taken from `dip.ApplyColorMap()`. The names recognized by
   that function can be used for the `colormap` parameter. Other names are still passed to Matplotlib.
+
+- All `dip.ImageRead...()` functions now have an overload with named `out` argument to read an image into a
+  pre-allocated memory buffer.
 
 (See also changes to *DIPlib*.)
 
