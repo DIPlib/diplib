@@ -1019,7 +1019,7 @@ class DIP_NO_EXPORT PixelSize {
       /// Compares two pixel sizes, magnitudes are compared with a 10^-6^ relative tolerance
       bool operator==( PixelSize const& rhs ) const {
          dip::uint d = std::max( size_.size(), rhs.size_.size() );
-         return ApproximatelyEquals( rhs, d, 0.0 );
+         return ApproximatelyEquals( rhs, d, 1e-6 );
       }
 
       /// Compares two pixel sizes, magnitudes are compared with a 10^-6^ relative tolerance

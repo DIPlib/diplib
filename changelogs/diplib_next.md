@@ -39,6 +39,7 @@ title: "Changes DIPlib 3.x.x"
   when the mask happened to be empty, which is unexpected and very inconvenient (as this syntax is quite common).
   Now an empty view can be generated again, but when cast to an image, a raw image is generated.
 
+- Equality comparison of `dip::PixelSize` objects was documented to use a tolerance, but it wasn't using one. 
 
 
 ## Changes to *DIPimage*
