@@ -162,11 +162,19 @@ void init_assorted( py::module& m ) {
              OptionallyReverseDimensions( out );
              return out;
           }, "filename"_a, "roi"_a = dip::RangeArray{}, "channels"_a = dip::Range{}, "mode"_a = "" );
+   m.def( "ImageReadICS", []( dip::Image& out, dip::String const& filename, dip::RangeArray const& roi, dip::Range const& channels, dip::String const& mode ) {
+             dip::ImageReadICS( out, filename, roi, channels, mode );
+             OptionallyReverseDimensions( out );
+          }, py::kw_only(), "out"_a, "filename"_a, "roi"_a = dip::RangeArray{}, "channels"_a = dip::Range{}, "mode"_a = "" );
    m.def( "ImageReadICS", []( dip::String const& filename, dip::UnsignedArray const& origin, dip::UnsignedArray const& sizes, dip::UnsignedArray const& spacing, dip::Range const& channels, dip::String const& mode ) {
              auto out = dip::ImageReadICS( filename, origin, sizes, spacing, channels, mode );
              OptionallyReverseDimensions( out );
              return out;
           }, "filename"_a, "origin"_a = dip::UnsignedArray{}, "sizes"_a = dip::UnsignedArray{}, "spacing"_a = dip::UnsignedArray{}, "channels"_a = dip::Range{}, "mode"_a = "" );
+   m.def( "ImageReadICS", []( dip::Image& out, dip::String const& filename, dip::UnsignedArray const& origin, dip::UnsignedArray const& sizes, dip::UnsignedArray const& spacing, dip::Range const& channels, dip::String const& mode ) {
+             dip::ImageReadICS( out, filename, origin, sizes, spacing, channels, mode );
+             OptionallyReverseDimensions( out );
+          }, py::kw_only(), "out"_a, "filename"_a, "origin"_a = dip::UnsignedArray{}, "sizes"_a = dip::UnsignedArray{}, "spacing"_a = dip::UnsignedArray{}, "channels"_a = dip::Range{}, "mode"_a = "" );
    m.def( "ImageReadICSInfo", []( dip::String const& filename ) {
              auto fi = dip::ImageReadICSInfo( filename );
              OptionallyReverseDimensions( fi );
@@ -184,11 +192,19 @@ void init_assorted( py::module& m ) {
              OptionallyReverseDimensions( out );
              return out;
           }, "filename"_a, "imageNumbers"_a = dip::Range{ 0 }, "roi"_a = dip::RangeArray{}, "channels"_a = dip::Range{}, "useColorMap"_a = dip::S::APPLY );
+   m.def( "ImageReadTIFF", []( dip::Image& out, dip::String const& filename, dip::Range const& imageNumbers, dip::RangeArray const& roi, dip::Range const& channels, dip::String const& useColorMap ) {
+             dip::ImageReadTIFF( out, filename, imageNumbers, roi, channels, useColorMap );
+             OptionallyReverseDimensions( out );
+          }, py::kw_only(), "out"_a, "filename"_a, "imageNumbers"_a = dip::Range{ 0 }, "roi"_a = dip::RangeArray{}, "channels"_a = dip::Range{}, "useColorMap"_a = dip::S::APPLY );
    m.def( "ImageReadTIFFSeries", []( dip::StringArray const& filenames, dip::String const& useColorMap ) {
              auto out = dip::ImageReadTIFFSeries( filenames, useColorMap );
              OptionallyReverseDimensions( out );
              return out;
           }, "filenames"_a, "useColorMap"_a = dip::S::APPLY );
+   m.def( "ImageReadTIFFSeries", []( dip::Image& out, dip::StringArray const& filenames, dip::String const& useColorMap ) {
+             dip::ImageReadTIFFSeries( out, filenames, useColorMap );
+             OptionallyReverseDimensions( out );
+          }, py::kw_only(), "out"_a, "filenames"_a, "useColorMap"_a = dip::S::APPLY );
    m.def( "ImageReadTIFFInfo", []( dip::String const& filename, dip::uint imageNumber ) {
              auto fi = dip::ImageReadTIFFInfo( filename, imageNumber );
              OptionallyReverseDimensions( fi );
@@ -206,6 +222,10 @@ void init_assorted( py::module& m ) {
              OptionallyReverseDimensions( out );
              return out;
           }, "filename"_a );
+   m.def( "ImageReadJPEG", []( dip::Image& out, dip::String const& filename ) {
+             dip::ImageReadJPEG( out, filename );
+             OptionallyReverseDimensions( out );
+          }, py::kw_only(), "out"_a, "filename"_a );
    m.def( "ImageReadJPEGInfo", []( dip::String const& filename ) {
              auto fi = dip::ImageReadJPEGInfo( filename );
              OptionallyReverseDimensions( fi );
@@ -218,11 +238,37 @@ void init_assorted( py::module& m ) {
              dip::ImageWriteJPEG( tmp, filename, jpegLevel );
           }, "image"_a, "filename"_a, "jpegLevel"_a = 80 );
 
+   m.def( "ImageReadPNG", []( dip::String const& filename ) {
+             auto out = dip::ImageReadPNG( filename );
+             OptionallyReverseDimensions( out );
+             return out;
+          }, "filename"_a );
+   m.def( "ImageReadPNG", []( dip::Image& out, dip::String const& filename ) {
+             dip::ImageReadPNG( out, filename );
+             OptionallyReverseDimensions( out );
+          }, py::kw_only(), "out"_a, "filename"_a );
+   m.def( "ImageReadPNGInfo", []( dip::String const& filename ) {
+             auto fi = dip::ImageReadPNGInfo( filename );
+             OptionallyReverseDimensions( fi );
+             return fi;
+          }, "filename"_a );
+   m.def( "ImageIsPNG", &dip::ImageIsPNG, "filename"_a );
+   m.def( "ImageWritePNG", []( dip::Image const& image, dip::String const& filename, dip::uint compressionLevel,
+                               dip::StringSet const& filterChoice, dip::uint significantBits ) {
+             auto tmp = image;
+             OptionallyReverseDimensions( tmp );
+             dip::ImageWritePNG( tmp, filename, compressionLevel, filterChoice, significantBits );
+          }, "image"_a, "filename"_a, "compressionLevel"_a = 6, "filterChoice"_a = dip::S::ALL, "significantBits"_a = 0 );
+
    m.def( "ImageReadNPY", []( dip::String const& filename ) {
              auto out = dip::ImageReadNPY( filename );
              OptionallyReverseDimensions( out );
              return out;
           }, "filename"_a );
+   m.def( "ImageReadNPY", []( dip::Image& out, dip::String const& filename ) {
+             dip::ImageReadNPY( out, filename );
+             OptionallyReverseDimensions( out );
+          }, py::kw_only(), "out"_a, "filename"_a );
    m.def( "ImageReadNPYInfo", []( dip::String const& filename ) {
              auto fi = dip::ImageReadNPYInfo( filename );
              OptionallyReverseDimensions( fi );
