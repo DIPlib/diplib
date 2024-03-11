@@ -119,6 +119,7 @@ file_io/file_io_support.h
 file_io/ics.cpp
 file_io/jpeg.cpp
 file_io/npy.cpp
+file_io/png.cpp
 file_io/tiff_read.cpp
 file_io/tiff_write.cpp
 generation/coordinates.cpp

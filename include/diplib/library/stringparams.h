@@ -1,5 +1,5 @@
 /*
- * (c)2017-2021, Cris Luengo.
+ * (c)2017-2024, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -299,6 +299,16 @@ constexpr char const* CPF = "CPF";
 constexpr char const* MTS = "MTS";
 constexpr char const* ITER = "ITER";
 constexpr char const* PROJ = "PROJ";
+
+// PNG filter methods
+constexpr char const* DISABLE = "disable";
+// constexpr char const* NONE = "none";
+constexpr char const* SUB = "sub";
+constexpr char const* UP = "up";
+constexpr char const* AVG = "avg";
+constexpr char const* PAETH = "Paeth";
+// constexpr char const* ALL = "all";
+
 
 } // namespace S
 

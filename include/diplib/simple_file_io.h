@@ -1,5 +1,5 @@
 /*
- * (c)2019-2023, Cris Luengo.
+ * (c)2019-2024, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -44,6 +44,7 @@ namespace dip {
 /// - `"ics"`: The file is an ICS file, use \ref dip::ImageReadICS.
 /// - `"tiff"`: The file is a TIFF file, use \ref dip::ImageReadTIFF. Reads only the first image plane.
 /// - `"jpeg"`: The file is a JPEG file, use \ref dip::ImageReadJPEG.
+/// - `"png"`: The file is a PNG file, use \ref dip::ImageReadPNG.
 /// - `"npy"`: The file is a NumPy NPY file, use \ref dip::ImageReadNPY.
 /// - `"bioformats"`: Use \ref dip::javaio::ImageReadJavaIO to read the file with the *Bio-Formats* library.
 /// - `""`: Select the format by looking at the file name extension or the file's first few bytes. This is the default.
@@ -80,6 +81,9 @@ inline FileInformation ImageRead(
          } else if( StringCompareCaseInsensitive( format, "jpg" ) || StringCompareCaseInsensitive( format, "jpeg" )) {
             DIP_THROW_IF( !ImageIsJPEG( filename ), "File has a JPEG extension but could not be read as a JPEG file" );
             format = "jpeg";
+         } else if( StringCompareCaseInsensitive( format, "png" )) {
+            DIP_THROW_IF( !ImageIsPNG( filename ), "File has a PNG extension but could not be read as a PNG file" );
+            format = "png";
          } else if( StringCompareCaseInsensitive( format, "npy" )) {
             DIP_THROW_IF( !ImageIsNPY( filename ), "File has an NPY extension but could not be read as an NPY file" );
             format = "npy";
@@ -94,6 +98,8 @@ inline FileInformation ImageRead(
             format = "tiff";
          } else if( ImageIsJPEG( filename )) {
             format = "jpeg";
+         } else if( ImageIsPNG( filename )) {
+            format = "png";
          } else if( ImageIsNPY( filename )) {
             format = "npy";
          } else {
@@ -112,6 +118,8 @@ inline FileInformation ImageRead(
       DIP_STACK_TRACE_THIS( info = ImageReadTIFF( out, filename ));
    } else if( format == "jpeg" ) {
       DIP_STACK_TRACE_THIS( info = ImageReadJPEG( out, filename ));
+   } else if( format == "png" ) {
+      DIP_STACK_TRACE_THIS( info = ImageReadPNG( out, filename ));
    } else if( format == "npy" ) {
       DIP_STACK_TRACE_THIS( info = ImageReadNPY( out, filename ));
    }
@@ -142,6 +150,7 @@ DIP_NODISCARD inline Image ImageRead(
 /// - `"icsv1"`: Create an ICS version 1 file, use \ref dip::ImageWriteICS.
 /// - `"tiff"`: Create a TIFF file, use \ref dip::ImageWriteTIFF.
 /// - `"jpeg"`: Create a JPEG file, use \ref dip::ImageWriteJPEG.
+/// - `"png"`: Create a PNG file, use \ref dip::ImageWritePNG.
 /// - `"npy"`: Create a NumPy NPY file, use \ref dip::ImageWriteNPY.
 /// - `""`: Select the format by looking at the file name extension. If no extension is
 ///   present, it defaults to ICS version 2. This is the default.
@@ -184,6 +193,8 @@ inline void ImageWrite(
          format = "tiff";
       } else if( StringCompareCaseInsensitive( format, "jpg" ) || StringCompareCaseInsensitive( format, "jpeg" )) {
          format = "jpeg";
+      } else if( StringCompareCaseInsensitive( format, "png" )) {
+         format = "png";
       } else if( StringCompareCaseInsensitive( format, "npy" )) {
          format = "npy";
       } else {
@@ -210,6 +221,8 @@ inline void ImageWrite(
       DIP_STACK_TRACE_THIS( ImageWriteTIFF( image, filename, compression ));
    } else if( format == "jpeg" ) {
       DIP_STACK_TRACE_THIS( ImageWriteJPEG( image, filename ));
+   } else if( format == "png" ) {
+      DIP_STACK_TRACE_THIS( ImageWritePNG( image, filename, compression == "none" ? 0 : 6 ));
    } else if( format == "npy" ) {
       DIP_STACK_TRACE_THIS( ImageWriteNPY( image, filename ));
    } else {

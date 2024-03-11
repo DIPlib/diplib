@@ -382,6 +382,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing TIFF file reading and writing" ) {
    dip::ImageWriteTIFF( image, "test1.tif" );
    dip::Image result = dip::ImageReadTIFF( "test1" );
    DOCTEST_CHECK( dip::testing::CompareImages( image, result ));
+   DOCTEST_CHECK( image.PixelSize() == result.PixelSize() );
 
    // Try reading it into an image with non-standard strides
    result.Strip();
@@ -392,6 +393,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing TIFF file reading and writing" ) {
    result.Forge();
    dip::ImageReadTIFF( result, "test1" );
    DOCTEST_CHECK( dip::testing::CompareImages( image, result ));
+   DOCTEST_CHECK( image.PixelSize() == result.PixelSize() );
 
    // Turn it on its side so the image to write has non-standard strides
    image.SwapDimensions( 0, 1 );

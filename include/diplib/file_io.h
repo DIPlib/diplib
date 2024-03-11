@@ -1,5 +1,5 @@
 /*
- * (c)2017-2021, Cris Luengo.
+ * (c)2017-2024, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -378,6 +378,74 @@ DIP_EXPORT void ImageWriteJPEG(
       Image const& image,
       String const& filename,
       dip::uint jpegLevel = 80
+);
+
+
+/// \brief Reads an image from the PNG file `filename` and puts it in `out`.
+///
+/// The function tries to open `filename` as given first, and if that fails, it appends ".png" to the
+/// name and tries again.
+///
+/// PNG images are either gray-scale (scalar) or sRGB images, the color space information will be set accordingly.
+/// If the image has an alpha channel, it will be the second or fourth tensor element in `out`.
+///
+/// The pixel size information, if present in the PNG file, will be used to set the pixel size of `out`.
+DIP_EXPORT FileInformation ImageReadPNG(
+      Image& out,
+      String const& filename
+);
+DIP_NODISCARD inline Image ImageReadPNG(
+      String const& filename
+) {
+   Image out;
+   ImageReadPNG( out, filename );
+   return out;
+}
+
+/// \brief Reads image information and metadata from the PNG file `filename`, without reading the actual
+/// pixel data.
+DIP_EXPORT FileInformation ImageReadPNGInfo( String const& filename );
+
+/// \brief Returns true if the file `filename` is a PNG file.
+DIP_EXPORT bool ImageIsPNG( String const& filename );
+
+/// \brief Writes `image` as a PNG file.
+///
+/// `image` must be 2D, and either scalar or with two, three or four tensor elements.
+/// If the image has three or four tensor elements, it will be saved as an sRGB image, even if the color space
+/// is not sRGB (no color space conversion is done, the data is simply tagged as sRGB). If the image has two or
+/// four tensor elements, the last tensor element is assumed to be the alpha channel.
+/// If the image is not \ref dip::DT_UINT8, it will be converted to it (complex numbers are cast to real values
+/// by taking their magnitude, and real numbers are rounded and clamped to the output range), no scaling will
+/// be applied. Except if the image is \ref dip::DT_UINT16, which is accepted by the PNG standard and will be
+/// written to file as-is.
+///
+/// If `filename` does not have an extension, ".png" will be added. Overwrites any other file with the same name.
+///
+/// `compressionLevel` sets the compression level; it's an integer in the range 0-9, with 0 for no compression,
+/// 1 for the fastest method producing the largest output files, and 9 the slowest method producing the smallest
+/// output files. The default is 6.
+///
+/// `filterChoice` specifies how the PNG file is filtered during compression. The compression algorithm will try
+/// all selected filters on each line, and pick the best one. The set can contain one or several of these strings:
+///
+/// - "disable": No filtering, cannot be combined with the other methods.
+/// - "none": No filtering.
+/// - "sub": Each byte is replaced with the difference between it and the byte to its left.
+/// - "up": Each byte is replaced with the difference between it and the corresponding byte on the previous image line.
+/// - "avg": Each byte is replaced with the difference between it and the average of the corresponding bytes to its left and above it, truncating any fractional part.
+/// - "Paeth": Each byte is replaced with the difference between it and the Paeth predictor of the corresponding bytes to its left, above it, and to its upper left.
+/// - "all": Shortcut for including all five filters. This is the default. Cannot be combined with the other methods.
+///
+/// Set `significantBits` only if the number of significant bits is different from the full range of the data
+/// type of `image` (use 0 otherwise). For example, it can be used to specify that a camera has produced
+/// 10-bit output, even though the image is of type \ref dip::DT_UINT16.
+DIP_EXPORT void ImageWritePNG(
+      Image const& image,
+      String const& filename,
+      dip::uint compressionLevel = 6,
+      StringSet const& filterChoice = { S::ALL },
+      dip::uint significantBits = 0
 );
 
 
