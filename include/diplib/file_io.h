@@ -345,13 +345,8 @@ DIP_EXPORT void ImageWriteTIFF(
 /// JPEG images are either gray-scale (scalar) or sRGB images, the color space information will be set accordingly.
 ///
 /// The pixels per inch value in the JPEG file will be used to set the pixel size of `out`.
-DIP_EXPORT FileInformation ImageReadJPEG(
-      Image& out,
-      String const& filename
-);
-DIP_NODISCARD inline Image ImageReadJPEG(
-      String const& filename
-) {
+DIP_EXPORT FileInformation ImageReadJPEG( Image& out, String const& filename );
+DIP_NODISCARD inline Image ImageReadJPEG( String const& filename ) {
    Image out;
    ImageReadJPEG( out, filename );
    return out;
@@ -377,11 +372,7 @@ DIP_EXPORT bool ImageIsJPEG( String const& filename );
 ///
 /// `jpegLevel` determines the amount of compression applied. `jpegLevel` is an integer between 1 and 100, with
 /// increasing numbers yielding larger files and fewer compression artifacts.
-DIP_EXPORT void ImageWriteJPEG(
-      Image const& image,
-      String const& filename,
-      dip::uint jpegLevel = 80
-);
+DIP_EXPORT void ImageWriteJPEG( Image const& image, String const& filename, dip::uint jpegLevel = 80 );
 
 
 /// \brief Reads an image from the PNG file `filename` and puts it in `out`.
@@ -393,24 +384,31 @@ DIP_EXPORT void ImageWriteJPEG(
 /// If the image has an alpha channel, it will be the second or fourth tensor element in `out`.
 ///
 /// The pixel size information, if present in the PNG file, will be used to set the pixel size of `out`.
-DIP_EXPORT FileInformation ImageReadPNG(
-      Image& out,
-      String const& filename
-);
-DIP_NODISCARD inline Image ImageReadPNG(
-      String const& filename
-) {
+DIP_EXPORT FileInformation ImageReadPNG( Image& out, String const& filename );
+DIP_NODISCARD inline Image ImageReadPNG( String const& filename ) {
    Image out;
    ImageReadPNG( out, filename );
    return out;
 }
 
 /// \brief Reads image information and metadata from the PNG file `filename`, without reading the actual
-/// pixel data. See \ref dip::ImageReadPNG for more details on the handling of `filename`.
+/// pixel data. See \ref dip::ImageReadPNG(Image&, String const&) for more details on the handling of `filename`.
 DIP_EXPORT FileInformation ImageReadPNGInfo( String const& filename );
 
 /// \brief Returns true if the file `filename` is a PNG file.
 DIP_EXPORT bool ImageIsPNG( String const& filename );
+
+/// \brief  Reads an image from the PNG-encoded buffer and puts it in `out`.
+///
+/// `buffer` must point to `length` bytes containing a PNG-encoded image.
+/// See \ref dip::ImageReadPNG(Image&, String const&) for details.
+DIP_EXPORT FileInformation ImageReadPNG( Image& out, void* buffer, dip::uint length );
+
+/// \brief  Reads image information and metadata from the PNG-encoded buffer, without reading the actual
+/// pixel data.
+///
+/// `buffer` must point to `length` bytes containing a PNG-encoded image.
+DIP_EXPORT FileInformation ImageReadPNGInfo( void* buffer, dip::uint length );
 
 /// \brief Writes `image` as a PNG file.
 ///
@@ -453,6 +451,14 @@ DIP_EXPORT void ImageWritePNG(
       dip::uint significantBits = 0
 );
 
+/// \brief Writes `image` as a PNG-encoded buffer.
+/// See \ref ImageWritePNG(Image const &, String const&, dip::uint, StringSet const&, dip::uint) for details.
+DIP_EXPORT std::vector< dip::uint8 > ImageWritePNG(
+      Image const& image,
+      dip::uint compressionLevel = 6,
+      StringSet const& filterChoice = { S::ALL },
+      dip::uint significantBits = 0
+);
 
 /// \brief Reads a numeric array from the NumPy NPY file `filename` and puts it in `out`.
 ///
@@ -466,13 +472,8 @@ DIP_EXPORT void ImageWritePNG(
 /// the NumPy array's first index is the y axis as the second index is the x axis (this is how 2D arrays are
 /// treated everywhere in Python). We generalize this to arbitrary dimensions by reversing the indices.
 /// A standard C-order NumPy array this way translates to a DIPlib image with \ref normal_strides.
-DIP_EXPORT FileInformation ImageReadNPY(
-      Image& out,
-      String const& filename
-);
-DIP_NODISCARD inline Image ImageReadNPY(
-      String const& filename
-) {
+DIP_EXPORT FileInformation ImageReadNPY( Image& out, String const& filename );
+DIP_NODISCARD inline Image ImageReadNPY( String const& filename ) {
    Image out;
    ImageReadNPY( out, filename );
    return out;
@@ -496,16 +497,11 @@ DIP_EXPORT bool ImageIsNPY( String const& filename );
 /// the NumPy array's first index is the y axis as the second index is the x axis (this is how 2D arrays are
 /// treated everywhere in Python). We generalize this to arbitrary dimensions by reversing the indices.
 /// A DIPlib image with \ref normal_strides is thus translated to a NumPy array with standard C-order.
-DIP_EXPORT void ImageWriteNPY(
-      Image const& image,
-      String const& filename
-);
+DIP_EXPORT void ImageWriteNPY( Image const& image, String const& filename );
 
 
 /// \brief Returns the location of the dot that separates the extension, or `dip::String::npos` if there is no dot.
-inline String::size_type FileGetExtensionPosition(
-      String const& filename
-) {
+inline String::size_type FileGetExtensionPosition( String const& filename ) {
    auto sep = filename.find_last_of( "/\\:" ); // Path separators.
    auto pos = filename.substr( sep + 1 ).find_last_of( '.' ); // sep + 1 == 0 if no path separator.
    if( pos == String::npos ) {
@@ -515,16 +511,12 @@ inline String::size_type FileGetExtensionPosition(
 }
 
 /// \brief Returns true if the file name has an extension.
-inline bool FileHasExtension(
-      String const& filename
-) {
+inline bool FileHasExtension( String const& filename ) {
    return FileGetExtensionPosition( filename ) != String::npos;
 }
 
 /// \brief Gets the extension for the given file name, or an empty string if there's no extension.
-inline String FileGetExtension(
-      String const& filename
-) {
+inline String FileGetExtension( String const& filename ) {
    auto pos = FileGetExtensionPosition( filename );
    if( pos == String::npos ) {
       return {};
@@ -533,28 +525,19 @@ inline String FileGetExtension(
 }
 
 /// \brief Returns true if the file name has the given extension.
-inline bool FileCompareExtension(
-      String const& filename,
-      String const& extension
-) {
+inline bool FileCompareExtension( String const& filename, String const& extension ) {
    return StringCompareCaseInsensitive( FileGetExtension( filename ), extension );
 }
 
 /// \brief Adds the given extension to the file name, replacing any existing extension.
 [[ deprecated( "DIPlib doesn't need functionality to replace an extension." ) ]]
-inline String FileAddExtension(
-      String const& filename,
-      String const& extension
-) {
+inline String FileAddExtension( String const& filename, String const& extension ) {
    auto const pos = FileGetExtensionPosition( filename );
    return filename.substr( 0, pos ) + String{ '.' } + extension;
 }
 
 /// \brief Appends the given extension to the file name.
-inline String FileAppendExtension(
-      String const& filename,
-      String const& extension
-) {
+inline String FileAppendExtension( String const& filename, String const& extension ) {
       return filename + String{ '.' } + extension;
 }
 

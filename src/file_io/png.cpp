@@ -20,6 +20,7 @@
 #include <cmath>
 #include <cstdint>
 #include <cstdio>
+#include <cstdlib>
 #include <limits>
 #include <utility>
 #include <vector>
@@ -38,14 +39,14 @@ namespace {
 
 class PngInput {
    public:
-      PngInput( String filename ) : filename_( std::move( filename )) {
+      explicit PngInput( String filename ) : filename_( std::move( filename )) {
          infile_ = std::fopen( filename_.c_str(), "rb" );
          if( infile_ == nullptr ) {
             filename_ = FileAppendExtension( filename_, "png" ); // Try with "png" extension
             infile_ = std::fopen( filename_.c_str(), "rb" );
-         }
-         if( infile_ == nullptr ) {
-            DIP_THROW_RUNTIME( "Could not open the specified PNG file" );
+            if( infile_ == nullptr ) {
+               DIP_THROW_RUNTIME( "Could not open the specified PNG file" );
+            }
          }
          ctx_ = spng_ctx_new( 0 );
          if( !ctx_ ) {
@@ -54,8 +55,23 @@ class PngInput {
          // Set memory usage limits for storing standard and unknown chunks, this is important when reading untrusted files!
          std::size_t limit = 1024ul * 1024ul * 64ul;
          spng_set_chunk_limits( ctx_, limit, limit );
-         // Set source PNG
+         // Set source file
          spng_set_png_file( ctx_, infile_ );
+         // Read header
+         if( int ret = spng_get_ihdr( ctx_, &ihdr_ )) {
+            PNG_THROW_READ_ERROR;
+         }
+      }
+      PngInput( void const* buffer, dip::uint length ) {
+         ctx_ = spng_ctx_new( 0 );
+         if( !ctx_ ) {
+            DIP_THROW_RUNTIME( "Could not create a PNG context" );
+         }
+         // Set memory usage limits for storing standard and unknown chunks, this is important when reading untrusted files!
+         std::size_t limit = 1024ul * 1024ul * 64ul;
+         spng_set_chunk_limits( ctx_, limit, limit );
+         // Set source buffer
+         spng_set_png_buffer( ctx_, buffer, length );
          // Read header
          if( int ret = spng_get_ihdr( ctx_, &ihdr_ )) {
             PNG_THROW_READ_ERROR;
@@ -84,45 +100,6 @@ class PngInput {
       FILE* infile_ = nullptr;
       spng_ctx* ctx_ = nullptr;
       spng_ihdr ihdr_ = { 0, 0, 0, 0, 0, 0, 0 };
-};
-
-class PngOutput {
-   public:
-      explicit PngOutput( String const& filename ) {
-         // Open the file for writing
-         if( FileHasExtension( filename )) {
-            outfile_ = std::fopen(filename.c_str(), "wb");
-         } else {
-            outfile_ = std::fopen( FileAppendExtension( filename, "png" ).c_str(), "wb" );
-         }
-         if( outfile_ == nullptr ) {
-            DIP_THROW_RUNTIME( "Could not open file for writing" );
-         }
-         ctx_ = spng_ctx_new(SPNG_CTX_ENCODER);
-         if( !ctx_ ) {
-            DIP_THROW_RUNTIME( "Could not create a PNG context" );
-         }
-         if( int ret = spng_set_png_file( ctx_, outfile_ )) {
-            PNG_THROW_WRITE_ERROR;
-         }
-      }
-      PngOutput( PngOutput const& ) = delete;
-      PngOutput( PngOutput&& ) = delete;
-      PngOutput& operator=( PngOutput const& ) = delete;
-      PngOutput& operator=( PngOutput&& ) = delete;
-      ~PngOutput() {
-         if( ctx_ ) {
-            spng_ctx_free( ctx_ );
-         }
-         if( outfile_ ) {
-            std::fclose( outfile_ );
-         }
-      }
-      // Retrieve PNG context
-      spng_ctx* Context() { return ctx_; }
-   private:
-      FILE* outfile_ = nullptr;
-      spng_ctx* ctx_ = nullptr;
 };
 
 inline dip::uint max3( dip::uint a, dip::uint b, dip::uint c ) {
@@ -170,18 +147,11 @@ FileInformation GetPNGInfo( PngInput& png ) {
    return fileInformation;
 }
 
-} // namespace
-
-FileInformation ImageReadPNG(
+void ImageReadPNG(
       Image& out,
-      String const& filename
+      PngInput& png,
+      FileInformation const& info
 ) {
-   // Open the file
-   PngInput png( filename );
-
-   // Get info
-   FileInformation info = GetPNGInfo( png );
-
    // Allocate image
    out.ReForge( info.sizes, info.tensorElements, info.dataType, Option::AcceptDataTypeChange::DONT_ALLOW );
    out.SetPixelSize( info.pixelSize );
@@ -232,28 +202,55 @@ FileInformation ImageReadPNG(
          PNG_THROW_READ_ERROR;
       }
    }
-
-   return info;
 }
 
-FileInformation ImageReadPNGInfo( String const& filename ) {
-   PngInput png( filename );
-   FileInformation info = GetPNGInfo( png );
-   return info;
-}
-
-bool ImageIsPNG( String const& filename ) {
-   try {
-      PngInput png( filename );
-   } catch( ... ) {
-      return false;
-   }
-   return true;
-}
+class PngOutput {
+   public:
+      explicit PngOutput( String const& filename ) {
+         if( FileHasExtension( filename )) {
+            outfile_ = std::fopen(filename.c_str(), "wb");
+         } else {
+            outfile_ = std::fopen( FileAppendExtension( filename, "png" ).c_str(), "wb" );
+         }
+         if( outfile_ == nullptr ) {
+            DIP_THROW_RUNTIME( "Could not open file for writing" );
+         }
+         ctx_ = spng_ctx_new(SPNG_CTX_ENCODER);
+         if( !ctx_ ) {
+            DIP_THROW_RUNTIME( "Could not create a PNG context" );
+         }
+         if( int ret = spng_set_png_file( ctx_, outfile_ )) {
+            PNG_THROW_WRITE_ERROR;
+         }
+      }
+      explicit PngOutput() {
+         ctx_ = spng_ctx_new(SPNG_CTX_ENCODER);
+         if( int ret = spng_set_option( ctx_, SPNG_ENCODE_TO_BUFFER, 1 )) {
+            PNG_THROW_WRITE_ERROR;
+         }
+      }
+      PngOutput( PngOutput const& ) = delete;
+      PngOutput( PngOutput&& ) = delete;
+      PngOutput& operator=( PngOutput const& ) = delete;
+      PngOutput& operator=( PngOutput&& ) = delete;
+      ~PngOutput() {
+         if( ctx_ ) {
+            spng_ctx_free( ctx_ );
+         }
+         if( outfile_ ) {
+            std::fclose( outfile_ );
+         }
+      }
+      // Retrieve PNG context
+      spng_ctx* Context() { return ctx_; }
+   private:
+      FILE* outfile_ = nullptr;
+      spng_ctx* ctx_ = nullptr;
+};
 
 void ImageWritePNG(
       Image const& image,
-      String const& filename,
+      PngOutput& png,
       dip::uint compressionLevel,
       StringSet const& filterChoice,
       dip::uint significantBits
@@ -265,9 +262,6 @@ void ImageWritePNG(
                 ( image.Size( 1 ) > std::numeric_limits< std::uint32_t >::max() ),
                 "PNG cannot write an image this large. Use TIFF or ICS instead." );
    bool isBinary = image.DataType().IsBinary() && image.IsScalar();
-
-   // Open the file
-   PngOutput png( filename );
 
    // Convert the image to uint8 if necessary
    Image image_out = image.QuickCopy();
@@ -431,6 +425,81 @@ void ImageWritePNG(
    }
 }
 
+} // namespace
+
+FileInformation ImageReadPNG( Image& out, String const& filename ) {
+   PngInput png( filename );
+   FileInformation info = GetPNGInfo( png );
+   ImageReadPNG( out, png, info );
+   return info;
+}
+
+FileInformation ImageReadPNGInfo( String const& filename ) {
+   PngInput png( filename );
+   FileInformation info = GetPNGInfo( png );
+   return info;
+}
+
+bool ImageIsPNG( String const& filename ) {
+   try {
+      PngInput png( filename );
+   } catch( ... ) {
+      return false;
+   }
+   return true;
+}
+
+FileInformation ImageReadPNG( Image& out, void* buffer, dip::uint length ) {
+   PngInput png( buffer, length );
+   FileInformation info = GetPNGInfo( png );
+   ImageReadPNG( out, png, info );
+   return info;
+}
+
+FileInformation ImageReadPNGInfo( void* buffer, dip::uint length ) {
+   PngInput png( buffer, length );
+   FileInformation info = GetPNGInfo( png );
+   return info;
+}
+
+void ImageWritePNG(
+      Image const& image,
+      String const& filename,
+      dip::uint compressionLevel,
+      StringSet const& filterChoice,
+      dip::uint significantBits
+) {
+   PngOutput png( filename );
+   ImageWritePNG( image, png, compressionLevel, filterChoice, significantBits );
+}
+
+std::vector< dip::uint8 > ImageWritePNG(
+      Image const& image,
+      dip::uint compressionLevel,
+      StringSet const& filterChoice,
+      dip::uint significantBits
+) {
+   PngOutput png;
+   ImageWritePNG( image, png, compressionLevel, filterChoice, significantBits );
+   std::vector< dip::uint8 > buffer;
+   dip::uint buf_len = 0;
+   int ret = 0;
+   void* buf_ptr = spng_get_png_buffer( png.Context(), &buf_len, &ret );
+   if( ret ) {
+      PNG_THROW_WRITE_ERROR;
+   }
+   // NOTE! we now own `buf_ptr`!
+   try {
+      buffer.resize( buf_len );
+      std::copy_n( static_cast< dip::uint8* >( buf_ptr ), buf_len, buffer.begin() );
+      std::free( buf_ptr );
+   } catch ( ... ) {
+      std::free( buf_ptr );
+      throw;
+   }
+   return buffer;
+}
+
 } // namespace dip
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
@@ -501,6 +570,13 @@ DOCTEST_TEST_CASE( "[DIPlib] testing PNG file reading and writing" ) {
    dip::BinaryNoise( image, image, rng, 0.33, 0.33 );
    dip::ImageWritePNG( image, "test7.png" );
    info = dip::ImageReadPNG( result, "test7" );
+   DOCTEST_CHECK( result.DataType() == dip::DT_BIN );
+   DOCTEST_CHECK( dip::testing::CompareImages( image, result ));
+   DOCTEST_CHECK( info.significantBits == 1 );
+
+   // Write and read from buffer
+   auto buffer = dip::ImageWritePNG( image );
+   info = dip::ImageReadPNG( result, buffer.data(), buffer.size() );
    DOCTEST_CHECK( result.DataType() == dip::DT_BIN );
    DOCTEST_CHECK( dip::testing::CompareImages( image, result ));
    DOCTEST_CHECK( info.significantBits == 1 );

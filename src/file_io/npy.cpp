@@ -281,10 +281,7 @@ std::ifstream OpenNPYForReading( String filename, FileInformation& fileInformati
 
 } // namespace
 
-FileInformation ImageReadNPY(
-      Image& out,
-      String const& filename
-) {
+FileInformation ImageReadNPY( Image& out, String const& filename ) {
    FileInformation fileInformation;
    bool fortranOrder = false;
    bool swapEndianness = false;
@@ -353,10 +350,7 @@ bool ImageIsNPY( String const& filename ) {
    return true;
 }
 
-void ImageWriteNPY(
-      Image const& image,
-      String const& filename
-) {
+void ImageWriteNPY( Image const& image, String const& filename ) {
    DIP_THROW_IF( !image.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !image.IsScalar(), E::IMAGE_NOT_SCALAR );
 
