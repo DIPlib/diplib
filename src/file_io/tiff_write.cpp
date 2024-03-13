@@ -26,8 +26,8 @@ namespace dip {
 
 namespace {
 
-static char const* TIFF_WRITE_TAG = "Error writing tag to TIFF file";
-static char const* TIFF_WRITE_DATA = "Error writing data";
+constexpr char const* TIFF_WRITE_TAG = "Error writing tag to TIFF file";
+constexpr char const* TIFF_WRITE_DATA = "Error writing data";
 
 #define WRITE_TIFF_TAG( tiff, tag, value ) do { if( !TIFFSetField( tiff, tag, value )) { DIP_THROW_RUNTIME( TIFF_WRITE_TAG ); }} while(false)
 
@@ -41,7 +41,7 @@ class TiffFile {
          if( FileHasExtension( filename )) {
             tiff_ = TIFFOpen( filename.c_str(), "w" );
          } else {
-            tiff_ = TIFFOpen( FileAddExtension( filename, "tif" ).c_str(), "w" );
+            tiff_ = TIFFOpen( FileAppendExtension( filename, "tif" ).c_str(), "w" );
          }
          if( tiff_ == nullptr ) {
             DIP_THROW_RUNTIME( "Could not open the specified file" );
@@ -62,7 +62,7 @@ class TiffFile {
       TIFF* tiff_ = nullptr;
 };
 
-static uint16 CompressionTranslate( String const& compression ) {
+uint16 CompressionTranslate( String const& compression ) {
    if( compression.empty() || ( compression == "deflate" )) {
       return COMPRESSION_DEFLATE;
    } else if( compression == "LZW" ) {

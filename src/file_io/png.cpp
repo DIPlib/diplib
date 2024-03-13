@@ -41,10 +41,8 @@ class PngInput {
       PngInput( String filename ) : filename_( std::move( filename )) {
          infile_ = std::fopen( filename_.c_str(), "rb" );
          if( infile_ == nullptr ) {
-            if( !FileHasExtension( filename_ )) {
-               filename_ = FileAddExtension( filename_, "png" ); // Try with "png" extension
-               infile_ = std::fopen( filename_.c_str(), "rb" );
-            }
+            filename_ = FileAppendExtension( filename_, "png" ); // Try with "png" extension
+            infile_ = std::fopen( filename_.c_str(), "rb" );
          }
          if( infile_ == nullptr ) {
             DIP_THROW_RUNTIME( "Could not open the specified PNG file" );
@@ -95,7 +93,7 @@ class PngOutput {
          if( FileHasExtension( filename )) {
             outfile_ = std::fopen(filename.c_str(), "wb");
          } else {
-            outfile_ = std::fopen( FileAddExtension( filename, "png" ).c_str(), "wb" );
+            outfile_ = std::fopen( FileAppendExtension( filename, "png" ).c_str(), "wb" );
          }
          if( outfile_ == nullptr ) {
             DIP_THROW_RUNTIME( "Could not open file for writing" );

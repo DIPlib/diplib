@@ -17,7 +17,13 @@
 
 #ifdef DIP_CONFIG_HAS_ICS
 
-#include <cstdlib> // std::strtoul
+#include <algorithm>
+#include <cctype>
+#include <cstdlib>
+#include <cstring>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "diplib.h"
 #include "diplib/file_io.h"

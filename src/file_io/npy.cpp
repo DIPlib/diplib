@@ -20,8 +20,15 @@
 // See https://github.com/rogersce/cnpy for cnpy
 // See https://github.com/llohse/libnpy for libnpy
 
-#include <regex>
+#include <cstring>
 #include <fstream>
+#include <istream>
+#include <numeric>
+#include <ostream>
+#include <regex>
+#include <sstream>
+#include <string>
+#include <utility>
 
 #include "diplib.h"
 #include "diplib/file_io.h"
@@ -86,8 +93,9 @@ char TypeChar( DataType dt ) {
       case DT_SCOMPLEX:
       case DT_DCOMPLEX:
          return 'c';
+      default:
+         DIP_THROW( E::NOT_REACHABLE );
    }
-   DIP_THROW( "Unknown data type" ); // This should never happen, but GCC complains.
 }
 
 void ReverseArray( UnsignedArray& array ) {
@@ -97,7 +105,7 @@ void ReverseArray( UnsignedArray& array ) {
    }
 }
 
-std::string CreateHeaderDict( DataType dataType, UnsignedArray const& sizes, bool fortranOrder ) {
+String CreateHeaderDict( DataType dataType, UnsignedArray const& sizes, bool fortranOrder ) {
    std::ostringstream out;
    out << "{'descr': '" << SystemEndianChar();
    out << TypeChar( dataType );
@@ -112,10 +120,10 @@ std::string CreateHeaderDict( DataType dataType, UnsignedArray const& sizes, boo
 
 void WriteHeader( std::ostream& ostream, DataType dataType, UnsignedArray const& sizes, bool fortranOrder ) {
    WriteMagic( ostream );
-   std::string headerDict = CreateHeaderDict( dataType, sizes, fortranOrder );
+   String headerDict = CreateHeaderDict( dataType, sizes, fortranOrder );
    dip::uint length = magicStringLength + 3 + headerDict.length();
    dip::uint padding = 64 - length % 64;
-   headerDict += std::string( padding, ' ' );
+   headerDict += String( padding, ' ' );
    headerDict += '\n';
    length = headerDict.length();
    ostream.put( static_cast< char >( length & 0xffu ));
@@ -129,7 +137,7 @@ void ReadHeader( std::istream& istream, DataType& dataType, UnsignedArray& sizes
    istream.read( buf, 2 );
    DIP_THROW_IF( !istream, BAD_NPY_HEADER );
    dip::uint length = static_cast< dip::uint >( buf[ 0 ] ) + ( static_cast< dip::uint >( buf[ 1 ] ) << 8u );
-   std::string headerDict( length, '\0' );
+   String headerDict( length, '\0' );
    istream.read( &headerDict[ 0 ], static_cast< dip::sint >( length ));
    //std::cout << "Header length: " << length << '\n';
    //std::cout << "Header contents: >>" << headerDict << "<<\n";
@@ -148,7 +156,7 @@ void ReadHeader( std::istream& istream, DataType& dataType, UnsignedArray& sizes
    std::regex_search( headerDict, res, regex_shape );
    DIP_THROW_IF ( res.size() != 2, "Failed to parse NPY header keyword 'shape'" );
    //std::cout << "shape: " << res.str() << '\n' << "     : ";
-   std::string shapeStr = res.str( 1 );
+   String shapeStr = res.str( 1 );
    std::regex regex_num( "[0-9]+" );
    for( auto it = std::sregex_iterator( shapeStr.begin(), shapeStr.end(), regex_num ); it != std::sregex_iterator{}; ++it ) {
       //std::cout << it->str() << ", ";
@@ -166,7 +174,7 @@ void ReadHeader( std::istream& istream, DataType& dataType, UnsignedArray& sizes
    //   A is the endianness char, one of littleEndianChar, bigEndianChar or noEndianChar
    //   B is the data type char
    //   xxx is the number of bytes for the data type
-   std::string descr = res.str( 1 );
+   String descr = res.str( 1 );
    swapEndianness = !(( descr[ 0 ] == SystemEndianChar() ) || ( descr[ 0 ] == noEndianChar )); // if unknown endianness, just read in as-is
    dip::uint bytes = std::stoul( descr.substr( 2 ));
    if( bytes == 1 ) {
@@ -257,10 +265,8 @@ std::ifstream OpenNPYForReading( String filename, FileInformation& fileInformati
    fileInformation.name = std::move( filename );
    std::ifstream istream( fileInformation.name, std::ifstream::binary );
    if( !istream ) {
-      if( !FileHasExtension( fileInformation.name )) {
-         fileInformation.name = FileAddExtension( fileInformation.name, "npy" );
-         istream.open( fileInformation.name, std::ifstream::binary );
-      }
+      fileInformation.name = FileAppendExtension( fileInformation.name, "npy" );
+      istream.open( fileInformation.name, std::ifstream::binary );
       if( !istream ) {
          DIP_THROW_RUNTIME( "Could not open the specified NPY file" );
       }
@@ -358,7 +364,7 @@ void ImageWriteNPY(
    if( FileHasExtension( filename )) {
       ostream.open( filename, std::ofstream::binary );
    } else {
-      ostream.open( FileAddExtension( filename, "npy" ), std::ofstream::binary );
+      ostream.open( FileAppendExtension( filename, "npy" ), std::ofstream::binary );
    }
    if( !ostream ) {
       DIP_THROW_RUNTIME( "Could not open specified NPY file for writing" );

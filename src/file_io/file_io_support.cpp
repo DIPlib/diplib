@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+#include <algorithm>
+
+#include "diplib.h"
+#include "diplib/file_io.h"
 #include "file_io_support.h"
 
 namespace dip {

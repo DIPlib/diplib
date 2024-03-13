@@ -153,18 +153,24 @@ DIP_NODISCARD inline Image ImageRead(
 /// - `"png"`: Create a PNG file, use \ref dip::ImageWritePNG.
 /// - `"npy"`: Create a NumPy NPY file, use \ref dip::ImageWriteNPY.
 /// - `""`: Select the format by looking at the file name extension. If no extension is
-///   present, it defaults to ICS version 2. This is the default.
+///   present, it uses ICS version 2. This is the default.
 ///
 /// The ICS format can store any image, with all its information, such that reading the file using \ref dip::ImageRead
 /// or \ref dip::ImageReadICS yields an image that is identical (except the strides might be different).
 ///
-/// The TIFF format can store 2D images, as well as 3D images as a series of 2D slides (not yet implemented).
+/// The TIFF format can store 2D images, as well as 3D images as a series of 2D slides (but this is not yet implemented).
 /// A limited set of color spaces are recognized, other color images are stored without color space information.
 /// Complex data is not supported, other data types are. But note that images other than 8-bit or 16-bit unsigned
 /// integer lead to files that are not recognized by most readers.
 ///
-/// The JPEG format can store 2D images. Tensor images are always tagged as sRGB. Most metadata will be lost.
+/// The JPEG format can store 2D images with 1 or 3 tensor elements. Tensor images are always tagged as sRGB. Most
+/// metadata will be lost.
 /// Image data is converted to 8-bit unsigned integer, without scaling.
+///
+/// The PNG format can store 2D images with 1 to 4 tensor elements. Images with 3 or 4 tensor elements are always
+/// tagged as sRGB, those with 1 or 2 as grayscale. The 2nd or 4th tensor element is the alpha channel.
+/// Image data is converted to 8-bit unsigned integer, without scaling, unless the image is binary or 16-bit unsigned
+/// integer.
 ///
 /// The NPY format stores raw pixel data for a scalar image. Tensor images cannot be written. All metadata will be lost.
 ///

@@ -15,6 +15,8 @@ title: "Changes DIPlib 3.x.x"
   The functions `dip::ImageRead()` and `dip::ImageWrite()` now recognize PNG files. Previously, PNG files could only
   be read through *DIPjavaio* with Bio-Formats.
 
+- Added function `dip::FileAppendExtension()`.
+
 ### Changed functionality
 
 - The 'diverging' color map in `dip::ApplyColorMap()` switched from CET-D08 to CET-D07 (i.e. using yellow
@@ -23,6 +25,8 @@ title: "Changes DIPlib 3.x.x"
 - `dip::Distribution::Iterator` is now a template class that takes either `dip::Distribution::Sample` or
   `dip::Distribution::ConstSample` as argument. `dip::Distribution::MutableIterator` and `dip::Distribution::ConstIterator`
   are two template specializations, the first one replaces the use of `dip::Distribution::Iterator`.
+
+- `dip::FileAddExtension()` has been deprecated, the functionality is not needed in *DIPlib*.
 
 ### Bug fixes
 
@@ -44,6 +48,9 @@ title: "Changes DIPlib 3.x.x"
   Now an empty view can be generated again, but when cast to an image, a raw image is generated.
 
 - Equality comparison of `dip::PixelSize` objects was documented to use a tolerance, but it wasn't using one. 
+
+- `dip::ImageReadTIFF()`, `dip::ImageReadJPEG()` and `dip::ImageReadNPY()` would replace the extension of the given
+  file name instead of simply appending an appropriate extension, as described in the documentation.
 
 ### Updated dependencies
 

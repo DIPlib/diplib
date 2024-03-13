@@ -17,6 +17,11 @@
 
 #ifdef DIP_CONFIG_HAS_JPEG
 
+#include <cstdio>
+#include <cstring>
+#include <utility>
+#include <vector>
+
 #include "diplib.h"
 #include "diplib/file_io.h"
 
@@ -62,13 +67,12 @@ class JpegInput {
             : filename_( std::move( filename )), jerr_( error_msg ) {
          infile_ = std::fopen( filename_.c_str(), "rb" );
          if( infile_ == nullptr ) {
-            if( !FileHasExtension( filename_ )) {
-               filename_ = FileAddExtension( filename_, "jpg" ); // Try with "jpg" extension
+            filename_ = FileAppendExtension( filename_, "jpg" ); // Try with "jpg" extension
+            infile_ = std::fopen( filename_.c_str(), "rb" );
+            if( infile_ == nullptr ) {
+               filename_.back() = 'e';
+               filename_.push_back( 'g' ); // Try with "jpeg" extension
                infile_ = std::fopen( filename_.c_str(), "rb" );
-               if( infile_ == nullptr ) {
-                  filename_ = FileAddExtension( filename_, "jpeg" ); // Try with "jpeg" extension
-                  infile_ = std::fopen( filename_.c_str(), "rb" );
-               }
             }
          }
          if( infile_ == nullptr ) {
@@ -109,12 +113,12 @@ class JpegInput {
 
 class JpegOutput {
    public:
-      explicit JpegOutput( String const& filename, std::jmp_buf const& setjmp_buffer, String& error_msg ) : jerr_( error_msg ) {
+      JpegOutput( String const& filename, std::jmp_buf const& setjmp_buffer, String& error_msg ) : jerr_( error_msg ) {
          // Open the file for writing
          if( FileHasExtension( filename )) {
             outfile_ = std::fopen(filename.c_str(), "wb");
          } else {
-            outfile_ = std::fopen( FileAddExtension( filename, "jpg" ).c_str(), "wb" );
+            outfile_ = std::fopen( FileAppendExtension( filename, "jpg" ).c_str(), "wb" );
          }
          if( outfile_ == nullptr ) {
             DIP_THROW_RUNTIME( "Could not open file for writing" );

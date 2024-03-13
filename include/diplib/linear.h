@@ -1122,7 +1122,8 @@ DIP_NODISCARD inline Image GaborFIR(
 /// Set `process` to false for those dimensions that should not be filtered. This is equivalent to setting
 /// `sigmas` to 0 for those dimensions.
 ///
-/// The `order` parameter is not yet implemented. It is ignored and assumed 0 for each dimension.
+/// !!! warning
+///     The `filterOrder` parameter is not yet implemented. It is ignored and assumed 0 for each dimension.
 ///
 /// \see dip::Gabor2D, dip::GaborFIR
 ///

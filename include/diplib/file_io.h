@@ -55,7 +55,7 @@ struct FileInformation {
 /// and data type also supported by *DIPlib*, and therefore is used as the default image file format.
 ///
 /// The function tries to open `filename` as given first, and if that fails, it appends ".ics" to the
-/// name and tries again.
+/// name and tries again. If `filename` has an ".ids" extension, it is replaced with ".ics".
 ///
 /// `roi` can be set to read in a subset of the pixels in the file. If only one array element is given,
 /// it is used for all dimensions. An empty array indicates that all pixels should be read. Otherwise,
@@ -123,7 +123,7 @@ DIP_NODISCARD inline Image ImageReadICS(
 }
 
 /// \brief Reads image information and metadata from the ICS file `filename`, without reading the actual
-/// pixel data. See \ref dip::ImageReadICS for more details.
+/// pixel data. See \ref dip::ImageReadICS for more details on the file format and the handling of `filename`.
 DIP_EXPORT FileInformation ImageReadICSInfo( String const& filename );
 
 /// \brief Returns true if the file `filename` is an ICS file.
@@ -143,7 +143,7 @@ DIP_EXPORT bool ImageIsICS( String const& filename );
 /// The ".ics" extension will be added to `filename` if it's not there. Overwrites any other file with the same name.
 ///
 /// `history` is a set of strings that are written as history lines, and will be recovered by the
-/// \ref dip::ImageReadICSInfo function.
+/// \ref dip::FileInformation struct when reading with \ref dip::ImageReadICS or \ref dip::ImageReadICSInfo.
 ///
 /// Set `significantBits` only if the number of significant bits is different from the full range of the data
 /// type of `image` (use 0 otherwise). For example, it can be used to specify that a camera has produced
@@ -287,7 +287,7 @@ DIP_NODISCARD inline Image ImageReadTIFFSeries(
 }
 
 /// \brief Reads image information and metadata from the TIFF file `filename`, without reading the actual
-/// pixel data.
+/// pixel data. See \ref dip::ImageReadTIFF for more details on the handling of `filename` and `imageNumber`.
 DIP_EXPORT FileInformation ImageReadTIFFInfo( String const& filename, dip::uint imageNumber = 0 );
 
 /// \brief Returns true if the file `filename` is a TIFF file.
@@ -296,7 +296,10 @@ DIP_EXPORT bool ImageIsTIFF( String const& filename );
 /// \brief Writes `image` as a TIFF file.
 ///
 /// The TIFF image file format is very flexible in how data can be written, but is limited to multiple pages
-/// of 2D images. A 3D image will be written as a multi-page TIFF file (not yet implemented).
+/// of 2D images. A 3D image will be written as a multi-page TIFF file.
+///
+/// !!! warning
+///     Writing of 3D images has not yet been implemented.
 ///
 /// A tensor image will be written as an image with multiple samples per pixel, but the tensor shape will be lost.
 /// If the tensor image has color space information, and it is one of the few color spaces known to the TIFF
@@ -355,7 +358,7 @@ DIP_NODISCARD inline Image ImageReadJPEG(
 }
 
 /// \brief Reads image information and metadata from the JPEG file `filename`, without reading the actual
-/// pixel data.
+/// pixel data. See \ref dip::ImageReadJPEG for more details on the handling of `filename`.
 DIP_EXPORT FileInformation ImageReadJPEGInfo( String const& filename );
 
 /// \brief Returns true if the file `filename` is a JPEG file.
@@ -403,7 +406,7 @@ DIP_NODISCARD inline Image ImageReadPNG(
 }
 
 /// \brief Reads image information and metadata from the PNG file `filename`, without reading the actual
-/// pixel data.
+/// pixel data. See \ref dip::ImageReadPNG for more details on the handling of `filename`.
 DIP_EXPORT FileInformation ImageReadPNGInfo( String const& filename );
 
 /// \brief Returns true if the file `filename` is a PNG file.
@@ -476,7 +479,7 @@ DIP_NODISCARD inline Image ImageReadNPY(
 }
 
 /// \brief Reads array information (size and data type) from the NumPy NPY file `filename`, without reading the actual
-/// pixel data.
+/// pixel data. See \ref dip::ImageReadNPY for more details on the handling of `filename`.
 DIP_EXPORT FileInformation ImageReadNPYInfo( String const& filename );
 
 /// \brief Returns true if the file `filename` is a NPY file.
@@ -511,7 +514,7 @@ inline String::size_type FileGetExtensionPosition(
    return sep + 1 + pos;
 }
 
-/// \brief Returns true if the file has an extension.
+/// \brief Returns true if the file name has an extension.
 inline bool FileHasExtension(
       String const& filename
 ) {
@@ -529,7 +532,7 @@ inline String FileGetExtension(
    return filename.substr( pos + 1 );
 }
 
-/// \brief Returns true if the file has the given extension.
+/// \brief Returns true if the file name has the given extension.
 inline bool FileCompareExtension(
       String const& filename,
       String const& extension
@@ -538,6 +541,7 @@ inline bool FileCompareExtension(
 }
 
 /// \brief Adds the given extension to the file name, replacing any existing extension.
+[[ deprecated( "DIPlib doesn't need functionality to replace an extension." ) ]]
 inline String FileAddExtension(
       String const& filename,
       String const& extension
@@ -546,6 +550,13 @@ inline String FileAddExtension(
    return filename.substr( 0, pos ) + String{ '.' } + extension;
 }
 
+/// \brief Appends the given extension to the file name.
+inline String FileAppendExtension(
+      String const& filename,
+      String const& extension
+) {
+      return filename + String{ '.' } + extension;
+}
 
 /// \endgroup
 

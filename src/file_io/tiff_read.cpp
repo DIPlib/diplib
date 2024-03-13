@@ -17,6 +17,10 @@
 
 #ifdef DIP_CONFIG_HAS_TIFF
 
+#include <algorithm>
+#include <utility>
+#include <vector>
+
 #include "diplib.h"
 #include "diplib/file_io.h"
 #include "diplib/generic_iterators.h"
@@ -46,13 +50,11 @@ class TiffFile {
          // Open the file for reading
          tiff_ = TIFFOpen( filename_.c_str(), "rc" ); // c == Disable the use of strip chopping when reading images.
          if( tiff_ == nullptr ) {
-            if( !FileHasExtension( filename_ )) {
-               filename_ = FileAddExtension( filename_, "tif" ); // Try with "tif" extension
+            filename_ = FileAppendExtension( filename_, "tif" ); // Try with "tif" extension
+            tiff_ = TIFFOpen( filename_.c_str(), "rc" );
+            if( tiff_ == nullptr ) {
+               filename_ = filename_ + 'f'; // Try with "tiff" extension
                tiff_ = TIFFOpen( filename_.c_str(), "rc" );
-               if( tiff_ == nullptr ) {
-                  filename_ = filename_ + 'f'; // Try with "tiff" extension
-                  tiff_ = TIFFOpen( filename_.c_str(), "rc" );
-               }
             }
          }
          if( tiff_ == nullptr ) {
@@ -697,7 +699,7 @@ void ReadTIFFData(
          // 1234123412341234....
          // We know that data.tensorElements > 1, otherwise we force to PLANARCONFIG_SEPARATE
          //std::cout << "[ReadTIFFData] Tiles, Contiguous\n";
-         DIP_ASSERT( static_cast< dip::uint >( tileSize ) == tileWidth * tileLength * data.tensorElements * sizeOf );
+         DIP_ASSERT( static_cast< dip::uint >( tileSize ) == static_cast< dip::uint >( tileWidth ) * tileLength * data.tensorElements * sizeOf );
          dip::uint tileStrideY = data.tensorElements * tileWidth;
          dip::uint yPos = roiSpec.roi[ 1 ].Offset();
          for( dip::uint y = firstTileY; y <= roiSpec.roi[ 1 ].Last(); y += tileLength ) {
@@ -739,7 +741,7 @@ void ReadTIFFData(
       } else if( planarConfiguration == PLANARCONFIG_SEPARATE ) {
          // 1111...2222...3333...4444...
          //std::cout << "[ReadTIFFData] Tiles, Separate\n";
-         DIP_ASSERT( static_cast< dip::uint >( tileSize ) == tileWidth * tileLength * sizeOf );
+         DIP_ASSERT( static_cast< dip::uint >( tileSize ) == static_cast< dip::uint >( tileWidth ) * tileLength * sizeOf );
          dip::uint tileStrideY = tileWidth;
          for( auto plane : roiSpec.channels ) {
             uint8* imagedataRow = imagedata;
@@ -1110,7 +1112,7 @@ void ImageReadTIFFSeries(
       StringArray const& filenames,
       String const& useColorMap
 ) {
-   DIP_THROW_IF( filenames.size() < 1, E::ARRAY_PARAMETER_EMPTY );
+   DIP_THROW_IF( filenames.empty(), E::ARRAY_PARAMETER_EMPTY );
 
    // Read in first image
    Image tmp;
