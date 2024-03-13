@@ -22,6 +22,7 @@
 #include <cstdio>
 #include <limits>
 #include <utility>
+#include <vector>
 
 #include "diplib.h"
 #include "diplib/file_io.h"
@@ -84,7 +85,7 @@ class PngInput {
       String filename_;
       FILE* infile_ = nullptr;
       spng_ctx* ctx_ = nullptr;
-      spng_ihdr ihdr_;
+      spng_ihdr ihdr_ = { 0, 0, 0, 0, 0, 0, 0 };
 };
 
 class PngOutput {
@@ -153,7 +154,11 @@ FileInformation GetPNGInfo( PngInput& png ) {
    } else {
       fileInformation.significantBits = png.Header().bit_depth;
    }
-   fileInformation.dataType = png.Header().bit_depth == 16 ? DT_UINT16 : DT_UINT8;
+   if(( png.Header().bit_depth == 1 ) && ( nChannels == 1 )) {
+      fileInformation.dataType = DT_BIN;
+   } else {
+      fileInformation.dataType = png.Header().bit_depth == 16 ? DT_UINT16 : DT_UINT8;
+   }
    fileInformation.tensorElements = nChannels;
    fileInformation.colorSpace = nChannels >= 3 ? "sRGB" : "";
    fileInformation.sizes = { png.Header().width, png.Header().height };
@@ -186,7 +191,13 @@ FileInformation ImageReadPNG(
 
    // Read data
    // We read in the format that's in the file, unless the file uses a color map, in which case we output RGB.
-   int fmt = png.Header().color_type == SPNG_COLOR_TYPE_INDEXED ? SPNG_FMT_RGB8 : SPNG_FMT_PNG;
+   int fmt = SPNG_FMT_PNG;
+   if( png.Header().color_type == SPNG_COLOR_TYPE_INDEXED ) {
+      fmt = SPNG_FMT_RGB8;
+   } else if( png.Header().bit_depth < 8 ) {
+      DIP_THROW_IF( png.Header().color_type != SPNG_COLOR_TYPE_GRAYSCALE, "Error reading PNG file: unsupported bit depth and color type combination" );
+      fmt = SPNG_FMT_G8;
+   }
    std::size_t image_size = 0;
    if( int ret = spng_decoded_image_size( png.Context(), fmt, &image_size )) {
       PNG_THROW_READ_ERROR;
@@ -255,6 +266,7 @@ void ImageWritePNG(
    DIP_THROW_IF(( image.Size( 0 ) > std::numeric_limits< std::uint32_t >::max() ) ||
                 ( image.Size( 1 ) > std::numeric_limits< std::uint32_t >::max() ),
                 "PNG cannot write an image this large. Use TIFF or ICS instead." );
+   bool isBinary = image.DataType().IsBinary() && image.IsScalar();
 
    // Open the file
    PngOutput png( filename );
@@ -276,7 +288,7 @@ void ImageWritePNG(
       case 4: ihdr.color_type = SPNG_COLOR_TYPE_TRUECOLOR_ALPHA; break;
       default: DIP_THROW( E::NOT_REACHABLE );
    }
-   ihdr.bit_depth = image_out.DataType() == DT_UINT8 ? 8 : 16;
+   ihdr.bit_depth = isBinary ? 1 : static_cast< std::uint8_t >( image_out.DataType().SizeOf() * 8 );
    if( int ret = spng_set_ihdr( png.Context(), &ihdr )) {
       PNG_THROW_WRITE_ERROR;
    }
@@ -334,12 +346,68 @@ void ImageWritePNG(
    }
 
    // Write data
-   if( image_out.HasNormalStrides() ) {
+   if( isBinary ) {
+      // For binary data we need to put 8 pixels into each byte
+      // Here we know for sure that we have a single channel.
+      if( int ret = spng_encode_image( png.Context(), 0, 0, fmt, SPNG_ENCODE_PROGRESSIVE | SPNG_ENCODE_FINALIZE )) {
+         PNG_THROW_WRITE_ERROR;
+      }
+      dip::uint row_length = image_out.Size( 0 );
+      dip::uint row_buffer_size = div_ceil( row_length, dip::uint( 8 ));
+      dip::uint pixels_in_last_byte = row_length - ( row_buffer_size - 1 ) * 8;
+      dip::uint n_rows = image_out.Size( 1 );
+      std::size_t image_size = 0;
+      if( int ret = spng_decoded_image_size( png.Context(), fmt, &image_size )) {
+         PNG_THROW_WRITE_ERROR;
+      }
+      DIP_THROW_IF( row_buffer_size != image_size / n_rows, "Incongruent buffer size" );
+      std::vector< dip::uint8 > row_buffer( row_buffer_size, 0 );
+      int ret = 0;
+      dip::bin const* img_ptr = static_cast< dip::bin const* >( image_out.Origin() );
+      dip::IntegerArray const& strides = image_out.Strides();
+      for( dip::uint ii = 0; ii < n_rows; ++ii ) {
+         dip::bin const* line_ptr = img_ptr;
+         dip::uint jj = 0;
+         for( ; jj < row_buffer_size - 1; ++jj ) {
+            dip::uint8 byte = 0;
+            dip::uint8 bitmask = 128;
+            for( dip::uint kk = 0; kk < 8; ++kk, ++line_ptr ) {
+               if( *line_ptr ) {
+                  byte |= bitmask;
+               }
+               bitmask = bitmask >> 1;
+            }
+            row_buffer[ jj ] = byte;
+         }
+         {
+            // Last, possibly incomplete byte
+            dip::uint8 byte = 0;
+            dip::uint8 bitmask = 128;
+            for( dip::uint kk = 0; kk < pixels_in_last_byte; ++kk, ++line_ptr ) {
+               if( *line_ptr ) {
+                  byte |= bitmask;
+               }
+               bitmask = bitmask >> 1;
+            }
+            row_buffer[ jj ] = byte;
+         }
+         ret = spng_encode_row( png.Context(), row_buffer.data(), row_buffer_size );
+         if( ret ) {
+            break;
+         }
+         img_ptr += strides[ 1 ];
+      }
+      if( ret != SPNG_EOI ) {
+         PNG_THROW_WRITE_ERROR;
+      }
+   } else if( image_out.HasNormalStrides() ) {
+      // We can write directly with a single function call
       std::size_t length = image_out.NumberOfSamples() * image_out.DataType().SizeOf();
       if( int ret = spng_encode_image( png.Context(), image_out.Origin(), length, fmt, SPNG_ENCODE_FINALIZE )) {
          PNG_THROW_WRITE_ERROR;
       }
    } else {
+      // For non-normal strides, we copy each image line to a buffer and write line by line
       if( int ret = spng_encode_image( png.Context(), 0, 0, fmt, SPNG_ENCODE_PROGRESSIVE | SPNG_ENCODE_FINALIZE )) {
          PNG_THROW_WRITE_ERROR;
       }
@@ -425,8 +493,19 @@ DOCTEST_TEST_CASE( "[DIPlib] testing PNG file reading and writing" ) {
    dip::UniformNoise( image, image, rng, 0, 1024 );
    dip::ImageWritePNG( image, "test6.png", 6, { "all" }, 10 );
    auto info = dip::ImageReadPNG( result, "test6" );
+   DOCTEST_CHECK( result.DataType() == dip::DT_UINT16 );
    DOCTEST_CHECK( dip::testing::CompareImages( image, result ));
    DOCTEST_CHECK( info.significantBits == 10 );
+
+   // Write binary scalar image
+   image = dip::Image( { 19, 13 }, 1, dip::DT_BIN );
+   image.Fill( 0 );
+   dip::BinaryNoise( image, image, rng, 0.33, 0.33 );
+   dip::ImageWritePNG( image, "test7.png" );
+   info = dip::ImageReadPNG( result, "test7" );
+   DOCTEST_CHECK( result.DataType() == dip::DT_BIN );
+   DOCTEST_CHECK( dip::testing::CompareImages( image, result ));
+   DOCTEST_CHECK( info.significantBits == 1 );
 }
 
 #endif // DIP_CONFIG_ENABLE_DOCTEST

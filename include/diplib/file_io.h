@@ -411,14 +411,16 @@ DIP_EXPORT bool ImageIsPNG( String const& filename );
 
 /// \brief Writes `image` as a PNG file.
 ///
-/// `image` must be 2D, and either scalar or with two, three or four tensor elements.
+/// `image` must be 2D, and have between one and four tensor elements.
 /// If the image has three or four tensor elements, it will be saved as an sRGB image, even if the color space
-/// is not sRGB (no color space conversion is done, the data is simply tagged as sRGB). If the image has two or
-/// four tensor elements, the last tensor element is assumed to be the alpha channel.
-/// If the image is not \ref dip::DT_UINT8, it will be converted to it (complex numbers are cast to real values
+/// is not sRGB (no color space conversion is done, the data is simply tagged as sRGB); otherwise it will be saved
+/// as a grayscale image.
+/// If the image has two or four tensor elements, the last tensor element is assumed to be the alpha channel.
+/// If the image data type is \ref dip::DT_UINT8, \ref dip::DT_UINT16 or \ref dip::DT_BIN, it will be written as-is.
+/// Otherwise, the image will be converted to `dip::DT_UINT8` (complex numbers are cast to real values
 /// by taking their magnitude, and real numbers are rounded and clamped to the output range), no scaling will
-/// be applied. Except if the image is \ref dip::DT_UINT16, which is accepted by the PNG standard and will be
-/// written to file as-is.
+/// be applied. Note that binary images are only saved as binary images if they have a single channel. Multi-channel
+/// binary images are converted to `dip::DT_UINT8` as well.
 ///
 /// If `filename` does not have an extension, ".png" will be added. Overwrites any other file with the same name.
 ///
