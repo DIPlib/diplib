@@ -739,7 +739,7 @@ struct DIP_NO_EXPORT Polygon {
 
 /// \brief A convex hull is a convex polygon. It can be constructed from a simple \ref dip::Polygon,
 /// and is guaranteed clockwise.
-struct DIP_NO_EXPORT ConvexHull : Polygon {
+struct DIP_NO_EXPORT ConvexHull : dip::Polygon {
 
       /// Default-constructed ConvexHull (without vertices).
       ConvexHull() = default;
