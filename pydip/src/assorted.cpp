@@ -95,6 +95,19 @@ dip::Image ImageDisplay(
    return imageDisplay.Output();
 }
 
+struct PointerAndLength {
+   char* ptr;
+   dip::uint length;
+};
+PointerAndLength GetBytesPointerAndLength( py::bytes* buffer ) {
+   char* ptr = nullptr;
+   Py_ssize_t length = 0;
+   if( PyBytes_AsStringAndSize( buffer->ptr(), &ptr, &length ) != 0 ) {
+          throw dip::RunTimeError( "Failed to get pointer to data in Python bytes object" );
+   }
+   return { ptr, static_cast< dip::uint >( length ) };
+}
+
 } // namespace
 
 void init_assorted( py::module& m ) {
@@ -217,6 +230,17 @@ void init_assorted( py::module& m ) {
              dip::ImageWriteTIFF( tmp, filename, compression, jpegLevel );
           }, "image"_a, "filename"_a, "compression"_a = "", "jpegLevel"_a = 80 );
 
+   m.def( "ImageReadJPEG", []( py::bytes* buffer ) {
+             auto buf = GetBytesPointerAndLength( buffer );
+             auto out = dip::ImageReadJPEG( buf.ptr, buf.length );
+             OptionallyReverseDimensions( out );
+             return out;
+          }, "filename"_a );
+   m.def( "ImageReadJPEG", []( dip::Image& out, py::bytes* buffer ) {
+             auto buf = GetBytesPointerAndLength( buffer );
+             dip::ImageReadJPEG( out, buf.ptr, buf.length );
+             OptionallyReverseDimensions( out );
+          }, py::kw_only(), "out"_a, "buffer"_a );
    m.def( "ImageReadJPEG", []( dip::String const& filename ) {
              auto out = dip::ImageReadJPEG( filename );
              OptionallyReverseDimensions( out );
@@ -226,6 +250,12 @@ void init_assorted( py::module& m ) {
              dip::ImageReadJPEG( out, filename );
              OptionallyReverseDimensions( out );
           }, py::kw_only(), "out"_a, "filename"_a );
+   m.def( "ImageReadJPEGInfo", []( py::bytes* buffer ) {
+             auto buf = GetBytesPointerAndLength( buffer );
+             auto fi = dip::ImageReadJPEGInfo( buf.ptr, buf.length );
+             OptionallyReverseDimensions( fi );
+             return fi;
+          }, "buffer"_a );
    m.def( "ImageReadJPEGInfo", []( dip::String const& filename ) {
              auto fi = dip::ImageReadJPEGInfo( filename );
              OptionallyReverseDimensions( fi );
@@ -233,11 +263,28 @@ void init_assorted( py::module& m ) {
           }, "filename"_a );
    m.def( "ImageIsJPEG", &dip::ImageIsJPEG, "filename"_a );
    m.def( "ImageWriteJPEG", []( dip::Image const& image, dip::String const& filename, dip::uint jpegLevel ) {
-             auto tmp = image;
-             OptionallyReverseDimensions( tmp );
-             dip::ImageWriteJPEG( tmp, filename, jpegLevel );
-          }, "image"_a, "filename"_a, "jpegLevel"_a = 80 );
+         auto tmp = image;
+         OptionallyReverseDimensions( tmp );
+         dip::ImageWriteJPEG( tmp, filename, jpegLevel );
+      }, "image"_a, "filename"_a, "jpegLevel"_a = 80 );
+   m.def( "ImageWriteJPEG", []( dip::Image const& image, dip::uint jpegLevel ) {
+         auto tmp = image;
+         OptionallyReverseDimensions( tmp );
+         auto buffer = dip::ImageWriteJPEG( tmp, jpegLevel );
+         return py::bytes( reinterpret_cast< char const* >( buffer.data() ), buffer.size() );
+      }, "image"_a, "jpegLevel"_a = 80 );
 
+   m.def( "ImageReadPNG", []( py::bytes* buffer ) {
+             auto buf = GetBytesPointerAndLength( buffer );
+             auto out = dip::ImageReadPNG( buf.ptr, buf.length );
+             OptionallyReverseDimensions( out );
+             return out;
+          }, "filename"_a );
+   m.def( "ImageReadPNG", []( dip::Image& out, py::bytes* buffer ) {
+             auto buf = GetBytesPointerAndLength( buffer );
+             dip::ImageReadPNG( out, buf.ptr, buf.length );
+             OptionallyReverseDimensions( out );
+          }, py::kw_only(), "out"_a, "buffer"_a );
    m.def( "ImageReadPNG", []( dip::String const& filename ) {
              auto out = dip::ImageReadPNG( filename );
              OptionallyReverseDimensions( out );
@@ -247,6 +294,12 @@ void init_assorted( py::module& m ) {
              dip::ImageReadPNG( out, filename );
              OptionallyReverseDimensions( out );
           }, py::kw_only(), "out"_a, "filename"_a );
+   m.def( "ImageReadPNGInfo", []( py::bytes* buffer ) {
+             auto buf = GetBytesPointerAndLength( buffer );
+             auto fi = dip::ImageReadPNGInfo( buf.ptr, buf.length );
+             OptionallyReverseDimensions( fi );
+             return fi;
+          }, "buffer"_a );
    m.def( "ImageReadPNGInfo", []( dip::String const& filename ) {
              auto fi = dip::ImageReadPNGInfo( filename );
              OptionallyReverseDimensions( fi );
@@ -258,7 +311,14 @@ void init_assorted( py::module& m ) {
              auto tmp = image;
              OptionallyReverseDimensions( tmp );
              dip::ImageWritePNG( tmp, filename, compressionLevel, filterChoice, significantBits );
-          }, "image"_a, "filename"_a, "compressionLevel"_a = 6, "filterChoice"_a = dip::S::ALL, "significantBits"_a = 0 );
+          }, "image"_a, "filename"_a, "compressionLevel"_a = 6, "filterChoice"_a = dip::StringSet{ dip::S::ALL }, "significantBits"_a = 0 );
+   m.def( "ImageWritePNG", []( dip::Image const& image, dip::uint compressionLevel,
+                               dip::StringSet const& filterChoice, dip::uint significantBits ) {
+             auto tmp = image;
+             OptionallyReverseDimensions( tmp );
+             auto buffer = dip::ImageWritePNG( tmp, compressionLevel, filterChoice, significantBits );
+             return py::bytes( reinterpret_cast< char const* >( buffer.data() ), buffer.size() );
+          }, "image"_a, "compressionLevel"_a = 6, "filterChoice"_a = dip::StringSet{ dip::S::ALL }, "significantBits"_a = 0 );
 
    m.def( "ImageReadNPY", []( dip::String const& filename ) {
              auto out = dip::ImageReadNPY( filename );
