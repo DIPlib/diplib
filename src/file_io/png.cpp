@@ -63,6 +63,8 @@ class PngInput {
          }
       }
       PngInput( void const* buffer, dip::uint length ) {
+         DIP_THROW_IF( !buffer, "Input buffer pointer must be valid" );
+         DIP_THROW_IF( length == 0, "Empry input buffer" );
          ctx_ = spng_ctx_new( 0 );
          if( !ctx_ ) {
             DIP_THROW_RUNTIME( "Could not create a PNG context" );
@@ -449,14 +451,14 @@ bool ImageIsPNG( String const& filename ) {
    return true;
 }
 
-FileInformation ImageReadPNG( Image& out, void* buffer, dip::uint length ) {
+FileInformation ImageReadPNG( Image& out, void const* buffer, dip::uint length ) {
    PngInput png( buffer, length );
    FileInformation info = GetPNGInfo( png );
    ImageReadPNG( out, png, info );
    return info;
 }
 
-FileInformation ImageReadPNGInfo( void* buffer, dip::uint length ) {
+FileInformation ImageReadPNGInfo( void const* buffer, dip::uint length ) {
    PngInput png( buffer, length );
    FileInformation info = GetPNGInfo( png );
    return info;
@@ -525,9 +527,11 @@ DOCTEST_TEST_CASE( "[DIPlib] testing PNG file reading and writing" ) {
    result.SetStrides( { static_cast< dip::sint >( result.Size( 1 )), 1 } );
    result.SetTensorStride( static_cast< dip::sint >( result.NumberOfPixels() ));
    result.Forge();
+   result.Protect();
    dip::ImageReadPNG( result, "test1" );
    DOCTEST_CHECK( dip::testing::CompareImages( image, result ));
    DOCTEST_CHECK( image.PixelSize() == result.PixelSize() );
+   result.Protect( false );
 
    // Turn it on its side so the image to write has non-standard strides
    image.SwapDimensions( 0, 1 );
@@ -591,21 +595,33 @@ DOCTEST_TEST_CASE( "[DIPlib] testing PNG file reading and writing" ) {
 
 namespace dip {
 
-static char const* NOT_AVAILABLE = "DIPlib was compiled without PNG support.";
+constexpr char const* NOT_AVAILABLE = "DIPlib was compiled without PNG support.";
 
-FileInformation ImageReadPNG( Image&, String const& ) {
+FileInformation ImageReadPNG( Image& /*out*/, String const& /*filename*/ ) {
    DIP_THROW( NOT_AVAILABLE );
 }
 
-FileInformation ImageReadPNGInfo( String const& ) {
+FileInformation ImageReadPNGInfo( String const& /*filename*/ ) {
    DIP_THROW( NOT_AVAILABLE );
 }
 
-bool ImageIsPNG( String const& ) {
+bool ImageIsPNG( String const& /*filename*/ ) {
    DIP_THROW( NOT_AVAILABLE );
 }
 
-void ImageWritePNG( Image const&, String const&, dip::uint, StringSet const&, dip::uint ) {
+FileInformation ImageReadPNG( Image& /*out*/, void const* /*buffer*/, dip::uint /*length*/ ) {
+   DIP_THROW( NOT_AVAILABLE );
+}
+
+FileInformation ImageReadPNGInfo( void const* /*buffer*/, dip::uint /*length*/ ) {
+   DIP_THROW( NOT_AVAILABLE );
+}
+
+void ImageWritePNG( Image const& /*image*/, String const& /*filename*/, dip::uint /*compressionLevel*/, StringSet const& /*filterChoice*/, dip::uint /*significantBits*/ ) {
+   DIP_THROW( NOT_AVAILABLE );
+}
+
+std::vector< dip::uint8 > ImageWritePNG( Image const& /*image*/, dip::uint /*compressionLevel*/, StringSet const& /*filterChoice*/, dip::uint /*significantBits*/ ) {
    DIP_THROW( NOT_AVAILABLE );
 }
 

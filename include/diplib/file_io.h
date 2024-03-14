@@ -359,6 +359,23 @@ DIP_EXPORT FileInformation ImageReadJPEGInfo( String const& filename );
 /// \brief Returns true if the file `filename` is a JPEG file.
 DIP_EXPORT bool ImageIsJPEG( String const& filename );
 
+/// \brief  Reads an image from the JPEG-encoded buffer and puts it in `out`.
+///
+/// `buffer` must point to `length` bytes containing a JPEG-encoded image.
+/// See \ref dip::ImageReadJPEG(Image&, String const&) for details.
+DIP_EXPORT FileInformation ImageReadJPEG( Image& out, void const* buffer, dip::uint length );
+DIP_NODISCARD inline Image ImageReadJPEG( void const* buffer, dip::uint length ) {
+   Image out;
+   ImageReadJPEG( out, buffer, length );
+   return out;
+}
+
+/// \brief  Reads image information and metadata from the JPEG-encoded buffer, without reading the actual
+/// pixel data.
+///
+/// `buffer` must point to `length` bytes containing a JPEG-encoded image.
+DIP_EXPORT FileInformation ImageReadJPEGInfo( void const* buffer, dip::uint length );
+
 /// \brief Writes `image` as a JPEG file.
 ///
 /// `image` must be 2D, and either scalar or with three tensor elements.
@@ -373,6 +390,10 @@ DIP_EXPORT bool ImageIsJPEG( String const& filename );
 /// `jpegLevel` determines the amount of compression applied. `jpegLevel` is an integer between 1 and 100, with
 /// increasing numbers yielding larger files and fewer compression artifacts.
 DIP_EXPORT void ImageWriteJPEG( Image const& image, String const& filename, dip::uint jpegLevel = 80 );
+
+/// \brief Writes `image` as a JPEG-encoded buffer.
+/// See \ref ImageWriteJPEG(Image const &, String const&, dip::uint) for details.
+DIP_EXPORT std::vector< dip::uint8 > ImageWriteJPEG( Image const& image, dip::uint jpegLevel = 80 );
 
 
 /// \brief Reads an image from the PNG file `filename` and puts it in `out`.
@@ -402,13 +423,18 @@ DIP_EXPORT bool ImageIsPNG( String const& filename );
 ///
 /// `buffer` must point to `length` bytes containing a PNG-encoded image.
 /// See \ref dip::ImageReadPNG(Image&, String const&) for details.
-DIP_EXPORT FileInformation ImageReadPNG( Image& out, void* buffer, dip::uint length );
+DIP_EXPORT FileInformation ImageReadPNG( Image& out, void const* buffer, dip::uint length );
+DIP_NODISCARD inline Image ImageReadPNG( void const* buffer, dip::uint length ) {
+   Image out;
+   ImageReadPNG( out, buffer, length );
+   return out;
+}
 
 /// \brief  Reads image information and metadata from the PNG-encoded buffer, without reading the actual
 /// pixel data.
 ///
 /// `buffer` must point to `length` bytes containing a PNG-encoded image.
-DIP_EXPORT FileInformation ImageReadPNGInfo( void* buffer, dip::uint length );
+DIP_EXPORT FileInformation ImageReadPNGInfo( void const* buffer, dip::uint length );
 
 /// \brief Writes `image` as a PNG file.
 ///

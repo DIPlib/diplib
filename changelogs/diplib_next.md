@@ -12,10 +12,13 @@ title: "Changes DIPlib 3.x.x"
 - Added `dip::Distribution::ConstSample` as an unmutable version of `dip::Distribution::Sample`.
 
 - Added functions `dip::ImageReadPNG()`, `dip::ImageReadPNGInfo()`, `dip::ImageIsPNG()` and `dip::ImageWritePNG()`.
-  Previously, PNG files could only be read through *DIPjavaio* with Bio-Formats. Overloaded functions exist to read
-  from and write to a memory buffer rather than a file.
+  Previously, PNG files could only be read through *DIPjavaio* with Bio-Formats.
 
 - The functions `dip::ImageRead()` and `dip::ImageWrite()` now recognize PNG files.
+
+- Added overloads for `dip::ImageReadPNG()`, `dip::ImageReadPNGInfo()`, `dip::ImageWritePNG()`,
+  `dip::ImageReadJPEG()`, `dip::ImageReadJPEGInfo()`, and `dip::ImageWriteJPEG()` that read from and write to
+  a memory buffer rather than a file.
 
 - Added function `dip::FileAppendExtension()`.
 
