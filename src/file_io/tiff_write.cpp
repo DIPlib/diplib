@@ -391,9 +391,11 @@ DOCTEST_TEST_CASE( "[DIPlib] testing TIFF file reading and writing" ) {
    strides[ 1 ] = 1;
    result.SetStrides( strides );
    result.Forge();
+   result.Protect();
    dip::ImageReadTIFF( result, "test1" );
    DOCTEST_CHECK( dip::testing::CompareImages( image, result ));
    DOCTEST_CHECK( image.PixelSize() == result.PixelSize() );
+   result.Protect( false );
 
    // Turn it on its side so the image to write has non-standard strides
    image.SwapDimensions( 0, 1 );
@@ -411,9 +413,14 @@ DOCTEST_TEST_CASE( "[DIPlib] testing TIFF file reading and writing" ) {
 
 namespace dip {
 
-static char const* NOT_AVAILABLE = "DIPlib was compiled without TIFF support.";
+constexpr char const* NOT_AVAILABLE = "DIPlib was compiled without TIFF support.";
 
-void ImageWriteTIFF( Image const&, String const&, String const&, dip::uint ) {
+void ImageWriteTIFF(
+      Image const& /*image*/,
+      String const& /*filename*/,
+      String const& /*compression*/,
+      dip::uint /*jpegLevel*/
+) {
    DIP_THROW( NOT_AVAILABLE );
 }
 

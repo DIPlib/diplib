@@ -888,25 +888,45 @@ DOCTEST_TEST_CASE( "[DIPlib] testing ICS file reading and writing" ) {
 
 namespace dip {
 
-static char const* NOT_AVAILABLE = "DIPlib was compiled without ICS support.";
+constexpr char const* NOT_AVAILABLE = "DIPlib was compiled without ICS support.";
 
-FileInformation ImageReadICS( Image&, String const&, RangeArray ) {
+FileInformation ImageReadICS(
+      Image& /*out*/,
+      String const& /*filename*/,
+      RangeArray const& /*roi*/,
+      Range const& /*channels*/,
+      String const& /*mode*/
+) {
    DIP_THROW( NOT_AVAILABLE );
 }
 
-FileInformation ImageReadICS( Image&, String const&, UnsignedArray const&, UnsignedArray const&, UnsignedArray const& ) {
+FileInformation ImageReadICS(
+      Image& /*image*/,
+      String const& /*filename*/,
+      UnsignedArray const& /*origin*/,
+      UnsignedArray const& /*sizes*/,
+      UnsignedArray const& /*spacing*/,
+      Range const& /*channels*/,
+      String const& /*mode*/
+) {
    DIP_THROW( NOT_AVAILABLE );
 }
 
-FileInformation ImageReadICSInfo( String const& ) {
+FileInformation ImageReadICSInfo( String const& /*filename*/ ) {
    DIP_THROW( NOT_AVAILABLE );
 }
 
-bool ImageIsICS( String const& ) {
+bool ImageIsICS( String const& /*filename*/ ) {
    DIP_THROW( NOT_AVAILABLE );
 }
 
-void ImageWriteICS( Image const&, String const&, StringArray const&, dip::uint, StringSet const& ) {
+void ImageWriteICS(
+      Image const& /*image*/,
+      String const& /*filename*/,
+      StringArray const& /*history*/,
+      dip::uint /*significantBits*/,
+      StringSet const& /*options*/
+) {
    DIP_THROW( NOT_AVAILABLE );
 }
 

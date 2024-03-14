@@ -1190,39 +1190,45 @@ bool ImageIsTIFF(
 
 namespace dip {
 
-static char const* NOT_AVAILABLE = "DIPlib was compiled without TIFF support.";
+constexpr char const* NOT_AVAILABLE = "DIPlib was compiled without TIFF support.";
 
 FileInformation ImageReadTIFF(
-   Image&,
-   String const&,
-   Range,
-   RangeArray const&,
-   Range const&
+      Image& /*out*/,
+      String const& /*filename*/,
+      Range /*imageNumbers*/,
+      RangeArray const& /*roi*/,
+      Range const& /*channels*/,
+      String const& /*useColorMapString*/
 ) {
    DIP_THROW( NOT_AVAILABLE );
 }
 
 FileInformation ImageReadTIFF(
-      Image&,
-      String const&,
-      Range const&,
-      UnsignedArray const&,
-      UnsignedArray const&,
-      UnsignedArray const&,
-      Range const&
+      Image& /*out*/,
+      String const& /*filename*/,
+      Range const& /*imageNumbers*/,
+      UnsignedArray const& /*origin*/,
+      UnsignedArray const& /*sizes*/,
+      UnsignedArray const& /*spacing*/,
+      Range const& /*channels*/,
+      String const& /*useColorMap*/
 ) {
    DIP_THROW( NOT_AVAILABLE );
 }
 
-void ImageReadTIFFSeries( Image&, StringArray const& ) {
+void ImageReadTIFFSeries(
+      Image& /*out*/,
+      StringArray const& /*filenames*/,
+      String const& /*useColorMap*/
+) {
    DIP_THROW( NOT_AVAILABLE );
 }
 
-FileInformation ImageReadTIFFInfo( String const&, dip::uint ) {
+FileInformation ImageReadTIFFInfo( String const& /*filenames*/, dip::uint /*imageNumber*/ ) {
    DIP_THROW( NOT_AVAILABLE );
 }
 
-bool ImageIsTIFF( String const& ) {
+bool ImageIsTIFF( String const& /*filenames*/ ) {
    DIP_THROW( NOT_AVAILABLE );
 }
 
