@@ -100,6 +100,8 @@ title: "Changes DIPlib 3.x.x"
 
 - Added functions `dip.ImageReadPNG()`, `dip.ImageReadPNGInfo()`, `dip.ImageIsPNG()` and `dip.ImageWritePNG()`.
 
+- Added functions for reading and writing PNG and JPEG as a bytes object.
+
 ### Changed functionality
 
 - `dip.Show()` now uses the *DIPlib* color maps by default, taken from `dip.ApplyColorMap()`. The names recognized by
