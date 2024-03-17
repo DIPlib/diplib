@@ -20,7 +20,7 @@ cmake .. -DDIP_PYDIP_WHEEL_INCLUDE_LIBS=On -DBIOFORMATS_JAR=`pwd`/bioformats_pac
 
 # Build all wheels
 for v in ${PYTHON_VERSIONS[@]}; do
-   export PYTHON=/usr/local/opt/python@Sv/bin/python$v
+   export PYTHON=$HOMEBREW_DIR/opt/python@$v/bin/python$v
    $PYTHON -m pip install build
    cmake .. -DPYBIND11_PYTHON_VERSION=$v -DPYTHON_EXECUTABLE=$PYTHON
    make -j $BUILD_THREADS bdist_wheel
