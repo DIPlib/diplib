@@ -21,7 +21,7 @@ cmake .. -DDIP_PYDIP_WHEEL_INCLUDE_LIBS=On -DBIOFORMATS_JAR=`pwd`/bioformats_pac
 for v in ${PYTHON_VERSIONS[@]}; do
    export PYTHON=$HOMEBREW_DIR/opt/python@$v/bin/python$v
    $PYTHON -m pip config set global.break-system-packages true  # needed only since Homebrew Python 3.12
-   $PYTHON -m pip install build
+   $PYTHON -m pip install setuptools wheel build
    cmake .. -DPYBIND11_PYTHON_VERSION=$v -DPYTHON_EXECUTABLE=$PYTHON
    make -j $BUILD_THREADS bdist_wheel
    delocate-wheel -e libjvm -w wheelhouse/ -v pydip/staging/dist/*.whl
