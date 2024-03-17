@@ -4,7 +4,7 @@
 # Setup
 export PYTHON_VERSIONS=(3.12)
 for v in ${PYTHON_VERSIONS[@]}; do
-   brew install python@$v
+   brew install --overwrite python@$v
 done;
 # The install above might have changed the default version of `python3`, so we need to reinstall packages:
 python3 -m pip config set global.break-system-packages true
