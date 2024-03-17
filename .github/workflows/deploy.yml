@@ -7,22 +7,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Install
         # Install libraries and Python packages we need
         run: python3 -m pip install twine
 
       - name: Deploy
-        run: bash tools/travis/deploy_linux.sh
+        run: bash tools/build/deploy_linux.sh
         env:
           PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
 
-  deploy_macos:
+  deploy_macos_x86_64:
     runs-on: macos-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Install
         # Install libraries and Python packages we need
@@ -31,18 +31,44 @@ jobs:
         #     export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
         #     brew update
         run: |
-          brew install libomp glfw
+          brew install libomp glfw wget
 
       - name: Deploy
-        run: bash tools/travis/deploy_macos.sh
+        run: bash tools/build/deploy_macos.sh
         env:
           PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+          HOMEBREW_DIR: /usr/local
+          BUILD_THREADS: 3
+          MACOSX_DEPLOYMENT_TARGET: 12.0
+
+  deploy_macos_aarch64:
+    runs-on: macos-14
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install
+        # Install libraries and Python packages we need
+        # Note that twine and delocate and so on are installed by deploy_macos.sh
+        # If Homebrew doesn't know the newest Python version or something like that, add:
+        #     export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
+        #     brew update
+        run: |
+          brew install libomp glfw wget
+
+      - name: Deploy
+        run: bash tools/build/deploy_macos.sh
+        env:
+          PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+          HOMEBREW_DIR: /opt/homebrew
+          BUILD_THREADS: 3
+          MACOSX_DEPLOYMENT_TARGET: 12.0
 
   deploy_windows:
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Install
         # Install libraries and Python packages we need
@@ -51,6 +77,6 @@ jobs:
           python -m pip install wheel build twine wget
 
       - name: Deploy
-        run: tools/travis/deploy_windows.bat
+        run: tools/build/deploy_windows.bat
         env:
           PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}

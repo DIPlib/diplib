@@ -63,23 +63,6 @@ page there is a list of workflows. Select "deploy". On the right of the page the
 Press the button, and select the newly defined tag, then run the workflow. This will build the project (except
 DIPimage) for the supported platforms and upload the new Python packages to PyPI.
 
-### 5b. Manually build the macOS aarch64 Python packages
-
-The GitHub deploy action currently does not generate macOS aarch64 packages. These must be build on an aarch64 Mac.
-
-Run the script `tools/travis/deploy_macos_m1.sh` from the root of the repository. For example:
-```shell
-cd <repository root>
-export PYPI_TOKEN=<token generated on PyPI>
-source tools/travis/deploy_macos_m1.sh
-```
-
-First one needs to generate a new token on PyPI for the `diplib` project.
-For security, delete the token after the packages have been uploaded.
-
-The script will create a subdirectory `build`. Please make sure it doesn't yet exist, so that everything is
-built from scratch.
-
 ### 6. Build the documentation
 
 Build the documentation locally. This requires a machine with LaTeX, MATLAB and a bunch of other tools.
