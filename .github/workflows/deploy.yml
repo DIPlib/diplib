@@ -3,21 +3,6 @@ name: deploy
 on: workflow_dispatch
 
 jobs:
-  deploy_linux:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Install
-        # Install libraries and Python packages we need
-        run: python3 -m pip install twine
-
-      - name: Deploy
-        run: bash tools/build/deploy_linux.sh
-        env:
-          PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
-
   deploy_macos_x86_64:
     runs-on: macos-latest
 
@@ -63,20 +48,3 @@ jobs:
           HOMEBREW_DIR: /opt/homebrew
           BUILD_THREADS: 3
           MACOSX_DEPLOYMENT_TARGET: 12.0
-
-  deploy_windows:
-    runs-on: windows-latest
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Install
-        # Install libraries and Python packages we need
-        run: |
-          choco install openjdk8 --no-progress --yes
-          python -m pip install wheel build twine wget
-
-      - name: Deploy
-        run: tools/build/deploy_windows.bat
-        env:
-          PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
