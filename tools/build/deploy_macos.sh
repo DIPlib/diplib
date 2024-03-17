@@ -3,12 +3,11 @@
 
 # Setup
 export PYTHON_VERSIONS=(3.8 3.9 3.10 3.11 3.12)
-brew install python@3.8
-brew install python@3.9
-brew install python@3.10
-brew install python@3.11
-brew install python@3.12
+for v in ${PYTHON_VERSIONS[@]}; do
+   brew install python@$v
+done;
 # The install above might have changed the default version of `python3`, so we need to reinstall packages:
+python3 -m pip config set global.break-system-packages true
 python3 -m pip install -U twine delocate
 
 mkdir build
@@ -21,6 +20,7 @@ cmake .. -DDIP_PYDIP_WHEEL_INCLUDE_LIBS=On -DBIOFORMATS_JAR=`pwd`/bioformats_pac
 # Build all wheels
 for v in ${PYTHON_VERSIONS[@]}; do
    export PYTHON=$HOMEBREW_DIR/opt/python@$v/bin/python$v
+   $PYTHON -m pip config set global.break-system-packages true  # needed only since Homebrew Python 3.12
    $PYTHON -m pip install build
    cmake .. -DPYBIND11_PYTHON_VERSION=$v -DPYTHON_EXECUTABLE=$PYTHON
    make -j $BUILD_THREADS bdist_wheel
