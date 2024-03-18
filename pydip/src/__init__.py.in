@@ -1,5 +1,5 @@
 # (c)2017-2021, Flagship Biosciences, Inc., written by Cris Luengo.
-# (c)2022-2023, Cris Luengo.
+# (c)2022-2024, Cris Luengo.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -57,9 +57,14 @@ SE = StructuringElement  # for backwards compatibility
 hasDIPviewer = False
 import importlib.util
 if importlib.util.find_spec('.PyDIPviewer', __name__) is not None:
-    from . import PyDIPviewer as viewer
-    hasDIPviewer = True
+    try:
+        from . import PyDIPviewer as viewer
+        hasDIPviewer = True
+    except:
+        # If that fails, maybe the user has no OpenGL?
+        pass
 
+if hasDIPviewer:
     def _ShowModal(*args, **kwargs):
         """Show an image in a new SliceViewer window, blocking until it is closed.
 
