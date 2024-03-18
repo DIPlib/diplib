@@ -32,6 +32,10 @@ title: "Changes DIPlib 3.x.x"
 
 ### New functionality
 
+- Added the CMake option `DIP_JAVA_VERSION`, which can be important when building *DIPimage* for older versions
+  of MATLAB. The Java version must be equal or older than the version used by MATLAB. Running `version -java`
+  in MATLAB will tell you what version of Java it is using.
+
 ### Changed functionality
 
 (See also changes to *DIPlib*.)

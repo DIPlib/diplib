@@ -1,4 +1,4 @@
-# (c)2015-2022, Cris Luengo, Wouter Caarls
+# (c)2015-2024, Cris Luengo, Wouter Caarls
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -76,7 +76,7 @@ add_subdirectory(src)
 
 ### DIPjavaio
 
-find_package(Java 1.7 COMPONENTS Development)
+find_package(Java COMPONENTS Development)
 if(JAVA_FOUND)
    # Set JAVA_HOME so that the JNI found is from the same JDK as the Java package
    get_filename_component(JAVA_HOME "${Java_JAVAC_EXECUTABLE}" DIRECTORY) # strip off /javac
@@ -90,8 +90,9 @@ if(JAVA_FOUND)
          list(APPEND DIP_JAVAIO_INTERFACES "Bio-Formats")
       endif()
    endif()
-   set(CMAKE_JAVA_COMPILE_FLAGS -target 1.7 -source 1.7) # MATLAB R2013b--R2017a use Java SDK 1.7, R2017b-- use SDK 1.8.
-   # TODO: Make target Java version configurable?
+   set(DIP_JAVA_VERSION "1.8" CACHE BOOL "Java version to target when building DIPviewer Java bindings and DIPjavaio.")
+   # MATLAB R2013b--R2017a use Java SDK 1.7, R2017b-- use SDK 1.8.
+   set(CMAKE_JAVA_COMPILE_FLAGS -target ${DIP_JAVA_VERSION} -source ${DIP_JAVA_VERSION})
 endif()
 
 if(DIP_BUILD_JAVAIO)
@@ -107,7 +108,7 @@ find_package(OpenGL)
 if(APPLE)
     set(DIP_FIND_FREEGLUT OFF CACHE BOOL "Try to find FreeGLUT library")
 else()
-    set(DIP_FIND_FREEGLUT  ON CACHE BOOL "Try to find FreeGLUT library")
+    set(DIP_FIND_FREEGLUT ON CACHE BOOL "Try to find FreeGLUT library")
 endif()
 set(DIP_FIND_GLFW ON CACHE BOOL "Try to find GLFW library")
 
@@ -181,14 +182,14 @@ endif()
 
 add_subdirectory(doc)
 
+
 ### Examples
 
 add_subdirectory(examples EXCLUDE_FROM_ALL)
 
 
-### Packaging
+### CMake import scripts
 
-# Write CMake configuration import scripts (but only when DIPlib is a shared library)
 if(DIP_SHARED_LIBRARY)
 
    include(CMakePackageConfigHelpers)
@@ -215,40 +216,6 @@ if(DIP_SHARED_LIBRARY)
            DESTINATION ${ConfigPackageLocation})
 
 endif()
-
-# Package stuff
-if(CMAKE_HOST_WIN32)
-   # On Windows we use the NSIS generator
-   # TODO: This must be tested and configured properly
-   set(CPACK_GENERATOR "NSIS")
-#elseif(CMAKE_HOST_APPLE)
-   # On MacOS we use the Bundle generator
-   #set(CPACK_GENERATOR "Bundle")
-   #CPACK_BUNDLE_NAME
-   #CPACK_BUNDLE_ICON
-   #CPACK_BUNDLE_PLIST
-   #CPACK_BUNDLE_STARTUP_COMMAND # What would the startup command be???
-else()
-   # On Linux (or any other platform) we use a tar file
-   set(CPACK_GENERATOR "TBZ2")
-endif()
-set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_LIST_DIR}/README.md")
-set(CPACK_PACKAGE_VENDOR "The DIPlib Project")
-set(CPACK_PACKAGE_CONTACT "https://github.com/DIPlib/DIPlib")
-set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_LIST_DIR}/LICENSE.txt")
-set(CPACK_PACKAGE_VERSION_MAJOR "${PROJECT_VERSION_MAJOR}")
-set(CPACK_PACKAGE_VERSION_MINOR "${PROJECT_VERSION_MINOR}")
-string(TIMESTAMP TODAYS_DATE "%Y%m%d" UTC)
-set(CPACK_PACKAGE_VERSION_PATCH "${PROJECT_VERSION_PATCH}-${TODAYS_DATE}")
-#CPACK_PACKAGE_ICON
-include(CPack)
-# TODO: The package doesn't contain any of the dependencies: OpenMP, C++ stdlib, etc.
-#       Including these is highly dependent on the configuration of the system used for compiling.
-#       Possible solutions:
-#        - `install(PROGRAMS ${libname} DESTINATION lib)`
-#          We'd then need to modify the library names and the search locations using `install_name_tool`,
-#          see http://doc.qt.io/qt-4.8/deployment-mac.html#linking-the-application-to-qt-as-frameworks
-#        See also: https://cmake.org/cmake/help/v3.5/manual/cmake-packages.7.html#creating-relocatable-packages
 
 
 ### Status report
@@ -378,15 +345,9 @@ else()
    message(" * DIPviewer module not configured")
 endif()
 
-if(DIP_BUILD_DIPVIEWER_JAVA)
-   message(" * DIPviewer Java bindings added to 'all' target")
-else()
-   message(" * DIPviewer Java bindings not configured")
-endif()
-
 if(DIP_BUILD_JAVAIO)
    message(" * DIPjavaio module added to 'all' target with interfaces: ${DIP_JAVAIO_INTERFACES}")
-   message(" * DIPjavaio compiled using Java version ${Java_VERSION_STRING}")
+   message(" * DIPjavaio compiled using Java version ${Java_VERSION_STRING} and targeting ${DIP_JAVA_VERSION}")
 else()
    message(" * DIPJavaio module not configured")
 endif()
@@ -407,6 +368,11 @@ if(DIP_BUILD_DIPIMAGE)
    message(" * DIPimage toolbox added to 'all' target")
    matlab_get_release_name_from_version(${Matlab_VERSION_STRING} Matlab_RELEASE_NAME)
    message(" * DIPimage toolbox compiled for MATLAB ${Matlab_RELEASE_NAME}")
+   if(DIP_BUILD_DIPVIEWER_JAVA)
+      message(" * DIPviewer Java bindings added to 'all' target, compiled using Java version ${Java_VERSION_STRING} and targeting ${DIP_JAVA_VERSION}")
+   else()
+      message(" * DIPviewer Java bindings not configured")
+   endif()
    message(" * DIPimage toolbox installed to: ${CMAKE_INSTALL_PREFIX}/${DIPIMAGE_INSTALL_PATH}")
    if(DOXPP_FOUND)
       message(" * DIPimage User Manual installed to: ${CMAKE_INSTALL_PREFIX}/${DOCUMENTATION_OUTPUT}/html/dipimage_user_manual.html")

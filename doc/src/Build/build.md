@@ -159,6 +159,7 @@ Controlling the build of *DIPjavaio*:
 - `DIP_BUILD_JAVAIO`: `On` (default) or `Off`. Choose whether to build and install the *DIPjavaio* module,
     if its dependencies are available.
 - `JAVA_HOME`: Set the path to the JDK to use.
+- `DIP_JAVA_VERSION`: Set the version of Java to target. Defaults to "1.8".
 - `BIOFORMATS_JAR`: Set the path to the Bio-Formats JAR file (`bioformats_package.jar`).
 - Note that for the *MATLAB* toolbox, *DIPjavaio* is not used; build this only if you work in C++ or Python.
 
@@ -167,6 +168,11 @@ Controlling the build of *DIPimage*:
 - `DIP_BUILD_DIPIMAGE`: `On` (default) or `Off`. Choose whether to build and install the *DIPimage* toolbox,
     if *MATLAB* is available.
 - `Matlab_ROOT_DIR`: Set the path of the *MATLAB* installation to compile *DIPimage* against.
+- `JAVA_HOME`: Set the path to the JDK to use. Java is used by *DIPimage* to interface with *DIPviewer*.
+- `DIP_JAVA_VERSION`: Set the version of Java to target. Defaults to "1.8". For MATLAB versions prior to R2017b
+  use "1.7" (and set `JAVA_HOME` to a release of the JDK that supports 1.7). You should not target a Java version
+  later than the one used by your MATLAB. Check the version of Java used by MATLAB by running `version -java`
+  on the MATLAB command prompt.
 
 Controlling the build of *PyDIP*:
 
