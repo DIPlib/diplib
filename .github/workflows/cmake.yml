@@ -42,6 +42,9 @@ jobs:
             n_cores: 4
           - os: macos-latest
             n_cores: 3
+            env:
+              LDFLAGS: "-L/usr/local/opt/libomp/lib"
+              CPPFLAGS: "-I/usr/local/opt/libomp/include"
           - os: windows-latest
             n_cores: 4
             dip_cmake_opts: -A x64 -DDIP_ENABLE_UNICODE=Off -DGLFW_INCLUDE_DIR="glfw-3.3.5.bin.WIN64/include" -DGLFW_LIBRARY="glfw-3.3.5.bin.WIN64/lib-vc2019/glfw3.lib" -DDIP_FIND_FREEGLUT=Off
@@ -81,3 +84,9 @@ jobs:
       - name: Package
         # Create the Python distribution wheel
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --target bdist_wheel
+
+      - name: Archive
+        # Store the Python distribution wheel
+        uses: actions/upload-artifact@v4
+        with:
+          path: pydip/staging/dist/*.whl
