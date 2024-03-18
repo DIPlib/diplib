@@ -40,12 +40,15 @@ jobs:
         include:
           - os: ubuntu-latest
             n_cores: 4
+            wheel_location: pydip/staging/dist
           - os: macos-latest
             n_cores: 3
+            wheel_location: pydip/staging/dist
           - os: windows-latest
             n_cores: 4
             dip_cmake_opts: -A x64 -DDIP_ENABLE_UNICODE=Off -DGLFW_INCLUDE_DIR="glfw-3.3.5.bin.WIN64/include" -DGLFW_LIBRARY="glfw-3.3.5.bin.WIN64/lib-vc2019/glfw3.lib" -DDIP_FIND_FREEGLUT=Off
             # Windows build must be 64-bit. We're also disabling Unicode because otherwise some tests fail.
+            wheel_location: pydip/Release/staging/dist
       fail-fast: true
 
     steps:
@@ -70,13 +73,7 @@ jobs:
         shell: bash
 
       - name: Configure
-        run: |
-          if [ "$RUNNER_OS" == "macOS" ]; then
-            export LDFLAGS="-L/usr/local/opt/libomp/lib"
-            export CPPFLAGS="-I/usr/local/opt/libomp/include"
-          fi
-          cmake -B '${{github.workspace}}/build' -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} ${{matrix.dip_cmake_opts}} -DDIP_ENABLE_ASSERT=ON -DDIP_PYDIP_WHEEL_INCLUDE_LIBS=ON
-        shell: bash
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} ${{matrix.dip_cmake_opts}} -DDIP_ENABLE_ASSERT=ON -DDIP_PYDIP_WHEEL_INCLUDE_LIBS=ON
 
       - name: Build
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --parallel ${{matrix.n_cores}}
@@ -92,4 +89,4 @@ jobs:
         # Store the Python distribution wheel
         uses: actions/upload-artifact@v4
         with:
-          path: pydip/staging/dist/*.whl
+          path: ${{github.workspace}}/build/${{matrix.wheel_location}}/*.whl
