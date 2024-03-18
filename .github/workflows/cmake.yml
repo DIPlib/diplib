@@ -42,9 +42,6 @@ jobs:
             n_cores: 4
           - os: macos-latest
             n_cores: 3
-            env:
-              LDFLAGS: -L/usr/local/opt/libomp/lib
-              CPPFLAGS: -I/usr/local/opt/libomp/include
           - os: windows-latest
             n_cores: 4
             dip_cmake_opts: -A x64 -DDIP_ENABLE_UNICODE=Off -DGLFW_INCLUDE_DIR="glfw-3.3.5.bin.WIN64/include" -DGLFW_LIBRARY="glfw-3.3.5.bin.WIN64/lib-vc2019/glfw3.lib" -DDIP_FIND_FREEGLUT=Off
@@ -69,13 +66,16 @@ jobs:
           elif [ "$RUNNER_OS" == "macOS" ]; then
             brew install libomp glfw
             python3 -m pip install setuptools wheel build numpy
-            echo LDFLAGS = $LDFLAGS
-            echo CPPFLAGS = $CPPFLAGS
           fi
         shell: bash
 
       - name: Configure
-        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} ${{matrix.dip_cmake_opts}} -DDIP_ENABLE_ASSERT=ON -DDIP_PYDIP_WHEEL_INCLUDE_LIBS=ON
+        run: |
+          if [ "$RUNNER_OS" == "macOS" ]; then
+            export LDFLAGS = "-L/usr/local/opt/libomp/lib"
+            export CPPFLAGS = "-I/usr/local/opt/libomp/include"
+          fi
+          cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} ${{matrix.dip_cmake_opts}} -DDIP_ENABLE_ASSERT=ON -DDIP_PYDIP_WHEEL_INCLUDE_LIBS=ON
 
       - name: Build
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --parallel ${{matrix.n_cores}}

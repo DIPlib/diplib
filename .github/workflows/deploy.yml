@@ -40,9 +40,6 @@ jobs:
           HOMEBREW_DIR: /usr/local
           BUILD_THREADS: 3
           MACOSX_DEPLOYMENT_TARGET: 12.0
-          LDFLAGS: -L/usr/local/opt/libomp/lib
-          CPPFLAGS: -I/usr/local/opt/libomp/include
-
 
   deploy_macos_aarch64:
     runs-on: macos-14
@@ -66,8 +63,6 @@ jobs:
           HOMEBREW_DIR: /opt/homebrew
           BUILD_THREADS: 3
           MACOSX_DEPLOYMENT_TARGET: 12.0
-          LDFLAGS: -L/opt/homebrew/opt/libomp/lib
-          CPPFLAGS: -I/opt/homebrew/opt/libomp/include
 
   deploy_windows:
     runs-on: windows-latest

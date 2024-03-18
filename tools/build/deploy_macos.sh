@@ -15,6 +15,8 @@ cd build
 wget -nv https://downloads.openmicroscopy.org/bio-formats/7.0.0/artifacts/bioformats_package.jar
 
 # Basic configuration
+export LDFLAGS = "-L$HOMEBREW_DIR/opt/libomp/lib"
+export CPPFLAGS = "-I$HOMEBREW_DIR/opt/libomp/include"
 cmake .. -DDIP_PYDIP_WHEEL_INCLUDE_LIBS=On -DBIOFORMATS_JAR=`pwd`/bioformats_package.jar -DDIP_BUILD_DIPIMAGE=Off
 
 # Build all wheels
