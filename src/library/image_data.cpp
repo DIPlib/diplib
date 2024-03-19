@@ -913,4 +913,14 @@ DOCTEST_TEST_CASE("[DIPlib] testing dip::Image::MatchStrideOrder") {
    DOCTEST_CHECK( img.TensorStride() == 6 );
 }
 
+DOCTEST_TEST_CASE("[DIPlib] testing dip::Image move constructor") {
+   dip::Image img( { 10, 13 }, 1, dip::DT_UINT8 );
+   DOCTEST_REQUIRE( img.IsForged() );
+   img.At( 4, 2 ) = 5;
+   dip::Image other( std::move( img ));
+   DOCTEST_CHECK( other.IsForged() );
+   DOCTEST_CHECK( other.At( 4, 2 ) == 5 );
+   DOCTEST_CHECK( !img.IsForged() );
+}
+
 #endif // DIP_CONFIG_ENABLE_DOCTEST

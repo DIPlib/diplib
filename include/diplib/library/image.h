@@ -246,10 +246,15 @@ class DIP_NO_EXPORT Image {
       /// and raw (it has no data segment).
       Image() = default;
 
-      // Copy constructor, move constructor and destructor are all default.
+      // Copy constructor and destructor are default.
       Image( Image const& ) = default;
-      Image( Image&& ) = default;
       ~Image() = default;
+
+      /// \brief Move constructor, `rhs` ends up in default-initialized state, `this` even robs the external interface
+      /// from `rhs`.
+      Image( Image&& rhs ) {
+         swap( rhs );
+      };
 
       /// \brief Copy assignment
       ///
