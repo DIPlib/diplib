@@ -193,8 +193,8 @@ void ComputeProjectedParameterSpace_SubPixel(
       DIP_ASSERT( tmp3.DataType() == DT_SFLOAT );
       r -= step;
       UpdateMaxima( max, argmax, tmp1, tmp2, tmp3, r );
-      tmp1 = std::move( tmp2 );
-      tmp2 = std::move( tmp3 );
+      tmp1.swap( tmp2 );
+      tmp2.swap( tmp3 );
    }
 }
 
@@ -245,11 +245,19 @@ RadonCircleParametersArray RadonCircleSubpixelMaxima(
          sfloat* ptr = static_cast< sfloat* >( in.Pointer( position ));
          out[ ii ].origin.resize( nDims, 0.0 );
          for( dip::uint kk = 0; kk < nDims; ++kk ) {
+            out[ ii ].origin[ kk ] = static_cast< dfloat >( position[ kk ] );
+            if(( position[ kk ] <= 0 ) || ( position[ kk ] >= in.Size( kk ) - 1 )) {
+               // The maximum is at the edge of the image, don't interpolate
+               continue;
+            }
             dfloat t[ 3 ];
             t[ 0 ] = static_cast< dfloat >( *( ptr - in.Stride( kk )));
             t[ 1 ] = static_cast< dfloat >( *( ptr ));
             t[ 2 ] = static_cast< dfloat >( *( ptr + in.Stride( kk )));
-            out[ ii ].origin[ kk ] = static_cast< dfloat >( position[ kk ] );
+            if(( t[ 1 ] <= t[ 0 ] ) || ( t[ 1 ] <= t[ 2 ] )) {
+               // It doens't look like a local maximum along this dimension, don't interpolate
+               continue;
+            }
             dfloat m = t[ 0 ] - 2 * t[ 1 ] + t[ 2 ];
             if( m != 0 ) {
                out[ ii ].origin[ kk ] += ( t[ 0 ] - t[ 2 ] ) / ( 2 * m );
