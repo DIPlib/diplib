@@ -11,11 +11,6 @@ title: "Changes DIPlib 3.x.x"
 
 ### Bug fixes
 
-- Fixed `dip::Image` move constructor to leave moved-from object in valid state.
-  See [issue #149](https://github.com/DIPlib/diplib/issues/149).
-
-- Fixed `dip::RadonTransformCircles()` to avoid out-of-bounds reads.
-
 ### Updated dependencies
 
 
