@@ -102,6 +102,7 @@ endif()
 ### DIPviewer
 
 # OpenGL, FreeGLUT, GLFW
+set(OpenGL_GL_PREFERENCE LEGACY)
 find_package(OpenGL)
 if(APPLE)
     set(DIP_FIND_FREEGLUT OFF CACHE BOOL "Try to find FreeGLUT library")
