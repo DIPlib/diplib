@@ -159,6 +159,7 @@ if(DIP_ENABLE_PNG)
    add_subdirectory("${PROJECT_SOURCE_DIR}/dependencies/libspng" "${PROJECT_BINARY_DIR}/libspng" EXCLUDE_FROM_ALL)
    target_link_libraries(DIP PRIVATE spng_static)
    target_include_directories(DIP PRIVATE $<TARGET_PROPERTY:spng_static,INTERFACE_INCLUDE_DIRECTORIES>) # these need to come before system include directories
+   target_include_directories(DIP PRIVATE $<TARGET_PROPERTY:zlibstatic,INTERFACE_INCLUDE_DIRECTORIES>)  # we're using the zlib header in png.cpp
    target_compile_definitions(DIP PRIVATE DIP_CONFIG_HAS_PNG)
 endif()
 
