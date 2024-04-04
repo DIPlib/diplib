@@ -453,18 +453,27 @@ DIP_EXPORT FileInformation ImageReadPNGInfo( void const* buffer, dip::uint lengt
 ///
 /// `compressionLevel` sets the compression level; it's an integer in the range 0-9, with 0 for no compression,
 /// 1 for the fastest method producing the largest output files, and 9 the slowest method producing the smallest
-/// output files. The default is 6.
+/// output files. The default is 6, which is a good compromise between file size and time.
+///
+/// The special `compressionLevel` value of -1 sets the deflate algorithm to use run length encoding (RLE),
+/// basically limiting match distances to one. This can significantly speed up compression, depending on the
+/// data being compressed, and can even produce smaller file sizes for specific images.
 ///
 /// `filterChoice` specifies how the PNG file is filtered during compression. The compression algorithm will try
 /// all selected filters on each line, and pick the best one. The set can contain one or several of these strings:
 ///
-/// - "disable": No filtering, cannot be combined with the other methods.
-/// - "none": No filtering.
-/// - "sub": Each byte is replaced with the difference between it and the byte to its left.
-/// - "up": Each byte is replaced with the difference between it and the corresponding byte on the previous image line.
-/// - "avg": Each byte is replaced with the difference between it and the average of the corresponding bytes to its left and above it, truncating any fractional part.
-/// - "Paeth": Each byte is replaced with the difference between it and the Paeth predictor of the corresponding bytes to its left, above it, and to its upper left.
-/// - "all": Shortcut for including all five filters. This is the default. Cannot be combined with the other methods.
+/// - `"disable"`: No filtering, cannot be combined with the other methods.
+/// - `"none"`: No filtering.
+/// - `"sub"`: Each byte is replaced with the difference between it and the byte to its left.
+/// - `"up"`: Each byte is replaced with the difference between it and the corresponding byte on the previous image line.
+/// - `"avg"`: Each byte is replaced with the difference between it and the average of the corresponding bytes to its left and above it, truncating any fractional part.
+/// - `"Paeth"`: Each byte is replaced with the difference between it and the Paeth predictor of the corresponding bytes to its left, above it, and to its upper left.
+/// - `"all"`: Shortcut for including all five filters. This is the default. Cannot be combined with the other methods.
+///
+/// Note that trying multiple filters adds to the cost. This is again a compromise between file size and time.
+/// Picking one filter often leads to significantly smaller files, but not always. Including all filters is guaranteed
+/// to produce the smallest files, because no filtering is included as a choice, but is also guaranteed to be the most
+/// costly option. If `compressionLevel` is 0, `filterChoice` will always be `"disable"`.
 ///
 /// Set `significantBits` only if the number of significant bits is different from the full range of the data
 /// type of `image` (use 0 otherwise). For example, it can be used to specify that a camera has produced
@@ -472,7 +481,7 @@ DIP_EXPORT FileInformation ImageReadPNGInfo( void const* buffer, dip::uint lengt
 DIP_EXPORT void ImageWritePNG(
       Image const& image,
       String const& filename,
-      dip::uint compressionLevel = 6,
+      dip::sint compressionLevel = 6,
       StringSet const& filterChoice = { S::ALL },
       dip::uint significantBits = 0
 );
@@ -481,7 +490,7 @@ DIP_EXPORT void ImageWritePNG(
 /// See \ref ImageWritePNG(Image const &, String const&, dip::uint, StringSet const&, dip::uint) for details.
 DIP_EXPORT std::vector< dip::uint8 > ImageWritePNG(
       Image const& image,
-      dip::uint compressionLevel = 6,
+      dip::sint compressionLevel = 6,
       StringSet const& filterChoice = { S::ALL },
       dip::uint significantBits = 0
 );

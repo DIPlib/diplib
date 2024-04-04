@@ -306,13 +306,13 @@ void init_assorted( py::module& m ) {
              return fi;
           }, "filename"_a );
    m.def( "ImageIsPNG", &dip::ImageIsPNG, "filename"_a );
-   m.def( "ImageWritePNG", []( dip::Image const& image, dip::String const& filename, dip::uint compressionLevel,
+   m.def( "ImageWritePNG", []( dip::Image const& image, dip::String const& filename, dip::sint compressionLevel,
                                dip::StringSet const& filterChoice, dip::uint significantBits ) {
              auto tmp = image;
              OptionallyReverseDimensions( tmp );
              dip::ImageWritePNG( tmp, filename, compressionLevel, filterChoice, significantBits );
           }, "image"_a, "filename"_a, "compressionLevel"_a = 6, "filterChoice"_a = dip::StringSet{ dip::S::ALL }, "significantBits"_a = 0 );
-   m.def( "ImageWritePNG", []( dip::Image const& image, dip::uint compressionLevel,
+   m.def( "ImageWritePNG", []( dip::Image const& image, dip::sint compressionLevel,
                                dip::StringSet const& filterChoice, dip::uint significantBits ) {
              auto tmp = image;
              OptionallyReverseDimensions( tmp );

@@ -29,6 +29,7 @@
 #include "diplib/file_io.h"
 
 #include "spng.h"
+#include "zlib.h"
 
 namespace dip {
 
@@ -253,7 +254,7 @@ class PngOutput {
 void ImageWritePNG(
       Image const& image,
       PngOutput& png,
-      dip::uint compressionLevel,
+      dip::sint compressionLevel,
       StringSet const& filterChoice,
       dip::uint significantBits
 ) {
@@ -286,30 +287,51 @@ void ImageWritePNG(
    if( int ret = spng_set_ihdr( png.Context(), &ihdr )) {
       PNG_THROW_WRITE_ERROR;
    }
+
+   // Encoding option: format
    int fmt = SPNG_FMT_PNG;
-   if( int ret = spng_set_option( png.Context(), SPNG_IMG_COMPRESSION_LEVEL, static_cast< int >( compressionLevel ))) {
+   // Encoding option: compression level and strategy
+   int compressionStrategy = Z_DEFAULT_STRATEGY;
+   // Note that using Z_FILTERED often leads to slightly larger files and slightly slower compression, even for filtered images.
+   if( compressionLevel == -1 ) {
+      compressionStrategy = Z_RLE;
+      // The compression level is ignored in this mode
+   } else {
+      if( int ret = spng_set_option( png.Context(), SPNG_IMG_COMPRESSION_LEVEL, static_cast< int >( compressionLevel ))) {
+         PNG_THROW_WRITE_ERROR;
+      }
+   }
+   if( int ret = spng_set_option( png.Context(), SPNG_IMG_COMPRESSION_STRATEGY, compressionStrategy )) {
       PNG_THROW_WRITE_ERROR;
    }
+   // Encoding option: filter choice
    int filterChoiceInt = 0;
-   if( filterChoice.find( S::DISABLE ) != filterChoice.end() ) {
-      DIP_THROW_IF( filterChoice.size() != 1, "The option 'disable' cannot be combined with other options." );
+   if( compressionLevel == 0 ) {
+      // Don't use filters if we're not going to be compressing, they just waste time!
       filterChoiceInt = SPNG_DISABLE_FILTERING;
-   }
-   else if( filterChoice.find( S::ALL ) != filterChoice.end() ) {
-      DIP_THROW_IF( filterChoice.size() != 1, "The option 'all' cannot be combined with other options." );
-      filterChoiceInt = SPNG_FILTER_CHOICE_ALL;
    } else {
-      for( auto const& opt : filterChoice ) {
-         if( opt == S::NONE ) { filterChoiceInt |= SPNG_FILTER_CHOICE_NONE; }
-         else if( opt == S::SUB ) { filterChoiceInt |= SPNG_FILTER_CHOICE_SUB; }
-         else if( opt == S::UP ) { filterChoiceInt |= SPNG_FILTER_CHOICE_UP; }
-         else if( opt == S::AVG ) { filterChoiceInt |= SPNG_FILTER_CHOICE_AVG; }
-         else if( opt == S::PAETH ) { filterChoiceInt |= SPNG_FILTER_CHOICE_PAETH; }
+      if( filterChoice.find( S::DISABLE ) != filterChoice.end() ) {
+         DIP_THROW_IF( filterChoice.size() != 1, "The option 'disable' cannot be combined with other options." );
+         filterChoiceInt = SPNG_DISABLE_FILTERING;
+      }
+      else if( filterChoice.find( S::ALL ) != filterChoice.end() ) {
+         DIP_THROW_IF( filterChoice.size() != 1, "The option 'all' cannot be combined with other options." );
+         filterChoiceInt = SPNG_FILTER_CHOICE_ALL;
+      } else {
+         for( auto const& opt : filterChoice ) {
+            if( opt == S::NONE ) { filterChoiceInt |= SPNG_FILTER_CHOICE_NONE; }
+            else if( opt == S::SUB ) { filterChoiceInt |= SPNG_FILTER_CHOICE_SUB; }
+            else if( opt == S::UP ) { filterChoiceInt |= SPNG_FILTER_CHOICE_UP; }
+            else if( opt == S::AVG ) { filterChoiceInt |= SPNG_FILTER_CHOICE_AVG; }
+            else if( opt == S::PAETH ) { filterChoiceInt |= SPNG_FILTER_CHOICE_PAETH; }
+         }
       }
    }
    if( int ret = spng_set_option( png.Context(), SPNG_FILTER_CHOICE, filterChoiceInt )) {
       PNG_THROW_WRITE_ERROR;
    }
+
+   // Set number of significant bits if necessary
    if( significantBits > 0 ) {
       spng_sbit sbit{
          static_cast< std::uint8_t >( significantBits ),
@@ -322,6 +344,8 @@ void ImageWritePNG(
          PNG_THROW_WRITE_ERROR;
       }
    }
+
+   // Set pixel size if necessary
    if( image.HasPixelSize() ) {
       auto const& px = image.PixelSize();
       spng_phys phys{ 0, 0, 0 };
@@ -467,7 +491,7 @@ FileInformation ImageReadPNGInfo( void const* buffer, dip::uint length ) {
 void ImageWritePNG(
       Image const& image,
       String const& filename,
-      dip::uint compressionLevel,
+      dip::sint compressionLevel,
       StringSet const& filterChoice,
       dip::uint significantBits
 ) {
@@ -477,7 +501,7 @@ void ImageWritePNG(
 
 std::vector< dip::uint8 > ImageWritePNG(
       Image const& image,
-      dip::uint compressionLevel,
+      dip::sint compressionLevel,
       StringSet const& filterChoice,
       dip::uint significantBits
 ) {

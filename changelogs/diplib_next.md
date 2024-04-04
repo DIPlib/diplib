@@ -9,6 +9,10 @@ title: "Changes DIPlib 3.x.x"
 
 ### Changed functionality
 
+- The `compressionLevel` argument to `dip::ImageWritePNG()` changed from `dip::uint` to `dip::sint`, allowing for
+  -1 to configure the deflate algorithm to use RLE instead of its default strategy. For some images this option
+  can lead to smaller files, and for some images to much faster compression.
+
 ### Bug fixes
 
 ### Updated dependencies
