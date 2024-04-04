@@ -499,15 +499,16 @@ void ImageWritePNG(
    ImageWritePNG( image, png, compressionLevel, filterChoice, significantBits );
 }
 
-std::vector< dip::uint8 > ImageWritePNG(
+void ImageWritePNG(
       Image const& image,
+      OutputBuffer& buffer,
       dip::sint compressionLevel,
       StringSet const& filterChoice,
       dip::uint significantBits
 ) {
+   // libspng uses an internal buffer to write to -- can we subvert that to avoid the copy?
    PngOutput png;
    ImageWritePNG( image, png, compressionLevel, filterChoice, significantBits );
-   std::vector< dip::uint8 > buffer;
    dip::uint buf_len = 0;
    int ret = 0;
    void* buf_ptr = spng_get_png_buffer( png.Context(), &buf_len, &ret );
@@ -516,14 +517,15 @@ std::vector< dip::uint8 > ImageWritePNG(
    }
    // NOTE! we now own `buf_ptr`!
    try {
-      buffer.resize( buf_len );
-      std::copy_n( static_cast< dip::uint8* >( buf_ptr ), buf_len, buffer.begin() );
+      buffer.assure_capacity( buf_len );
+      DIP_ASSERT( buffer.capacity() >= buf_len );
+      buffer.set_size( buf_len );
+      std::copy_n( static_cast< dip::uint8* >( buf_ptr ), buf_len, buffer.data() );
       std::free( buf_ptr );
    } catch ( ... ) {
       std::free( buf_ptr );
       throw;
    }
-   return buffer;
 }
 
 } // namespace dip

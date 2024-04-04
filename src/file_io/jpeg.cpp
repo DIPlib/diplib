@@ -188,62 +188,62 @@ void ImageReadJPEG( Image& out, JpegInput& jpeg, FileInformation const& info ) {
    jpeg_finish_decompress( jpeg.cinfoptr() );
 }
 
-// Code below up to and including jpeg_mem_dest() were adapted from libjpeg/jdatadst.c
+// Code below up to and including InitMemoryDestination() (originally jpeg_mem_dest()) were adapted from libjpeg/jdatadst.c
 
 constexpr dip::uint OUTPUT_BUF_SIZE = 4096;
 
 extern "C" {
-   void init_mem_destination (j_compress_ptr cinfo);
-   boolean empty_mem_output_buffer (j_compress_ptr cinfo);
-   void term_mem_destination (j_compress_ptr cinfo);
+   void MemDest_Initialize( j_compress_ptr cinfo );
+   boolean MemDest_EmptyBuffer( j_compress_ptr cinfo );
+   void MemDest_Finalize( j_compress_ptr cinfo );
 }
 
-struct my_mem_destination_mgr {
+struct MemoryDestinationManager {
    jpeg_destination_mgr pub;   // public fields
-   std::vector< dip::uint8>& buffer;
+   OutputBuffer& buffer;
 };
 
-void init_mem_destination ( j_compress_ptr /*cinfo*/ ) {
+void MemDest_Initialize( j_compress_ptr /*cinfo*/ ) {
   // no work necessary here
 }
 
-boolean empty_mem_output_buffer( j_compress_ptr cinfo ) {
+boolean MemDest_EmptyBuffer( j_compress_ptr cinfo ) {
    // This is called if the buffer has been filled up. We double the buffer size, and set the
    // output pointer and size to the second half of the new buffer.
-   my_mem_destination_mgr* dest = reinterpret_cast< my_mem_destination_mgr* >( cinfo->dest );
-   dip::uint curr_size = dest->buffer.size();
-   dest->buffer.resize( curr_size * 2 );
+   MemoryDestinationManager* dest = reinterpret_cast< MemoryDestinationManager* >( cinfo->dest );
+   dip::uint curr_size = dest->buffer.capacity();
+   dest->buffer.assure_capacity( curr_size * 2 );
    dest->pub.next_output_byte = dest->buffer.data() + curr_size;
-   dest->pub.free_in_buffer = curr_size;
+   dest->pub.free_in_buffer = dest->buffer.capacity() - curr_size;
    return TRUE;
 }
 
-void term_mem_destination( j_compress_ptr cinfo ) {
-   // To finish off, we crop the buffer to the used portion
-   my_mem_destination_mgr* dest = reinterpret_cast< my_mem_destination_mgr* >( cinfo->dest );
+void MemDest_Finalize( j_compress_ptr cinfo ) {
+   // To finish off, we set the buffer size to the used portion
+   MemoryDestinationManager* dest = reinterpret_cast< MemoryDestinationManager* >( cinfo->dest );
    dip::sint curr_size = dest->pub.next_output_byte - dest->buffer.data();
    DIP_ASSERT( curr_size > 0 );
-   dest->buffer.resize( static_cast< dip::uint >( curr_size ));
+   dest->buffer.set_size( static_cast< dip::uint >( curr_size ));
 }
 
-void jpeg_mem_dest( j_compress_ptr cinfo, std::vector< dip::uint8>& buffer ) {
-   buffer.resize( OUTPUT_BUF_SIZE );
-   my_mem_destination_mgr* dest = new my_mem_destination_mgr{
+void InitMemoryDestination( j_compress_ptr cinfo, OutputBuffer& buffer ) {
+   buffer.assure_capacity( OUTPUT_BUF_SIZE );
+   MemoryDestinationManager* dest = new MemoryDestinationManager{
       {
          buffer.data(),
-         buffer.size(),
-         init_mem_destination,
-         empty_mem_output_buffer,
-         term_mem_destination
+         buffer.capacity(),
+         MemDest_Initialize,
+         MemDest_EmptyBuffer,
+         MemDest_Finalize
       },
       buffer
    };
    cinfo->dest = reinterpret_cast< jpeg_destination_mgr* >( dest );
 }
 
-void jpeg_mem_dest_cleanup( j_compress_ptr cinfo ) {
+void CleanupMemoryDestination( j_compress_ptr cinfo ) {
    if( cinfo->dest ) {
-      delete reinterpret_cast< my_mem_destination_mgr* >( cinfo->dest );
+      delete reinterpret_cast< MemoryDestinationManager* >( cinfo->dest );
    }
 }
 
@@ -267,7 +267,7 @@ class JpegOutput {
          initialized_ = true;
          jpeg_stdio_dest( &cinfo_, outfile_ );
       }
-      JpegOutput( std::jmp_buf const& setjmp_buffer, String& error_msg ) : jerr_( error_msg ) {
+      JpegOutput( OutputBuffer& buffer, std::jmp_buf const& setjmp_buffer, String& error_msg ) : jerr_( error_msg ) {
          // Open the file for writing
          cinfo_.err = jpeg_std_error( &jerr_.pub );
          jerr_.pub.error_exit = my_error_exit;
@@ -275,7 +275,7 @@ class JpegOutput {
          jpeg_create_compress( &cinfo_ );
          cinfo_.dest = nullptr;
          initialized_ = true;
-         jpeg_mem_dest( &cinfo_, buffer_ );
+         InitMemoryDestination( &cinfo_, buffer );
       }
       JpegOutput( JpegOutput const& ) = delete;
       JpegOutput( JpegOutput&& ) = delete;
@@ -283,7 +283,7 @@ class JpegOutput {
       JpegOutput& operator=( JpegOutput&& ) = delete;
       ~JpegOutput() {
          if( mem_buffer_ ) {
-            jpeg_mem_dest_cleanup( &cinfo_ );
+            CleanupMemoryDestination( &cinfo_ );
          }
          if( initialized_ ) {
             jpeg_destroy_compress( &cinfo_ );
@@ -295,8 +295,6 @@ class JpegOutput {
       // Retrieve jpeg_decompress_struct
       jpeg_compress_struct& cinfo() { return cinfo_; }
       j_compress_ptr cinfoptr() { return &cinfo_; }
-      // Retrieve output buffer (moves the buffer out of the object, do this only after finishing the writing!)
-      std::vector< dip::uint8 > GetBuffer() { return std::move( buffer_ ); }
    private:
       FILE* outfile_ = nullptr;
       std::vector< dip::uint8 > buffer_;
@@ -306,11 +304,7 @@ class JpegOutput {
       bool mem_buffer_ = false;
 };
 
-void ImageWriteJPEG(
-      Image const& image,
-      JpegOutput& jpeg,
-      dip::uint jpegLevel
-) {
+void ImageWriteJPEG( Image const &image, JpegOutput &jpeg, dip::uint jpegLevel ) {
    DIP_THROW_IF( !image.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( image.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
    int nchan = static_cast< int >( image.TensorElements() );
@@ -356,10 +350,7 @@ void ImageWriteJPEG(
 
 } // namespace
 
-FileInformation ImageReadJPEG(
-      Image& out,
-      String const& filename
-) {
+FileInformation ImageReadJPEG( Image &out, String const &filename ) {
    DIP__DECLARE_JPEG_EXIT( ERROR_READING_JPEG );
    JpegInput jpeg( filename, setjmp_buffer, error_msg );
    FileInformation info = GetJPEGInfo( jpeg );
@@ -399,21 +390,16 @@ FileInformation ImageReadJPEGInfo( void const* buffer, dip::uint length ) {
    return info;
 }
 
-void ImageWriteJPEG(
-      Image const& image,
-      String const& filename,
-      dip::uint jpegLevel
-) {
+void ImageWriteJPEG( Image const &image, String const &filename, dip::uint jpegLevel ) {
    DIP__DECLARE_JPEG_EXIT( "Error writing JPEG file: " );
    JpegOutput jpeg( filename, setjmp_buffer, error_msg );
    ImageWriteJPEG( image, jpeg, jpegLevel );
 }
 
-std::vector< dip::uint8 > ImageWriteJPEG( Image const& image, dip::uint jpegLevel ) {
+void ImageWriteJPEG( Image const& image, OutputBuffer& buffer, dip::uint jpegLevel ) {
    DIP__DECLARE_JPEG_EXIT( "Error writing JPEG file: " );
-   JpegOutput jpeg( setjmp_buffer, error_msg );
+   JpegOutput jpeg( buffer, setjmp_buffer, error_msg );
    ImageWriteJPEG( image, jpeg, jpegLevel );
-   return jpeg.GetBuffer();
 }
 
 } // namespace dip

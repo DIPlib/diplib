@@ -48,6 +48,119 @@ struct FileInformation {
       StringArray           history;           ///< Assorted metadata in the file, in the form of strings.
 };
 
+/// \brief A pure virtual base class for output buffers.
+///
+/// Some image writing functions can write the file to a memory buffer. They do so through an object derived from this class.
+class OutputBuffer {
+   public:
+      virtual ~OutputBuffer() = default;
+      /// Returns the size of the data stored in the buffer.
+      virtual dip::uint size() { return 0; }
+      /// Sets the size of the data stored in the buffer. Must never be larger than \ref capacity or bad things will happen.
+      virtual void set_size( dip::uint /*size*/ ) { DIP_THROW( E::NOT_IMPLEMENTED ); };
+      /// Returns the capacity of the buffer (i.e. the size of the memory allocated for the buffer).
+      virtual dip::uint capacity() { return 0; }
+      /// \brief Increases the buffer's \ref capacity to be at least `capacity`. This is used by the writing functions
+      /// when the buffer is full. Can throw an exception if the buffer implementation doesn't support resizing.
+      virtual void assure_capacity( dip::uint /*capacity*/ ) { DIP_THROW( E::NOT_IMPLEMENTED ); };
+      /// Returns a pointer to the data.
+      virtual dip::uint8* data() = 0;
+};
+
+/// \brief A simple output buffer implementation.
+///
+/// The constructor takes a `std::vector< dip::uint8 >` by reference. This vector needs to remain in scope wherever the
+/// `SimpleOutputBuffer` object is in scope. The first \ref size bytes of this vector will contain the encoded image
+/// data after the image writing function has done its thing.
+class SimpleOutputBuffer: public OutputBuffer {
+   public:
+      /// Constructor.
+      SimpleOutputBuffer( std::vector< dip::uint8 >& buffer ) : buffer_( buffer ) {}
+      ~SimpleOutputBuffer() override = default;
+      SimpleOutputBuffer( SimpleOutputBuffer const& ) = delete;
+      SimpleOutputBuffer( SimpleOutputBuffer&& ) = default;
+      SimpleOutputBuffer& operator=( SimpleOutputBuffer const& ) = delete;
+      SimpleOutputBuffer& operator=( SimpleOutputBuffer&& ) = delete;
+
+      /// Returns the size of the data stored in the buffer.
+      dip::uint size() override {
+         return size_;
+      }
+
+      /// Sets the size of the data stored in the buffer.
+      void set_size( dip::uint size ) override {
+         size_ = size;
+      }
+
+      /// Returns the capacity of the buffer.
+      dip::uint capacity() override {
+         return buffer_.size();
+      }
+
+      /// \brief Doubles the buffer's \ref capacity. This call invalidates the pointer previously returned by \ref data.
+      void assure_capacity( dip::uint capacity ) override {
+         if( capacity > buffer_.size() ) {
+            buffer_.resize( capacity );
+         }
+      }
+
+      /// Returns a pointer to the data.
+      dip::uint8* data() override {
+         return buffer_.data();
+      }
+
+   private:
+      std::vector< dip::uint8 >& buffer_;
+      dip::uint size_ = 0;
+};
+
+/// \brief An output buffer implementation that cannot be resized.
+///
+/// The constructor takes a pointer to the already allocated buffer. The caller remains the owner of this buffer.
+/// If the buffer is not large enough to contain the full output, an exception will be thrown.
+/// The first \ref size bytes of this buffer will contain the encoded image data after the image writing function
+/// has done its thing.
+class FixedOutputBuffer: public OutputBuffer {
+   public:
+      /// Constructor.
+      FixedOutputBuffer( dip::uint8* buffer, dip::uint size ) : buffer_( buffer ), capacity_( size ) {}
+      ~FixedOutputBuffer() override = default;
+      FixedOutputBuffer( FixedOutputBuffer const& ) = delete;
+      FixedOutputBuffer( FixedOutputBuffer&& ) = default;
+      FixedOutputBuffer& operator=( FixedOutputBuffer const& ) = delete;
+      FixedOutputBuffer& operator=( FixedOutputBuffer&& ) = default;
+
+      /// Returns the size of the data stored in the buffer.
+      dip::uint size() override {
+         return size_;
+      }
+
+      /// Sets the size of the data stored in the buffer.
+      void set_size( dip::uint size ) override {
+         size_ = size;
+      }
+
+      /// Returns the capacity of the buffer.
+      dip::uint capacity() override {
+         return capacity_;
+      }
+
+      /// \brief Doubles the buffer's \ref capacity. This call invalidates the pointer previously returned by \ref data.
+      void assure_capacity( dip::uint /*capacity*/ ) override {
+         DIP_THROW( "The given buffer is not large enough to contain the full output." );
+      }
+
+      /// Returns a pointer to the data.
+      dip::uint8* data() override {
+         return buffer_;
+      }
+
+   private:
+      dip::uint8* buffer_;
+      dip::uint capacity_;
+      dip::uint size_ = 0;
+};
+
 
 /// \brief Read the image in the ICS file `filename` and puts it in `out`.
 ///
@@ -391,9 +504,19 @@ DIP_EXPORT FileInformation ImageReadJPEGInfo( void const* buffer, dip::uint leng
 /// increasing numbers yielding larger files and fewer compression artifacts.
 DIP_EXPORT void ImageWriteJPEG( Image const& image, String const& filename, dip::uint jpegLevel = 80 );
 
-/// \brief Writes `image` as a JPEG-encoded buffer.
-/// See \ref ImageWriteJPEG(Image const &, String const&, dip::uint) for details.
-DIP_EXPORT std::vector< dip::uint8 > ImageWriteJPEG( Image const& image, dip::uint jpegLevel = 80 );
+/// \brief Encodes `image` as a JPEG file and writes it to a user-created buffer.
+/// See \ref ImageWriteJPEG(Image const&, String const&, dip::uint) for details.
+DIP_EXPORT void ImageWriteJPEG( Image const& image, OutputBuffer& buffer, dip::uint jpegLevel = 80 );
+
+/// \brief Encodes `image` as a JPEG file and writes it to a buffer that is returned.
+/// See \ref ImageWriteJPEG(Image const&, String const&, dip::uint) for details.
+inline std::vector< dip::uint8 > ImageWriteJPEG( Image const& image, dip::uint jpegLevel = 80 ) {
+   std::vector< dip::uint8 > output;
+   SimpleOutputBuffer buffer( output );
+   ImageWriteJPEG( image, buffer, jpegLevel );
+   output.resize( buffer.size() );
+   return output;
+}
 
 
 /// \brief Reads an image from the PNG file `filename` and puts it in `out`.
@@ -486,14 +609,31 @@ DIP_EXPORT void ImageWritePNG(
       dip::uint significantBits = 0
 );
 
-/// \brief Writes `image` as a PNG-encoded buffer.
-/// See \ref ImageWritePNG(Image const &, String const&, dip::uint, StringSet const&, dip::uint) for details.
-DIP_EXPORT std::vector< dip::uint8 > ImageWritePNG(
+/// \brief Encodes `image` as a PNG file and writes it to a user-created buffer.
+/// See \ref ImageWritePNG(Image const&, String const&, dip::sint, StringSet const&, dip::uint) for details.
+DIP_EXPORT void ImageWritePNG(
       Image const& image,
+      OutputBuffer& buffer,
       dip::sint compressionLevel = 6,
       StringSet const& filterChoice = { S::ALL },
       dip::uint significantBits = 0
 );
+
+/// \brief Encodes `image` as a PNG file and writes it to a buffer that is returned.
+/// See \ref ImageWritePNG(Image const&, String const&, dip::sint, StringSet const&, dip::uint) for details.
+inline std::vector< dip::uint8 > ImageWritePNG(
+      Image const& image,
+      dip::sint compressionLevel = 6,
+      StringSet const& filterChoice = { S::ALL },
+      dip::uint significantBits = 0
+) {
+      std::vector< dip::uint8 > output;
+      SimpleOutputBuffer buffer( output );
+      ImageWritePNG( image, buffer, compressionLevel, filterChoice, significantBits );
+      output.resize( buffer.size() ); // This is probably not necessary.
+      return output;
+}
+
 
 /// \brief Reads a numeric array from the NumPy NPY file `filename` and puts it in `out`.
 ///
