@@ -97,7 +97,8 @@ class SimpleOutputBuffer: public OutputBuffer {
          return buffer_.size();
       }
 
-      /// \brief Doubles the buffer's \ref capacity. This call invalidates the pointer previously returned by \ref data.
+      /// \brief Increases the buffer's \ref capacity to be at least `capacity`.
+      /// This call invalidates the pointer previously returned by \ref data.
       void assure_capacity( dip::uint capacity ) override {
          if( capacity > buffer_.size() ) {
             buffer_.resize( capacity );
@@ -145,9 +146,11 @@ class FixedOutputBuffer: public OutputBuffer {
          return capacity_;
       }
 
-      /// \brief Doubles the buffer's \ref capacity. This call invalidates the pointer previously returned by \ref data.
-      void assure_capacity( dip::uint /*capacity*/ ) override {
-         DIP_THROW( "The given buffer is not large enough to contain the full output." );
+      /// \brief Throws an exception if the buffer doesn't have at least `capacity` bytes.
+      void assure_capacity( dip::uint capacity ) override {
+         if( capacity > capacity_ ) {
+            DIP_THROW("The given buffer is not large enough to contain the full output.");
+         }
       }
 
       /// Returns a pointer to the data.
