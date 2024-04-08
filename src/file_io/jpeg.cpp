@@ -488,7 +488,7 @@ void ImageWriteJPEG( Image const& /*image*/, String const& /*filename*/, dip::ui
    DIP_THROW( NOT_AVAILABLE );
 }
 
-std::vector< dip::uint8 > ImageWriteJPEG( Image const& /*image*/, dip::uint /*jpegLevel*/ ) {
+void ImageWriteJPEG( Image const& /*image*/, OutputBuffer& /*buffer*/, dip::uint /*jpegLevel*/ ) {
    DIP_THROW( NOT_AVAILABLE );
 }
 

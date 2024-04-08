@@ -643,11 +643,23 @@ FileInformation ImageReadPNGInfo( void const* /*buffer*/, dip::uint /*length*/ )
    DIP_THROW( NOT_AVAILABLE );
 }
 
-void ImageWritePNG( Image const& /*image*/, String const& /*filename*/, dip::uint /*compressionLevel*/, StringSet const& /*filterChoice*/, dip::uint /*significantBits*/ ) {
+void ImageWritePNG(
+      Image const& /*image*/,
+      String const& /*filename*/,
+      dip::sint /*compressionLevel*/,
+      StringSet const& /*filterChoice*/,
+      dip::uint /*significantBits*/
+) {
    DIP_THROW( NOT_AVAILABLE );
 }
 
-std::vector< dip::uint8 > ImageWritePNG( Image const& /*image*/, dip::uint /*compressionLevel*/, StringSet const& /*filterChoice*/, dip::uint /*significantBits*/ ) {
+void ImageWritePNG(
+      Image const& /*image*/,
+      OutputBuffer& /*buffer*/,
+      dip::sint /*compressionLevel*/,
+      StringSet const& /*filterChoice*/,
+      dip::uint /*significantBits*/
+) {
    DIP_THROW( NOT_AVAILABLE );
 }
 
