@@ -949,7 +949,7 @@ class Image::View {
       // Public constructors, you can only make a new one by copy:
       View() = delete;                          // No default constructor
       View( View const& ) = default;            // Default copy constructor is OK
-      View( View&& ) = default;                 // Default move constructor is OK
+      View( View&& ) noexcept = default;        // Default move constructor is OK
       ~View() = default;
 
       /// \brief Move assignment doesn't move, this behaves in the same way as the copy assignment.

@@ -252,7 +252,7 @@ class DIP_NO_EXPORT Image {
 
       /// \brief Move constructor, `rhs` ends up in default-initialized state, `this` even robs the external interface
       /// from `rhs`.
-      Image( Image&& rhs ) {
+      Image( Image&& rhs ) noexcept {
          swap( rhs );
       };
 
