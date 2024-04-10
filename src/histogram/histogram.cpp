@@ -560,7 +560,7 @@ Histogram& Histogram::Cumulative() {
 Histogram Histogram::GetMarginal( dip::uint dim ) const {
    DIP_THROW_IF( !IsInitialized(), E::HISTOGRAM_NOT_INITIALIZED );
    DIP_THROW_IF( dim >= Dimensionality(), E::INVALID_PARAMETER );
-   Histogram out = Copy();
+   Histogram out{ Configuration( lowerBounds_[ dim ], data_.Size( dim ), binSizes_[ dim ] ) };
    BooleanArray ps( Dimensionality(), true );
    ps[ dim ] = false;
    out.data_.Strip();
@@ -568,8 +568,8 @@ Histogram Histogram::GetMarginal( dip::uint dim ) const {
    Sum( data_, {}, out.data_, ps );
    out.data_.Protect( false );
    out.data_.PermuteDimensions( { dim } );
-   out.lowerBounds_ = { lowerBounds_[ dim ] };
-   out.binSizes_ = { binSizes_[ dim ] };
+   //out.lowerBounds_ = { lowerBounds_[ dim ] };
+   //out.binSizes_ = { binSizes_[ dim ] };
    return out;
 }
 
@@ -688,6 +688,9 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Histogram" ) {
    DOCTEST_CHECK( tensorM.BinSize() == binSize );
    DOCTEST_CHECK( tensorM.LowerBound() == 0.0 );
    DOCTEST_CHECK( tensorM.UpperBound() == upperBound );
+   DOCTEST_CHECK( tensorM.GetImage().DataType() == dip::DT_COUNT );
+   DOCTEST_CHECK( tensorM.GetImage().Sizes().size() == 1 );
+   DOCTEST_CHECK( tensorM.GetImage().Sizes()[0] == nBins );
    DOCTEST_CHECK( tensorM.Count() == tensorIm.NumberOfPixels() );
    dip::uint bin1000 = static_cast< dip::uint >( std::floor( 1000.0 / binSize ));
    DOCTEST_CHECK( tensorM.Bin( 1000.0 ) == bin1000 );

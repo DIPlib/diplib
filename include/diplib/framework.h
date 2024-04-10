@@ -113,7 +113,7 @@ DIP_EXPORT dip::uint OptimalProcessingDim( Image const& in, UnsignedArray const&
 
 //
 // Scan Framework:
-// Process an image pixel by pixel
+// Process one or more images pixel by pixel
 //
 
 
@@ -257,7 +257,7 @@ class DIP_CLASS_EXPORT ScanLineFilter {
 ///
 /// `dip::Framework::Scan` will process the image using multiple threads, so `lineFilter` will be called from multiple
 /// threads simultaneously. If it is not thread safe, specify \ref dip::Framework::ScanOption::NoMultiThreading as an
-/// option. the `SetNumberOfThreads` method to `lineFilter` will be called once before the processing starts, when
+/// option. The `SetNumberOfThreads` method to `lineFilter` will be called once before the processing starts, when
 /// `dip::Framework::Scan` has determined how many threads will be used in the scan, even if
 /// \ref dip::Framework::ScanOption::NoMultiThreading was specified.
 DIP_EXPORT void Scan(
@@ -708,7 +708,7 @@ class DIP_CLASS_EXPORT SeparableLineFilter {
 ///
 /// `dip::Framework::Separable` will process the image using multiple threads, so `lineFilter` will be called from
 /// multiple threads simultaneously. If it is not thread safe, specify \ref dip::Framework::SeparableOption::NoMultiThreading
-/// as an option. the `SetNumberOfThreads` method to `lineFilter` will be called once before the processing starts,
+/// as an option. The `SetNumberOfThreads` method to `lineFilter` will be called once before the processing starts,
 /// when `dip::Framework::Separable` has determined how many threads will be used in the processing, even if
 /// \ref dip::Framework::SeparableOption::NoMultiThreading was specified.
 DIP_EXPORT void Separable(
@@ -900,7 +900,7 @@ class DIP_CLASS_EXPORT FullLineFilter {
 ///
 /// `dip::Framework::Full` will process the image using multiple threads, so `lineFilter` will be called from multiple
 /// threads simultaneously. If it is not thread safe, specify \ref dip::Framework::FullOption::NoMultiThreading as an
-/// option. the `SetNumberOfThreads` method to `lineFilter` will be called once before the processing starts, when
+/// option. The `SetNumberOfThreads` method to `lineFilter` will be called once before the processing starts, when
 /// `dip::Framework::Full` has determined how many threads will be used in the scan, even if
 /// \ref dip::Framework::FullOption::NoMultiThreading was specified.
 DIP_EXPORT void Full(
@@ -915,6 +915,96 @@ DIP_EXPORT void Full(
       FullLineFilter& lineFilter,
       FullOptions opts = {}
 );
+
+
+//
+// Projection Framework:
+// Process an image sub-image by sub-image, yielding a single output value per sub-image.
+//
+
+
+/// \brief Defines options to the \ref dip::Framework::Projection function.
+///
+/// Implicitly casts to \ref dip::Framework::ProjectionOptions. Combine constants together with the `+` operator.
+enum class ProjectionOption : uint8 {
+   NoMultiThreading,      ///< Do not call the projection function simultaneously from multiple threads (it is not thread safe).
+};
+/// \class dip::Framework::ProjectionOptions
+/// \brief Combines any number of \ref dip::Framework::ProjectionOption constants together.
+DIP_DECLARE_OPTIONS( ProjectionOption, ProjectionOptions )
+
+/// \brief Prototype line filter for \ref dip::Framework::Projection.
+///
+/// An object of a class derived from `ProjectionFunction` must be passed to the projection framework. The derived
+/// class can be a template class, such that the line filter is overloaded for each possible pixel data type.
+///
+/// A derived class can have data members that hold parameters to the projection function, that hold output values,
+/// or that hold intermediate buffers. The `SetNumberOfThreads` method is
+/// called once before any processing starts. This is a good place to allocate space for temporary buffers,
+/// such that each threads has its own buffers to write in. Note that this function is called even if
+/// \ref dip::Framework::ProjectionOption::NoMultiThreading is given, or if the library is compiled without multi-threading.
+///
+/// The `GetNumberOfOperations` method is called to determine if it is worthwhile to start worker threads and
+/// perform the computation in parallel. This function should not perform any other tasks, as it is not
+/// guaranteed to be called. It is not important that the function be very precise, see \ref design_multithreading.
+class ProjectionFunction {
+   public:
+      /// \brief The filter to be applied to each sub-image, which fills out a single sample in `out`.
+      /// The `out` sample is of the `outImageType` type requested in the call to `Projection`.
+      virtual void Project( Image const& in, Image const& mask, Image::Sample& out, dip::uint thread ) = 0;
+      /// \brief The derived class can define this function if it needs this information ahead of time.
+      virtual void SetNumberOfThreads( dip::uint /*threads*/ ) {}
+      /// \brief The derived class can define this function for helping to determine whether to compute
+      /// in parallel or not. It must return the number of clock cycles per sub-image. The default is valid for
+      /// a trivial projection operation such as max or mean.
+      virtual dip::uint GetNumberOfOperations( dip::uint nPixels, dip::uint nTensorElements ) {
+            return nPixels * nTensorElements;
+      }
+      /// \brief A virtual destructor guarantees that we can destroy a derived class by a pointer to base
+      virtual ~ProjectionFunction() {}
+};
+
+/// \brief Framework for projecting one or more dimensions of an image.
+///
+/// `process` determines which dimensions of the input image `in` will be collapsed. `out` will have the
+/// same dimensionality as `in`, but the dimensions that are `true` in `process` will have a size of 1
+/// (i.e. be singleton dimensions); the remaining dimensions will be of the same size as in `in`.
+///
+/// The function object `projectionFunction` is called for each sub-image that projects onto a single sample.
+/// Each tensor element is processed independently, and so the sub-image is always a scalar image.
+/// For example, when computing the sum over the entire image, the `projectionFunction` is called once for
+/// each tensor element, with a scalar image the size of the full input image as input. When computing the
+/// sum over image rows, the `projectionFunction` is called once for each tensor element and each row of the
+/// image, with a scalar image the size of one image row.
+///
+/// The projection function cannot make any assumptions about contiguous data or input dimensionality. The
+/// input will be transformed such that it has as few dimensions as possible, just to make the looping inside
+/// the projection function more efficient.
+///
+/// The output image `out` (unless protected) will be resized to match the required output size,
+/// and its type will be set to that specified by `outImageType`. A protected output image must have
+/// the correct size, otherwise an exception will be thrown, but can have a different data type.
+///
+/// The output sample in the projection function will always be of type `outImageType`, even if the output
+/// image cannot be converted to that type (in which case the framework function will take care of casting
+/// each output value generated by the projection function to the output type).
+///
+/// `dip::Framework::Projection` will process the image using multiple threads, so `projectionFunction`
+/// will be called from multiple threads simultaneously. If it is not thread safe, specify
+/// \ref dip::Framework::ProjectionOption::NoMultiThreading as an option. The `SetNumberOfThreads`
+/// method to `projectionFunction` will be called once before the processing starts, when
+/// `dip::Framework::Projection` has determined how many threads will be used in the scan, even if
+/// \ref dip::Framework::FullOption::NoMultiThreading was specified.
+void Projection(
+      Image const& in,
+      Image const& mask,
+      Image& out,
+      DataType outImageType,
+      BooleanArray process,
+      ProjectionFunction& projectionFunction,
+      ProjectionOptions opts = {}
+);
+
 
 /// \endgroup
 

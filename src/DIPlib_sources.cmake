@@ -147,6 +147,7 @@ library/copy_buffer.cpp
 library/datatype.cpp
 library/framework.cpp
 library/framework_full.cpp
+library/framework_projection.cpp
 library/framework_scan.cpp
 library/framework_separable.cpp
 library/graph.cpp
