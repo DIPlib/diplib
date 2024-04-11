@@ -15,12 +15,16 @@
  * limitations under the License.
  */
 
+#include <algorithm>
+#include <exception>
 #include <utility>
+#include <vector>
 
 #include "diplib.h"
 #include "diplib/framework.h"
-#include "diplib/library/copy_buffer.h"
 #include "diplib/multithreading.h"
+
+#include "framework_support.h"
 
 namespace dip {
 namespace Framework {
@@ -97,7 +101,7 @@ void Projection(
    out.SetPixelSize( std::move( pixelSize ));
    out.SetColorSpace( std::move( colorSpace ));
    Image output = out.QuickCopy();
-   output.Fill( 42 );
+   // output.Fill( 42 ); // for debugging, to see if all output samples get written to
 
    // Do tensor to spatial dimension if necessary
    if( outTensor.Elements() > 1 ) {
@@ -182,58 +186,91 @@ void Projection(
    for( dip::sint& s : outStride ) {
       s *= psz;
    }
-   dip::uint8* output_pointer = static_cast< dip::uint8* >( output.Origin() );
-
-   // TODO: Determine the number of threads we'll be using. The size of the data has an influence, as does the number
-   //       of sub-images that we can generate
-   projectionFunction.SetNumberOfThreads( 1 );
-
-   // TODO: Start threads, each thread makes its own temp image.
-   dip::uint thread = 0;
-
-   // Iterate over the pixels in the output image. For each, we create a view in the input image.
-   UnsignedArray position( nDims, 0 );
+   dip::uint8* outputPointer = static_cast< dip::uint8* >( output.Origin() );
    bool useOutputBuffer = output.DataType() != outImageType;
-   for( ;; ) {
 
-      // Do the thing
-      Image::Sample outSample( output_pointer, output.DataType() );
-      if( useOutputBuffer ) {
-         Image::Sample outBuffer( outImageType );
-         projectionFunction.Project( tempIn, tempMask, outBuffer, thread );
-         outSample = outBuffer;
-      } else {
-         projectionFunction.Project( tempIn, tempMask, outSample, thread );
-      }
-
-      // Next output pixel
-      dip::uint dd = 0;
-      for( ; dd < nDims; dd++ ) {
-         ++position[ dd ];
-         tempIn.ShiftOriginUnsafe( inStride[ dd ] );
-         if( hasMask ) {
-            tempMask.ShiftOriginUnsafe( maskStride[ dd ] );
+   // Determine the number of threads we'll be using
+   dip::uint nThreads = 1;
+   dip::uint nLoop = output.NumberOfPixels();
+   if( !opts.Contains( ProjectionOption::NoMultiThreading )) {
+      nThreads = std::min( GetNumberOfThreads(), nLoop );
+      if( nThreads > 1 ) {
+         DIP_START_STACK_TRACE
+         dip::uint operations = nLoop * projectionFunction.GetNumberOfOperations( tempIn.NumberOfPixels() );
+         // Starting threads is only worth while if we'll do at least `threadingThreshold` operations
+         if( operations < threadingThreshold ) {
+            nThreads = 1;
          }
-         output_pointer += outStride[ dd ];
-         // Check whether we reached the last pixel of the line
-         if( position[ dd ] != outSizes[ dd ] ) {
-            break;
-         }
-         // Rewind along this dimension
-         tempIn.ShiftOriginUnsafe( -inStride[ dd ] * static_cast< dip::sint >( position[ dd ] ));
-         if( hasMask ) {
-            tempMask.ShiftOriginUnsafe( -maskStride[ dd ] * static_cast< dip::sint >( position[ dd ] ));
-         }
-         output_pointer -= outStride[ dd ] * static_cast< dip::sint >( position[ dd ] );
-         position[ dd ] = 0;
-         // Continue loop to increment along next dimension
-      }
-      if( dd == nDims ) {
-         break;            // We're done!
+         DIP_END_STACK_TRACE
       }
    }
+   dip::uint nLoopPerThread = div_ceil( nLoop, nThreads );
+   nThreads = std::min( div_ceil( nLoop, nLoopPerThread ), nThreads );
 
-   // TODO: End threads.
+   // std::cout << "Starting " << nThreads << " threads\n";
+   DIP_STACK_TRACE_THIS( projectionFunction.SetNumberOfThreads( nThreads ));
+
+   // Divide the image domain into nThreads chunks for split processing. The last chunk will have same or fewer
+   // image lines to process.
+   std::vector< UnsignedArray > startCoords =
+      SplitImageEvenlyForProcessing( outSizes, nThreads, nLoopPerThread, nDims );
+
+   // Start threads
+   DIP_PARALLEL_ERROR_DECLARE
+   #pragma omp parallel num_threads( static_cast< int >( nThreads ))
+   DIP_PARALLEL_ERROR_TRY
+      dip::uint thread = static_cast< dip::uint >( omp_get_thread_num() );
+      UnsignedArray position = startCoords[ thread ];
+      IntegerArray startPosition{ position };
+      dip::Image localTempIn = tempIn.QuickCopy();
+      localTempIn.ShiftOriginUnsafe( Image::Offset( startPosition, inStride ));
+      dip::Image localTempMask = tempMask.QuickCopy();
+      if( hasMask ) {
+         localTempMask.ShiftOriginUnsafe( Image::Offset( startPosition, maskStride ));
+      }
+      dip::uint8* localOutputPointer = outputPointer + Image::Offset( startPosition, outStride );
+
+      // Iterate over the pixels in the output image. For each, we create a view in the input image.
+      for( dip::uint ii = 0; ii < nLoopPerThread; ++ii ) {
+
+         // Do the thing
+         Image::Sample outSample( localOutputPointer, output.DataType() );
+         if( useOutputBuffer ) {
+            Image::Sample outBuffer( outImageType );
+            projectionFunction.Project( localTempIn, localTempMask, outBuffer, thread );
+            outSample = outBuffer;
+         } else {
+            projectionFunction.Project( localTempIn, localTempMask, outSample, thread );
+         }
+
+         // Next output pixel
+         dip::uint dd = 0;
+         for( ; dd < nDims; dd++ ) {
+            ++position[ dd ];
+            localTempIn.ShiftOriginUnsafe( inStride[ dd ] );
+            if( hasMask ) {
+               localTempMask.ShiftOriginUnsafe( maskStride[ dd ] );
+            }
+            localOutputPointer += outStride[ dd ];
+            // Check whether we reached the last pixel of the line
+            if( position[ dd ] != outSizes[ dd ] ) {
+               break;
+            }
+            // Rewind along this dimension
+            localTempIn.ShiftOriginUnsafe( -inStride[ dd ] * static_cast< dip::sint >( position[ dd ] ));
+            if( hasMask ) {
+               localTempMask.ShiftOriginUnsafe( -maskStride[ dd ] * static_cast< dip::sint >( position[ dd ] ));
+            }
+            localOutputPointer -= outStride[ dd ] * static_cast< dip::sint >( position[ dd ] );
+            position[ dd ] = 0;
+            // Continue loop to increment along next dimension
+         }
+         if( dd == nDims ) {
+            break;            // We're done!
+         }
+      }
+   DIP_PARALLEL_ERROR_CATCH
+   DIP_PARALLEL_ERROR_RETHROW
 }
 
 } // namespace Framework

@@ -40,7 +40,6 @@ class ProjectionSumMean : public Framework::ProjectionFunction {
          TPO sum = 0;
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( { in, mask } );
-            it.OptimizeAndFlatten();
             do {
                if( it.template Sample< 1 >() ) {
                   sum += static_cast< TPO >( it.template Sample< 0 >() );
@@ -51,7 +50,6 @@ class ProjectionSumMean : public Framework::ProjectionFunction {
             } while( ++it );
          } else {
             ImageIterator< TPI > it( in );
-            it.OptimizeAndFlatten();
             do {
                sum += static_cast< TPO >( *it );
             } while( ++it );
@@ -81,7 +79,6 @@ class ProjectionMeanDirectional : public Framework::ProjectionFunction {
          DirectionalStatisticsAccumulator acc;
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( { in, mask } );
-            it.OptimizeAndFlatten();
             do {
                if( it.template Sample< 1 >() ) {
                   acc.Push( static_cast< dfloat >( it.template Sample< 0 >() ));
@@ -89,7 +86,6 @@ class ProjectionMeanDirectional : public Framework::ProjectionFunction {
             } while( ++it );
          } else {
             ImageIterator< TPI > it( in );
-            it.OptimizeAndFlatten();
             do {
                acc.Push( static_cast< dfloat >( *it ));
             } while( ++it );
@@ -140,7 +136,6 @@ class ProjectionProductGeomMean : public Framework::ProjectionFunction {
          TPO product = 1.0;
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( { in, mask } );
-            it.OptimizeAndFlatten();
             do {
                if( it.template Sample< 1 >() ) {
                   product *= static_cast< TPO >( it.template Sample< 0 >() );
@@ -151,7 +146,6 @@ class ProjectionProductGeomMean : public Framework::ProjectionFunction {
             } while( ++it );
          } else {
             ImageIterator< TPI > it( in );
-            it.OptimizeAndFlatten();
             do {
                product *= static_cast< TPO >( *it );
             } while( ++it );
@@ -204,7 +198,6 @@ class ProjectionSumMeanAbs : public Framework::ProjectionFunction {
          TPO sum = 0;
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( { in, mask } );
-            it.OptimizeAndFlatten();
             do {
                if( it.template Sample< 1 >() ) {
                   sum += static_cast< TPO >( std::abs( it.template Sample< 0 >() ));
@@ -215,7 +208,6 @@ class ProjectionSumMeanAbs : public Framework::ProjectionFunction {
             } while( ++it );
          } else {
             ImageIterator< TPI > it( in );
-            it.OptimizeAndFlatten();
             do {
                sum += static_cast< TPO >( std::abs( *it ));
             } while( ++it );
@@ -280,7 +272,6 @@ class ProjectionSumMeanSquare : public Framework::ProjectionFunction {
          TPO sum = 0;
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( { in, mask } );
-            it.OptimizeAndFlatten();
             do {
                if( it.template Sample< 1 >() ) {
                   TPO v = static_cast< TPO >( it.template Sample< 0 >() );
@@ -292,7 +283,6 @@ class ProjectionSumMeanSquare : public Framework::ProjectionFunction {
             } while( ++it );
          } else {
             ImageIterator< TPI > it( in );
-            it.OptimizeAndFlatten();
             do {
                TPO v = static_cast< TPO >( *it );
                sum += v * v;
@@ -360,7 +350,6 @@ class ProjectionSumMeanSquareModulus : public Framework::ProjectionFunction {
          TPO sum = 0;
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( { in, mask } );
-            it.OptimizeAndFlatten();
             do {
                if( it.template Sample< 1 >() ) {
                   TPI v = it.template Sample< 0 >();
@@ -373,7 +362,6 @@ class ProjectionSumMeanSquareModulus : public Framework::ProjectionFunction {
             } while( ++it );
          } else {
             ImageIterator< TPI > it( in );
-            it.OptimizeAndFlatten();
             do {
                TPI v = *it;
                //sum += ( v * std::conj( v )).real();
@@ -440,7 +428,6 @@ class ProjectionVariance : public Framework::ProjectionFunction {
          ACC acc;
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( { in, mask } );
-            it.OptimizeAndFlatten();
             do {
                if( it.template Sample< 1 >() ) {
                   acc.Push( static_cast< dfloat >( it.template Sample< 0 >() ));
@@ -448,7 +435,6 @@ class ProjectionVariance : public Framework::ProjectionFunction {
             } while( ++it );
          } else {
             ImageIterator< TPI > it( in );
-            it.OptimizeAndFlatten();
             do {
                acc.Push( static_cast< dfloat >( *it ));
             } while( ++it );
@@ -541,7 +527,6 @@ class ProjectionMaxMin : public Framework::ProjectionFunction {
          TPI res = Computer::init_value;
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( { in, mask } );
-            it.OptimizeAndFlatten();
             do {
                if( it.template Sample< 1 >() ) {
                   res = Computer::compare( res, it.template Sample< 0 >() );
@@ -549,7 +534,6 @@ class ProjectionMaxMin : public Framework::ProjectionFunction {
             } while( ++it );
          } else {
             ImageIterator< TPI > it( in );
-            it.OptimizeAndFlatten();
             do {
                res = Computer::compare( res, *it );
             } while( ++it );
@@ -606,7 +590,6 @@ class ProjectionMaxMinAbs : public Framework::ProjectionFunction {
          TPO res = Computer::init_value;
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( { in, mask } );
-            it.OptimizeAndFlatten();
             do {
                if( it.template Sample< 1 >() ) {
                   res = Computer::compare( res, static_cast< TPO >( std::abs( it.template Sample< 0 >() )));
@@ -614,7 +597,6 @@ class ProjectionMaxMinAbs : public Framework::ProjectionFunction {
             } while( ++it );
          } else {
             ImageIterator< TPI > it( in );
-            it.OptimizeAndFlatten();
             do {
                res = Computer::compare( res, static_cast< TPO >( std::abs( *it )));
             } while( ++it );
@@ -687,7 +669,6 @@ class ProjectionPercentile : public Framework::ProjectionFunction {
          auto outIt = buffer_[ thread ].begin();
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( { in, mask } );
-            it.OptimizeAndFlatten();
             do {
                if( it.template Sample< 1 >() ) {
                   *( outIt++ ) = it.template Sample< 0 >();
@@ -695,7 +676,6 @@ class ProjectionPercentile : public Framework::ProjectionFunction {
             } while( ++it );
          } else {
             ImageIterator< TPI > it( in );
-            it.OptimizeAndFlatten();
             do {
                *( outIt++ ) = *it;
             } while( ++it );
@@ -755,7 +735,6 @@ class ProjectionAll : public Framework::ProjectionFunction {
          bool all = true;
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( { in, mask } );
-            it.OptimizeAndFlatten();
             do {
                if( it.template Sample< 1 >() && ( it.template Sample< 0 >() == TPI( 0 ))) {
                   all = false;
@@ -764,7 +743,6 @@ class ProjectionAll : public Framework::ProjectionFunction {
             } while( ++it );
          } else {
             ImageIterator< TPI > it( in );
-            it.OptimizeAndFlatten();
             do {
                if( *it == TPI( 0 )) {
                   all = false;
@@ -798,7 +776,6 @@ class ProjectionAny : public Framework::ProjectionFunction {
          bool any = false;
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( { in, mask } );
-            it.OptimizeAndFlatten();
             do {
                if( it.template Sample< 1 >() && ( it.template Sample< 0 >() != TPI( 0 ))) {
                   any = true;
@@ -807,7 +784,6 @@ class ProjectionAny : public Framework::ProjectionFunction {
             } while( ++it );
          } else {
             ImageIterator< TPI > it( in );
-            it.OptimizeAndFlatten();
             do {
                if( *it != TPI( 0 )) {
                   any = true;
@@ -1098,9 +1074,9 @@ void PositionPercentile(
 
 DOCTEST_TEST_CASE("[DIPlib] testing the projection function mechanics") {
    // Testing that the Projection framework works appropriately.
-   dip::Image img{ dip::UnsignedArray{ 3, 4, 2 }, 3, dip::DT_UINT8 };
+   dip::Image img{ dip::UnsignedArray{ 30, 40, 200 }, 3, dip::DT_UINT8 };
    img = { 1, 1, 1 };
-   img.At( 1, 2, 0 ) = { 2, 3, 4 };
+   img.At( 10, 20, 100 ) = { 2, 3, 4 };
 
    // Project over all dimensions except the tensor dimension
    dip::Image out = dip::Maximum( img );
@@ -1125,35 +1101,35 @@ DOCTEST_TEST_CASE("[DIPlib] testing the projection function mechanics") {
    // Project over two dimensions
    out = dip::Maximum( img, {}, { false, true, true } );
    DOCTEST_CHECK( out.Dimensionality() == 3 );
-   DOCTEST_CHECK( out.NumberOfPixels() == 3 );
-   DOCTEST_CHECK( out.Size( 0 ) == 3 );
+   DOCTEST_CHECK( out.NumberOfPixels() == 30 );
+   DOCTEST_CHECK( out.Size( 0 ) == 30 );
    DOCTEST_CHECK( out.TensorElements() == 3 );
    DOCTEST_CHECK( out.At( 0, 0, 0 ) == dip::Image::Pixel( { 1, 1, 1 } ));
-   DOCTEST_CHECK( out.At( 1, 0, 0 ) == dip::Image::Pixel( { 2, 3, 4 } ));
-   DOCTEST_CHECK( out.At( 2, 0, 0 ) == dip::Image::Pixel( { 1, 1, 1 } ));
+   DOCTEST_CHECK( out.At( 10, 0, 0 ) == dip::Image::Pixel( { 2, 3, 4 } ));
+   DOCTEST_CHECK( out.At( 20, 0, 0 ) == dip::Image::Pixel( { 1, 1, 1 } ));
 
    // Project over another two dimensions
    out = dip::Maximum( img, {}, { true, false, true } );
    DOCTEST_CHECK( out.Dimensionality() == 3 );
-   DOCTEST_CHECK( out.NumberOfPixels() == 4 );
-   DOCTEST_CHECK( out.Size( 1 ) == 4 );
+   DOCTEST_CHECK( out.NumberOfPixels() == 40 );
+   DOCTEST_CHECK( out.Size( 1 ) == 40 );
    DOCTEST_CHECK( out.TensorElements() == 3 );
    DOCTEST_CHECK( out.At( 0, 0, 0 ) == dip::Image::Pixel( { 1, 1, 1 } ));
-   DOCTEST_CHECK( out.At( 0, 1, 0 ) == dip::Image::Pixel( { 1, 1, 1 } ));
-   DOCTEST_CHECK( out.At( 0, 2, 0 ) == dip::Image::Pixel( { 2, 3, 4 } ));
-   DOCTEST_CHECK( out.At( 0, 3, 0 ) == dip::Image::Pixel( { 1, 1, 1 } ));
+   DOCTEST_CHECK( out.At( 0, 10, 0 ) == dip::Image::Pixel( { 1, 1, 1 } ));
+   DOCTEST_CHECK( out.At( 0, 20, 0 ) == dip::Image::Pixel( { 2, 3, 4 } ));
+   DOCTEST_CHECK( out.At( 0, 30, 0 ) == dip::Image::Pixel( { 1, 1, 1 } ));
 
    // Project over no dimensions -- square must still be applied
    out = dip::MeanSquare( img, {}, { false, false, false } );
    DOCTEST_CHECK( out.Sizes() == img.Sizes() );
    DOCTEST_CHECK( out.TensorElements() == 3 );
-   DOCTEST_CHECK( out.At( 0, 2, 0 ) == dip::Image::Pixel( { 1, 1, 1 } ));
-   DOCTEST_CHECK( out.At( 1, 2, 0 ) == dip::Image::Pixel( { 4, 9, 16 } ));
-   DOCTEST_CHECK( out.At( 2, 2, 0 ) == dip::Image::Pixel( { 1, 1, 1 } ));
-   DOCTEST_CHECK( out.At( 1, 0, 0 ) == dip::Image::Pixel( { 1, 1, 1 } ));
-   DOCTEST_CHECK( out.At( 1, 1, 0 ) == dip::Image::Pixel( { 1, 1, 1 } ));
-   DOCTEST_CHECK( out.At( 1, 3, 0 ) == dip::Image::Pixel( { 1, 1, 1 } ));
-   DOCTEST_CHECK( out.At( 1, 2, 1 ) == dip::Image::Pixel( { 1, 1, 1 } ));
+   DOCTEST_CHECK( out.At( 0, 20, 100 ) == dip::Image::Pixel( { 1, 1, 1 } ));
+   DOCTEST_CHECK( out.At( 10, 20, 100 ) == dip::Image::Pixel( { 4, 9, 16 } ));
+   DOCTEST_CHECK( out.At( 20, 20, 100 ) == dip::Image::Pixel( { 1, 1, 1 } ));
+   DOCTEST_CHECK( out.At( 10, 0, 100 ) == dip::Image::Pixel( { 1, 1, 1 } ));
+   DOCTEST_CHECK( out.At( 10, 10, 100 ) == dip::Image::Pixel( { 1, 1, 1 } ));
+   DOCTEST_CHECK( out.At( 10, 30, 100 ) == dip::Image::Pixel( { 1, 1, 1 } ));
+   DOCTEST_CHECK( out.At( 10, 20, 101 ) == dip::Image::Pixel( { 1, 1, 1 } ));
 
    // No looping at all, we project over all dimensions and have no tensor dimension
    img = dip::Image{ dip::UnsignedArray{ 3, 4, 2 }, 1, dip::DT_SFLOAT };

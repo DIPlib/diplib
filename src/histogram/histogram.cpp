@@ -568,8 +568,6 @@ Histogram Histogram::GetMarginal( dip::uint dim ) const {
    Sum( data_, {}, out.data_, ps );
    out.data_.Protect( false );
    out.data_.PermuteDimensions( { dim } );
-   //out.lowerBounds_ = { lowerBounds_[ dim ] };
-   //out.binSizes_ = { binSizes_[ dim ] };
    return out;
 }
 

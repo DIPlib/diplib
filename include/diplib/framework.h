@@ -957,8 +957,8 @@ class ProjectionFunction {
       /// \brief The derived class can define this function for helping to determine whether to compute
       /// in parallel or not. It must return the number of clock cycles per sub-image. The default is valid for
       /// a trivial projection operation such as max or mean.
-      virtual dip::uint GetNumberOfOperations( dip::uint nPixels, dip::uint nTensorElements ) {
-            return nPixels * nTensorElements;
+      virtual dip::uint GetNumberOfOperations( dip::uint nPixels ) {
+            return nPixels;
       }
       /// \brief A virtual destructor guarantees that we can destroy a derived class by a pointer to base
       virtual ~ProjectionFunction() {}

@@ -11,6 +11,10 @@ title: "Changes DIPlib 3.x.x"
   as specific instances. These are used to handle a buffer that a JPEG or PNG file can be written into by
   `dip::ImageWriteJPEG()` and `dip::ImageWritePNG()`.
 
+- Added `dip::Framework::Projection()` as a public function. Previously it was hidden in the library for internal
+  use only. This framework function simplifies the creation of projection operations, and forms the basis of
+  functions such as `dip::Mean()` and `dip::Maximum()`.
+
 ### Changed functionality
 
 - The `compressionLevel` argument to `dip::ImageWritePNG()` changed from `dip::uint` to `dip::sint`, allowing for
@@ -20,6 +24,11 @@ title: "Changes DIPlib 3.x.x"
 - The versions of `dip::ImageWriteJPEG()` and `dip::ImageWritePNG()` that write to a memory buffer now take
   a version of a `dip::OutputBuffer` object to write to. Overloaded versions of these two functions maintain
   the previous syntax where the buffer is created internally and returned to the caller.
+
+- `dip::Framework::Projection()` is now parallelized. All projection functions (for example `dip::Mean()` and
+  `dip::Maximum()`) now can use multithreading for faster computation if the output has at least one dimension.
+  For example, the mean value of each image row can be computed in parallel, but the mean value over the whole
+  image is still not computed in parallel.
 
 ### Bug fixes
 

@@ -1,5 +1,5 @@
 /*
- * (c)2016-2017, Cris Luengo.
+ * (c)2016-2024, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,8 +15,13 @@
  * limitations under the License.
  */
 
+#include <cstdlib>
+#include <vector>
+
 #include "diplib.h"
 #include "diplib/framework.h"
+
+#include "framework_support.h"
 
 namespace dip {
 namespace Framework {
@@ -82,7 +87,9 @@ dip::uint SingletonExpendedTensorElements(
 }
 
 
-static dip::uint OptimalProcessingDim_internal(
+namespace {
+
+dip::uint OptimalProcessingDim_internal(
       UnsignedArray const& sizes,
       IntegerArray const& strides
 ) {
@@ -97,13 +104,15 @@ static dip::uint OptimalProcessingDim_internal(
                (( sizes[ ii ] > SMALL_IMAGE ) && ( std::abs( strides[ ii ] ) < std::abs( strides[ processingDim ] ))) ||
                // or the current processing dimension is a small dimension, and this dimension is larger
                (( sizes[ processingDim ] <= SMALL_IMAGE ) && ( sizes[ ii ] > sizes[ processingDim ] ))) {
-               // then update the processing dimension to this one
+            // then update the processing dimension to this one
             processingDim = ii;
-         }
+               }
       }
    }
    return processingDim;
 }
+
+} // namespace
 
 // Find best processing dimension, which is the one with the smallest stride,
 // except if that dimension is very small and there's a longer dimension.
@@ -130,6 +139,51 @@ dip::uint OptimalProcessingDim(
    }
    // TODO: a kernel of 1000x2 should definitely return the dimension where it's 1000 as the optimal dimension. Or?
    return OptimalProcessingDim_internal( sizes, in.Strides() );
+}
+
+std::vector< UnsignedArray >  SplitImageEvenlyForProcessing(
+   UnsignedArray const& sizes,
+   dip::uint nBlocks,
+   dip::uint nPixelsPerBlock,
+   dip::uint processingDim // set to sizes.size() or larger if there's none
+) {
+   // DIP_ASSERT( nBlocks * nPixelsPerBlock >= sizes.product() ); // except we shouldn't count the processing dimension here!
+   std::vector< UnsignedArray > startCoords( nBlocks );
+   dip::uint nDims = sizes.size();
+   startCoords[ 0 ] = UnsignedArray( nDims, 0 );
+   for( dip::uint ii = 1; ii < nBlocks; ++ii ) {
+      startCoords[ ii ] = startCoords[ ii - 1 ];
+      // To advance the iterator nLinesPerThread times, we increment it in whole-line steps.
+      dip::uint firstDim = processingDim == 0 ? 1 : 0;
+      dip::uint remaining = nPixelsPerBlock;
+      do {
+         for( dip::uint dd = 0; dd < nDims; ++dd ) {
+            if( dd == firstDim ) {
+               dip::uint n = sizes[ dd ] - startCoords[ ii ][ dd ];
+               if( remaining >= n ) {
+                  // Rewinding, next loop iteration will increment the next coordinate
+                  remaining -= n;
+                  startCoords[ ii ][ dd ] = 0;
+               } else {
+                  // Forward by `remaining`, then we're done.
+                  startCoords[ ii ][ dd ] += remaining;
+                  remaining = 0;
+                  break;
+               }
+            } else if( dd != processingDim ) {
+               // Increment coordinate
+               ++startCoords[ ii ][ dd ];
+               // Check whether we reached the last pixel of the line
+               if( startCoords[ ii ][ dd ] < sizes[ dd ] ) {
+                  break;
+               }
+               // Rewind, the next loop iteration will increment the next coordinate
+               startCoords[ ii ][ dd ] = 0;
+            }
+         }
+      } while( remaining > 0 );
+   }
+   return startCoords;
 }
 
 } // namespace Framework

@@ -15,11 +15,19 @@
  * limitations under the License.
  */
 
+#include <algorithm>
+#include <exception>
+#include <utility>
+#include <vector>
+
 #include "diplib.h"
+#include "diplib/boundary.h"
 #include "diplib/framework.h"
 #include "diplib/generic_iterators.h"
 #include "diplib/library/copy_buffer.h"
 #include "diplib/multithreading.h"
+
+#include "framework_support.h"
 
 namespace dip {
 namespace Framework {
@@ -235,12 +243,9 @@ void Separable(
    dip::uint dThreads;
 
    // Start threads, each thread makes its own buffers
-   AssertionError assertionError;
-   ParameterError parameterError;
-   RunTimeError runTimeError;
-   Error error;
+   DIP_PARALLEL_ERROR_DECLARE
    #pragma omp parallel num_threads( static_cast< int >( nThreads ))
-   try {
+   DIP_PARALLEL_ERROR_TRY
       dip::uint thread = static_cast< dip::uint >( omp_get_thread_num() );
 
       // The temporary buffers, if needed, will be stored here (each thread their own!)
@@ -274,42 +279,7 @@ void Separable(
             nLinesPerThread = div_ceil( inImage.NumberOfPixels() / inSizes[ processingDim ], nThreads );
             DIP_ASSERT( nLinesPerThread == div_ceil( outImage.NumberOfPixels() / outSizes[ processingDim ], nThreads ));
             dThreads = std::min( div_ceil( inImage.NumberOfPixels() / inSizes[ processingDim ], nLinesPerThread ), nThreads );
-            startCoords[ 0 ] = UnsignedArray( nDims, 0 );
-            for( dip::uint ii = 1; ii < dThreads; ++ii ) {
-               startCoords[ ii ] = startCoords[ ii - 1 ];
-               // To advance the iterator nLinesPerThread times, we increment it in whole-line steps.
-               dip::uint firstDim = processingDim == 0 ? 1 : 0;
-               dip::uint remaining = nLinesPerThread;
-               do {
-                  for( dip::uint dd = 0; dd < nDims; ++dd ) {
-                     if( dd == firstDim ) {
-                        dip::uint n = sizes[ dd ] - startCoords[ ii ][ dd ];
-                        if( remaining >= n ) {
-                           // Rewinding, next loop iteration will increment the next coordinate
-                           remaining -= n;
-                           startCoords[ ii ][ dd ] = 0;
-                        } else {
-                           // Forward by `remaining`, then we're done.
-                           startCoords[ ii ][ dd ] += remaining;
-                           remaining = 0;
-                           break;
-                        }
-                     } else if( dd != processingDim ) {
-                        // Increment coordinate
-                        ++startCoords[ ii ][ dd ];
-                        // Check whether we reached the last pixel of the line
-                        if( startCoords[ ii ][ dd ] < sizes[ dd ] ) {
-                           break;
-                        }
-                        // Rewind, the next loop iteration will increment the next coordinate
-                        startCoords[ ii ][ dd ] = 0;
-                     }
-                  }
-               } while( remaining > 0 );
-            }
-            //for( dip::uint ii = 1; ii < nThreads; ++ii ) {
-            //   std::cout << "   startCoords[ " << ii << " ] = " << startCoords[ ii ] << std::endl;
-            //}
+            startCoords = SplitImageEvenlyForProcessing( sizes, dThreads, nLinesPerThread, processingDim );
          }
          #pragma omp barrier
 
@@ -453,44 +423,8 @@ void Separable(
          #pragma omp master
          lookUpTable.clear();
       }
-   } catch( dip::AssertionError const& e ) {
-      if( !assertionError.IsSet() ) {
-         assertionError = e;
-         DIP_ADD_STACK_TRACE( assertionError );
-      }
-   } catch( dip::ParameterError const& e ) {
-      if( !parameterError.IsSet() ) {
-         parameterError = e;
-         DIP_ADD_STACK_TRACE( parameterError );
-      }
-   } catch( dip::RunTimeError const& e ) {
-      if( !runTimeError.IsSet() ) {
-         runTimeError = e;
-         DIP_ADD_STACK_TRACE( runTimeError );
-      }
-   } catch( dip::Error const& e ) {
-      if( !error.IsSet() ) {
-         error = e;
-         DIP_ADD_STACK_TRACE( error );
-      }
-   } catch( std::exception const& stde ) {
-      if( !runTimeError.IsSet() ) {
-         runTimeError = dip::RunTimeError( stde.what() );
-         DIP_ADD_STACK_TRACE( runTimeError );
-      }
-   }
-   if( assertionError.IsSet() ) {
-      throw assertionError;
-   }
-   if( parameterError.IsSet() ) {
-      throw parameterError;
-   }
-   if( runTimeError.IsSet() ) {
-      throw runTimeError;
-   }
-   if( error.IsSet() ) {
-      throw error;
-   }
+   DIP_PARALLEL_ERROR_CATCH
+   DIP_PARALLEL_ERROR_RETHROW
 }
 
 
@@ -607,40 +541,7 @@ void OneDimensionalLineFilter(
    // image lines to process.
    dip::uint nLinesPerThread = div_ceil( input.NumberOfPixels() / inSizes[ processingDim ], nThreads );
    nThreads = std::min( div_ceil( input.NumberOfPixels() / inSizes[ processingDim ], nLinesPerThread ), nThreads );
-   std::vector< UnsignedArray > startCoords( nThreads );
-   startCoords[ 0 ] = UnsignedArray( nDims, 0 );
-   for( dip::uint ii = 1; ii < nThreads; ++ii ) {
-      startCoords[ ii ] = startCoords[ ii - 1 ];
-      // To advance the iterator nLinesPerThread times, we increment it in whole-line steps.
-      dip::uint firstDim = processingDim == 0 ? 1 : 0;
-      dip::uint remaining = nLinesPerThread;
-      do {
-         for( dip::uint dd = 0; dd < nDims; ++dd ) {
-            if( dd == firstDim ) {
-               dip::uint n = outSizes[ dd ] - startCoords[ ii ][ dd ];
-               if( remaining >= n ) {
-                  // Rewinding, next loop iteration will increment the next coordinate
-                  remaining -= n;
-                  startCoords[ ii ][ dd ] = 0;
-               } else {
-                  // Forward by `remaining`, then we're done.
-                  startCoords[ ii ][ dd ] += remaining;
-                  remaining = 0;
-                  break;
-               }
-            } else if( dd != processingDim ) {
-               // Increment coordinate
-               ++startCoords[ ii ][ dd ];
-               // Check whether we reached the last pixel of the line
-               if( startCoords[ ii ][ dd ] < outSizes[ dd ] ) {
-                  break;
-               }
-               // Rewind, the next loop iteration will increment the next coordinate
-               startCoords[ ii ][ dd ] = 0;
-            }
-         }
-      } while( remaining > 0 );
-   }
+   std::vector< UnsignedArray > startCoords = SplitImageEvenlyForProcessing( outSizes, nThreads, nLinesPerThread, processingDim );
 
    // Some values to use
    dip::uint inLength = inSizes[ processingDim ];
@@ -662,12 +563,9 @@ void OneDimensionalLineFilter(
    DIP_STACK_TRACE_THIS( lineFilter.SetNumberOfThreads( nThreads ));
 
    // Start threads, each thread makes its own buffers
-   AssertionError assertionError;
-   ParameterError parameterError;
-   RunTimeError runTimeError;
-   Error error;
-#pragma omp parallel num_threads( static_cast< int >( nThreads ))
-   try {
+   DIP_PARALLEL_ERROR_DECLARE
+   #pragma omp parallel num_threads( static_cast< int >( nThreads ))
+   DIP_PARALLEL_ERROR_TRY
       dip::uint thread = static_cast< dip::uint >( omp_get_thread_num() );
 
       // The temporary buffers, if needed, will be stored here (each thread their own!)
@@ -785,44 +683,8 @@ void OneDimensionalLineFilter(
             }
          }
       }
-   } catch( dip::AssertionError const& e ) {
-      if( !assertionError.IsSet() ) {
-         assertionError = e;
-         DIP_ADD_STACK_TRACE( assertionError );
-      }
-   } catch( dip::ParameterError const& e ) {
-      if( !parameterError.IsSet() ) {
-         parameterError = e;
-         DIP_ADD_STACK_TRACE( parameterError );
-      }
-   } catch( dip::RunTimeError const& e ) {
-      if( !runTimeError.IsSet() ) {
-         runTimeError = e;
-         DIP_ADD_STACK_TRACE( runTimeError );
-      }
-   } catch( dip::Error const& e ) {
-      if( !error.IsSet() ) {
-         error = e;
-         DIP_ADD_STACK_TRACE( error );
-      }
-   } catch( std::exception const& stde ) {
-      if( !runTimeError.IsSet() ) {
-         runTimeError = dip::RunTimeError( stde.what() );
-         DIP_ADD_STACK_TRACE( runTimeError );
-      }
-   }
-   if( assertionError.IsSet() ) {
-      throw assertionError;
-   }
-   if( parameterError.IsSet() ) {
-      throw parameterError;
-   }
-   if( runTimeError.IsSet() ) {
-      throw runTimeError;
-   }
-   if( error.IsSet() ) {
-      throw error;
-   }
+   DIP_PARALLEL_ERROR_CATCH
+   DIP_PARALLEL_ERROR_RETHROW
 }
 
 } // namespace Framework
