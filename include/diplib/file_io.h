@@ -404,7 +404,7 @@ DIP_NODISCARD inline Image ImageReadTIFFSeries(
 
 /// \brief Reads image information and metadata from the TIFF file `filename`, without reading the actual
 /// pixel data. See \ref dip::ImageReadTIFF for more details on the handling of `filename` and `imageNumber`.
-DIP_EXPORT FileInformation ImageReadTIFFInfo( String const& filename, dip::uint imageNumber = 0 );
+DIP_NODISCARD DIP_EXPORT FileInformation ImageReadTIFFInfo( String const& filename, dip::uint imageNumber = 0 );
 
 /// \brief Returns true if the file `filename` is a TIFF file.
 DIP_EXPORT bool ImageIsTIFF( String const& filename );
@@ -470,7 +470,7 @@ DIP_NODISCARD inline Image ImageReadJPEG( String const& filename ) {
 
 /// \brief Reads image information and metadata from the JPEG file `filename`, without reading the actual
 /// pixel data. See \ref dip::ImageReadJPEG for more details on the handling of `filename`.
-DIP_EXPORT FileInformation ImageReadJPEGInfo( String const& filename );
+DIP_NODISCARD DIP_EXPORT FileInformation ImageReadJPEGInfo( String const& filename );
 
 /// \brief Returns true if the file `filename` is a JPEG file.
 DIP_EXPORT bool ImageIsJPEG( String const& filename );
@@ -490,7 +490,7 @@ DIP_NODISCARD inline Image ImageReadJPEG( void const* buffer, dip::uint length )
 /// pixel data.
 ///
 /// `buffer` must point to `length` bytes containing a JPEG-encoded image.
-DIP_EXPORT FileInformation ImageReadJPEGInfo( void const* buffer, dip::uint length );
+DIP_NODISCARD DIP_EXPORT FileInformation ImageReadJPEGInfo( void const* buffer, dip::uint length );
 
 /// \brief Writes `image` as a JPEG file.
 ///
@@ -513,7 +513,7 @@ DIP_EXPORT void ImageWriteJPEG( Image const& image, OutputBuffer& buffer, dip::u
 
 /// \brief Encodes `image` as a JPEG file and writes it to a buffer that is returned.
 /// See \ref ImageWriteJPEG(Image const&, String const&, dip::uint) for details.
-inline std::vector< dip::uint8 > ImageWriteJPEG( Image const& image, dip::uint jpegLevel = 80 ) {
+DIP_NODISCARD inline std::vector< dip::uint8 > ImageWriteJPEG( Image const& image, dip::uint jpegLevel = 80 ) {
    std::vector< dip::uint8 > output;
    SimpleOutputBuffer buffer( output );
    ImageWriteJPEG( image, buffer, jpegLevel );
@@ -540,7 +540,7 @@ DIP_NODISCARD inline Image ImageReadPNG( String const& filename ) {
 
 /// \brief Reads image information and metadata from the PNG file `filename`, without reading the actual
 /// pixel data. See \ref dip::ImageReadPNG(Image&, String const&) for more details on the handling of `filename`.
-DIP_EXPORT FileInformation ImageReadPNGInfo( String const& filename );
+DIP_NODISCARD DIP_EXPORT FileInformation ImageReadPNGInfo( String const& filename );
 
 /// \brief Returns true if the file `filename` is a PNG file.
 DIP_EXPORT bool ImageIsPNG( String const& filename );
@@ -560,7 +560,7 @@ DIP_NODISCARD inline Image ImageReadPNG( void const* buffer, dip::uint length ) 
 /// pixel data.
 ///
 /// `buffer` must point to `length` bytes containing a PNG-encoded image.
-DIP_EXPORT FileInformation ImageReadPNGInfo( void const* buffer, dip::uint length );
+DIP_NODISCARD DIP_EXPORT FileInformation ImageReadPNGInfo( void const* buffer, dip::uint length );
 
 /// \brief Writes `image` as a PNG file.
 ///
@@ -624,7 +624,7 @@ DIP_EXPORT void ImageWritePNG(
 
 /// \brief Encodes `image` as a PNG file and writes it to a buffer that is returned.
 /// See \ref ImageWritePNG(Image const&, String const&, dip::sint, StringSet const&, dip::uint) for details.
-inline std::vector< dip::uint8 > ImageWritePNG(
+DIP_NODISCARD inline std::vector< dip::uint8 > ImageWritePNG(
       Image const& image,
       dip::sint compressionLevel = 6,
       StringSet const& filterChoice = { S::ALL },
@@ -659,7 +659,7 @@ DIP_NODISCARD inline Image ImageReadNPY( String const& filename ) {
 
 /// \brief Reads array information (size and data type) from the NumPy NPY file `filename`, without reading the actual
 /// pixel data. See \ref dip::ImageReadNPY for more details on the handling of `filename`.
-DIP_EXPORT FileInformation ImageReadNPYInfo( String const& filename );
+DIP_NODISCARD DIP_EXPORT FileInformation ImageReadNPYInfo( String const& filename );
 
 /// \brief Returns true if the file `filename` is a NPY file.
 DIP_EXPORT bool ImageIsNPY( String const& filename );
