@@ -1,5 +1,5 @@
 /*
- * (c)2018-2021, Cris Luengo.
+ * (c)2018-2024, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,14 +15,21 @@
  * limitations under the License.
  */
 
+#include <algorithm>
+#include <cmath>
+#include <tuple>
+#include <utility>
+#include <vector>
+
 #include "diplib.h"
-#include "diplib/private/robin_map.h"
 #include "diplib/analysis.h"
-#include "diplib/regions.h"
+#include "diplib/distribution.h"
 #include "diplib/generic_iterators.h"
+#include "diplib/geometry.h"
 #include "diplib/overload.h"
 #include "diplib/random.h"
-#include "diplib/saturated_arithmetic.h"
+#include "diplib/regions.h"
+#include "diplib/private/robin_map.h"
 
 namespace dip {
 
@@ -37,7 +44,7 @@ namespace {
 using UIntPixelValueReaderFunction = dip::uint ( * )( void const* );
 
 template< typename TPI >
-static dip::uint UIntPixelValueReader( void const* data ) {
+dip::uint UIntPixelValueReader( void const* data ) {
    return static_cast< dip::uint >( *static_cast< TPI const* >( data ));
 }
 
@@ -60,6 +67,7 @@ dfloat FloatPixelValueReader( void const* data ) {
 
 class PixelPairFunction {
    public:
+      virtual ~PixelPairFunction() = default;
       virtual void UpdateRandom(
             UnsignedArray const& coords1,
             UnsignedArray const& coords2,
@@ -132,54 +140,47 @@ void GridPixelPairSampler(
 ) {
    bool hasMask = mask.IsForged();
    dip::uint nDims = object.Dimensionality();
-   UnsignedArray coords( nDims );
-   dip::uint nPixels = object.Sizes().product();
-   dip::uint nGridPoints = nPixels;
-   dip::uint step = 1; // how many lines to skip
+   dip::uint step = 1; // same step size along all dimensions
    if( nProbes > 0 ) {
-      nGridPoints = div_ceil( nProbes, nDims * ( maxLength + 1 ));
-      dfloat fraction = std::sqrt( static_cast< dfloat >( nPixels ) / static_cast< dfloat >( nGridPoints ));
-      step = static_cast< dip::uint >( floor_cast( 1.0 / fraction ));
-      step = std::max< dip::uint >( step, 1 ); // step must be at least 1, this test should never trigger.
+      // The number of probes is computed as follows: We sample the image every `step` pixels
+      // along each dimension, obtaining a set of grid points. For each grid point we obtain
+      // pixel pairs by walking up to `maxLength` pixels in each dimension. Each pixel pair
+      // is a probe.
+      dip::uint nGridPoints = div_ceil( nProbes, nDims * ( maxLength + 1 ));
+      dfloat stepLength = static_cast< dfloat >( object.NumberOfPixels() ) / static_cast< dfloat >( nGridPoints );
+      stepLength = std::pow( stepLength, 1.0 / static_cast< dfloat >( nDims ));
+      stepLength = std::max( std::round( stepLength ), 1.0 ); // step must be at least 1
+      step = static_cast< dip::uint >( stepLength );
    }
-   // Iterate over image dimensions
-   for( dip::uint dim = 0; dim < nDims; ++dim ) {
-      GenericJointImageIterator< 2 > it( { object, mask }, dim );
-      dip::uint size = it.ProcessingDimensionSize();
-      dip::sint dataStride = it.ProcessingDimensionStride< 0 >() * static_cast< dip::sint >( object.DataType().SizeOf() );
-      dip::sint maskStride = hasMask ? it.ProcessingDimensionStride< 1 >() : 0;
-      dip::uint nLinesInGrid = div_floor( nPixels / size, step );
-      dip::uint nPointsPerLine = div_ceil( nGridPoints, nLinesInGrid );
-      nPointsPerLine = std::min( nPointsPerLine, size ); // don't do more points than we have in the line, this should not trigger.
-      dip::uint lineStep = div_floor( size, nPointsPerLine );
-      dip::uint lastPoint = lineStep * nPointsPerLine;
-      // Iterate over `fraction` image lines
-      do {
-         // Iterate over `fraction` pixels in this image line
+   dip::Image stepObject = ( step > 1 ) ? Subsampling( object, { step } ) : object.QuickCopy();
+   dip::Image stepMask = ( hasMask && step > 1 ) ? Subsampling( mask, { step } ) : mask.QuickCopy();
+   // Iterate over subsampled image.
+   GenericJointImageIterator< 2 > it( { stepObject, stepMask } );
+   do {
+      // `it` is the first point of a set of pairs, we get the other by walking up to `maxLength` pixels along each image dimension
+      bin const* maskPtr = hasMask ? static_cast< bin const* >( it.Pointer< 1 >() ) : nullptr;
+      if( !hasMask || *maskPtr ) {
          void const* dataPtr = it.Pointer< 0 >();
-         bin const* maskPtr = hasMask ? static_cast< bin const* >( it.Pointer< 1 >() ) : nullptr;
-         for( dip::uint ii = 0; ii < lastPoint; ii += lineStep ) {
-            if( !hasMask || *maskPtr ) {
-               // Iterate over pixels at all distances from this pixel
-               dip::uint max = std::min( maxLength, size - ii - 1 );
-               void const* dataPtr2 = dataPtr;
-               bin const* maskPtr2 = maskPtr;
-               for( dip::uint distance = 0; distance <= max; ++distance ) {
-                  if( !hasMask || *maskPtr2 ) {
-                     pixelPairFunction->UpdateGrid( dataPtr, dataPtr2, distance );
-                  }
-                  dataPtr2 = static_cast< uint8 const* >( dataPtr2 ) + dataStride;
-                  maskPtr2 += maskStride;
+         // Iterate over image dimensions
+         for( dip::uint dim = 0; dim < nDims; ++dim ) {
+            dip::uint size = object.Size( dim );
+            dip::uint pos = it.Coordinates()[ dim ];
+            dip::uint maxDist = std::min( maxLength, size - pos - 1 );
+            dip::sint dataStride = object.Stride( dim ) * static_cast< dip::sint >( object.DataType().SizeOf() );
+            dip::sint maskStride = hasMask ? mask.Stride( dim ) : 0;
+            void const* dataPtr2 = dataPtr;
+            bin const* maskPtr2 = maskPtr;
+            // Iterate over pixels at all distances from this pixel
+            for( dip::uint distance = 0; distance <= maxDist; ++distance ) {
+               if( !hasMask || *maskPtr2 ) {
+                  pixelPairFunction->UpdateGrid( dataPtr, dataPtr2, distance );
                }
+               dataPtr2 = static_cast< uint8 const* >( dataPtr2 ) + dataStride;
+               maskPtr2 += maskStride;
             }
-            dataPtr = static_cast< uint8 const* >( dataPtr ) + dataStride;
-            maskPtr += maskStride;
          }
-         for( dip::uint ii = 0; ( ii < step ) && it; ++ii ) {
-            ++it; // TODO: this does not skip appropriately in 3D and higher dims.
-         }
-      } while( it );
-   }
+      }
+   } while( ++it );
 }
 
 void NormalizeDistribution(
@@ -264,14 +265,14 @@ class PairCorrelationFunction : public PixelPairFunction {
       UIntPixelValueReaderFunction GetUIntPixelValue_;
 };
 
-enum class PairCorrelationNormalization{ None, Volume, VolumeSquare };
+enum class PairCorrelationNormalization: dip::uint8 { None, Volume, VolumeSquare };
 
 std::pair< bool, PairCorrelationNormalization > ParsePairCorrelationOptions( StringSet const& options ) {
    PairCorrelationNormalization normalization = PairCorrelationNormalization::None;
    bool normalize = false;
    bool normalize2 = false;
    bool covariance = false;
-   for( auto& o: options ) {
+   for( auto const& o: options ) {
       if( o == "covariance" ) {
          covariance = true;
       } else if( o == "normalize volume" ) {

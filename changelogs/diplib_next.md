@@ -35,6 +35,10 @@ title: "Changes DIPlib 3.x.x"
 
 ### Bug fixes
 
+- `dip::PairCorrelation`, `dip::ProbabilisticPairCorrelation`, `dip::Semivariogram`, and `dip::ChordLength`
+  did not properly compute step sizes for `"grid"` sampling, effectively ignoring the value of `probes`
+  and using all pixels (as if `probes` were set to 0).
+
 ### Updated dependencies
 
 

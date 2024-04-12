@@ -1,5 +1,5 @@
 /*
- * (c)2018-2021, Cris Luengo.
+ * (c)2018-2024, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,13 +15,19 @@
  * limitations under the License.
  */
 
+#include <algorithm>
+#include <cmath>
+#include <vector>
+#include <diplib/geometry.h>
+
 #include "diplib.h"
-#include "diplib/private/robin_map.h"
 #include "diplib/analysis.h"
-#include "diplib/regions.h"
+#include "diplib/distribution.h"
 #include "diplib/generic_iterators.h"
 #include "diplib/overload.h"
 #include "diplib/random.h"
+#include "diplib/regions.h"
+#include "diplib/private/robin_map.h"
 
 namespace dip {
 
@@ -30,7 +36,7 @@ namespace {
 using UIntPixelValueReaderFunction = dip::uint ( * )( void const* );
 
 template< typename TPI >
-static dip::uint UIntPixelValueReader( void const* data ) {
+dip::uint UIntPixelValueReader( void const* data ) {
    return static_cast< dip::uint >( *static_cast< TPI const* >( data ));
 }
 
@@ -175,8 +181,8 @@ void RandomPixelPairSampler(
 }
 
 void GridPixelPairSampler(
-      Image const& object,
-      Image const& mask,
+      Image const& object, // unsigned integer type
+      Image const& mask,   // might or might not be forged
       Distribution& distribution,
       std::vector< dip::uint >& counts,
       PhaseLookupTable const& phaseLookupTable,
@@ -186,25 +192,29 @@ void GridPixelPairSampler(
    DIP_OVL_ASSIGN_UINT( GetUIntPixelValue, UIntPixelValueReader, object.DataType() );
    bool hasMask = mask.IsForged();
    dip::uint nDims = object.Dimensionality();
-   UnsignedArray coords( nDims );
-   dip::uint step = 1; // how many lines to skip
+   dip::uint step = 1; // same step size along all dimensions
    if( nProbes > 0 ) {
-      dip::uint nLines = 0;
-      for( dip::uint ii = 0; ii < nDims; ++ii ) {
-         UnsignedArray lines = coords;
-         lines[ ii ] = 1;
-         nLines += lines.product();
+      // The number of probes is computed as the number of lines across the image, along each dimension,
+      // obtained when sampling once every `step` pixels along every dimension.
+      dfloat stepLength = 0;
+      for( dip::uint dim = 0; dim < nDims; ++dim ) {
+         stepLength += 1.0 / static_cast< dfloat >( object.Size( dim ));
       }
-      step = div_floor( nLines, nProbes );
-      step = std::max< dip::uint >( step, 1 ); // step must be at least 1.
+      stepLength *= static_cast< dfloat >( object.NumberOfPixels() ) / static_cast< dfloat >( nProbes );
+      stepLength = std::pow( stepLength, 1.0 / static_cast< dfloat >( nDims - 1 ));
+      stepLength = std::max( std::round( stepLength ), 1.0 ); // step must be at least 1
+      step = static_cast< dip::uint >( stepLength );
    }
+   dip::Image stepObject = ( step > 1 ) ? Subsampling( object, { step } ) : object.QuickCopy();
+   dip::Image stepMask = ( hasMask && step > 1 ) ? Subsampling( mask, { step } ) : mask.QuickCopy();
    // Iterate over image dimensions
    for( dip::uint dim = 0; dim < nDims; ++dim ) {
-      GenericJointImageIterator< 2 > it( { object, mask }, dim );
-      dip::uint size = it.ProcessingDimensionSize();
-      dip::sint dataStride = it.ProcessingDimensionStride< 0 >() * static_cast< dip::sint >( object.DataType().SizeOf() );
-      dip::sint maskStride = hasMask ? it.ProcessingDimensionStride< 1 >() : 0;
-      // Iterate over `fraction` image lines
+      // Iterate over subsampled image with processing dimension.
+      // This leads us to the start of each image line on the grid.
+      GenericJointImageIterator< 2 > it( { stepObject, stepMask }, dim );
+      dip::uint size = object.Size( dim );
+      dip::sint dataStride = object.Stride( dim ) * static_cast< dip::sint >( object.DataType().SizeOf() );
+      dip::sint maskStride = hasMask ? mask.Stride( dim ) : 0;
       do {
          void const* dataPtr = it.Pointer< 0 >();
          bin const* maskPtr = hasMask ? static_cast< bin const* >( it.Pointer< 1 >() ) : nullptr;
@@ -232,10 +242,7 @@ void GridPixelPairSampler(
             m1 = hasMask ? *maskPtr : bin( true );
          }
          UpdateDistribution( distribution, counts, phaseLookupTable, d2, length );
-         for( dip::uint ii = 0; ( ii < step ) && it; ++ii ) {
-            ++it; // TODO: this does not skip appropriately in 3D and higher dims.
-         }
-      } while( it );
+      } while( ++it );
    }
 }
 
