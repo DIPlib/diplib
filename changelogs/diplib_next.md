@@ -15,6 +15,9 @@ title: "Changes DIPlib 3.x.x"
   use only. This framework function simplifies the creation of projection operations, and forms the basis of
   functions such as `dip::Mean()` and `dip::Maximum()`.
 
+- Added macros `DIP_PARALLEL_ERROR_DECLARE`, `DIP_PARALLEL_ERROR_START` and `DIP_PARALLEL_ERROR_END`
+  to simplify writing parallel code with OpenMP that properly handles exceptions.
+
 ### Changed functionality
 
 - The `compressionLevel` argument to `dip::ImageWritePNG()` changed from `dip::uint` to `dip::sint`, allowing for

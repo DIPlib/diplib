@@ -245,7 +245,7 @@ void Separable(
    // Start threads, each thread makes its own buffers
    DIP_PARALLEL_ERROR_DECLARE
    #pragma omp parallel num_threads( static_cast< int >( nThreads ))
-   DIP_PARALLEL_ERROR_TRY
+   DIP_PARALLEL_ERROR_START
       dip::uint thread = static_cast< dip::uint >( omp_get_thread_num() );
 
       // The temporary buffers, if needed, will be stored here (each thread their own!)
@@ -423,8 +423,7 @@ void Separable(
          #pragma omp master
          lookUpTable.clear();
       }
-   DIP_PARALLEL_ERROR_CATCH
-   DIP_PARALLEL_ERROR_RETHROW
+   DIP_PARALLEL_ERROR_END
 }
 
 
@@ -565,7 +564,7 @@ void OneDimensionalLineFilter(
    // Start threads, each thread makes its own buffers
    DIP_PARALLEL_ERROR_DECLARE
    #pragma omp parallel num_threads( static_cast< int >( nThreads ))
-   DIP_PARALLEL_ERROR_TRY
+   DIP_PARALLEL_ERROR_START
       dip::uint thread = static_cast< dip::uint >( omp_get_thread_num() );
 
       // The temporary buffers, if needed, will be stored here (each thread their own!)
@@ -683,8 +682,7 @@ void OneDimensionalLineFilter(
             }
          }
       }
-   DIP_PARALLEL_ERROR_CATCH
-   DIP_PARALLEL_ERROR_RETHROW
+   DIP_PARALLEL_ERROR_END
 }
 
 } // namespace Framework

@@ -375,41 +375,44 @@ constexpr char const* ITERATOR_HAS_NO_PROCDIM = "Iterator has no processing dime
 /// ```cpp
 /// DIP_PARALLEL_ERROR_DECLARE
 /// #pragma omp parallel num_threads( static_cast< int >( nThreads ))
-/// DIP_PARALLEL_ERROR_TRY
+/// DIP_PARALLEL_ERROR_START
 ///    // Parallel code section
-/// DIP_PARALLEL_ERROR_CATCH
-/// DIP_PARALLEL_ERROR_RETHROW
+/// DIP_PARALLEL_ERROR_END
 /// ```
 ///
 /// This attempts to preserve the exception types, at least the ones derived from \ref dip::Error.
 /// Other exceptions derived from `std::exception` will be caught and translated to a
-/// \ref dip::RunTimeError. Other exception types will not be caught. Note that \ref DIP_PARALLEL_ERROR_CATCH
+/// \ref dip::RunTimeError. Other exception types will not be caught. Note that \ref DIP_PARALLEL_ERROR_END
 /// catches exceptions and stores their information, it will not interrupt execution. Only the first
-/// exception thrown will be recorded. After the parallel section, \ref DIP_PARALLEL_ERROR_RETHROW
-/// throws an exception using the recorded information, if an exception was caught by `DIP_PARALLEL_ERROR_CATCH`.
+/// exception thrown will be recorded. After the parallel section, `DIP_PARALLEL_ERROR_END` will
+/// throw an exception using the recorded information, if an exception was caught.
 ///
-/// `DIP_PARALLEL_ERROR_DECLARE` declares some variables. It can only be used once within one context.
+/// `DIP_PARALLEL_ERROR_DECLARE` declares some variables. It can only be used once within one context, and
+/// must be used before the parallel section.
 ///
 /// !!! Attention
-///     `DIP_PARALLEL_ERROR_TRY` starts a try/catch block, which must be closed with \ref DIP_PARALLEL_ERROR_CATCH to
+///     \ref DIP_PARALLEL_ERROR_START starts a try/catch block, which must be closed with `DIP_PARALLEL_ERROR_END` to
 ///     prevent malformed syntax. Thus you should never use one of these two macros without the other one.
 
-/// \macro DIP_PARALLEL_ERROR_TRY
-/// \brief Starts a try/catch block. Do not use without a \ref DIP_PARALLEL_ERROR_CATCH. See \ref DIP_PARALLEL_ERROR_DECLARE.
+/// \macro DIP_PARALLEL_ERROR_START
+/// \brief Starts a try/catch block. Do not use without a \ref DIP_PARALLEL_ERROR_END.
+/// See \ref DIP_PARALLEL_ERROR_DECLARE for details.
 
-/// \macro DIP_PARALLEL_ERROR_CATCH
-/// \brief Ends a try/catch block started by \ref DIP_PARALLEL_ERROR_TRY. See \ref DIP_PARALLEL_ERROR_DECLARE.
+/// \macro DIP_PARALLEL_ERROR_END
+/// \brief Ends a try/catch block started by \ref DIP_PARALLEL_ERROR_START.
+/// See \ref DIP_PARALLEL_ERROR_DECLARE for details.
 
-/// \macro DIP_PARALLEL_ERROR_RETHROW
-/// \brief Rethrows any exceptions caught by \ref DIP_PARALLEL_ERROR_CATCH. See \ref DIP_PARALLEL_ERROR_DECLARE.
+#define DIP_PARALLEL_ERROR_DECLARE \
+   AssertionError dip__assertionError; \
+   ParameterError dip__parameterError; \
+   RunTimeError dip__runTimeError; \
+   Error dip__error;
 
-#define DIP_PARALLEL_ERROR_DECLARE AssertionError dip__assertionError; ParameterError dip__parameterError; RunTimeError dip__runTimeError; Error dip__error;
+// NOTE! Yes, we've got an opening brace here and no closing brace. This macro always needs to be paired with DIP_PARALLEL_ERROR_END.
+#define DIP_PARALLEL_ERROR_START try {
 
-// NOTE! Yes, we've got an opening brace here and no closing brace. This macro always needs to be paired with DIP_PARALLEL_ERROR_CATCH.
-#define DIP_PARALLEL_ERROR_TRY try {
-
-// NOTE! Yes, we start with a closing brace here. This macro always needs to be paired with DIP_PARALLEL_ERROR_TRY.
-#define DIP_PARALLEL_ERROR_CATCH \
+// NOTE! Yes, we start with a closing brace here. This macro always needs to be paired with DIP_PARALLEL_ERROR_START.
+#define DIP_PARALLEL_ERROR_END \
    } catch( dip::AssertionError const& e ) { \
       if( !dip__assertionError.IsSet() ) { dip__assertionError = e; DIP_ADD_STACK_TRACE( dip__assertionError ); } \
    } catch( dip::ParameterError const& e ) { \
@@ -420,9 +423,7 @@ constexpr char const* ITERATOR_HAS_NO_PROCDIM = "Iterator has no processing dime
       if( !dip__error.IsSet() ) { dip__error = e; DIP_ADD_STACK_TRACE( dip__error ); } \
    } catch( std::exception const& stde ) { \
       if( !dip__runTimeError.IsSet() ) { dip__runTimeError = dip::RunTimeError( stde.what() ); DIP_ADD_STACK_TRACE( dip__runTimeError ); } \
-   }
-
-#define DIP_PARALLEL_ERROR_RETHROW \
+   } \
    if( dip__assertionError.IsSet() ) { throw std::move( dip__assertionError ); } \
    if( dip__parameterError.IsSet() ) { throw std::move( dip__parameterError ); } \
    if( dip__runTimeError.IsSet() ) { throw std::move( dip__runTimeError ); } \

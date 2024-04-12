@@ -442,7 +442,7 @@ void Scan(
    // Start threads, each thread makes its own buffers
    DIP_PARALLEL_ERROR_DECLARE
    #pragma omp parallel num_threads( static_cast< int >( nThreads ))
-   DIP_PARALLEL_ERROR_TRY
+   DIP_PARALLEL_ERROR_START
       dip::uint thread = static_cast< dip::uint >( omp_get_thread_num() );
       std::vector< AlignedBuffer > buffers; // The outer one here is not a DimensionArray, because it won't delete() its contents
 
@@ -628,8 +628,7 @@ void Scan(
             }
          }
       }
-   DIP_PARALLEL_ERROR_CATCH
-   DIP_PARALLEL_ERROR_RETHROW
+   DIP_PARALLEL_ERROR_END
 
    // Correct output image properties
    for( dip::uint ii = 0; ii < nOut; ++ii ) {

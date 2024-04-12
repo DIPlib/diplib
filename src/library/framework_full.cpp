@@ -197,7 +197,7 @@ void Full(
    // Start threads, each thread makes its own buffers
    DIP_PARALLEL_ERROR_DECLARE
    #pragma omp parallel num_threads( static_cast< int >( nThreads ))
-   DIP_PARALLEL_ERROR_TRY
+   DIP_PARALLEL_ERROR_START
       dip::uint thread = static_cast< dip::uint >( omp_get_thread_num() );
 
       // Create input buffer data struct
@@ -251,8 +251,7 @@ void Full(
                   outBuffer.tensorLength );
          }
       }
-   DIP_PARALLEL_ERROR_CATCH
-   DIP_PARALLEL_ERROR_RETHROW
+   DIP_PARALLEL_ERROR_END
 }
 
 } // namespace Framework

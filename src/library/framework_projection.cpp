@@ -218,7 +218,7 @@ void Projection(
    // Start threads
    DIP_PARALLEL_ERROR_DECLARE
    #pragma omp parallel num_threads( static_cast< int >( nThreads ))
-   DIP_PARALLEL_ERROR_TRY
+   DIP_PARALLEL_ERROR_START
       dip::uint thread = static_cast< dip::uint >( omp_get_thread_num() );
       UnsignedArray position = startCoords[ thread ];
       IntegerArray startPosition{ position };
@@ -269,8 +269,7 @@ void Projection(
             break;            // We're done!
          }
       }
-   DIP_PARALLEL_ERROR_CATCH
-   DIP_PARALLEL_ERROR_RETHROW
+   DIP_PARALLEL_ERROR_END
 }
 
 } // namespace Framework

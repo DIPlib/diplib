@@ -150,6 +150,7 @@ library/framework_full.cpp
 library/framework_projection.cpp
 library/framework_scan.cpp
 library/framework_separable.cpp
+library/framework_support.h
 library/graph.cpp
 library/image.cpp
 library/image_copy.cpp
