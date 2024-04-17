@@ -18,12 +18,13 @@
 #include <algorithm>
 #include <cmath>
 #include <vector>
-#include <diplib/geometry.h>
 
 #include "diplib.h"
 #include "diplib/analysis.h"
 #include "diplib/distribution.h"
 #include "diplib/generic_iterators.h"
+#include "diplib/geometry.h"
+#include "diplib/multithreading.h"
 #include "diplib/overload.h"
 #include "diplib/random.h"
 #include "diplib/regions.h"
@@ -70,113 +71,152 @@ void RandomPixelPairSampler(
    UIntPixelValueReaderFunction GetUIntPixelValue;
    DIP_OVL_ASSIGN_UINT( GetUIntPixelValue, UIntPixelValueReader, object.DataType() );
    bool hasMask = mask.IsForged();
-   UniformRandomGenerator uniformRandomGenerator( random );
-   GaussianRandomGenerator normalRandomGenerator( random );
    dip::uint nDims = object.Dimensionality();
+   // Multithreading
+   dip::uint nThreads = GetNumberOfThreads();
+   if( nProbes < 10 * nThreads ) {
+      // If there's not enough work per thread, don't start threads
+      // NOTE! Hard-coded threshold, seems to work fine on my particular machine...
+      // TODO: this threshold probably also depends on the image size.
+      nThreads = 1;
+   }
+   std::vector< Distribution > threadDistributions( nThreads, distribution );
+   std::vector< std::vector< dip::uint >> threadCounts( nThreads, counts );
+   // Create random generators for each thread
+   std::vector< Random > randomArray( nThreads - 1, random );
+   std::vector< UniformRandomGenerator > uniformRandomGeneratorArray;
+   std::vector< GaussianRandomGenerator > normalRandomGeneratorArray;
+   uniformRandomGeneratorArray.emplace_back( random );
+   if( nDims > 3 ) {
+      normalRandomGeneratorArray.emplace_back( random );
+   }
+   for( dip::uint ii = 1; ii < nThreads; ++ii ) {
+      randomArray[ ii - 1 ].SetStream( random() ); // Using a random value from the original stream. This is the same as random.Split().
+      uniformRandomGeneratorArray.emplace_back( randomArray[ ii - 1 ] );
+      if( nDims > 3 ) {
+         normalRandomGeneratorArray.emplace_back( randomArray[ ii - 1 ] );
+      }
+   }
+   //
    UnsignedArray const& sizes = object.Sizes();
    FloatArray maxpos{ sizes };   // upper limit for coordinates
    maxpos -= 1;
-   FloatArray origin( nDims );
-   FloatArray direction( nDims, 1 );
-   UnsignedArray pointInt( nDims );
-   FloatArray pointFloat( nDims );
-   for( dip::uint probe = 0; probe < nProbes; ++probe ) { // TODO: trivially parallelizable.
-      // A point
-      for( dip::uint ii = 0; ii < nDims; ++ii ) {
-         origin[ ii ] = uniformRandomGenerator( 0, maxpos[ ii ] );
-      }
-      // A direction
-      if( nDims == 2 ) {
-         // This is the easy case
-         dfloat phi = uniformRandomGenerator( 0, 2 * pi );
-         direction[ 0 ] = cos( phi );
-         direction[ 1 ] = sin( phi );
-      } else if( nDims == 3 ) {
-         // https://math.stackexchange.com/a/44691/414894
-         // http://mathworld.wolfram.com/SpherePointPicking.html
-         dfloat phi = uniformRandomGenerator( 0, 2 * pi );
-         dfloat z = uniformRandomGenerator( -1, 1 );
-         dfloat u = std::sqrt( 1 - z * z );
-         direction[ 0 ] = u * cos( phi );
-         direction[ 1 ] = u * sin( phi );
-         direction[ 2 ] = z;
-      } else if( nDims > 3 ) {
-         // Pick a normally distributed point and normalize
-         dfloat norm = 0;
-         do {
+   DIP_PARALLEL_ERROR_DECLARE
+   #pragma omp parallel num_threads( static_cast< int >( nThreads ))
+   DIP_PARALLEL_ERROR_START
+      dip::uint thread = static_cast< dip::uint >( omp_get_thread_num() );
+      UniformRandomGenerator& uniformRandomGenerator = uniformRandomGeneratorArray[ thread ];
+      FloatArray origin( nDims );
+      FloatArray direction( nDims, 1 );
+      UnsignedArray pointInt( nDims );
+      FloatArray pointFloat( nDims );
+      for( dip::uint probe = 0; probe < nProbes / nThreads; ++probe ) {
+         // A point
+         for( dip::uint ii = 0; ii < nDims; ++ii ) {
+            origin[ ii ] = uniformRandomGenerator( 0, maxpos[ ii ] );
+         }
+         // A direction
+         if( nDims == 2 ) {
+            // This is the easy case
+            dfloat phi = uniformRandomGenerator( 0, 2 * pi );
+            direction[ 0 ] = cos( phi );
+            direction[ 1 ] = sin( phi );
+         } else if( nDims == 3 ) {
+            // https://math.stackexchange.com/a/44691/414894
+            // http://mathworld.wolfram.com/SpherePointPicking.html
+            dfloat phi = uniformRandomGenerator( 0, 2 * pi );
+            dfloat z = uniformRandomGenerator( -1, 1 );
+            dfloat u = std::sqrt( 1 - z * z );
+            direction[ 0 ] = u * cos( phi );
+            direction[ 1 ] = u * sin( phi );
+            direction[ 2 ] = z;
+         } else if( nDims > 3 ) {
+            // Pick a normally distributed point and normalize
+            GaussianRandomGenerator& normalRandomGenerator = normalRandomGeneratorArray[ thread ];
+            dfloat norm;
+            do {
+               norm = 0;
+               for( dip::uint ii = 0; ii < nDims; ++ii ) {
+                  direction[ ii ] = normalRandomGenerator( 0, 1 );
+                  norm += direction[ ii ] * direction[ ii ];
+               }
+            } while( norm == 0 ); // highly unlikely, but we need to do this anway
+            norm = std::sqrt( norm );
             for( dip::uint ii = 0; ii < nDims; ++ii ) {
-               direction[ ii ] = normalRandomGenerator( 0, 1 );
-               norm += direction[ ii ] * direction[ ii ];
+               direction[ ii ] /= norm;
             }
-         } while( norm == 0 ); // highly unlikely, but we need to do this anway
-         norm = std::sqrt( norm );
+         } // else : ( nDims == 1 ) : direction is always 1
+         // Given a point and a direction, find the two points where this line crosses the image boundary
+         bool first = true;
+         dfloat distanceBegin = 0;
+         dfloat distanceEnd = 0;
          for( dip::uint ii = 0; ii < nDims; ++ii ) {
-            direction[ ii ] /= norm;
+            // We're sure at least one direction[ii] is not zero
+            if( direction[ ii ] != 0 ) {
+               dfloat distB = origin[ ii ] / direction[ ii ];
+               dfloat distE = ( maxpos[ ii ] - origin[ ii ] ) / direction[ ii ];
+               if( direction[ ii ] < 0 ) {
+                  std::swap( distB, distE );
+                  distB = -distB;
+                  distE = -distE;
+               }
+               distanceBegin = first ? distB : std::min( distB, distanceBegin );
+               distanceEnd = first ? distE : std::min( distE, distanceEnd );
+               first = false;
+            }
          }
-      } // else : ( nDims == 1 ) : direction is always 1
-      // Given a point and a direction, find the two points where this line crosses the image boundary
-      bool first = true;
-      dfloat distanceBegin = 0;
-      dfloat distanceEnd = 0;
-      for( dip::uint ii = 0; ii < nDims; ++ii ) {
-         // We're sure at least one direction[ii] is not zero
-         if( direction[ ii ] != 0 ) {
-            dfloat distB, distE;
-            if( direction[ ii ] > 0 ) {
-               distB = ( origin[ ii ] ) / direction[ ii ];
-               distE = ( maxpos[ ii ] - origin[ ii ] ) / direction[ ii ];
+         dfloat totalLength = 0.0;
+         for( dip::uint ii = 0; ii < nDims; ++ii ) {
+            double end = origin[ ii ] + direction[ ii ] * distanceEnd;
+            double begin = origin[ ii ] - direction[ ii ] * distanceBegin;
+            DIP_ASSERT( end >= -0.499 );
+            DIP_ASSERT( end <= maxpos[ ii ] + 0.499 );
+            DIP_ASSERT( begin >= -0.499 );
+            DIP_ASSERT( begin <= maxpos[ ii ] + 0.499 );
+            pointFloat[ ii ] = begin;
+            pointInt[ ii ] = static_cast< dip::uint >( std::round( begin ));
+            dfloat dist = end - begin;
+            totalLength += dist * dist;
+         }
+         totalLength = sqrt( totalLength );
+         dip::uint totalLengthInt = static_cast< dip::uint >( totalLength );
+         // Walk along this line and find phase changes
+         dip::uint d2 = GetUIntPixelValue( object.Pointer( pointInt ));
+         bin m2 = hasMask ? *static_cast< bin const* >( mask.Pointer( pointInt )) : bin( true );
+         dip::uint length = 1;
+         for( dip::uint rr = 1; rr < totalLengthInt; ++rr ) {
+            // Next point on the line by adding direction to pointFloat and rounding it to nearest integer point
+            for( dip::uint ii = 0; ii < nDims; ++ii ) {
+               pointFloat[ ii ] += direction[ ii ];
+               DIP_ASSERT( pointFloat[ ii ] >= -0.499 );
+               DIP_ASSERT( pointFloat[ ii ] <= maxpos[ ii ] + 0.499 );
+               pointInt[ ii ] = static_cast< dip::uint >( std::round( pointFloat[ ii ] ));
+            }
+            dip::uint d1 = GetUIntPixelValue( object.Pointer( pointInt ));
+            dip::uint m1 = hasMask ? *static_cast< bin const* >( mask.Pointer( pointInt )) : bin( true );
+            // We want to measure the len of the line in the same phase, in the same object
+            if( d2 == d1 && m2 == m1 ) {
+               ++length;
             } else {
-               distB = ( maxpos[ ii ] - origin[ ii ] ) / -direction[ ii ];
-               distE = ( -origin[ ii ] ) / direction[ ii ];
+               if( m2 ) { // Only count chord length inside a masked area
+                  UpdateDistribution( threadDistributions[ thread ], threadCounts[ thread ], phaseLookupTable, d2, length );
+               }
+               d2 = d1;
+               m2 = m1;
+               length = 1;
             }
-            distanceBegin = first ? distB : std::min( distB, distanceBegin );
-            distanceEnd = first ? distE : std::min( distE, distanceEnd );
-            first = false;
+         }
+         if( m2 ) { // Only count chord length inside a masked area
+            UpdateDistribution( threadDistributions[ thread ], threadCounts[ thread ], phaseLookupTable, d2, length );
          }
       }
-      dfloat totalLength = 0.0;
-      for( dip::uint ii = 0; ii < nDims; ++ii ) {
-         double end = origin[ ii ] + direction[ ii ] * distanceEnd;
-         double begin = origin[ ii ] - direction[ ii ] * distanceBegin;
-         DIP_ASSERT( end >= -0.499 );
-         DIP_ASSERT( end <= maxpos[ ii ] + 0.499 );
-         DIP_ASSERT( begin >= -0.499 );
-         DIP_ASSERT( begin <= maxpos[ ii ] + 0.499 );
-         pointFloat[ ii ] = begin;
-         pointInt[ ii ] = static_cast< dip::uint >( std::round( begin ));
-         dfloat dist = end - begin;
-         totalLength += dist * dist;
-      }
-      totalLength = sqrt( totalLength );
-      dip::uint totalLengthInt = static_cast< dip::uint >( totalLength );
-      // Walk along this line and find phase changes
-      dip::uint d1 = GetUIntPixelValue( object.Pointer( pointInt ));
-      bin m1 = hasMask ? *static_cast< bin const* >( mask.Pointer( pointInt )) : bin( true );
-      dip::uint d2 = d1;
-      bin m2 = m1;
-      dip::uint length = 0;
-      for( dip::uint rr = 0; rr < totalLengthInt; ++rr ) {
-         // We want to measure the len of the line in the same phase, in the same object
-         if( d2 == d1 && m2 == m1 ) {
-            ++length;
-         } else {
-            UpdateDistribution( distribution, counts, phaseLookupTable, d2, length );
-            // Only count chord length inside a masked area
-            length = ( m1 ? 1 : 0 );
-         }
-         // Update to the next point on the line by adding direction to pointFloat and rounding it to nearest integer point
-         d2 = d1;
-         m2 = m1;
-         for( dip::uint ii = 0; ii < nDims; ++ii ) {
-            pointFloat[ ii ] += direction[ ii ];
-            DIP_ASSERT( pointFloat[ ii ] >= -0.499 );
-            DIP_ASSERT( pointFloat[ ii ] <= maxpos[ ii ] + 0.499 );
-            pointInt[ ii ] = static_cast< dip::uint >( std::round( pointFloat[ ii ] ));
-         }
-         d1 = GetUIntPixelValue( object.Pointer( pointInt ));
-         m1 = hasMask ? *static_cast< bin const* >( mask.Pointer( pointInt )) : bin( true );
-      }
-      UpdateDistribution( distribution, counts, phaseLookupTable, d2, length );
+   DIP_PARALLEL_ERROR_END
+   // Collect data from threads into output
+   distribution = threadDistributions[ 0 ];
+   std::copy( threadCounts[ 0 ].begin(), threadCounts[ 0 ].end(), counts.begin() );
+   for( dip::uint ii = 1; ii < threadDistributions.size(); ++ii ) {
+      distribution += threadDistributions[ ii ];
+      std::transform( counts.begin(), counts.end(), threadCounts[ ii ].begin(), counts.begin(), std::plus<>() );
    }
 }
 
@@ -208,6 +248,7 @@ void GridPixelPairSampler(
    dip::Image stepObject = ( step > 1 ) ? Subsampling( object, { step } ) : object.QuickCopy();
    dip::Image stepMask = ( hasMask && step > 1 ) ? Subsampling( mask, { step } ) : mask.QuickCopy();
    // Iterate over image dimensions
+   // TODO: parallelize the two loops below. Should be easy, but we need to step away from the image iterator, unfortunately.
    for( dip::uint dim = 0; dim < nDims; ++dim ) {
       // Iterate over subsampled image with processing dimension.
       // This leads us to the start of each image line on the grid.
@@ -216,32 +257,33 @@ void GridPixelPairSampler(
       dip::sint dataStride = object.Stride( dim ) * static_cast< dip::sint >( object.DataType().SizeOf() );
       dip::sint maskStride = hasMask ? mask.Stride( dim ) : 0;
       do {
-         void const* dataPtr = it.Pointer< 0 >();
+         uint8 const* dataPtr = static_cast< uint8 const* >( it.Pointer< 0 >() );
          bin const* maskPtr = hasMask ? static_cast< bin const* >( it.Pointer< 1 >() ) : nullptr;
          // Walk along this line and find phase changes
-         dip::uint d1 = GetUIntPixelValue( dataPtr );
-         bin m1 = hasMask ? *maskPtr : bin( true );
-         dip::uint d2 = d1;
-         bin m2 = m1;
-         dip::uint length = 0;
-         for( dip::uint rr = 0; rr < size; ++rr ) {
+         dip::uint d2 = GetUIntPixelValue( dataPtr );
+         bin m2 = hasMask ? *maskPtr : bin( true );
+         dip::uint length = 1;
+         for( dip::uint rr = 1; rr < size; ++rr ) {
+            // Next point on the line
+            dataPtr += dataStride;
+            maskPtr += maskStride;
+            dip::uint d1 = GetUIntPixelValue( dataPtr );
+            bin m1 = hasMask ? *maskPtr : bin( true );
             // We want to measure the len of the line in the same phase, in the same object
             if( d2 == d1 && m2 == m1 ) {
                ++length;
             } else {
-               UpdateDistribution( distribution, counts, phaseLookupTable, d2, length );
-               // Only count chord length inside a masked area
-               length = ( m1 ? 1 : 0 );
+               if( m2 ) { // Only count chord length inside a masked area
+                  UpdateDistribution( distribution, counts, phaseLookupTable, d2, length );
+               }
+               d2 = d1;
+               m2 = m1;
+               length = 1;
             }
-            // Update to the next point on the line
-            d2 = d1;
-            m2 = m1;
-            dataPtr = static_cast< uint8 const* >( dataPtr ) + dataStride;
-            maskPtr += maskStride;
-            d1 = GetUIntPixelValue( dataPtr );
-            m1 = hasMask ? *maskPtr : bin( true );
          }
-         UpdateDistribution( distribution, counts, phaseLookupTable, d2, length );
+         if( m2 ) { // Only count chord length inside a masked area
+            UpdateDistribution( distribution, counts, phaseLookupTable, d2, length );
+         }
       } while( ++it );
    }
 }

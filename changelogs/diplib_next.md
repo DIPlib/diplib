@@ -33,6 +33,9 @@ title: "Changes DIPlib 3.x.x"
   For example, the mean value of each image row can be computed in parallel, but the mean value over the whole
   image is still not computed in parallel.
 
+- `dip::PairCorrelation`, `dip::ProbabilisticPairCorrelation`, `dip::Semivariogram`, and `dip::ChordLength`
+  Have been parallelized for `"random"` sampling.
+
 ### Bug fixes
 
 - `dip::PairCorrelation`, `dip::ProbabilisticPairCorrelation`, `dip::Semivariogram`, and `dip::ChordLength`
