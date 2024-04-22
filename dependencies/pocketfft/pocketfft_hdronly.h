@@ -2366,6 +2366,7 @@ template<typename T0> class fftblue
     template<bool fwd, typename T> void fft(cmplx<T> c[], T0 fct) const
       {
       arr<cmplx<T>> akf(n2);
+      akf[0] = cmplx<T>(0,0);
 
       /* initialize a_k and FFT it */
       for (size_t m=0; m<n; ++m)
