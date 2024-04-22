@@ -321,9 +321,9 @@ class DIP_NO_EXPORT DimensionArray {
 
       /// Removes the value at the back.
       void pop_back() {
-	 if (size_ > 0) {
-             resize( size_ - 1 );
-	 }
+         if (size_ > 0) {
+            resize( size_ - 1 );
+         }
       }
 
       /// Adds a constant to each element in the array.
