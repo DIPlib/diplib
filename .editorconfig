@@ -1,0 +1,25 @@
+# EditorConfig: https://EditorConfig.org
+
+# This is top-most EditorConfig file
+root = true
+
+[*]
+# Unix-style newlines with a newline ending every file
+end_of_line = lf
+insert_final_newline = true
+# No spaces at the end of a end of a line
+trim_trailing_whitespace = true
+# Set default charset
+charset = utf-8
+# We only use spaces, never tabs
+indent_style = space
+# C, C++, Java, MATLAB, CMake, etc all use 3-space indentation
+indent_size = 3
+
+# Python and Markdown use 4-space indentation
+[*.{py,md}]
+indent_size = 4
+
+# In Markdown files we do want to keep trailing spaces. they're used to indicate newlines.
+[*.md]
+trim_trailing_whitespace = false
