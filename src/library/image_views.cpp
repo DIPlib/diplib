@@ -51,14 +51,16 @@ Image::Sample Image::Sample::Minimum( dip::DataType dt ) {
 }
 
 
-Image::View::View( Image reference, Range range ) : reference_( std::move( reference )) {
-   DIP_THROW_IF( !reference_.IsForged(), E::IMAGE_NOT_FORGED );
+Image::View::View( Image reference, Range range ) {
+   DIP_THROW_IF( !reference.IsForged(), E::IMAGE_NOT_FORGED );
+   dip::uint nTensorElements = reference.TensorElements();
+   reference_.swap( reference );
    reference_.protect_ = false;
    DIP_STACK_TRACE_THIS( range.Fix( reference_.TensorElements() ));
    reference_.origin_ = reference_.Pointer( range.start * reference_.TensorStride() );
    reference_.tensor_.SetVector( range.Size() );
    reference_.tensorStride_ *= range.Step();
-   if( reference_.TensorElements() != reference.TensorElements() ) {
+   if( reference_.TensorElements() != nTensorElements ) {
       reference_.ResetColorSpace();
    }
 }

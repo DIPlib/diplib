@@ -42,6 +42,8 @@ title: "Changes DIPlib 3.x.x"
   did not properly compute step sizes for `"grid"` sampling, effectively ignoring the value of `probes`
   and using all pixels (as if `probes` were set to 0).
 
+- Tensor indexing no longer removed color space information since the fix to the move constructor in 3.4.3.
+
 ### Updated dependencies
 
 
