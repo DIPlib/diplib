@@ -91,6 +91,9 @@ None, but see bugfixes to *DIPlib*.
 
 ### Bug fixes
 
+- Trying to display an image with wrong color space information would throw an exception. The image is now seen
+  as a generic tensor image.
+
 
 
 
