@@ -97,6 +97,12 @@ PYBIND11_MODULE( PyDIP_bin, m ) {
    m.attr( "libraryInformation" ) = dip::libraryInformation;
    m.attr( "__version__" ) = dip::libraryInformation.version;
 
+   // diplib/library/error.h
+   auto error = py::register_exception< dip::Error >( m, "Error" );
+   py::register_exception< dip::AssertionError >( m, "AssertionError", error );
+   py::register_exception< dip::ParameterError >( m, "ParameterError", error );
+   py::register_exception< dip::RunTimeError >( m, "RunTimeError", error );
+
    // diplib/library/tensor.h
    auto tensor = py::class_< dip::Tensor >( m, "Tensor", "Represents the tensor size and shape." );
    tensor.def( py::init<>() );

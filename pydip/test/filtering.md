@@ -83,7 +83,7 @@ If the image is protected but of the wrong type, an error will occur.
     >>> dip.Gauss(img, out=out, sigmas=2)
     Traceback (most recent call last):
     ...
-    RuntimeError: Image is protected
+    staging.diplib.PyDIP_bin.ParameterError: Image is protected
     ...
 
 When passing a NumPy array as output, it must have the right sizes, since it cannot be reallocated. It will behave
@@ -95,7 +95,7 @@ like a protected image.
     >>> dip.Gauss(img, out=outarr, sigmas=2)
     Traceback (most recent call last):
     ...
-    RuntimeError: Image is protected
+    staging.diplib.PyDIP_bin.ParameterError: Image is protected
     ...
 
 To have the filter work in-place, simply pass the input image as the ``out`` argument. Do protect the image to

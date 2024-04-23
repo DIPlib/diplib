@@ -75,6 +75,10 @@ None, but see bugfixes to *DIPlib*.
 
 ### Changed functionality
 
+- The *DIPlib* exception classes are now properly bound. This changes the type of the exceptions raised by
+  the library in Python: `dip.Error` is the new base class, raised exceptions are either `dip.ParameterError`,
+  `dip.RunTimeError` or `dip.AssertionError`. `dip.Error` is derived from `Exception`.
+
 (See also changes to *DIPlib*.)
 
 ### Bug fixes

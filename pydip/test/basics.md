@@ -172,7 +172,7 @@ First, indexing into an empty image is not allowed.
     >>> a[0]
     Traceback (most recent call last):
         ...
-    RuntimeError: Image is not forged
+    staging.diplib.PyDIP_bin.ParameterError: Image is not forged
 
 Indexing an image at a single coordinate returns a ``Pixel``. As scalar images are treated as single-element
 tensors, this is a list.
@@ -267,7 +267,7 @@ Slicing works the same as for ``numpy`` arrays, but again, note the reversed dim
     >>> a[[2, 3], 5]
     Traceback (most recent call last):
         ...
-    RuntimeError: Array parameter has the wrong number of elements
+    staging.diplib.PyDIP_bin.ParameterError: Array parameter has the wrong number of elements
 
 Maybe confusingly, the following two syntaxes are interpreted exactly the same way.
 The first one is the "list of coordinates" indexing shown above, the second one looks
@@ -326,7 +326,7 @@ Of course, indexing an empty image is not allowed.
     >>> a(0)
     Traceback (most recent call last):
         ...
-    RuntimeError: Image is not forged
+    staging.diplib.PyDIP_bin.ParameterError: Image is not forged
 
 Implicit conversions
 ---
@@ -394,14 +394,14 @@ vectors by default, and we cannot multiply two column vectors together
     >>> b @ [1,-1]
     Traceback (most recent call last):
     ...
-    RuntimeError: Inner tensor dimensions must match in multiplication
+    staging.diplib.PyDIP_bin.ParameterError: Inner tensor dimensions must match in multiplication
 
 This does not work to create a row vector
 
     >>> b @ [[1,-1]]
     Traceback (most recent call last):
     ...
-    RuntimeError: Cannot convert input to dip::Image
+    staging.diplib.PyDIP_bin.RunTimeError: Cannot convert input to dip::Image
 
 To create a row vector, we'd need to use the ``dip.Create0D()`` function
 
