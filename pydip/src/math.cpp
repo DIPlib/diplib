@@ -24,55 +24,55 @@ void init_math( py::module& m ) {
 
    // diplib/math.h
    m.def( "Add", []( py::object const& lhs, py::object const& rhs, dip::DataType dt ) { return dip::Add( ImageOrPixel( lhs ), ImageOrPixel( rhs ), dt ); }, "lhs"_a, "rhs"_a, "datatype"_a );
-   m.def( "Add", []( py::object const& lhs, py::object const& rhs, dip::Image& out, dip::DataType dt ) { return dip::Add( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out, dt ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a, "datatype"_a );
-   m.def( "Add", []( py::object const& lhs, py::object const& rhs ) { return dip::Add( ImageOrPixel( lhs ), ImageOrPixel( rhs ) ); }, "lhs"_a, "rhs"_a );
-   m.def( "Add", []( py::object const& lhs, py::object const& rhs, dip::Image& out ) { return dip::Add( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a );
+   m.def( "Add", []( py::object const& lhs, py::object const& rhs, dip::Image& out, dip::DataType dt ) { dip::Add( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out, dt ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a, "datatype"_a );
+   m.def( "Add", []( py::object const& lhs, py::object const& rhs ) { return dip::Add( ImageOrPixel( lhs ), ImageOrPixel( rhs )); }, "lhs"_a, "rhs"_a );
+   m.def( "Add", []( py::object const& lhs, py::object const& rhs, dip::Image& out ) { dip::Add( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a );
    m.def( "Subtract", []( py::object const& lhs, py::object const& rhs, dip::DataType dt ) { return dip::Subtract( ImageOrPixel( lhs ), ImageOrPixel( rhs ), dt ); }, "lhs"_a, "rhs"_a, "datatype"_a );
-   m.def( "Subtract", []( py::object const& lhs, py::object const& rhs, dip::Image& out, dip::DataType dt ) { return dip::Subtract( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out, dt ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a, "datatype"_a );
-   m.def( "Subtract", []( py::object const& lhs, py::object const& rhs ) { return dip::Subtract( ImageOrPixel( lhs ), ImageOrPixel( rhs ) ); }, "lhs"_a, "rhs"_a );
-   m.def( "Subtract", []( py::object const& lhs, py::object const& rhs, dip::Image& out ) { return dip::Subtract( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a );
+   m.def( "Subtract", []( py::object const& lhs, py::object const& rhs, dip::Image& out, dip::DataType dt ) { dip::Subtract( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out, dt ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a, "datatype"_a );
+   m.def( "Subtract", []( py::object const& lhs, py::object const& rhs ) { return dip::Subtract( ImageOrPixel( lhs ), ImageOrPixel( rhs )); }, "lhs"_a, "rhs"_a );
+   m.def( "Subtract", []( py::object const& lhs, py::object const& rhs, dip::Image& out ) { dip::Subtract( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a );
    m.def( "Multiply", []( py::object const& lhs, py::object const& rhs, dip::DataType dt ) { return dip::Multiply( ImageOrPixel( lhs ), ImageOrPixel( rhs ), dt ); }, "lhs"_a, "rhs"_a, "datatype"_a );
-   m.def( "Multiply", []( py::object const& lhs, py::object const& rhs, dip::Image& out, dip::DataType dt ) { return dip::Multiply( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out, dt ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a, "datatype"_a );
-   m.def( "Multiply", []( py::object const& lhs, py::object const& rhs ) { return dip::Multiply( ImageOrPixel( lhs ), ImageOrPixel( rhs ) ); }, "lhs"_a, "rhs"_a );
-   m.def( "Multiply", []( py::object const& lhs, py::object const& rhs, dip::Image& out ) { return dip::Multiply( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a );
+   m.def( "Multiply", []( py::object const& lhs, py::object const& rhs, dip::Image& out, dip::DataType dt ) { dip::Multiply( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out, dt ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a, "datatype"_a );
+   m.def( "Multiply", []( py::object const& lhs, py::object const& rhs ) { return dip::Multiply( ImageOrPixel( lhs ), ImageOrPixel( rhs )); }, "lhs"_a, "rhs"_a );
+   m.def( "Multiply", []( py::object const& lhs, py::object const& rhs, dip::Image& out ) { dip::Multiply( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a );
    m.def( "MultiplySampleWise", []( py::object const& lhs, py::object const& rhs, dip::DataType dt ) { return dip::MultiplySampleWise( ImageOrPixel( lhs ), ImageOrPixel( rhs ), dt ); }, "lhs"_a, "rhs"_a, "datatype"_a );
-   m.def( "MultiplySampleWise", []( py::object const& lhs, py::object const& rhs, dip::Image& out, dip::DataType dt ) { return dip::MultiplySampleWise( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out, dt ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a, "datatype"_a );
-   m.def( "MultiplySampleWise", []( py::object const& lhs, py::object const& rhs ) { return dip::MultiplySampleWise( ImageOrPixel( lhs ), ImageOrPixel( rhs ) ); }, "lhs"_a, "rhs"_a );
-   m.def( "MultiplySampleWise", []( py::object const& lhs, py::object const& rhs, dip::Image& out ) { return dip::MultiplySampleWise( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a );
+   m.def( "MultiplySampleWise", []( py::object const& lhs, py::object const& rhs, dip::Image& out, dip::DataType dt ) { dip::MultiplySampleWise( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out, dt ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a, "datatype"_a );
+   m.def( "MultiplySampleWise", []( py::object const& lhs, py::object const& rhs ) { return dip::MultiplySampleWise( ImageOrPixel( lhs ), ImageOrPixel( rhs )); }, "lhs"_a, "rhs"_a );
+   m.def( "MultiplySampleWise", []( py::object const& lhs, py::object const& rhs, dip::Image& out ) { dip::MultiplySampleWise( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a );
    m.def( "MultiplyConjugate", []( py::object const& lhs, py::object const& rhs, dip::DataType dt ) { return dip::MultiplyConjugate( ImageOrPixel( lhs ), ImageOrPixel( rhs ), dt ); }, "lhs"_a, "rhs"_a, "datatype"_a );
-   m.def( "MultiplyConjugate", []( py::object const& lhs, py::object const& rhs, dip::Image& out, dip::DataType dt ) { return dip::MultiplyConjugate( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out, dt ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a, "datatype"_a );
-   m.def( "MultiplyConjugate", []( py::object const& lhs, py::object const& rhs ) { return dip::MultiplyConjugate( ImageOrPixel( lhs ), ImageOrPixel( rhs ) ); }, "lhs"_a, "rhs"_a );
-   m.def( "MultiplyConjugate", []( py::object const& lhs, py::object const& rhs, dip::Image& out ) { return dip::MultiplyConjugate( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a );
+   m.def( "MultiplyConjugate", []( py::object const& lhs, py::object const& rhs, dip::Image& out, dip::DataType dt ) { dip::MultiplyConjugate( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out, dt ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a, "datatype"_a );
+   m.def( "MultiplyConjugate", []( py::object const& lhs, py::object const& rhs ) { return dip::MultiplyConjugate( ImageOrPixel( lhs ), ImageOrPixel( rhs )); }, "lhs"_a, "rhs"_a );
+   m.def( "MultiplyConjugate", []( py::object const& lhs, py::object const& rhs, dip::Image& out ) { dip::MultiplyConjugate( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a );
    m.def( "Divide", []( py::object const& lhs, py::object const& rhs, dip::DataType dt ) { return dip::Divide( ImageOrPixel( lhs ), ImageOrPixel( rhs ), dt ); }, "lhs"_a, "rhs"_a, "datatype"_a );
-   m.def( "Divide", []( py::object const& lhs, py::object const& rhs, dip::Image& out, dip::DataType dt ) { return dip::Divide( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out, dt ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a, "datatype"_a );
-   m.def( "Divide", []( py::object const& lhs, py::object const& rhs ) { return dip::Divide( ImageOrPixel( lhs ), ImageOrPixel( rhs ) ); }, "lhs"_a, "rhs"_a );
-   m.def( "Divide", []( py::object const& lhs, py::object const& rhs, dip::Image& out ) { return dip::Divide( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a );
+   m.def( "Divide", []( py::object const& lhs, py::object const& rhs, dip::Image& out, dip::DataType dt ) { dip::Divide( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out, dt ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a, "datatype"_a );
+   m.def( "Divide", []( py::object const& lhs, py::object const& rhs ) { return dip::Divide( ImageOrPixel( lhs ), ImageOrPixel( rhs )); }, "lhs"_a, "rhs"_a );
+   m.def( "Divide", []( py::object const& lhs, py::object const& rhs, dip::Image& out ) { dip::Divide( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a );
    m.def( "SafeDivide", []( py::object const& lhs, py::object const& rhs, dip::DataType dt ) { return dip::SafeDivide( ImageOrPixel( lhs ), ImageOrPixel( rhs ), dt ); }, "lhs"_a, "rhs"_a, "datatype"_a );
-   m.def( "SafeDivide", []( py::object const& lhs, py::object const& rhs, dip::Image& out, dip::DataType dt ) { return dip::SafeDivide( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out, dt ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a, "datatype"_a );
-   m.def( "SafeDivide", []( py::object const& lhs, py::object const& rhs ) { return dip::SafeDivide( ImageOrPixel( lhs ), ImageOrPixel( rhs ) ); }, "lhs"_a, "rhs"_a );
-   m.def( "SafeDivide", []( py::object const& lhs, py::object const& rhs, dip::Image& out ) { return dip::SafeDivide( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a );
+   m.def( "SafeDivide", []( py::object const& lhs, py::object const& rhs, dip::Image& out, dip::DataType dt ) { dip::SafeDivide( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out, dt ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a, "datatype"_a );
+   m.def( "SafeDivide", []( py::object const& lhs, py::object const& rhs ) { return dip::SafeDivide( ImageOrPixel( lhs ), ImageOrPixel( rhs )); }, "lhs"_a, "rhs"_a );
+   m.def( "SafeDivide", []( py::object const& lhs, py::object const& rhs, dip::Image& out ) { dip::SafeDivide( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a );
    m.def( "Modulo", []( py::object const& lhs, py::object const& rhs, dip::DataType dt ) { return dip::Modulo( ImageOrPixel( lhs ), ImageOrPixel( rhs ), dt ); }, "lhs"_a, "rhs"_a, "datatype"_a );
-   m.def( "Modulo", []( py::object const& lhs, py::object const& rhs, dip::Image& out, dip::DataType dt ) { return dip::Modulo( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out, dt ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a, "datatype"_a );
-   m.def( "Modulo", []( py::object const& lhs, py::object const& rhs ) { return dip::Modulo( ImageOrPixel( lhs ), ImageOrPixel( rhs ) ); }, "lhs"_a, "rhs"_a );
-   m.def( "Modulo", []( py::object const& lhs, py::object const& rhs, dip::Image& out ) { return dip::Modulo( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a );
+   m.def( "Modulo", []( py::object const& lhs, py::object const& rhs, dip::Image& out, dip::DataType dt ) { dip::Modulo( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out, dt ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a, "datatype"_a );
+   m.def( "Modulo", []( py::object const& lhs, py::object const& rhs ) { return dip::Modulo( ImageOrPixel( lhs ), ImageOrPixel( rhs )); }, "lhs"_a, "rhs"_a );
+   m.def( "Modulo", []( py::object const& lhs, py::object const& rhs, dip::Image& out ) { dip::Modulo( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a );
    m.def( "Power", []( py::object const& lhs, py::object const& rhs, dip::DataType dt ) { return dip::Power( ImageOrPixel( lhs ), ImageOrPixel( rhs ), dt ); }, "lhs"_a, "rhs"_a, "datatype"_a );
-   m.def( "Power", []( py::object const& lhs, py::object const& rhs, dip::Image& out, dip::DataType dt ) { return dip::Power( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out, dt ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a, "datatype"_a );
-   m.def( "Power", []( py::object const& lhs, py::object const& rhs ) { return dip::Power( ImageOrPixel( lhs ), ImageOrPixel( rhs ) ); }, "lhs"_a, "rhs"_a );
-   m.def( "Power", []( py::object const& lhs, py::object const& rhs, dip::Image& out ) { return dip::Power( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a );
+   m.def( "Power", []( py::object const& lhs, py::object const& rhs, dip::Image& out, dip::DataType dt ) { dip::Power( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out, dt ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a, "datatype"_a );
+   m.def( "Power", []( py::object const& lhs, py::object const& rhs ) { return dip::Power( ImageOrPixel( lhs ), ImageOrPixel( rhs )); }, "lhs"_a, "rhs"_a );
+   m.def( "Power", []( py::object const& lhs, py::object const& rhs, dip::Image& out ) { dip::Power( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a );
    m.def( "Invert", py::overload_cast< dip::Image const& >( &dip::Invert ), "in"_a );
    m.def( "Invert", py::overload_cast< dip::Image const&, dip::Image& >( &dip::Invert ), "in"_a, py::kw_only(), "out"_a );
-   m.def( "And", []( py::object const& lhs, py::object const& rhs ) { return dip::And( ImageOrPixel( lhs ), ImageOrPixel( rhs ) ); }, "lhs"_a, "rhs"_a );
-   m.def( "And", []( py::object const& lhs, py::object const& rhs, dip::Image& out ) { return dip::And( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a );
-   m.def( "Or", []( py::object const& lhs, py::object const& rhs ) { return dip::Or( ImageOrPixel( lhs ), ImageOrPixel( rhs ) ); }, "lhs"_a, "rhs"_a );
-   m.def( "Or", []( py::object const& lhs, py::object const& rhs, dip::Image& out ) { return dip::Or( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a );
-   m.def( "Xor", []( py::object const& lhs, py::object const& rhs ) { return dip::Xor( ImageOrPixel( lhs ), ImageOrPixel( rhs ) ); }, "lhs"_a, "rhs"_a );
-   m.def( "Xor", []( py::object const& lhs, py::object const& rhs, dip::Image& out ) { return dip::Xor( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a );
+   m.def( "And", []( py::object const& lhs, py::object const& rhs ) { return dip::And( ImageOrPixel( lhs ), ImageOrPixel( rhs )); }, "lhs"_a, "rhs"_a );
+   m.def( "And", []( py::object const& lhs, py::object const& rhs, dip::Image& out ) { dip::And( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a );
+   m.def( "Or", []( py::object const& lhs, py::object const& rhs ) { return dip::Or( ImageOrPixel( lhs ), ImageOrPixel( rhs )); }, "lhs"_a, "rhs"_a );
+   m.def( "Or", []( py::object const& lhs, py::object const& rhs, dip::Image& out ) { dip::Or( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a );
+   m.def( "Xor", []( py::object const& lhs, py::object const& rhs ) { return dip::Xor( ImageOrPixel( lhs ), ImageOrPixel( rhs )); }, "lhs"_a, "rhs"_a );
+   m.def( "Xor", []( py::object const& lhs, py::object const& rhs, dip::Image& out ) { dip::Xor( ImageOrPixel( lhs ), ImageOrPixel( rhs ), out ); }, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a );
    m.def( "Not", py::overload_cast< dip::Image const& >( &dip::Not ), "in"_a );
    m.def( "Not", py::overload_cast< dip::Image const&, dip::Image& >( &dip::Not ), "in"_a, py::kw_only(), "out"_a );
    m.def( "InRange", []( dip::Image const& in, py::object const& lhs, py::object const& rhs ) { return dip::InRange( in, ImageOrPixel( lhs ), ImageOrPixel( rhs )); }, "in"_a, "lhs"_a, "rhs"_a );
-   m.def( "InRange", []( dip::Image const& in, py::object const& lhs, py::object const& rhs, dip::Image& out ) { return dip::InRange( in, ImageOrPixel( lhs ), ImageOrPixel( rhs ), out); }, "in"_a, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a );
+   m.def( "InRange", []( dip::Image const& in, py::object const& lhs, py::object const& rhs, dip::Image& out ) { dip::InRange( in, ImageOrPixel( lhs ), ImageOrPixel( rhs ), out ); }, "in"_a, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a );
    m.def( "OutOfRange", []( dip::Image const& in, py::object const& lhs, py::object const& rhs ) { return dip::OutOfRange( in, ImageOrPixel( lhs ), ImageOrPixel( rhs )); }, "in"_a, "lhs"_a, "rhs"_a );
-   m.def( "OutOfRange", []( dip::Image const& in, py::object const& lhs, py::object const& rhs, dip::Image& out ) { return dip::OutOfRange( in, ImageOrPixel( lhs ), ImageOrPixel( rhs ), out); }, "in"_a, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a );
+   m.def( "OutOfRange", []( dip::Image const& in, py::object const& lhs, py::object const& rhs, dip::Image& out ) { dip::OutOfRange( in, ImageOrPixel( lhs ), ImageOrPixel( rhs ), out ); }, "in"_a, "lhs"_a, "rhs"_a, py::kw_only(), "out"_a );
 
    m.def( "SquareModulus", py::overload_cast< dip::Image const& >( &dip::SquareModulus ), "in"_a );
    m.def( "SquareModulus", py::overload_cast< dip::Image const&, dip::Image& >( &dip::SquareModulus ), "in"_a, py::kw_only(), "out"_a );
@@ -130,14 +130,14 @@ void init_math( py::module& m ) {
    m.def( "BesselJ0", py::overload_cast< dip::Image const&, dip::Image& >( &dip::BesselJ0 ), "in"_a, py::kw_only(), "out"_a );
    m.def( "BesselJ1", py::overload_cast< dip::Image const& >( &dip::BesselJ1 ), "in"_a );
    m.def( "BesselJ1", py::overload_cast< dip::Image const&, dip::Image& >( &dip::BesselJ1 ), "in"_a, py::kw_only(), "out"_a );
-   m.def( "BesselJN", py::overload_cast< dip::Image const&, dip::uint >( &dip::BesselJN ), "in"_a, "alpha"_a  );
-   m.def( "BesselJN", py::overload_cast< dip::Image const&, dip::Image&, dip::uint >( &dip::BesselJN ), "in"_a, py::kw_only(), "out"_a, "alpha"_a  );
+   m.def( "BesselJN", py::overload_cast< dip::Image const&, dip::uint >( &dip::BesselJN ), "in"_a, "alpha"_a );
+   m.def( "BesselJN", py::overload_cast< dip::Image const&, dip::Image&, dip::uint >( &dip::BesselJN ), "in"_a, py::kw_only(), "out"_a, "alpha"_a );
    m.def( "BesselY0", py::overload_cast< dip::Image const& >( &dip::BesselY0 ), "in"_a );
    m.def( "BesselY0", py::overload_cast< dip::Image const&, dip::Image& >( &dip::BesselY0 ), "in"_a, py::kw_only(), "out"_a );
    m.def( "BesselY1", py::overload_cast< dip::Image const& >( &dip::BesselY1 ), "in"_a );
    m.def( "BesselY1", py::overload_cast< dip::Image const&, dip::Image& >( &dip::BesselY1 ), "in"_a, py::kw_only(), "out"_a );
-   m.def( "BesselYN", py::overload_cast< dip::Image const&, dip::uint >( &dip::BesselYN ), "in"_a, "alpha"_a  );
-   m.def( "BesselYN", py::overload_cast< dip::Image const&, dip::Image&, dip::uint >( &dip::BesselYN ), "in"_a, py::kw_only(), "out"_a, "alpha"_a  );
+   m.def( "BesselYN", py::overload_cast< dip::Image const&, dip::uint >( &dip::BesselYN ), "in"_a, "alpha"_a );
+   m.def( "BesselYN", py::overload_cast< dip::Image const&, dip::Image&, dip::uint >( &dip::BesselYN ), "in"_a, py::kw_only(), "out"_a, "alpha"_a );
    m.def( "LnGamma", py::overload_cast< dip::Image const& >( &dip::LnGamma ), "in"_a );
    m.def( "LnGamma", py::overload_cast< dip::Image const&, dip::Image& >( &dip::LnGamma ), "in"_a, py::kw_only(), "out"_a );
    m.def( "Erf", py::overload_cast< dip::Image const& >( &dip::Erf ), "in"_a );
@@ -221,7 +221,7 @@ void init_math( py::module& m ) {
    m.def( "LargestEigenvalue", py::overload_cast< dip::Image const&, dip::Image& >( &dip::LargestEigenvalue ), "in"_a, py::kw_only(), "out"_a );
    m.def( "SmallestEigenvalue", py::overload_cast< dip::Image const& >( &dip::SmallestEigenvalue ), "in"_a );
    m.def( "SmallestEigenvalue", py::overload_cast< dip::Image const&, dip::Image& >( &dip::SmallestEigenvalue ), "in"_a, py::kw_only(), "out"_a );
-   m.def( "EigenDecomposition", []( dip::Image const& in ){
+   m.def( "EigenDecomposition", []( dip::Image const& in ) {
              dip::Image out, eigenvectors;
              dip::EigenDecomposition( in, out, eigenvectors );
              return py::make_tuple( out, eigenvectors );
@@ -238,7 +238,7 @@ void init_math( py::module& m ) {
    m.def( "PseudoInverse", py::overload_cast< dip::Image const&, dip::Image&, dip::dfloat >( &dip::PseudoInverse ), "in"_a, py::kw_only(), "out"_a, "tolerance"_a = 1e-7 );
    m.def( "SingularValues", py::overload_cast< dip::Image const& >( &dip::SingularValues ), "in"_a );
    m.def( "SingularValues", py::overload_cast< dip::Image const&, dip::Image& >( &dip::SingularValues ), "in"_a, py::kw_only(), "out"_a );
-   m.def( "SingularValueDecomposition", []( dip::Image const& in ){
+   m.def( "SingularValueDecomposition", []( dip::Image const& in ) {
              dip::Image U, S, V;
              dip::SingularValueDecomposition( in, U, S, V );
              return py::make_tuple( U, S, V );
@@ -266,17 +266,17 @@ void init_math( py::module& m ) {
    m.def( "GeometricMeanTensorElement", py::overload_cast< dip::Image const&, dip::Image& >( &dip::GeometricMeanTensorElement ), "in"_a, py::kw_only(), "out"_a );
 
    m.def( "Select", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const&, dip::Image const&, dip::String const& >( &dip::Select ),
-          "in1"_a , "in2"_a , "in3"_a, "in4"_a, "selector"_a );
+          "in1"_a, "in2"_a, "in3"_a, "in4"_a, "selector"_a );
    m.def( "Select", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const&, dip::Image const&, dip::Image&, dip::String const& >( &dip::Select ),
-          "in1"_a , "in2"_a , "in3"_a, "in4"_a, py::kw_only(), "out"_a, "selector"_a );
+          "in1"_a, "in2"_a, "in3"_a, "in4"_a, py::kw_only(), "out"_a, "selector"_a );
    m.def( "Select", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const& >( &dip::Select ),
-          "in1"_a , "in2"_a , "mask"_a );
+          "in1"_a, "in2"_a, "mask"_a );
    m.def( "Select", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const&, dip::Image& >( &dip::Select ),
-          "in1"_a , "in2"_a , "mask"_a, py::kw_only(), "out"_a );
+          "in1"_a, "in2"_a, "mask"_a, py::kw_only(), "out"_a );
    m.def( "Toggle", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const& >( &dip::Toggle ),
-          "in1"_a , "in2"_a , "in3"_a );
+          "in1"_a, "in2"_a, "in3"_a );
    m.def( "Toggle", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const&, dip::Image& >( &dip::Toggle ),
-          "in1"_a , "in2"_a , "in3"_a, py::kw_only(), "out"_a );
+          "in1"_a, "in2"_a, "in3"_a, py::kw_only(), "out"_a );
 
    // diplib/mapping.h
    m.def( "Clip", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::String const& >( &dip::Clip ),
@@ -310,7 +310,7 @@ void init_math( py::module& m ) {
           "in"_a, "example"_a );
    m.def( "HistogramMatching", py::overload_cast< dip::Image const&, dip::Image&, dip::Histogram const& >( &dip::HistogramMatching ),
           "in"_a, py::kw_only(), "out"_a, "example"_a );
-   m.def( "HistogramMatching", []( dip::Image const& in, dip::Image const& example ){
+   m.def( "HistogramMatching", []( dip::Image const& in, dip::Image const& example ) {
              DIP_THROW_IF( example.Dimensionality() != 1, "Example histogram must be 1D" );
              dip::uint nBins = example.Size( 0 );
              // Create a histogram of the right dimensions

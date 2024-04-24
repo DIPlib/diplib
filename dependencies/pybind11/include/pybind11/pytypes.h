@@ -9,8 +9,8 @@
 
 #pragma once
 
-#include "detail/common.h"
-#include "buffer_info.h"
+#include "detail/common.h" // IWYU pragma: export
+#include "buffer_info.h" // IWYU pragma: export
 
 #include <assert.h>
 #include <cstddef>

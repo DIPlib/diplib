@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 
+#include <sstream>
+#include <vector>
+
 #include "pydip.h"
 #include "diplib/histogram.h"
 #include "diplib/distribution.h"
@@ -34,7 +37,8 @@ template<>
 class type_caster< dip::Histogram::Configuration::Mode > {
    public:
       using type = dip::Histogram::Configuration::Mode;
-      bool load( handle src, bool ) {
+
+      bool load( handle src, bool /*convert*/ ) {
          if( !src ) {
             return false;
          }
@@ -49,7 +53,8 @@ class type_caster< dip::Histogram::Configuration::Mode > {
          }
          return false;
       }
-      static handle cast( dip::Histogram::Configuration::Mode const& src, return_value_policy, handle ) {
+
+      static handle cast( dip::Histogram::Configuration::Mode const& src, return_value_policy /*policy*/, handle /*parent*/) {
          switch( src ) {
             case dip::Histogram::Configuration::Mode::COMPUTE_BINSIZE:
                return py::cast( "COMPUTE_BINSIZE" ).release();
@@ -62,7 +67,8 @@ class type_caster< dip::Histogram::Configuration::Mode > {
          }
          return py::cast( "Unrecognized configuration mode!?" ).release();
       }
-   PYBIND11_TYPE_CASTER( type, _( "Mode" ));
+
+      PYBIND11_TYPE_CASTER( type, _( "Mode" ));
 };
 
 } // namespace detail
@@ -79,21 +85,21 @@ dip::String ConfigRepr( dip::Histogram::Configuration const& s ) {
    os << "<Histogram.Configuration, ";
    switch( s.mode ) {
       case dip::Histogram::Configuration::Mode::COMPUTE_BINSIZE:
-         os << '[' << s.lowerBound << Format(s.lowerIsPercentile)
-            << ',' << s.upperBound << Format(s.upperIsPercentile)
+         os << '[' << s.lowerBound << Format( s.lowerIsPercentile )
+            << ',' << s.upperBound << Format( s.upperIsPercentile )
             << "], " << s.nBins << " bins";
          break;
       case dip::Histogram::Configuration::Mode::COMPUTE_BINS:
-         os << '[' << s.lowerBound << Format(s.lowerIsPercentile)
-            << ',' << s.upperBound << Format(s.upperIsPercentile)
+         os << '[' << s.lowerBound << Format( s.lowerIsPercentile )
+            << ',' << s.upperBound << Format( s.upperIsPercentile )
             << "], bin width " << s.binSize;
          break;
       case dip::Histogram::Configuration::Mode::COMPUTE_LOWER:
-         os << "[?," << s.upperBound << Format(s.upperIsPercentile)
+         os << "[?," << s.upperBound << Format( s.upperIsPercentile )
             << "], " << s.nBins << " bins of width " << s.binSize;
          break;
       case dip::Histogram::Configuration::Mode::COMPUTE_UPPER:
-         os << '[' << s.lowerBound << Format(s.lowerIsPercentile)
+         os << '[' << s.lowerBound << Format( s.lowerIsPercentile )
             << ",?], " << s.nBins << " bins of width " << s.binSize;
          break;
    }
@@ -137,15 +143,23 @@ void init_histogram( py::module& m ) {
              "input"_a, "mask"_a = dip::Image{}, "bounds"_a = dip::FloatArray{ 0, 255 }, "nBins"_a = 256, "boundsArePercentile"_a = false );
    hist.def( py::init< dip::Image const&, dip::Image const&, dip::Image const&, dip::Histogram::ConfigurationArray >(),
              "input1"_a, "input2"_a, "mask"_a = dip::Image{}, "configuration"_a = dip::Histogram::ConfigurationArray{} );
-   hist.def( py::init( []( dip::Image const& input1, dip::Image const& input2, dip::Image const& mask,
-                           dip::FloatArray const& bounds1, dip::FloatArray const& bounds2, dip::uint nBins1, dip::uint nBins2, bool boundsArePercentile ) {
+   hist.def( py::init( []( dip::Image const& input1,
+                           dip::Image const& input2,
+                           dip::Image const& mask,
+                           dip::FloatArray const& bounds1,
+                           dip::FloatArray const& bounds2,
+                           dip::uint nBins1,
+                           dip::uint nBins2,
+                           bool boundsArePercentile ) {
                 DIP_THROW_IF( bounds1.size() != 2, dip::E::ARRAY_PARAMETER_WRONG_LENGTH );
                 DIP_THROW_IF( bounds2.size() != 2, dip::E::ARRAY_PARAMETER_WRONG_LENGTH );
-                dip::Histogram::ConfigurationArray config{{ bounds1[ 0 ], bounds1[ 1 ], nBins1 },
-                                                          { bounds2[ 0 ], bounds2[ 1 ], nBins2 }};
+                dip::Histogram::ConfigurationArray config{
+                   { bounds1[ 0 ], bounds1[ 1 ], nBins1 },
+                   { bounds2[ 0 ], bounds2[ 1 ], nBins2 }
+                };
                 if( boundsArePercentile ) {
-                   config[0].lowerIsPercentile = config[0].upperIsPercentile = boundsArePercentile;
-                   config[1].lowerIsPercentile = config[1].upperIsPercentile = boundsArePercentile;
+                   config[ 0 ].lowerIsPercentile = config[ 0 ].upperIsPercentile = boundsArePercentile;
+                   config[ 1 ].lowerIsPercentile = config[ 1 ].upperIsPercentile = boundsArePercentile;
                 }
                 return dip::Histogram( input1, input2, mask, config );
              } ),
@@ -153,14 +167,18 @@ void init_histogram( py::module& m ) {
              "nBins1"_a = 256, "nBins2"_a = 256, "boundsArePercentile"_a = false );
    hist.def( py::init< dip::Histogram::ConfigurationArray >(), "configuration"_a );
    hist.def( "__repr__", []( dip::Histogram const& self ) {
-                if( !self.IsInitialized() ) {
-                   return std::string{ "<Uninitialized histogram>" };
-                }
-                std::ostringstream os;
-                os << "<Histogram, sizes " << self.GetImage().Sizes() << '>';
-                return os.str();
-             } );
-   hist.def( "__str__", []( dip::Histogram const& self ) { std::ostringstream os; os << self; return os.str(); } );
+      if( !self.IsInitialized() ) {
+         return std::string{ "<Uninitialized histogram>" };
+      }
+      std::ostringstream os;
+      os << "<Histogram, sizes " << self.GetImage().Sizes() << '>';
+      return os.str();
+   } );
+   hist.def( "__str__", []( dip::Histogram const& self ) {
+      std::ostringstream os;
+      os << self;
+      return os.str();
+   } );
    hist.def( "IsInitialized", &dip::Histogram::IsInitialized );
    hist.def( "Copy", &dip::Histogram::Copy );
    hist.def( "ReverseLookup", py::overload_cast< dip::Image const&, dip::BooleanArray >( &dip::Histogram::ReverseLookup ),
@@ -170,7 +188,7 @@ void init_histogram( py::module& m ) {
    hist.def( py::self += py::self );
    hist.def( py::self + py::self );
    hist.def( py::self -= py::self );
-   hist.def( py::self - py::self );
+   hist.def( py::self - py::self ); // NOLINT(*-redundant-expression)
    hist.def( "Dimensionality", &dip::Histogram::Dimensionality );
    hist.def( "Bins", &dip::Histogram::Bins, "dim"_a = 0 );
    hist.def( "BinSize", &dip::Histogram::BinSize, "dim"_a = 0 );
@@ -191,7 +209,7 @@ void init_histogram( py::module& m ) {
    hist.def( "Count", &dip::Histogram::Count );
    hist.def( "Cumulative", &dip::Histogram::Cumulative );
    hist.def( "GetMarginal", &dip::Histogram::GetMarginal, "dim"_a );
-   hist.def( "Smooth", py::overload_cast< dip::FloatArray >( &dip::Histogram::Smooth ), "sigma"_a = dip::FloatArray{ 1 });
+   hist.def( "Smooth", py::overload_cast< dip::FloatArray >( &dip::Histogram::Smooth ), "sigma"_a = dip::FloatArray{ 1 } );
 
    m.def( "CumulativeHistogram", &dip::CumulativeHistogram, "in"_a );
    m.def( "Smooth", py::overload_cast< dip::Histogram const&, dip::FloatArray const& >( &dip::Smooth ),
@@ -232,10 +250,10 @@ void init_histogram( py::module& m ) {
 
    auto regParams = py::class_< dip::RegressionParameters >( m, "RegressionParameters", "Regression parameters." );
    regParams.def( "__repr__", []( dip::RegressionParameters const& s ) {
-                     std::ostringstream os;
-                     os << "<RegressionParameters: intercept=" << s.intercept << ", slope=" << s.slope << '>';
-                     return os.str();
-                  } );
+      std::ostringstream os;
+      os << "<RegressionParameters: intercept=" << s.intercept << ", slope=" << s.slope << '>';
+      return os.str();
+   } );
    regParams.def_readonly( "intercept", &dip::RegressionParameters::intercept );
    regParams.def_readonly( "slope", &dip::RegressionParameters::slope );
 
@@ -274,14 +292,14 @@ void init_histogram( py::module& m ) {
    auto lut = py::class_< dip::LookupTable >( m, "LookupTable", "Encapsulates the concept of the look-up table (LUT)." );
    lut.def( py::init< dip::Image, dip::FloatArray >(), "values"_a, "index"_a = dip::FloatArray{} );
    lut.def( "__repr__", []( dip::LookupTable const& self ) {
-               std::ostringstream os;
-               os << "<LookupTable, " << self.DataType();
-               if( self.HasIndex() ) {
-                  os << ", with index";
-               }
-               os << '>';
-               return os.str();
-            } );
+      std::ostringstream os;
+      os << "<LookupTable, " << self.DataType();
+      if( self.HasIndex() ) {
+         os << ", with index";
+      }
+      os << '>';
+      return os.str();
+   } );
    lut.def( "HasIndex", &dip::LookupTable::HasIndex );
    lut.def( "DataType", &dip::LookupTable::DataType );
    lut.def( "SetOutOfBoundsValue", py::overload_cast< dip::dfloat >( &dip::LookupTable::SetOutOfBoundsValue ),
@@ -302,9 +320,13 @@ void init_histogram( py::module& m ) {
    // This next function is the old implementation of `dip.LookupTable`, which we keep
    // here for backwards compatibility. Setting `dip.LookupTable = dip.LookupTable_old` in Python
    // will allow old programs that use this function to continue working.
-   m.def( "LookupTable_old", []( dip::Image const& in, dip::Image const& lut, dip::FloatArray const& index,
-                                 dip::String const& interpolation, dip::String const& mode,
-                                 dip::dfloat lowerValue, dip::dfloat upperValue ) {
+   m.def( "LookupTable_old", []( dip::Image const& in,
+                                 dip::Image const& lut,
+                                 dip::FloatArray const& index,
+                                 dip::String const& interpolation,
+                                 dip::String const& mode,
+                                 dip::dfloat lowerValue,
+                                 dip::dfloat upperValue ) {
              dip::LookupTable lookupTable( lut, index );
              if( mode == "clamp" ) {
                 lookupTable.ClampOutOfBoundsValues(); // is the default...

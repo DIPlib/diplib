@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+#include <sstream>
+
 #include "pydip.h"
 #include "diplib/morphology.h"
 #include "diplib/binary.h"
@@ -119,54 +121,54 @@ void init_morphology( py::module& m ) {
    m.def( "Tophat", py::overload_cast< dip::Image const&, dip::Image&, dip::StructuringElement const&, dip::String const&, dip::String const&, dip::StringArray const& >( &dip::Tophat ),
           "in"_a, py::kw_only(), "out"_a, "se"_a = dip::StructuringElement{}, "edgeType"_a = dip::S::TEXTURE, "polarity"_a = dip::S::WHITE, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "MorphologicalThreshold", py::overload_cast< dip::Image const&, dip::StructuringElement const&, dip::String const&, dip::StringArray const& >( &dip::MorphologicalThreshold ),
-         "in"_a, "se"_a = dip::StructuringElement{}, "edgeType"_a = dip::S::TEXTURE, "boundaryCondition"_a = dip::StringArray{} );
+          "in"_a, "se"_a = dip::StructuringElement{}, "edgeType"_a = dip::S::TEXTURE, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "MorphologicalThreshold", py::overload_cast< dip::Image const&, dip::Image&, dip::StructuringElement const&, dip::String const&, dip::StringArray const& >( &dip::MorphologicalThreshold ),
-         "in"_a, py::kw_only(), "out"_a, "se"_a = dip::StructuringElement{}, "edgeType"_a = dip::S::TEXTURE, "boundaryCondition"_a = dip::StringArray{} );
+          "in"_a, py::kw_only(), "out"_a, "se"_a = dip::StructuringElement{}, "edgeType"_a = dip::S::TEXTURE, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "MorphologicalGist", py::overload_cast< dip::Image const&, dip::StructuringElement const&, dip::String const&, dip::StringArray const& >( &dip::MorphologicalGist ),
-         "in"_a, "se"_a = dip::StructuringElement{}, "edgeType"_a = dip::S::TEXTURE, "boundaryCondition"_a = dip::StringArray{} );
+          "in"_a, "se"_a = dip::StructuringElement{}, "edgeType"_a = dip::S::TEXTURE, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "MorphologicalGist", py::overload_cast< dip::Image const&, dip::Image&, dip::StructuringElement const&, dip::String const&, dip::StringArray const& >( &dip::MorphologicalGist ),
-         "in"_a, py::kw_only(), "out"_a, "se"_a = dip::StructuringElement{}, "edgeType"_a = dip::S::TEXTURE, "boundaryCondition"_a = dip::StringArray{} );
+          "in"_a, py::kw_only(), "out"_a, "se"_a = dip::StructuringElement{}, "edgeType"_a = dip::S::TEXTURE, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "MorphologicalRange", py::overload_cast< dip::Image const&, dip::StructuringElement const&, dip::String const&, dip::StringArray const& >( &dip::MorphologicalRange ),
-         "in"_a, "se"_a = dip::StructuringElement{}, "edgeType"_a = dip::S::TEXTURE, "boundaryCondition"_a = dip::StringArray{} );
+          "in"_a, "se"_a = dip::StructuringElement{}, "edgeType"_a = dip::S::TEXTURE, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "MorphologicalRange", py::overload_cast< dip::Image const&, dip::Image&, dip::StructuringElement const&, dip::String const&, dip::StringArray const& >( &dip::MorphologicalRange ),
-         "in"_a, py::kw_only(), "out"_a, "se"_a = dip::StructuringElement{}, "edgeType"_a = dip::S::TEXTURE, "boundaryCondition"_a = dip::StringArray{} );
+          "in"_a, py::kw_only(), "out"_a, "se"_a = dip::StructuringElement{}, "edgeType"_a = dip::S::TEXTURE, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "MorphologicalGradientMagnitude", py::overload_cast< dip::Image const&, dip::StructuringElement const&, dip::StringArray const& >( &dip::MorphologicalGradientMagnitude ),
-         "in"_a, "se"_a = dip::StructuringElement{}, "boundaryCondition"_a = dip::StringArray{} );
+          "in"_a, "se"_a = dip::StructuringElement{}, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "MorphologicalGradientMagnitude", py::overload_cast< dip::Image const&, dip::Image&, dip::StructuringElement const&, dip::StringArray const& >( &dip::MorphologicalGradientMagnitude ),
-         "in"_a, py::kw_only(), "out"_a, "se"_a = dip::StructuringElement{}, "boundaryCondition"_a = dip::StringArray{} );
+          "in"_a, py::kw_only(), "out"_a, "se"_a = dip::StructuringElement{}, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "Lee", py::overload_cast< dip::Image const&, dip::StructuringElement const&, dip::String const&, dip::String const&, dip::StringArray const& >( &dip::Lee ),
           "in"_a, "se"_a = dip::StructuringElement{}, "edgeType"_a = dip::S::TEXTURE, "sign"_a = dip::S::UNSIGNED, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "Lee", py::overload_cast< dip::Image const&, dip::Image&, dip::StructuringElement const&, dip::String const&, dip::String const&, dip::StringArray const& >( &dip::Lee ),
           "in"_a, py::kw_only(), "out"_a, "se"_a = dip::StructuringElement{}, "edgeType"_a = dip::S::TEXTURE, "sign"_a = dip::S::UNSIGNED, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "MorphologicalSmoothing", py::overload_cast< dip::Image const&, dip::StructuringElement const&, dip::String const&, dip::StringArray const& >( &dip::MorphologicalSmoothing ),
-         "in"_a, "se"_a = dip::StructuringElement{}, "mode"_a = dip::S::AVERAGE, "boundaryCondition"_a = dip::StringArray{} );
+          "in"_a, "se"_a = dip::StructuringElement{}, "mode"_a = dip::S::AVERAGE, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "MorphologicalSmoothing", py::overload_cast< dip::Image const&, dip::Image&, dip::StructuringElement const&, dip::String const&, dip::StringArray const& >( &dip::MorphologicalSmoothing ),
-         "in"_a, py::kw_only(), "out"_a, "se"_a = dip::StructuringElement{}, "mode"_a = dip::S::AVERAGE, "boundaryCondition"_a = dip::StringArray{} );
+          "in"_a, py::kw_only(), "out"_a, "se"_a = dip::StructuringElement{}, "mode"_a = dip::S::AVERAGE, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "MorphologicalSharpening", py::overload_cast< dip::Image const&, dip::StructuringElement const&, dip::StringArray const& >( &dip::MorphologicalSharpening ),
-         "in"_a, "se"_a = dip::StructuringElement{}, "boundaryCondition"_a = dip::StringArray{} );
+          "in"_a, "se"_a = dip::StructuringElement{}, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "MorphologicalSharpening", py::overload_cast< dip::Image const&, dip::Image&, dip::StructuringElement const&, dip::StringArray const& >( &dip::MorphologicalSharpening ),
-         "in"_a, py::kw_only(), "out"_a, "se"_a = dip::StructuringElement{}, "boundaryCondition"_a = dip::StringArray{} );
+          "in"_a, py::kw_only(), "out"_a, "se"_a = dip::StructuringElement{}, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "MultiScaleMorphologicalGradient", py::overload_cast< dip::Image const&, dip::uint, dip::uint, dip::String const&, dip::StringArray const& >( &dip::MultiScaleMorphologicalGradient ),
-         "in"_a, "upperSize"_a = 9, "lowerSize"_a = 3, "filterShape"_a = dip::S::ELLIPTIC, "boundaryCondition"_a = dip::StringArray{} );
+          "in"_a, "upperSize"_a = 9, "lowerSize"_a = 3, "filterShape"_a = dip::S::ELLIPTIC, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "MultiScaleMorphologicalGradient", py::overload_cast< dip::Image const&, dip::Image&, dip::uint, dip::uint, dip::String const&, dip::StringArray const& >( &dip::MultiScaleMorphologicalGradient ),
-         "in"_a, py::kw_only(), "out"_a, "upperSize"_a = 9, "lowerSize"_a = 3, "filterShape"_a = dip::S::ELLIPTIC, "boundaryCondition"_a = dip::StringArray{} );
+          "in"_a, py::kw_only(), "out"_a, "upperSize"_a = 9, "lowerSize"_a = 3, "filterShape"_a = dip::S::ELLIPTIC, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "MorphologicalLaplace", py::overload_cast< dip::Image const&, dip::StructuringElement const&, dip::StringArray const& >( &dip::MorphologicalLaplace ),
-         "in"_a, "se"_a = dip::StructuringElement{}, "boundaryCondition"_a = dip::StringArray{} );
+          "in"_a, "se"_a = dip::StructuringElement{}, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "MorphologicalLaplace", py::overload_cast< dip::Image const&, dip::Image&, dip::StructuringElement const&, dip::StringArray const& >( &dip::MorphologicalLaplace ),
-         "in"_a, py::kw_only(), "out"_a, "se"_a = dip::StructuringElement{}, "boundaryCondition"_a = dip::StringArray{} );
+          "in"_a, py::kw_only(), "out"_a, "se"_a = dip::StructuringElement{}, "boundaryCondition"_a = dip::StringArray{} );
 
    m.def( "RankFilter", py::overload_cast< dip::Image const&, dip::StructuringElement const&, dip::uint, dip::String const&, dip::StringArray const& >( &dip::RankFilter ),
-         "in"_a, "se"_a = dip::StructuringElement{}, "rank"_a = 2, "order"_a = dip::S::INCREASING, "boundaryCondition"_a = dip::StringArray{} );
+          "in"_a, "se"_a = dip::StructuringElement{}, "rank"_a = 2, "order"_a = dip::S::INCREASING, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "RankFilter", py::overload_cast< dip::Image const&, dip::Image&, dip::StructuringElement const&, dip::uint, dip::String const&, dip::StringArray const& >( &dip::RankFilter ),
-         "in"_a, py::kw_only(), "out"_a, "se"_a = dip::StructuringElement{}, "rank"_a = 2, "order"_a = dip::S::INCREASING, "boundaryCondition"_a = dip::StringArray{} );
+          "in"_a, py::kw_only(), "out"_a, "se"_a = dip::StructuringElement{}, "rank"_a = 2, "order"_a = dip::S::INCREASING, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "RankMinClosing", py::overload_cast< dip::Image const&, dip::StructuringElement, dip::uint, dip::StringArray const& >( &dip::RankMinClosing ),
-         "in"_a, "se"_a = dip::StructuringElement{}, "rank"_a = 2, "boundaryCondition"_a = dip::StringArray{} );
+          "in"_a, "se"_a = dip::StructuringElement{}, "rank"_a = 2, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "RankMinClosing", py::overload_cast< dip::Image const&, dip::Image&, dip::StructuringElement, dip::uint, dip::StringArray const& >( &dip::RankMinClosing ),
-         "in"_a, py::kw_only(), "out"_a, "se"_a = dip::StructuringElement{}, "rank"_a = 2, "boundaryCondition"_a = dip::StringArray{} );
+          "in"_a, py::kw_only(), "out"_a, "se"_a = dip::StructuringElement{}, "rank"_a = 2, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "RankMaxOpening", py::overload_cast< dip::Image const&, dip::StructuringElement, dip::uint, dip::StringArray const& >( &dip::RankMaxOpening ),
-         "in"_a, "se"_a = dip::StructuringElement{}, "rank"_a = 2, "boundaryCondition"_a = dip::StringArray{} );
+          "in"_a, "se"_a = dip::StructuringElement{}, "rank"_a = 2, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "RankMaxOpening", py::overload_cast< dip::Image const&, dip::Image&, dip::StructuringElement, dip::uint, dip::StringArray const& >( &dip::RankMaxOpening ),
-         "in"_a, py::kw_only(), "out"_a, "se"_a = dip::StructuringElement{}, "rank"_a = 2, "boundaryCondition"_a = dip::StringArray{} );
+          "in"_a, py::kw_only(), "out"_a, "se"_a = dip::StructuringElement{}, "rank"_a = 2, "boundaryCondition"_a = dip::StringArray{} );
 
    m.def( "Watershed", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::dfloat, dip::uint, dip::StringSet >( &dip::Watershed ),
           "in"_a, "mask"_a = dip::Image{}, "connectivity"_a = 1, "maxDepth"_a = 1.0, "maxSize"_a = 0, "flags"_a = dip::StringSet{} );
@@ -381,10 +383,10 @@ void init_morphology( py::module& m ) {
    intv.def( py::init< dip::Image const&, dip::Image const& >(), "hit"_a, "miss"_a );
    py::implicitly_convertible< dip::Image, dip::Interval >();
    intv.def( "__repr__", []( dip::Interval const& self ) {
-                std::ostringstream os;
-                os << "<Interval, sizes " << self.Sizes() << '>';
-                return os.str();
-             } );
+      std::ostringstream os;
+      os << "<Interval, sizes " << self.Sizes() << '>';
+      return os.str();
+   } );
    intv.def( "Image", &dip::Interval::Image, py::return_value_policy::reference_internal );
 
    m.def( "SupGenerating", py::overload_cast< dip::Image const&, dip::Interval const&, dip::String const& >( &dip::SupGenerating ),

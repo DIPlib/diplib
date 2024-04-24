@@ -9,10 +9,10 @@
 
 #pragma once
 
-#include "detail/common.h"
+#include "detail/common.h" // IWYU pragma: export
 
 #if defined(WITH_THREAD) && !defined(PYBIND11_SIMPLE_GIL_MANAGEMENT)
-#    include "detail/internals.h"
+#    include "detail/internals.h" // IWYU pragma: export
 #endif
 
 PYBIND11_NAMESPACE_BEGIN(PYBIND11_NAMESPACE)

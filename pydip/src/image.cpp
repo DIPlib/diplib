@@ -15,13 +15,17 @@
  * limitations under the License.
  */
 
+#include <iostream>
+#include <sstream>
+#include <utility>
+
 #include "pydip.h"
-#include "diplib/generic_iterators.h"
+#include "diplib/file_io.h"
 
 // We set `reverseDimensions` to `true` by default, meaning that dimensions are reversed when
 // reading or writing from a Python buffer protocol object. Calling `ReverseDimensions()`
 // from Python sets the `reverseDimensions` value to `false`.
-static bool reverseDimensions = true;
+bool reverseDimensions = true;
 
 void OptionallyReverseDimensions( dip::Image& img ) {
    if( !reverseDimensions ) {
@@ -40,7 +44,7 @@ void OptionallyReverseDimensions( dip::FileInformation& fi ) {
 // This is the number of elements along the first or last dimension of an array that will
 // be interpreted as the tensor dimension when converting the array to a dip.Image.
 // Use dip.SetTensorConversionThreshold() in Python to change this value.
-static dip::uint tensorConversionThreshold = 4;
+dip::uint tensorConversionThreshold = 4;
 
 namespace {
 
@@ -72,7 +76,7 @@ dip::Image BufferToImage( py::buffer& buf, bool auto_tensor = true ) {
          datatype = dip::DT_UINT32;
          break;
       case 'L':
-         datatype = dip::DataType( static_cast<unsigned long>( 0 )); // This size varies for 32-bit and 64-bit Linux, and Windows.
+         datatype = dip::DataType( static_cast< unsigned long >( 0 )); // This size varies for 32-bit and 64-bit Linux, and Windows.
          break;
       case 'K': // The documentation mentions this one
       case 'Q': // The pybind11 sources use this one
@@ -153,13 +157,14 @@ dip::Image BufferToImage( py::buffer& buf, bool auto_tensor = true ) {
    PyObject* pyObject = buf.ptr();
    //std::cout << "   *** Incrementing ref count for pyObject " << pyObject << '\n';
    Py_XINCREF( pyObject );
-   dip::DataSegment dataSegment{ pyObject, []( void* obj ) {
-      //std::cout << "   *** Decrementing ref count for pyObject " << obj << '\n';
-      PyGILState_STATE gstate;
-      gstate = PyGILState_Ensure();
-      Py_XDECREF( static_cast< PyObject* >( obj ));
-      PyGILState_Release( gstate );
-   }};
+   dip::DataSegment dataSegment{
+      pyObject, []( void* obj ) {
+         //std::cout << "   *** Decrementing ref count for pyObject " << obj << '\n';
+         PyGILState_STATE gstate = PyGILState_Ensure();
+         Py_XDECREF( static_cast< PyObject* >( obj ));
+         PyGILState_Release( gstate );
+      }
+   };
    // Create an image with all of this.
    dip::Image out( dataSegment, info.ptr, datatype, sizes, strides, {}, 1 );
 
@@ -310,7 +315,7 @@ void init_image( py::module& m ) {
    img.def( py::init< dip::Image::Sample const&, dip::DataType >(), "sample"_a, "dt"_a );
    py::implicitly_convertible< dip::Image::Sample, dip::Image >();
    // Constructor that takes a Python raw buffer
-   img.def( py::init( []( py::buffer& buf ) { return BufferToImage( buf ); } ), "array"_a);
+   img.def( py::init( []( py::buffer& buf ) { return BufferToImage( buf ); } ), "array"_a );
    img.def( py::init( []( py::buffer& buf, py::none const& ) { return BufferToImage( buf, false ); } ), "array"_a, "none"_a );
    img.def( py::init( []( py::buffer& buf, dip::sint tensor_axis ) { return BufferToImage( buf, tensor_axis ); } ), "array"_a, "tensor_axis"_a );
    py::implicitly_convertible< py::buffer, dip::Image >();
@@ -319,12 +324,16 @@ void init_image( py::module& m ) {
    // Constructor, generic
    img.def( py::init< dip::UnsignedArray const&, dip::uint, dip::DataType >(), "sizes"_a, "tensorElems"_a = 1, "dt"_a = dip::DT_SFLOAT );
    // Create new similar image
-   img.def( "Similar", py::overload_cast< >( &dip::Image::Similar, py::const_ ));
+   img.def( "Similar", py::overload_cast<>( &dip::Image::Similar, py::const_ ));
    img.def( "Similar", py::overload_cast< dip::DataType >( &dip::Image::Similar, py::const_ ), "dt"_a );
 
    // Basic properties
    img.def( "__repr__", &ImageRepr );
-   img.def( "__str__", []( dip::Image const& self ) { std::ostringstream os; os << self; return os.str(); } );
+   img.def( "__str__", []( dip::Image const& self ) {
+      std::ostringstream os;
+      os << self;
+      return os.str();
+   } );
    img.def( "__len__", []( dip::Image const& self ) { return self.IsForged() ? self.NumberOfPixels() : 0; } );
    img.def( "IsForged", &dip::Image::IsForged, "See also `IsEmpty()`." );
    img.def( "IsEmpty", []( dip::Image const& self ) { return !self.IsForged(); },
@@ -427,7 +436,7 @@ void init_image( py::module& m ) {
    img.def( "ReshapeTensorAsDiagonal", &dip::Image::ReshapeTensorAsDiagonal, py::return_value_policy::reference_internal );
    img.def( "Transpose", &dip::Image::Transpose, py::return_value_policy::reference_internal );
    img.def( "TensorToSpatial", py::overload_cast<>( &dip::Image::TensorToSpatial ), py::return_value_policy::reference_internal );
-   img.def( "TensorToSpatial", py::overload_cast< dip::uint >( &dip::Image::TensorToSpatial ), "dim"_a, py::return_value_policy::reference_internal  );
+   img.def( "TensorToSpatial", py::overload_cast< dip::uint >( &dip::Image::TensorToSpatial ), "dim"_a, py::return_value_policy::reference_internal );
    img.def( "SpatialToTensor", py::overload_cast<>( &dip::Image::SpatialToTensor ), py::return_value_policy::reference_internal );
    img.def( "SpatialToTensor", py::overload_cast< dip::uint >( &dip::Image::SpatialToTensor ), "dim"_a, py::return_value_policy::reference_internal );
    img.def( "SpatialToTensor", py::overload_cast< dip::uint, dip::uint >( &dip::Image::SpatialToTensor ), "rows"_a, "cols"_a, py::return_value_policy::reference_internal );
@@ -441,7 +450,7 @@ void init_image( py::module& m ) {
    img.def( "ReinterpretCast", &dip::Image::ReinterpretCast, py::return_value_policy::reference_internal );
    img.def( "ReinterpretCastToSignedInteger", &dip::Image::ReinterpretCastToSignedInteger, py::return_value_policy::reference_internal );
    img.def( "ReinterpretCastToUnsignedInteger", &dip::Image::ReinterpretCastToUnsignedInteger, py::return_value_policy::reference_internal );
-   img.def( "Crop", py::overload_cast< dip::UnsignedArray const&, dip::String const& >( &dip::Image::Crop ),  "sizes"_a, "cropLocation"_a = "center", py::return_value_policy::reference_internal );
+   img.def( "Crop", py::overload_cast< dip::UnsignedArray const&, dip::String const& >( &dip::Image::Crop ), "sizes"_a, "cropLocation"_a = "center", py::return_value_policy::reference_internal );
 
    // Create a view of another image.
    img.def( "Diagonal", []( dip::Image const& self ) -> dip::Image { return self.Diagonal(); } );
@@ -458,8 +467,8 @@ void init_image( py::module& m ) {
    img.def( "At", []( dip::Image const& self, dip::Image mask ) -> dip::Image { return self.At( std::move( mask )); }, "mask"_a );
    img.def( "At", []( dip::Image const& self, dip::CoordinateArray const& coordinates ) -> dip::Image { return self.At( coordinates ); }, "coordinates"_a );
    img.def( "Cropped", []( dip::Image const& self, dip::UnsignedArray const& sizes, dip::String const& cropLocation ) -> dip::Image {
-               return self.Cropped( sizes, cropLocation );
-            }, "sizes"_a, "cropLocation"_a = "center" );
+      return self.Cropped( sizes, cropLocation );
+   }, "sizes"_a, "cropLocation"_a = "center" );
    img.def( "Real", []( dip::Image const& self ) -> dip::Image { return self.Real(); } );
    img.def( "Imaginary", []( dip::Image const& self ) -> dip::Image { return self.Imaginary(); } );
    img.def( "QuickCopy", &dip::Image::QuickCopy );
@@ -469,17 +478,17 @@ void init_image( py::module& m ) {
    img.def( "__call__", []( dip::Image const& self, dip::Range const& range ) -> dip::Image { return self[ range ]; }, "range"_a );
    // Deprecated functions Nov 29, 2022 (after release 3.3.0) TODO: remove eventually.
    img.def( "TensorElement", []( dip::Image const& self, dip::sint index ) -> dip::Image {
-               PyErr_WarnEx(PyExc_DeprecationWarning, TensorElementDeprecationMessage, 1);
-               return self[ index ];
-            }, "index"_a );
+      PyErr_WarnEx( PyExc_DeprecationWarning, TensorElementDeprecationMessage, 1 );
+      return self[ index ];
+   }, "index"_a );
    img.def( "TensorElement", []( dip::Image const& self, dip::uint i, dip::uint j ) -> dip::Image {
-               PyErr_WarnEx(PyExc_DeprecationWarning, TensorElementDeprecationMessage, 1);
-               return self[ dip::UnsignedArray{ i, j } ];
-            }, "i"_a, "j"_a );
+      PyErr_WarnEx( PyExc_DeprecationWarning, TensorElementDeprecationMessage, 1 );
+      return self[ dip::UnsignedArray{ i, j } ];
+   }, "i"_a, "j"_a );
    img.def( "TensorElement", []( dip::Image const& self, dip::Range const& range ) -> dip::Image {
-               PyErr_WarnEx(PyExc_DeprecationWarning, TensorElementDeprecationMessage, 1);
-               return self[ range ];
-            }, "range"_a );
+      PyErr_WarnEx( PyExc_DeprecationWarning, TensorElementDeprecationMessage, 1 );
+      return self[ range ];
+   }, "range"_a );
 
    // Copy or write data
    img.def( "Pad", py::overload_cast< dip::UnsignedArray const&, dip::String const& >( &dip::Image::Pad, py::const_ ), "sizes"_a, "cropLocation"_a = "center" );
@@ -489,7 +498,7 @@ void init_image( py::module& m ) {
    img.def( "SwapBytesInSample", &dip::Image::SwapBytesInSample );
    img.def( "ExpandTensor", &dip::Image::ExpandTensor );
    img.def( "Fill", py::overload_cast< dip::Image::Pixel const& >( &dip::Image::Fill ), "pixel"_a );
-   img.def( "Mask", &dip::Image::Mask , "mask"_a );
+   img.def( "Mask", &dip::Image::Mask, "mask"_a );
 
    // Indexing into single pixel using coordinates
    img.def( "__getitem__", []( dip::Image const& self, dip::uint index ) -> dip::Image::Pixel { return self.At( index ); } );
@@ -503,7 +512,7 @@ void init_image( py::module& m ) {
    // Indexing using a list of coordinates
    img.def( "__getitem__", []( dip::Image const& self, dip::CoordinateArray const& coordinates ) -> dip::Image { return self.At( coordinates ); } );
 
-    // Assignment into single pixel using linear index
+   // Assignment into single pixel using linear index
    img.def( "__setitem__", []( dip::Image& self, dip::uint index, dip::Image::Sample const& v ) { self.At( index ) = v; } );
    img.def( "__setitem__", []( dip::Image& self, dip::uint index, dip::Image::Pixel const& v ) { self.At( index ) = v; } );
    // Assignment into single pixel using coordinates
@@ -524,43 +533,73 @@ void init_image( py::module& m ) {
 
    // Operators
    // +, +=
-   img.def( "__iadd__", []( dip::Image& self, py::object const& rhs ) { dip::Add( self, ImageOrPixel( rhs ), self, self.DataType() ); return self; }, py::is_operator() );
+   img.def( "__iadd__", []( dip::Image& self, py::object const& rhs ) {
+      dip::Add( self, ImageOrPixel( rhs ), self, self.DataType() );
+      return self;
+   }, py::is_operator() );
    img.def( "__add__", []( dip::Image const& lhs, py::object const& rhs ) { return dip::Add( lhs, ImageOrPixel( rhs )); }, py::is_operator() );
    img.def( "__radd__", []( dip::Image const& rhs, py::object const& lhs ) { return dip::Add( ImageOrPixel( lhs ), rhs ); }, py::is_operator() );
    // -, -=
-   img.def( "__isub__", []( dip::Image& self, py::object const& rhs ) { dip::Subtract( self, ImageOrPixel( rhs ), self, self.DataType() ); return self; }, py::is_operator() );
+   img.def( "__isub__", []( dip::Image& self, py::object const& rhs ) {
+      dip::Subtract( self, ImageOrPixel( rhs ), self, self.DataType() );
+      return self;
+   }, py::is_operator() );
    img.def( "__sub__", []( dip::Image const& lhs, py::object const& rhs ) { return dip::Subtract( lhs, ImageOrPixel( rhs )); }, py::is_operator() );
    img.def( "__rsub__", []( dip::Image const& rhs, py::object const& lhs ) { return dip::Subtract( ImageOrPixel( lhs ), rhs ); }, py::is_operator() );
    // *, *=
-   img.def( "__imul__", []( dip::Image& self, py::object const& rhs ) { dip::MultiplySampleWise( self, ImageOrPixel( rhs ), self, self.DataType() ); return self; }, py::is_operator() );
+   img.def( "__imul__", []( dip::Image& self, py::object const& rhs ) {
+      dip::MultiplySampleWise( self, ImageOrPixel( rhs ), self, self.DataType() );
+      return self;
+   }, py::is_operator() );
    img.def( "__mul__", []( dip::Image const& lhs, py::object const& rhs ) { return dip::MultiplySampleWise( lhs, ImageOrPixel( rhs )); }, py::is_operator() );
    img.def( "__rmul__", []( dip::Image const& rhs, py::object const& lhs ) { return dip::MultiplySampleWise( ImageOrPixel( lhs ), rhs ); }, py::is_operator() );
    // @, @=
-   img.def( "__imatmul__", []( dip::Image& self, py::object const& rhs ) { dip::Multiply( self, ImageOrPixel( rhs ), self, self.DataType() ); return self; }, py::is_operator() );
+   img.def( "__imatmul__", []( dip::Image& self, py::object const& rhs ) {
+      dip::Multiply( self, ImageOrPixel( rhs ), self, self.DataType() );
+      return self;
+   }, py::is_operator() );
    img.def( "__matmul__", []( dip::Image const& lhs, py::object const& rhs ) { return dip::Multiply( lhs, ImageOrPixel( rhs )); }, py::is_operator() );
    img.def( "__rmatmul__", []( dip::Image const& rhs, py::object const& lhs ) { return dip::Multiply( ImageOrPixel( lhs ), rhs ); }, py::is_operator() );
    // /, /=
-   img.def( "__itruediv__", []( dip::Image& self, py::object const& rhs ) { dip::Divide( self, ImageOrPixel( rhs ), self, self.DataType() ); return self; }, py::is_operator() );
+   img.def( "__itruediv__", []( dip::Image& self, py::object const& rhs ) {
+      dip::Divide( self, ImageOrPixel( rhs ), self, self.DataType() );
+      return self;
+   }, py::is_operator() );
    img.def( "__truediv__", []( dip::Image const& lhs, py::object const& rhs ) { return dip::Divide( lhs, ImageOrPixel( rhs )); }, py::is_operator() );
    img.def( "__rtruediv__", []( dip::Image const& rhs, py::object const& lhs ) { return dip::Divide( ImageOrPixel( lhs ), rhs ); }, py::is_operator() );
    // %, %=
-   img.def( "__imod__", []( dip::Image& self, py::object const& rhs ) { dip::Modulo( self, ImageOrPixel( rhs ), self, self.DataType() ); return self; }, py::is_operator() );
+   img.def( "__imod__", []( dip::Image& self, py::object const& rhs ) {
+      dip::Modulo( self, ImageOrPixel( rhs ), self, self.DataType() );
+      return self;
+   }, py::is_operator() );
    img.def( "__mod__", []( dip::Image const& lhs, py::object const& rhs ) { return dip::Modulo( lhs, ImageOrPixel( rhs )); }, py::is_operator() );
    img.def( "__rmod__", []( dip::Image const& rhs, py::object const& lhs ) { return dip::Modulo( ImageOrPixel( lhs ), rhs ); }, py::is_operator() );
    // **, **=
-   img.def( "__ipow__", []( dip::Image& self, py::object const& rhs ) { dip::Power( self, ImageOrPixel( rhs ), self, self.DataType() ); return self; }, py::is_operator() );
+   img.def( "__ipow__", []( dip::Image& self, py::object const& rhs ) {
+      dip::Power( self, ImageOrPixel( rhs ), self, self.DataType() );
+      return self;
+   }, py::is_operator() );
    img.def( "__pow__", []( dip::Image const& lhs, py::object const& rhs ) { return dip::Power( lhs, ImageOrPixel( rhs )); }, py::is_operator() );
    img.def( "__rpow__", []( dip::Image const& rhs, py::object const& lhs ) { return dip::Power( ImageOrPixel( lhs ), rhs ); }, py::is_operator() );
    // &, &=
-   img.def( "__iand__", []( dip::Image& self, py::object const& rhs ) { dip::And( self, ImageOrPixel( rhs ), self ); return self; }, py::is_operator() );
+   img.def( "__iand__", []( dip::Image& self, py::object const& rhs ) {
+      dip::And( self, ImageOrPixel( rhs ), self );
+      return self;
+   }, py::is_operator() );
    img.def( "__and__", []( dip::Image const& lhs, py::object const& rhs ) { return dip::And( lhs, ImageOrPixel( rhs )); }, py::is_operator() );
    img.def( "__rand__", []( dip::Image const& rhs, py::object const& lhs ) { return dip::And( ImageOrPixel( lhs ), rhs ); }, py::is_operator() );
    // |, |=
-   img.def( "__ior__", []( dip::Image& self, py::object const& rhs ) { dip::Or( self, ImageOrPixel( rhs ), self ); return self; }, py::is_operator() );
+   img.def( "__ior__", []( dip::Image& self, py::object const& rhs ) {
+      dip::Or( self, ImageOrPixel( rhs ), self );
+      return self;
+   }, py::is_operator() );
    img.def( "__or__", []( dip::Image const& lhs, py::object const& rhs ) { return dip::Or( lhs, ImageOrPixel( rhs )); }, py::is_operator() );
    img.def( "__ror__", []( dip::Image const& rhs, py::object const& lhs ) { return dip::Or( ImageOrPixel( lhs ), rhs ); }, py::is_operator() );
    // ^, ^=
-   img.def( "__ixor__", []( dip::Image& self, py::object const& rhs ) { dip::Xor( self, ImageOrPixel( rhs ), self ); return self; }, py::is_operator() );
+   img.def( "__ixor__", []( dip::Image& self, py::object const& rhs ) {
+      dip::Xor( self, ImageOrPixel( rhs ), self );
+      return self;
+   }, py::is_operator() );
    img.def( "__xor__", []( dip::Image const& lhs, py::object const& rhs ) { return dip::Xor( lhs, ImageOrPixel( rhs )); }, py::is_operator() );
    img.def( "__rxor__", []( dip::Image const& rhs, py::object const& lhs ) { return dip::Xor( ImageOrPixel( lhs ), rhs ); }, py::is_operator() );
    // +img
@@ -620,7 +659,7 @@ void init_image( py::module& m ) {
    m.def( "Convert", py::overload_cast< dip::Image const&, dip::Image&, dip::DataType >( &dip::Convert ),
           "src"_a, py::kw_only(), "dest"_a, "dt"_a );
 
-   m.def( "ReverseDimensions", [](){ reverseDimensions = false; },
+   m.def( "ReverseDimensions", []() { reverseDimensions = false; },
           "By default, DIPlib uses the (x,y,z) index order. This order is reversed from\n"
           "how NumPy (and, by extension, packages such as scikit-image, matplotlib and\n"
           "imageio) index. Calling `ReverseDimensions()` causes DIPlib, for the remainder\n"
@@ -628,11 +667,11 @@ void init_image( py::module& m ) {
           "same order as Python users might be used to. Use this function at the top of\n"
           "your program, right after importing the `diplib` package. There is no way to\n"
           "revert to the default order. Please don't try to mix dimension ordering within\n"
-          "your program.\n\nSee dip.AreDimensionsReversed().");
-   m.def( "AreDimensionsReversed", [](){ return reverseDimensions; },
-          "Shows the status of the dimension order flag, see dip.ReverseDimensions().");
+          "your program.\n\nSee dip.AreDimensionsReversed()." );
+   m.def( "AreDimensionsReversed", []() { return reverseDimensions; },
+          "Shows the status of the dimension order flag, see dip.ReverseDimensions()." );
 
-   m.def( "SetTensorConversionThreshold", []( dip::uint n ){ tensorConversionThreshold = n; },
+   m.def( "SetTensorConversionThreshold", []( dip::uint n ) { tensorConversionThreshold = n; },
           "n"_a = 4,
           "Sets the threshold for the size of array dimension to be converted to the image\n"
           "tensor dimension, used when converting a NumPy array to a DIPlib image." );

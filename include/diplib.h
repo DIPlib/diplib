@@ -18,7 +18,7 @@
 #ifndef DIPLIB_H
 #define DIPLIB_H
 
-
+// IWYU pragma: begin_exports
 #include "diplib/library/export.h"
 #include "diplib/library/dimension_array.h"
 #include "diplib/library/types.h"
@@ -33,6 +33,7 @@
 #include "diplib/library/image_views.h"
 #include "diplib/library/operators.h"
 #include "diplib/library/stringparams.h"
+// IWYU pragma: end_exports
 
 
 /// \file

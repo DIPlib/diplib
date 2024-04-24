@@ -15,10 +15,16 @@
  * limitations under the License.
  */
 
+#include <sstream>
+#include <utility>
+#include <vector>
+
 #include "pydip.h"
 #include "diplib/segmentation.h"
 #include "diplib/graph.h"
 #include "diplib/regions.h"
+#include "diplib/measurement.h"
+#include "diplib/neighborlist.h"
 
 void init_segmentation( py::module& m ) {
 
@@ -90,8 +96,11 @@ void init_segmentation( py::module& m ) {
           "is the threshold value." );
    m.def( "Threshold", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image&, dip::String const&, dip::dfloat >( &dip::Threshold ),
           "in"_a, "mask"_a = dip::Image{}, py::kw_only(), "out"_a, "method"_a = dip::S::OTSU, "parameter"_a = dip::infinity );
-   m.def( "PerObjectEllipsoidFit", []( dip::Image const& in, std::pair<dip::uint, dip::uint> sizeBounds, dip::dfloat minEllipsoidFit,
-                                       std::pair<dip::dfloat, dip::dfloat> aspectRatioBounds, std::pair<dip::dfloat, dip::dfloat> thresholdBounds ){
+   m.def( "PerObjectEllipsoidFit", []( dip::Image const& in,
+                                       std::pair< dip::uint, dip::uint > sizeBounds,
+                                       dip::dfloat minEllipsoidFit,
+                                       std::pair< dip::dfloat, dip::dfloat > aspectRatioBounds,
+                                       std::pair< dip::dfloat, dip::dfloat > thresholdBounds ) {
              return dip::PerObjectEllipsoidFit( in, { sizeBounds.first, sizeBounds.second, minEllipsoidFit, aspectRatioBounds.first,
                                                       aspectRatioBounds.second, thresholdBounds.first, thresholdBounds.second } );
           }, "in"_a, "sizeBounds"_a = std::pair< dip::uint, dip::uint >{ 6, 30000 }, "minEllipsoidFit"_a = 0.88,
@@ -119,10 +128,10 @@ void init_segmentation( py::module& m ) {
    graph.def( py::init< dip::uint, dip::uint >(), "nVertices"_a, "nEdges"_a = 0 );
    graph.def( py::init< dip::Image const&, dip::uint, dip::String const& >(), "image"_a, "connectivity"_a = 1, "weights"_a = "difference" );
    graph.def( "__repr__", []( dip::Graph const& self ) {
-                 std::ostringstream os;
-                 os << "<Graph with " << self.NumberOfVertices() << " vertices and " << self.NumberOfEdges() << " edges>";
-                 return os.str();
-              } );
+      std::ostringstream os;
+      os << "<Graph with " << self.NumberOfVertices() << " vertices and " << self.NumberOfEdges() << " edges>";
+      return os.str();
+   } );
    graph.def( "NumberOfVertices", &dip::Graph::NumberOfVertices );
    graph.def( "NumberOfEdges", &dip::Graph::NumberOfEdges );
    graph.def( "CountEdges", &dip::Graph::CountEdges );
@@ -175,7 +184,7 @@ void init_segmentation( py::module& m ) {
    m.def( "MakeRegionsConvex2D", py::overload_cast< dip::Image const&, dip::Image&, dip::String const& >( &dip::MakeRegionsConvex2D ),
           "label"_a, py::kw_only(), "out"_a, "mode"_a = dip::S::FILLED );
    m.def( "GetLabelBoundingBox", &dip::GetLabelBoundingBox,
-           "label"_a, "objectID"_a );
+          "label"_a, "objectID"_a );
    m.def( "RegionAdjacencyGraph", py::overload_cast< dip::Image const&, dip::String const& >( &dip::RegionAdjacencyGraph ),
           "label"_a, "mode"_a = "touching" );
    m.def( "RegionAdjacencyGraph", py::overload_cast< dip::Image const&, dip::Measurement::IteratorFeature const&, dip::String const& >( &dip::RegionAdjacencyGraph ),

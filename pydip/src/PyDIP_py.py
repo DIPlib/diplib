@@ -17,7 +17,7 @@
 The portion of the PyDIP module that contains Python code.
 """
 
-from .PyDIP_bin import Image, ImageDisplay, ApplyColorMap
+from .PyDIP_bin import ImageDisplay, ApplyColorMap
 import importlib.util
 import warnings
 
@@ -105,15 +105,15 @@ def Show(img, range=(), complexMode='abs', projectionMode='mean', coordinates=()
     if not hasMatPlotLib:
         if not _reportedPlotLib:
             warnings.warn(
-    """PyDIP requires matplotlib for its display functionality. Matplotlib was not found
-    on your system. Image display (`diplib.Show()` and `diplib.Image.Show()`) will not do
-    anything. You can install matplotlib by typing on your Linux/MacOS command prompt:
-        pip3 install matplotlib
-    or under Windows:
-        python3 -m pip install matplotlib
-    Alternatively, use `diplib.viewer.ShowModal()`, or `diplib.Image.ShowSlice()` and
-    `diplib.viewer.Spin()`.
-    """, RuntimeWarning)
+                """PyDIP requires matplotlib for its display functionality. Matplotlib was not found
+                on your system. Image display (`diplib.Show()` and `diplib.Image.Show()`) will not do
+                anything. You can install matplotlib by typing on your Linux/MacOS command prompt:
+                    pip3 install matplotlib
+                or under Windows:
+                    python3 -m pip install matplotlib
+                Alternatively, use `diplib.viewer.ShowModal()`, or `diplib.Image.ShowSlice()` and
+                `diplib.viewer.Spin()`.
+                """, RuntimeWarning)
             _reportedPlotLib = True
         return
 
@@ -157,7 +157,8 @@ def Show(img, range=(), complexMode='abs', projectionMode='mean', coordinates=()
         axes.set_xlim((x[0], x[-1]))
         axes.set_ylim((np.amin(data), np.amax(data)))
     else:
-        out = ImageDisplay(img, range, complexMode=complexMode, projectionMode=projectionMode, coordinates=coordinates, dim1=dim1, dim2=dim2)
+        out = ImageDisplay(img, range, complexMode=complexMode, projectionMode=projectionMode,
+                           coordinates=coordinates, dim1=dim1, dim2=dim2)
         out = np.asarray(out)
         if colormap == '':
             if range == 'base' or range == 'based':
@@ -185,12 +186,14 @@ def Show(img, range=(), complexMode='abs', projectionMode='mean', coordinates=()
         axes.clear()
         axes.imshow(out, cmap=cmap, norm=matplotlib.colors.NoNorm(), interpolation='none', extent=extent)
         if extent:
+            # noinspection PyUnboundLocalVariable
             axes.set_aspect(dx / dy)
     pp.draw()
     pp.pause(0.001)
 
 
-def HistogramShow(hist, range=(), complexMode='abs', projectionMode='mean', coordinates=(), dim1=0, dim2=1, colormap=''):
+def HistogramShow(hist, range=(), complexMode='abs', projectionMode='mean',
+                  coordinates=(), dim1=0, dim2=1, colormap=''):
     if hist.Dimensionality() == 1:
         extent = (hist.BinCenter(0), hist.BinCenter(hist.Bins() - 1))
     else:

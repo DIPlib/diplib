@@ -18,15 +18,17 @@
 #ifndef DIP_PYDIP_H
 #define DIP_PYDIP_H
 
-#include "diplib.h"
+#include "diplib.h" // IWYU pragma: export
 #include "diplib/random.h"
 #include "diplib/file_io.h"  // for dip::FileInformation
 
+// IWYU pragma: begin_exports
 #include <pybind11/pybind11.h>
 #include <pybind11/complex.h>
 #include <pybind11/stl.h>
 #include <pybind11/operators.h>
 #include <pybind11/numpy.h>
+// IWYU pragma: end_exports
 
 using namespace pybind11::literals;
 namespace py = pybind11;
@@ -77,7 +79,7 @@ template< typename Type >
 struct type_caster< dip::DimensionArray< Type >> : public list_caster< dip::DimensionArray< Type >, Type > {
    using list_caster< dip::DimensionArray< Type >, Type >::value;
    using value_conv = make_caster< Type >;
-   
+
    bool load( handle src, bool convert ) {
       if( isinstance< sequence >( src ) || isinstance< str >( src )) {
          return list_caster< dip::DimensionArray< Type >, Type >::load( src, convert );
@@ -100,7 +102,7 @@ template<>
 class type_caster< dip::DataType > {
    public:
       using type = dip::DataType;
-      bool load( handle src, bool ) {
+      bool load( handle src, bool /*convert*/) {
          if( !src ) {
             return false;
          }
@@ -111,7 +113,7 @@ class type_caster< dip::DataType > {
          }
          return false;
       }
-      static handle cast( dip::DataType const& src, return_value_policy, handle ) {
+      static handle cast( dip::DataType const& src, return_value_policy /*policy*/, handle /*parent*/ ) {
          return py::cast( src.Name() ).release();
       }
    PYBIND11_TYPE_CASTER( type, _( "DataType" ));
@@ -122,7 +124,7 @@ template<>
 class type_caster< dip::Tensor::Shape > {
    public:
       using type = dip::Tensor::Shape;
-      bool load( handle src, bool ) {
+      bool load( handle src, bool /*convert*/ ) {
          if( !src ) {
             return false;
          }
@@ -133,7 +135,7 @@ class type_caster< dip::Tensor::Shape > {
          }
          return false;
       }
-      static handle cast( dip::Tensor::Shape const& src, return_value_policy, handle ) {
+      static handle cast( dip::Tensor::Shape const& src, return_value_policy /*policy*/, handle /*parent*/ ) {
          return py::cast( dip::Tensor::ShapeToString( src )).release();
       }
    PYBIND11_TYPE_CASTER( type, _( "TensorShape" ));
@@ -144,15 +146,17 @@ template<>
 class type_caster< dip::Range > {
    public:
       using type = dip::Range;
-      bool load( handle src, bool ) {
+      bool load( handle src, bool /*convert*/ ) {
          //std::cout << "Executing py::type_caster<dip::Range>::load\n";
          if( !src ) {
             //std::cout << "   Input is not\n";
             return false;
          }
          if( PySlice_Check( src.ptr() )) {
-            auto ptr = reinterpret_cast< PySliceObject* >( src.ptr() );
-            dip::sint start, stop, step;
+            auto* ptr = reinterpret_cast< PySliceObject* >( src.ptr() );
+            dip::sint start = 0;
+            dip::sint stop = 0;
+            dip::sint step = 1;
             // Alternative: PySlice_Unpack( src.ptr(), &start, &stop, &step );
             // Do we need to use PYBIND11_LONG_CHECK() here?
             if( PyNone_Check( ptr->step )) {
@@ -189,7 +193,7 @@ class type_caster< dip::Range > {
          }
          return false;
       }
-      static handle cast( dip::Range const& src, return_value_policy, handle ) {
+      static handle cast( dip::Range const& src, return_value_policy /*policy*/, handle /*parent*/ ) {
          return slice( src.start, src.stop, static_cast< dip::sint >( src.step )).release();
       }
    PYBIND11_TYPE_CASTER( type, _( "slice" ));
@@ -200,7 +204,7 @@ template<>
 class type_caster< dip::Image::Sample > {
    public:
       using type = dip::Image::Sample;
-      bool load( handle src, bool ) {
+      bool load( handle src, bool /*convert*/ ) {
          //std::cout << "Executing py::type_caster<dip::Sample>::load\n";
          if( !src ) {
             //std::cout << "   Input is not\n";
@@ -225,7 +229,7 @@ class type_caster< dip::Image::Sample > {
          //std::cout << "   Result: " << value << std::endl;
          return true;
       }
-      static handle cast( dip::Image::Sample const& src, return_value_policy, handle ) {
+      static handle cast( dip::Image::Sample const& src, return_value_policy /*policy*/, handle /*parent*/ ) {
          //std::cout << "Executing py::type_caster<dip::Sample>::cast\n";
          py::object out;
          if( src.DataType().IsBinary() ) {
@@ -302,17 +306,15 @@ class type_caster< dip::Image::Pixel > {
             }
             //std::cout << "   Result: " << value << std::endl;
             return true;
-         } else {
-            sample_conv conv;
-            if ( !conv.load( src, convert )) {
-               return false;
-            }
-            value.swap( dip::Image::Pixel( std::move( conv )));
-            return true;
          }
-         return false;
+         sample_conv conv;
+         if ( !conv.load( src, convert )) {
+            return false;
+         }
+         value.swap( dip::Image::Pixel( std::move( conv )));
+         return true;
       }
-      static handle cast( dip::Image::Pixel const& src, return_value_policy, handle ) {
+      static handle cast( dip::Image::Pixel const& src, return_value_policy /*policy*/, handle /*parent*/ ) {
          //std::cout << "Executing py::type_caster<dip::Pixel>::cast\n";
          py::list out;
          if( src.DataType().IsBinary() ) {

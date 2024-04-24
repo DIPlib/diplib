@@ -205,6 +205,7 @@
 #    endif
 #endif
 
+// IWYU pragma: begin_exports
 #include <Python.h>
 // Reminder: WITH_THREAD is always defined if PY_VERSION_HEX >= 0x03070000
 #if PY_VERSION_HEX < 0x03060000
@@ -212,6 +213,7 @@
 #endif
 #include <frameobject.h>
 #include <pythread.h>
+// IWYU pragma: end_exports
 
 /* Python #defines overrides on all sorts of core functions, which
    tends to weak havok in C++ codebases that expect these to work

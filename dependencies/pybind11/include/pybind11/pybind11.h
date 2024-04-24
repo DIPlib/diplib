@@ -10,11 +10,14 @@
 
 #pragma once
 
+// IWYU pragma: begin_exports
 #include "detail/class.h"
 #include "detail/init.h"
+#include "detail/common.h"
 #include "attr.h"
 #include "gil.h"
 #include "options.h"
+// IWYU pragma: end_exports
 
 #include <cstdlib>
 #include <cstring>

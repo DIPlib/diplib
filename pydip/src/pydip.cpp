@@ -15,9 +15,12 @@
  * limitations under the License.
  */
 
+#include <sstream>
+
 #include "pydip.h"
 #include "diplib/neighborlist.h"
 #include "diplib/multithreading.h"
+#include "diplib/random.h"
 
 #if defined(__clang__)
    // Clang gives a bogus diagnostic here for `py::self -= py::self`
@@ -91,7 +94,7 @@ PYBIND11_MODULE( PyDIP_bin, m ) {
    info.def_readonly( "version", &dip::LibraryInformation::version, "The library version number" );
    info.def_readonly( "date", &dip::LibraryInformation::date, "Compilation date" );
    info.def_readonly( "type", &dip::LibraryInformation::type, "Describes options enabled during compilation" );
-   info.def( "__repr__", []( dip::LibraryInformation const& ){ return "<LibraryInformation>"; } );
+   info.def( "__repr__", []( dip::LibraryInformation const& ) { return "<LibraryInformation>"; } );
    info.def( "__str__", &InfoString );
 
    m.attr( "libraryInformation" ) = dip::libraryInformation;
@@ -121,12 +124,12 @@ PYBIND11_MODULE( PyDIP_bin, m ) {
    tensor.def( "Rows", &dip::Tensor::Rows );
    tensor.def( "Columns", &dip::Tensor::Columns );
    tensor.def( "Sizes", &dip::Tensor::Sizes );
-   tensor.def( "SetShape", &dip::Tensor::SetShape, "shape"_a, "rows"_a, "cols"_a  );
+   tensor.def( "SetShape", &dip::Tensor::SetShape, "shape"_a, "rows"_a, "cols"_a );
    tensor.def( "SetScalar", &dip::Tensor::SetScalar );
    tensor.def( "SetVector", &dip::Tensor::SetVector, "n"_a );
    tensor.def( "SetMatrix", &dip::Tensor::SetMatrix, "rows"_a, "cols"_a );
    tensor.def( "SetSizes", &dip::Tensor::SetSizes, "sizes"_a );
-   tensor.def( "ChangeShape", py::overload_cast<>( &dip::Tensor::ChangeShape ) );
+   tensor.def( "ChangeShape", py::overload_cast<>( &dip::Tensor::ChangeShape ));
    tensor.def( "ChangeShape", py::overload_cast< dip::uint >( &dip::Tensor::ChangeShape ), "rows"_a );
    tensor.def( "ChangeShape", py::overload_cast< dip::Tensor const& >( &dip::Tensor::ChangeShape ), "example"_a );
    tensor.def( "Transpose", &dip::Tensor::Transpose );
@@ -136,8 +139,8 @@ PYBIND11_MODULE( PyDIP_bin, m ) {
    tensor.def( "HasNormalOrder", &dip::Tensor::HasNormalOrder );
    tensor.def( "Index", &dip::Tensor::Index, "indices"_a );
    tensor.def( "LookUpTable", &dip::Tensor::LookUpTable );
-   tensor.def( py::self == py::self );
-   tensor.def( py::self != py::self );
+   tensor.def( py::self == py::self ); // NOLINT(*-redundant-expression)
+   tensor.def( py::self != py::self ); // NOLINT(*-redundant-expression)
 
    // diplib/library/physical_dimensions.h
    auto units = py::class_< dip::Units >( m, "Units", "Represents physical units." );
@@ -153,20 +156,21 @@ PYBIND11_MODULE( PyDIP_bin, m ) {
    physQ.def( py::init< dip::dfloat, dip::Units >(), "magnitude"_a, "units"_a = dip::Units{} );
    physQ.def( py::init< dip::Units >(), "units"_a );
    physQ.def( "__repr__", []( dip::PhysicalQuantity const& self ) {
-                 std::ostringstream os;
-                 os << "<PhysicalQuantity {" << self << "}>";
-                 return os.str();
-              } );
+      std::ostringstream os;
+      os << "<PhysicalQuantity {" << self << "}>";
+      return os.str();
+   } );
    physQ.def( "__str__", []( dip::PhysicalQuantity const& self ) {
-                 std::ostringstream os; os << self;
-                 return os.str();
-              } );
+      std::ostringstream os;
+      os << self;
+      return os.str();
+   } );
    physQ.def_readwrite( "magnitude", &dip::PhysicalQuantity::magnitude );
    physQ.def_readwrite( "units", &dip::PhysicalQuantity::units );
    physQ.def( py::self += py::self );
    physQ.def( py::self + py::self );
    physQ.def( py::self -= py::self );
-   physQ.def( py::self - py::self );
+   physQ.def( py::self - py::self ); // NOLINT(*-redundant-expression)
    physQ.def( py::self *= py::self );
    physQ.def( py::self *= dip::dfloat() );
    physQ.def( py::self * py::self );
@@ -174,12 +178,12 @@ PYBIND11_MODULE( PyDIP_bin, m ) {
    physQ.def( dip::dfloat() * py::self );
    physQ.def( py::self /= py::self );
    physQ.def( py::self /= dip::dfloat() );
-   physQ.def( py::self / py::self );
+   physQ.def( py::self / py::self ); // NOLINT(*-redundant-expression)
    physQ.def( py::self / dip::dfloat() );
    physQ.def( dip::dfloat() / py::self );
    physQ.def( "__pow__", []( dip::PhysicalQuantity a, dip::sint8 p ) { return a.Power( p ); }, py::is_operator() );
-   physQ.def( py::self == py::self );
-   physQ.def( py::self != py::self );
+   physQ.def( py::self == py::self ); // NOLINT(*-redundant-expression)
+   physQ.def( py::self != py::self ); // NOLINT(*-redundant-expression)
    physQ.def( -py::self );
    physQ.def( "Invert", &dip::PhysicalQuantity::Invert );
    physQ.def( "IsDimensionless", &dip::PhysicalQuantity::IsDimensionless );
@@ -208,19 +212,20 @@ PYBIND11_MODULE( PyDIP_bin, m ) {
               "Overload that accepts the two components of a `dip.PhysicalQuantity`, using\n"
               "a different magnitude for each dimension." );
    pixSz.def( "__repr__", []( dip::PixelSize const& self ) {
-                 std::ostringstream os;
-                 os << "<PixelSize " << self << '>';
-                 return os.str();
-              } );
+      std::ostringstream os;
+      os << "<PixelSize " << self << '>';
+      return os.str();
+   } );
    pixSz.def( "__str__", []( dip::PixelSize const& self ) {
-                 std::ostringstream os; os << self;
-                 return os.str();
-              } );
+      std::ostringstream os;
+      os << self;
+      return os.str();
+   } );
    pixSz.def( "__len__", []( dip::PixelSize const& self ) { return self.Size(); } );
    pixSz.def( "__getitem__", &dip::PixelSize::Get );
    pixSz.def( "__setitem__", py::overload_cast< dip::uint, dip::PhysicalQuantity >( &dip::PixelSize::Set ));
-   pixSz.def( py::self == py::self );
-   pixSz.def( py::self != py::self );
+   pixSz.def( py::self == py::self ); // NOLINT(*-redundant-expression)
+   pixSz.def( py::self != py::self ); // NOLINT(*-redundant-expression)
    pixSz.def( "Scale", py::overload_cast< dip::uint, dip::dfloat >( &dip::PixelSize::Scale ), "d"_a, "s"_a );
    pixSz.def( "Scale", py::overload_cast< dip::dfloat >( &dip::PixelSize::Scale ), "s"_a );
    pixSz.def( "Scale", py::overload_cast< dip::FloatArray const& >( &dip::PixelSize::Scale ), "s"_a );

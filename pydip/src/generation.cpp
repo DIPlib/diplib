@@ -15,11 +15,12 @@
  * limitations under the License.
  */
 
+#include <utility>
+
 #include "pydip.h"
 #include "diplib/boundary.h"
 #include "diplib/generation.h"
-
-#include "diplib/chain_code.h"
+#include "diplib/chain_code.h" // IWYU pragma: keep
 
 void init_generation( py::module& m ) {
 
@@ -48,7 +49,7 @@ void init_generation( py::module& m ) {
    m.def( "DrawLines", &dip::DrawLines,
           "out"_a, "points"_a, "value"_a = dip::Image::Pixel{ 1 }, "blend"_a = dip::S::ASSIGN );
    m.def( "DrawPolygon2D", &dip::DrawPolygon2D,
-          "out"_a, "polygon"_a, "value"_a = dip::Image::Pixel{ 1 }, "mode"_a = dip::S::FILLED);
+          "out"_a, "polygon"_a, "value"_a = dip::Image::Pixel{ 1 }, "mode"_a = dip::S::FILLED );
    m.def( "DrawEllipsoid", &dip::DrawEllipsoid,
           "out"_a, "sizes"_a, "origin"_a, "value"_a = dip::Image::Pixel{ 1 } );
    m.def( "DrawDiamond", &dip::DrawDiamond,
@@ -65,8 +66,14 @@ void init_generation( py::module& m ) {
           "out"_a, "sizes"_a, "origin"_a, "value"_a = dip::Image::Pixel{ 1 }, "mode"_a = dip::S::FILLED, "sigma"_a = 1.0, "truncation"_a = 3.0 );
    m.def( "BlendBandlimitedMask", &dip::BlendBandlimitedMask,
           "out"_a, "mask"_a, "value"_a = dip::Image( { 255 } ), "pos"_a = dip::IntegerArray{} );
-   m.def( "DrawText", []( dip::Image& out, dip::String const& text, dip::FloatArray const& origin, dip::String const& font,
-                          dip::dfloat size, dip::Image::Pixel const& value, dip::dfloat orientation, dip::String const& align ) {
+   m.def( "DrawText", []( dip::Image& out,
+                          dip::String const& text,
+                          dip::FloatArray const& origin,
+                          dip::String const& font,
+                          dip::dfloat size,
+                          dip::Image::Pixel const& value,
+                          dip::dfloat orientation,
+                          dip::String const& align ) {
              dip::FreeTypeTool freeTypeTool( font );
              freeTypeTool.SetSize( size );
              freeTypeTool.DrawText( out, text, origin, value, orientation, align );
@@ -223,32 +230,32 @@ void init_generation( py::module& m ) {
           "Like the C++ function, but with individual input values rather than a single\n"
           "`dip::TestObjectParams` object collecting all algorithm parameters.\n"
           "Also uses an internal `dip::Random` object." );
-   m.def( "FillPoissonPointProcess", []( dip::Image& out, dip::dfloat density ){
+   m.def( "FillPoissonPointProcess", []( dip::Image& out, dip::dfloat density ) {
              dip::FillPoissonPointProcess( out, RandomNumberGenerator(), density );
           },
           "in"_a, "density"_a = 0.01,
           "Like the C++ function, but using an internal `dip::Random` object." );
-   m.def( "CreatePoissonPointProcess", []( dip::UnsignedArray const& sizes, dip::dfloat density ){
+   m.def( "CreatePoissonPointProcess", []( dip::UnsignedArray const& sizes, dip::dfloat density ) {
              return dip::CreatePoissonPointProcess( sizes, RandomNumberGenerator(), density );
           },
           "sizes"_a, "density"_a = 0.01,
           "Like the C++ function, but using an internal `dip::Random` object." );
-   m.def( "CreatePoissonPointProcess", []( dip::Image&, dip::UnsignedArray const& sizes, dip::dfloat density ){
+   m.def( "CreatePoissonPointProcess", []( dip::Image&, dip::UnsignedArray const& sizes, dip::dfloat density ) {
              return dip::CreatePoissonPointProcess( sizes, RandomNumberGenerator(), density );
           },
           py::kw_only(), "out"_a, "sizes"_a, "density"_a = 0.01,
           "Like the C++ function, but using an internal `dip::Random` object." );
-   m.def( "FillRandomGrid", []( dip::Image& out, dip::dfloat density, dip::String const& type, dip::String const& mode ){
+   m.def( "FillRandomGrid", []( dip::Image& out, dip::dfloat density, dip::String const& type, dip::String const& mode ) {
              dip::FillRandomGrid( out, RandomNumberGenerator(), density, type, mode );
           },
           "in"_a, "density"_a = 0.01, "type"_a = dip::S::RECTANGULAR, "mode"_a = dip::S::TRANSLATION,
           "Like the C++ function, but using an internal `dip::Random` object." );
-   m.def( "CreateRandomGrid", []( dip::UnsignedArray const& sizes, dip::dfloat density, dip::String const& type, dip::String const& mode ){
+   m.def( "CreateRandomGrid", []( dip::UnsignedArray const& sizes, dip::dfloat density, dip::String const& type, dip::String const& mode ) {
              return dip::CreateRandomGrid( sizes, RandomNumberGenerator(), density, type, mode );
           },
           "sizes"_a, "density"_a = 0.01, "type"_a = dip::S::RECTANGULAR, "mode"_a = dip::S::TRANSLATION,
           "Like the C++ function, but using an internal `dip::Random` object." );
-   m.def( "CreateRandomGrid", []( dip::Image&, dip::UnsignedArray const& sizes, dip::dfloat density, dip::String const& type, dip::String const& mode ){
+   m.def( "CreateRandomGrid", []( dip::Image&, dip::UnsignedArray const& sizes, dip::dfloat density, dip::String const& type, dip::String const& mode ) {
              return dip::CreateRandomGrid( sizes, RandomNumberGenerator(), density, type, mode );
           },
           py::kw_only(), "out"_a, "sizes"_a, "density"_a = 0.01, "type"_a = dip::S::RECTANGULAR, "mode"_a = dip::S::TRANSLATION,
@@ -323,76 +330,76 @@ void init_generation( py::module& m ) {
    m.def( "CityBlockDistanceToPoint", py::overload_cast< dip::Image&, dip::UnsignedArray const&, dip::FloatArray const&, dip::FloatArray >( &dip::CityBlockDistanceToPoint ),
           py::kw_only(), "out"_a, "sizes"_a, "point"_a, "scaling"_a = dip::FloatArray{} );
 
-   m.def( "UniformNoise", []( dip::Image const& in, dip::dfloat lowerBound, dip::dfloat upperBound ){
+   m.def( "UniformNoise", []( dip::Image const& in, dip::dfloat lowerBound, dip::dfloat upperBound ) {
              return dip::UniformNoise( in, RandomNumberGenerator(), lowerBound, upperBound );
           },
           "in"_a, "lowerBound"_a = 0.0, "upperBound"_a = 1.0,
           "Like the C++ function, but using an internal `dip::Random` object." );
-   m.def( "UniformNoise", []( dip::Image const& in, dip::Image& out, dip::dfloat lowerBound, dip::dfloat upperBound ){
+   m.def( "UniformNoise", []( dip::Image const& in, dip::Image& out, dip::dfloat lowerBound, dip::dfloat upperBound ) {
              dip::UniformNoise( in, out, RandomNumberGenerator(), lowerBound, upperBound );
           },
           "in"_a, py::kw_only(), "out"_a, "lowerBound"_a = 0.0, "upperBound"_a = 1.0,
           "Like the C++ function, but using an internal `dip::Random` object." );
-   m.def( "GaussianNoise", []( dip::Image const& in, dip::dfloat variance ){
+   m.def( "GaussianNoise", []( dip::Image const& in, dip::dfloat variance ) {
              return dip::GaussianNoise( in, RandomNumberGenerator(), variance );
           },
           "in"_a, "variance"_a = 1.0,
           "Like the C++ function, but using an internal `dip::Random` object." );
-   m.def( "GaussianNoise", []( dip::Image const& in, dip::Image& out, dip::dfloat variance ){
+   m.def( "GaussianNoise", []( dip::Image const& in, dip::Image& out, dip::dfloat variance ) {
              dip::GaussianNoise( in, out, RandomNumberGenerator(), variance );
           },
           "in"_a, py::kw_only(), "out"_a, "variance"_a = 1.0,
           "Like the C++ function, but using an internal `dip::Random` object." );
-   m.def( "PoissonNoise", []( dip::Image const& in, dip::dfloat conversion ){
+   m.def( "PoissonNoise", []( dip::Image const& in, dip::dfloat conversion ) {
              return dip::PoissonNoise( in, RandomNumberGenerator(), conversion );
           },
           "in"_a, "conversion"_a = 1.0,
           "Like the C++ function, but using an internal `dip::Random` object." );
-   m.def( "PoissonNoise", []( dip::Image const& in, dip::Image& out, dip::dfloat conversion ){
+   m.def( "PoissonNoise", []( dip::Image const& in, dip::Image& out, dip::dfloat conversion ) {
              dip::PoissonNoise( in, out, RandomNumberGenerator(), conversion );
           },
           "in"_a, py::kw_only(), "out"_a, "conversion"_a = 1.0,
           "Like the C++ function, but using an internal `dip::Random` object." );
-   m.def( "BinaryNoise", []( dip::Image const& in, dip::dfloat p10, dip::dfloat p01 ){
+   m.def( "BinaryNoise", []( dip::Image const& in, dip::dfloat p10, dip::dfloat p01 ) {
              return dip::BinaryNoise( in, RandomNumberGenerator(), p10, p01 );
           },
           "in"_a, "p10"_a = 0.05, "p01"_a = 0.05,
           "Like the C++ function, but using an internal `dip::Random` object." );
-   m.def( "BinaryNoise", []( dip::Image const& in, dip::Image& out, dip::dfloat p10, dip::dfloat p01 ){
+   m.def( "BinaryNoise", []( dip::Image const& in, dip::Image& out, dip::dfloat p10, dip::dfloat p01 ) {
              dip::BinaryNoise( in, out, RandomNumberGenerator(), p10, p01 );
           },
           "in"_a, py::kw_only(), "out"_a, "p10"_a = 0.05, "p01"_a = 0.05,
           "Like the C++ function, but using an internal `dip::Random` object." );
-   m.def( "SaltPepperNoise", []( dip::Image const& in, dip::dfloat p0, dip::dfloat p1, dip::dfloat white ){
+   m.def( "SaltPepperNoise", []( dip::Image const& in, dip::dfloat p0, dip::dfloat p1, dip::dfloat white ) {
              return dip::SaltPepperNoise( in, RandomNumberGenerator(), p0, p1, white );
           },
           "in"_a, "p0"_a = 0.05, "p1"_a = 0.05, "white"_a = 1.0,
           "Like the C++ function, but using an internal `dip::Random` object." );
-   m.def( "SaltPepperNoise", []( dip::Image const& in, dip::Image& out, dip::dfloat p0, dip::dfloat p1, dip::dfloat white ){
+   m.def( "SaltPepperNoise", []( dip::Image const& in, dip::Image& out, dip::dfloat p0, dip::dfloat p1, dip::dfloat white ) {
              dip::SaltPepperNoise( in, out, RandomNumberGenerator(), p0, p1, white );
           },
           "in"_a, py::kw_only(), "out"_a, "p0"_a = 0.05, "p1"_a = 0.05, "white"_a = 1.0,
           "Like the C++ function, but using an internal `dip::Random` object." );
-   m.def( "FillColoredNoise", []( dip::Image& out, dip::dfloat variance, dip::dfloat color ){
+   m.def( "FillColoredNoise", []( dip::Image& out, dip::dfloat variance, dip::dfloat color ) {
              dip::FillColoredNoise( out, RandomNumberGenerator(), variance, color );
           },
           "out"_a, "variance"_a = 1.0, "color"_a = -2.0,
           "Like the C++ function, but using an internal `dip::Random` object." );
-   m.def( "ColoredNoise", []( dip::Image const& in, dip::dfloat variance, dip::dfloat color  ){
+   m.def( "ColoredNoise", []( dip::Image const& in, dip::dfloat variance, dip::dfloat color ) {
              return dip::ColoredNoise( in, RandomNumberGenerator(), variance, color );
           },
           "in"_a, "variance"_a = 1.0, "color"_a = -2.0,
           "Like the C++ function, but using an internal `dip::Random` object." );
-   m.def( "ColoredNoise", []( dip::Image const& in, dip::Image& out, dip::dfloat variance, dip::dfloat color  ){
+   m.def( "ColoredNoise", []( dip::Image const& in, dip::Image& out, dip::dfloat variance, dip::dfloat color ) {
              dip::ColoredNoise( in, out, RandomNumberGenerator(), variance, color );
           },
           "in"_a, py::kw_only(), "out"_a, "variance"_a = 1.0, "color"_a = -2.0,
           "Like the C++ function, but using an internal `dip::Random` object." );
 
-   m.def( "ReseedRng", [](){ RandomNumberGenerator().Seed(); },
+   m.def( "ReseedRng", []() { RandomNumberGenerator().Seed(); },
           "Randomly reseed the random number generator used by the noise, grid and\n"
           "object generation functions." );
-   m.def( "ReseedRng", []( dip::uint seed ){ RandomNumberGenerator().Seed( seed ); },
+   m.def( "ReseedRng", []( dip::uint seed ) { RandomNumberGenerator().Seed( seed ); },
           "Reseed the random number generator used by the noise, grid and object\n"
           "generation functions." );
 

@@ -10,11 +10,13 @@
 
 #pragma once
 
+// IWYU pragma: begin_exports
 #include "detail/common.h"
 #include "detail/descr.h"
 #include "detail/type_caster_base.h"
 #include "detail/typeid.h"
 #include "pytypes.h"
+// IWYU pragma: end_exports
 
 #include <array>
 #include <cstring>

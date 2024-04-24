@@ -2,12 +2,13 @@
 Language: Cpp
 BasedOnStyle: LLVM
 AccessModifierOffset: 0
+AlignAfterOpenBracket: AlwaysBreak
 AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations: false
 AlignOperands: false
 AlignTrailingComments: false
 BinPackParameters: false
-BraceWrapping: 
+BraceWrapping:
   AfterCaseLabel: true
   AfterClass: false
   AfterControlStatement: false
@@ -26,10 +27,12 @@ BraceWrapping:
   SplitEmptyNamespace: false
 BreakBeforeBraces: Custom
 BreakConstructorInitializers: AfterColon
+BreakConstructorInitializersBeforeComma: false
 ColumnLimit: 0
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
 ContinuationIndentWidth: 6
 Cpp11BracedListStyle: false
-IncludeCategories: 
+IncludeCategories:
   - Regex: '^<.*'
     Priority: 1
   - Regex: '^".*'
@@ -47,6 +50,7 @@ MacroBlockEnd: ''
 MaxEmptyLinesToKeep: 2
 SpaceAfterTemplateKeyword: false
 SpaceBeforeParens: Never
+SpaceInEmptyParentheses: false
 SpacesInAngles: true
 SpacesInConditionalStatement: true
 SpacesInCStyleCastParentheses: true

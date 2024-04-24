@@ -15,10 +15,13 @@
  * limitations under the License.
  */
 
+#include <sstream>
+
 #include "pydip.h"
 #include "diplib/linear.h"
 #include "diplib/nonlinear.h"
 #include "diplib/deconvolution.h"
+#include "diplib/kernel.h"
 
 namespace {
 
@@ -183,13 +186,13 @@ void init_filtering( py::module& m ) {
    m.def( "LogGaborFilterBank", py::overload_cast< dip::Image const&, dip::Image&, dip::FloatArray const&, dip::dfloat, dip::uint, dip::String const&, dip::String const& >( &dip::LogGaborFilterBank ),
           "in"_a, py::kw_only(), "out"_a, "wavelengths"_a = dip::FloatArray{ 3.0, 6.0, 12.0, 24.0 }, "bandwidth"_a = 0.75, "nOrientations"_a = 6, "inRepresentation"_a = dip::S::SPATIAL, "outRepresentation"_a = dip::S::SPATIAL );
    m.def( "NormalizedConvolution", py::overload_cast< dip::Image const&, dip::Image const&, dip::FloatArray const&, dip::String const&, dip::StringArray const&, dip::dfloat >( &dip::NormalizedConvolution ),
-          "in"_a, "mask"_a, "sigmas"_a = dip::FloatArray{ 1.0 }, "method"_a = dip::S::BEST, "boundaryCondition"_a = dip::StringArray { dip::S::ADD_ZEROS }, "truncation"_a = 3.0 );
+          "in"_a, "mask"_a, "sigmas"_a = dip::FloatArray{ 1.0 }, "method"_a = dip::S::BEST, "boundaryCondition"_a = dip::StringArray{ dip::S::ADD_ZEROS }, "truncation"_a = 3.0 );
    m.def( "NormalizedConvolution", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image&, dip::FloatArray const&, dip::String const&, dip::StringArray const&, dip::dfloat >( &dip::NormalizedConvolution ),
-          "in"_a, "mask"_a, py::kw_only(), "out"_a, "sigmas"_a = dip::FloatArray{ 1.0 }, "method"_a = dip::S::BEST, "boundaryCondition"_a = dip::StringArray { dip::S::ADD_ZEROS }, "truncation"_a = 3.0 );
+          "in"_a, "mask"_a, py::kw_only(), "out"_a, "sigmas"_a = dip::FloatArray{ 1.0 }, "method"_a = dip::S::BEST, "boundaryCondition"_a = dip::StringArray{ dip::S::ADD_ZEROS }, "truncation"_a = 3.0 );
    m.def( "NormalizedDifferentialConvolution", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::FloatArray const&, dip::String const&, dip::StringArray const&, dip::dfloat >( &dip::NormalizedDifferentialConvolution ),
-          "in"_a, "mask"_a, "dimension"_a = 0, "sigmas"_a = dip::FloatArray{ 1.0 }, "method"_a = dip::S::BEST, "boundaryCondition"_a = dip::StringArray { dip::S::ADD_ZEROS }, "truncation"_a = 3.0 );
+          "in"_a, "mask"_a, "dimension"_a = 0, "sigmas"_a = dip::FloatArray{ 1.0 }, "method"_a = dip::S::BEST, "boundaryCondition"_a = dip::StringArray{ dip::S::ADD_ZEROS }, "truncation"_a = 3.0 );
    m.def( "NormalizedDifferentialConvolution", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image&, dip::uint, dip::FloatArray const&, dip::String const&, dip::StringArray const&, dip::dfloat >( &dip::NormalizedDifferentialConvolution ),
-          "in"_a, "mask"_a, py::kw_only(), "out"_a, "dimension"_a = 0, "sigmas"_a = dip::FloatArray{ 1.0 }, "method"_a = dip::S::BEST, "boundaryCondition"_a = dip::StringArray { dip::S::ADD_ZEROS }, "truncation"_a = 3.0 );
+          "in"_a, "mask"_a, py::kw_only(), "out"_a, "dimension"_a = 0, "sigmas"_a = dip::FloatArray{ 1.0 }, "method"_a = dip::S::BEST, "boundaryCondition"_a = dip::StringArray{ dip::S::ADD_ZEROS }, "truncation"_a = 3.0 );
    m.def( "MeanShiftVector", py::overload_cast< dip::Image const&, dip::FloatArray, dip::String const&, dip::StringArray const&, dip::dfloat >( &dip::MeanShiftVector ),
           "in"_a, "sigmas"_a = dip::FloatArray{ 1.0 }, "method"_a = dip::S::BEST, "boundaryCondition"_a = dip::StringArray{}, "truncation"_a = 3.0 );
    m.def( "MeanShiftVector", py::overload_cast< dip::Image const&, dip::Image&, dip::FloatArray, dip::String const&, dip::StringArray const&, dip::dfloat >( &dip::MeanShiftVector ),

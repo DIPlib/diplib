@@ -9,11 +9,13 @@
 
 #pragma once
 
+// IWYU pragma: begin_exports
 #include "../pytypes.h"
 #include "common.h"
 #include "descr.h"
 #include "internals.h"
 #include "typeid.h"
+// IWYU pragma: end_exports
 
 #include <cstdint>
 #include <iterator>

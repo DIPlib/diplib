@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include "detail/common.h"
+#include "detail/common.h" // IWYU pragma: export
 
 PYBIND11_NAMESPACE_BEGIN(PYBIND11_NAMESPACE)
 

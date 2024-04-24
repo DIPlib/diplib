@@ -15,6 +15,11 @@
  * limitations under the License.
  */
 
+#include <limits>
+#include <sstream>
+#include <vector>
+#include <utility>
+
 #include "pydip.h"
 #include "diplib/distribution.h"
 #include "diplib/analysis.h"
@@ -22,21 +27,29 @@
 #include "diplib/distance.h"
 #include "diplib/detection.h"
 #include "diplib/microscopy.h"
+#include "diplib/neighborlist.h"
 
 void init_analysis( py::module& m ) {
 
    // diplib/distribution.h
    auto distr = py::class_< dip::Distribution >( m, "Distribution", "" );
-   distr.def( "__repr__", []( dip::Distribution const& self ) {
-                 std::ostringstream os;
-                 os << "<Distribution with " << self.Size() << " samples, and " << self.ValuesPerSample() << " values per sample>";
-                 return os.str();
-              } );
-   distr.def( "__str__", []( dip::Distribution const& self ) { std::ostringstream os; os << self; return os.str(); } );
-   distr.def( "__getitem__", []( dip::Distribution const& self, dip::uint index ) {
-                 auto const& sample = self[ index ];
-                 return py::make_tuple( sample.X(), sample.Y() );
-              }, "index"_a );
+   distr.def(
+         "__repr__", []( dip::Distribution const& self ) {
+            std::ostringstream os;
+            os << "<Distribution with " << self.Size() << " samples, and " << self.ValuesPerSample() << " values per sample>";
+            return os.str();
+         } );
+   distr.def(
+         "__str__", []( dip::Distribution const& self ) {
+            std::ostringstream os;
+            os << self;
+            return os.str();
+         } );
+   distr.def(
+         "__getitem__", []( dip::Distribution const& self, dip::uint index ) {
+            auto const& sample = self[ index ];
+            return py::make_tuple( sample.X(), sample.Y() );
+         }, "index"_a );
    distr.def( py::self += py::self );
    distr.def( "Empty", &dip::Distribution::Empty );
    distr.def( "Size", &dip::Distribution::Size );
@@ -64,8 +77,7 @@ void init_analysis( py::module& m ) {
                return os.str();
             } );
 
-   m.def( "Find", &dip::Find,
-          "in"_a, "mask"_a = dip::Image{} );
+   m.def( "Find", &dip::Find, "in"_a, "mask"_a = dip::Image{} );
    m.def( "SubpixelLocation", &dip::SubpixelLocation,
           "in"_a, "position"_a, "polarity"_a = dip::S::MAXIMUM, "method"_a = dip::S::PARABOLIC_SEPARABLE );
    m.def( "SubpixelMaxima", &dip::SubpixelMaxima,
@@ -94,10 +106,10 @@ void init_analysis( py::module& m ) {
           "in1"_a, "in2"_a, "interpolationMethod"_a = dip::S::LINEAR, "correlationMethod"_a = dip::S::PHASE,
           "Returns only the transformed image, to also obtain the transformation matrix,\n"
           "see `FourierMellinMatch2Dparams()`." );
-   m.def( "FourierMellinMatch2Dparams", []( dip::Image const& in1, dip::Image const& in2, dip::String const& interpolationMethod, dip::String const& correlationMethod){
-             dip::Image out;
-             auto params = FourierMellinMatch2D(in1, in2, out, interpolationMethod, correlationMethod);
-             return py::make_tuple( out, params );
+   m.def( "FourierMellinMatch2Dparams", []( dip::Image const& in1, dip::Image const& in2, dip::String const& interpolationMethod, dip::String const& correlationMethod ) {
+                dip::Image out;
+                auto params = FourierMellinMatch2D( in1, in2, out, interpolationMethod, correlationMethod );
+                return py::make_tuple( out, params );
           },
           "in1"_a, "in2"_a, "interpolationMethod"_a = dip::S::LINEAR, "correlationMethod"_a = dip::S::PHASE,
           "Returns a tuple, the first element is the transformed image, the second\n"
@@ -128,13 +140,13 @@ void init_analysis( py::module& m ) {
           "in"_a, "order"_a = 8, "radCenter"_a = 0.1, "radSigma"_a = 0.8, "orientations"_a = 0 );
    m.def( "OrientationSpace", py::overload_cast< dip::Image const&, dip::Image&, dip::uint, dip::dfloat, dip::dfloat, dip::uint >( &dip::OrientationSpace ),
           "in"_a, py::kw_only(), "out"_a, "order"_a = 8, "radCenter"_a = 0.1, "radSigma"_a = 0.8, "orientations"_a = 0 );
-   m.def( "PairCorrelation", []( dip::Image const& object, dip::Image const& mask, dip::uint probes, dip::uint length, dip::String const& sampling, dip::StringSet const& options ){
-             return dip::PairCorrelation( object, mask, RandomNumberGenerator(), probes, length, sampling, options );
+   m.def( "PairCorrelation", []( dip::Image const& object, dip::Image const& mask, dip::uint probes, dip::uint length, dip::String const& sampling, dip::StringSet const& options ) {
+                return dip::PairCorrelation( object, mask, RandomNumberGenerator(), probes, length, sampling, options );
           },
           "object"_a, "mask"_a = dip::Image{}, "probes"_a = 1000000, "length"_a = 100, "sampling"_a = dip::S::RANDOM, "options"_a = dip::StringSet{},
           "Like the C++ function, but using an internal `dip::Random` object." );
    m.def( "ProbabilisticPairCorrelation", []( dip::Image const& object, dip::Image const& mask, dip::uint probes, dip::uint length, dip::String const& sampling, dip::StringSet const& options ) {
-             return dip::ProbabilisticPairCorrelation( object, mask, RandomNumberGenerator(), probes, length, sampling, options );
+                return dip::ProbabilisticPairCorrelation( object, mask, RandomNumberGenerator(), probes, length, sampling, options );
           },
           "object"_a, "mask"_a = dip::Image{}, "probes"_a = 1000000, "length"_a = 100, "sampling"_a = dip::S::RANDOM, "options"_a = dip::StringSet{},
           "Like the C++ function, but using an internal `dip::Random` object." );
@@ -194,10 +206,10 @@ void init_analysis( py::module& m ) {
    rcp.def_readonly( "origin", &dip::RadonCircleParameters::origin );
    rcp.def_readonly( "radius", &dip::RadonCircleParameters::radius );
    rcp.def( "__repr__", []( dip::RadonCircleParameters const& self ) {
-               std::ostringstream os;
-               os << "<RadonCircleParameters: origin=" << self.origin << ", radius=" << self.radius << '>';
-               return os.str();
-            } );
+          std::ostringstream os;
+          os << "<RadonCircleParameters: origin=" << self.origin << ", radius=" << self.radius << '>';
+          return os.str();
+   } );
 
    m.def( "HoughTransformCircleCenters", py::overload_cast< dip::Image const&, dip::Image const&, dip::UnsignedArray const& >( &dip::HoughTransformCircleCenters ),
           "in"_a, "gv"_a, "range"_a = dip::UnsignedArray{} );
@@ -209,11 +221,11 @@ void init_analysis( py::module& m ) {
           "in"_a, "points"_a, "range"_a = dip::UnsignedArray{} );
    m.def( "FindHoughCircles", py::overload_cast< dip::Image const&, dip::Image const&, dip::UnsignedArray const&, dip::dfloat, dip::dfloat >( &dip::FindHoughCircles ),
           "in"_a, "gv"_a, "range"_a = dip::UnsignedArray{}, "distance"_a = 10.0, "fraction"_a = 0.1 );
-          
+
    m.def( "RadonTransformCircles", []( dip::Image const& in, dip::Range radii, dip::dfloat sigma, dip::dfloat threshold, dip::String const& mode, dip::StringSet const& options ) {
-             dip::Image out;
-             dip::RadonCircleParametersArray params = dip::RadonTransformCircles( in, out, radii, sigma, threshold, mode, options );
-             return py::make_tuple( out, params );
+                 dip::Image out;
+                 dip::RadonCircleParametersArray params = dip::RadonTransformCircles( in, out, radii, sigma, threshold, mode, options );
+                 return py::make_tuple( out, params );
           }, "in"_a, "radii"_a = dip::Range{ 10, 30 }, "sigma"_a = 1.0, "threshold"_a = 1.0, "mode"_a = dip::S::FULL, "options"_a = dip::StringSet{ dip::S::NORMALIZE, dip::S::CORRECT },
           "Returns a tuple, the first element is the parameter space (the `out` image),\n"
           "the second element is a list of `dip.RadonCircleParameters` containing the\n"
@@ -277,20 +289,20 @@ void init_analysis( py::module& m ) {
           "channel1"_a, "channel2"_a, "mask"_a = dip::Image{} );
    m.def( "IntensityCorrelationQuotient", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const& >( &dip::IntensityCorrelationQuotient ),
           "channel1"_a, "channel2"_a, "mask"_a = dip::Image{} );
-   m.def( "MandersColocalizationCoefficients", []( dip::Image const& channel1, dip::Image const& channel2, dip::Image const& mask, dip::dfloat threshold1, dip::dfloat threshold2 ){
-             auto out = dip::MandersColocalizationCoefficients( channel1, channel2, mask, threshold1, threshold2 );
-             return py::make_tuple( out.M1, out.M2 );
+   m.def( "MandersColocalizationCoefficients", []( dip::Image const& channel1, dip::Image const& channel2, dip::Image const& mask, dip::dfloat threshold1, dip::dfloat threshold2 ) {
+                 auto out = dip::MandersColocalizationCoefficients( channel1, channel2, mask, threshold1, threshold2 );
+                 return py::make_tuple( out.M1, out.M2 );
           }, "channel1"_a, "channel2"_a, "mask"_a = dip::Image{}, "threshold1"_a = 0.0, "threshold2"_a = 0.0,
           "Instead of a `dip::ColocalizationCoefficients` object, returns a tuple with\n"
           "the `M1` and `M2` values." );
-   m.def( "CostesColocalizationCoefficients", []( dip::Image const& channel1, dip::Image const& channel2, dip::Image const& mask ){
-             auto out = dip::CostesColocalizationCoefficients( channel1, channel2, mask );
-             return py::make_tuple( out.M1, out.M2 );
+   m.def( "CostesColocalizationCoefficients", []( dip::Image const& channel1, dip::Image const& channel2, dip::Image const& mask ) {
+                 auto out = dip::CostesColocalizationCoefficients( channel1, channel2, mask );
+                 return py::make_tuple( out.M1, out.M2 );
           }, "channel1"_a, "channel2"_a, "mask"_a = dip::Image{},
           "Instead of a `dip::ColocalizationCoefficients` object, returns a tuple with\n"
           "the `M1` and `M2` values." );
    m.def( "CostesSignificanceTest", []( dip::Image const& channel1, dip::Image const& channel2, dip::Image const& mask, dip::UnsignedArray blockSizes, dip::uint repetitions ) {
-             return dip::CostesSignificanceTest( channel1, channel2, mask, RandomNumberGenerator(), std::move( blockSizes ), repetitions );
+                 return dip::CostesSignificanceTest( channel1, channel2, mask, RandomNumberGenerator(), std::move( blockSizes ), repetitions );
           },
           "channel1"_a, "channel2"_a, "mask"_a = dip::Image{}, "blockSizes"_a = dip::UnsignedArray{ 3 }, "repetitions"_a = 200,
           "Like the C++ function, but using an internal `dip::Random` object." );
