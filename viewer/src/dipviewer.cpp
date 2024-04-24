@@ -14,6 +14,12 @@
  * limitations under the License.
  */
 
+#include <chrono>
+#include <memory>
+#include <string>
+#include <thread>
+
+#include "diplib.h"
 #include "dipviewer.h"
 
 #ifdef DIP_CONFIG_HAS_FREEGLUT
@@ -60,16 +66,19 @@ inline void Delete() {
 } // namespace
 
 SliceViewer::Ptr Show( Image const& image, String const& title, dip::uint width, dip::uint height ) {
+   DIP_THROW_IF( !image.IsForged(), E::IMAGE_NOT_FORGED );
    Create();
    SliceViewer::Ptr wdw;
    DIP_STACK_TRACE_THIS( wdw = SliceViewer::Create( image, getWindowTitle( title ), width, height ));
    DIP_STACK_TRACE_THIS( manager_->createWindow( wdw ));
    ++count_;
-   
+
    return wdw;
 }
 
 ImageViewer::Ptr ShowSimple( Image const& image, String const& title, dip::uint width, dip::uint height ) {
+   DIP_THROW_IF( !image.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( image.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( image.DataType() != DT_UINT8, E::DATA_TYPE_NOT_SUPPORTED );
    Create();
    Image tmp = image.QuickCopy();
@@ -81,7 +90,7 @@ ImageViewer::Ptr ShowSimple( Image const& image, String const& title, dip::uint 
    DIP_STACK_TRACE_THIS( wdw = ImageViewer::Create( tmp, getWindowTitle( title ), width, height ));
    DIP_STACK_TRACE_THIS( manager_->createWindow( wdw ));
    ++count_;
-   
+
    return wdw;
 }
 
@@ -90,7 +99,7 @@ void Spin() {
       return;
    }
    //std::this_thread::sleep_for( std::chrono::seconds( 1 )); // Wait a while to make sure the windows have finished drawing
-   while( manager_->activeWindows()) {
+   while( manager_->activeWindows() ) {
       Draw();
       std::this_thread::sleep_for( std::chrono::microseconds( 100 ));
    }

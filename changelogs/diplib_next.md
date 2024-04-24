@@ -83,7 +83,8 @@ None, but see bugfixes to *DIPlib*.
 
 ### Bug fixes
 
-None, but see bugfixes to *DIPlib*.
+- `dip.viewer.Show()` would cause Python to crash if given a raw image.
+
 (See also bugfixes to *DIPlib*.)
 
 
