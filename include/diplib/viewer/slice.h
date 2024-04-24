@@ -116,7 +116,7 @@ class DIPVIEWER_CLASS_EXPORT SliceViewer : public Viewer {
          for( dip::uint ii = 0; ii < viewports_.size(); ++ii ) {
             delete viewports_[ ii ];
          }
-         
+
          viewports_.clear();
       }
 
@@ -136,11 +136,15 @@ class DIPVIEWER_CLASS_EXPORT SliceViewer : public Viewer {
       const dip::Image& original() override { return original_; }
 
       void setImage( const dip::Image& image ) override {
+         Guard guard( *this );
          original_ = image;
          refresh_seq_++;
       }
 
-      void refreshImage() { refresh_seq_++; }
+      void refreshImage() {
+         Guard guard( *this );
+         refresh_seq_++;
+      }
 
       /// \brief Update linked viewers.
       DIPVIEWER_EXPORT void updateLinkedViewers();

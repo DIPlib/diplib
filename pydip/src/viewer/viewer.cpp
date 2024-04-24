@@ -62,9 +62,9 @@ PYBIND11_MODULE( PyDIPviewer, m ) {
       } ) );
 
    auto sv = py::class_< dip::viewer::SliceViewer, std::shared_ptr< dip::viewer::SliceViewer > >( m, "SliceViewer" );
-   sv.def( "SetImage", []( dip::viewer::SliceViewer& self, dip::Image const& image ) { dip::viewer::SliceViewer::Guard guard( self ); self.setImage( image ); }, "Sets the image to be visualized." );
+   sv.def( "SetImage", &dip::viewer::SliceViewer::setImage, "Sets the image to be visualized." );
    sv.def( "Destroy", &dip::viewer::SliceViewer::destroy, "Marks the window for destruction." );
-   sv.def( "RefreshImage", []( dip::viewer::SliceViewer& self ) { dip::viewer::SliceViewer::Guard guard( self ); self.refreshImage(); }, "Force full redraw." );
+   sv.def( "RefreshImage", &dip::viewer::SliceViewer::refreshImage, "Force full redraw." );
    sv.def( "Link", &dip::viewer::SliceViewer::link, "Link this viewer to another, compatible one." );
    sv.def( "SetPosition", &dip::viewer::SliceViewer::setPosition, "Set the window's screen position." );
    sv.def( "SetSize", &dip::viewer::SliceViewer::setSize, "Set the window's size." );
