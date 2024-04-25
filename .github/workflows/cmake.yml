@@ -69,7 +69,7 @@ jobs:
             python -c "import zipfile; zip = zipfile.ZipFile('glfw-3.3.5.bin.WIN64.zip', 'r'); zip.extractall()"
           elif [ "$RUNNER_OS" == "macOS" ]; then
             brew install libomp glfw
-            python3 -m pip install setuptools wheel build numpy
+            python3 -m pip install --break-system-packages setuptools wheel build numpy
           fi
         shell: bash
 
