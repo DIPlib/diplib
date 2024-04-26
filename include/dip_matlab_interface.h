@@ -20,10 +20,8 @@
 #define DIP_MATLAB_INTERFACE_H
 
 #include <algorithm>
-#include <cmath>
 #include <cstdio>
 #include <iostream>
-#include <limits>
 #include <memory>
 #include <streambuf>
 #include <utility>
@@ -32,7 +30,9 @@
 #include <locale>
 #endif
 
-#include <mex.h>
+#include <mex.h> // IWYU pragma: export
+#include <matrix.h> // IWYU pragma: export
+#include <tmwtypes.h> // IWYU pragma: export
 
 // If compiling MEX-files with the -R2018a flag, the code in this file will not work as intended.
 #if MX_HAS_INTERLEAVED_COMPLEX
@@ -59,7 +59,7 @@ extern "C" {
    extern mxArray* mxCreateSharedDataCopy( const mxArray* pr );
 }
 
-#include "diplib.h"
+#include "diplib.h" // IWYU pragma: export
 #include "diplib/file_io.h"      // Definition of dip::FileInformation
 #include "diplib/distribution.h" // Definition of dip::Distribution
 #include "diplib/histogram.h"    // Definition of dip::Histogram::Configuration

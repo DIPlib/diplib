@@ -16,8 +16,10 @@
  * limitations under the License.
  */
 
-#include "dip_matlab_interface.h"
+#include <algorithm>
+#include <cmath>
 
+#include "dip_matlab_interface.h"
 #include "diplib/geometry.h"
 #include "diplib/analysis.h"
 
@@ -28,7 +30,7 @@ void affine_trans( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) 
    DML_MAX_ARGS( 5 );
    dip::Image const in = dml::GetImage( prhs[ 0 ] );
    dip::FloatArray matrix;
-   int index;
+   int index{};
    if( nrhs >= 4 ) {
       // affine_trans( image_in, zoom, translation, angle [, method] )
       DIP_THROW_IF( in.Dimensionality() != 2, "When given ZOOM, TRANSLATION and ANGLE, the image must be 2D" );
@@ -223,7 +225,7 @@ void skew( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    dip::uint skew = dml::GetUnsigned( prhs[ 2 ] );
    DIP_THROW_IF( skew == 0, dip::E::INVALID_PARAMETER );
    --skew;
-   dip::uint axis;
+   dip::uint axis{};
    if( nrhs > 3 ) {
       axis = dml::GetUnsigned( prhs[ 3 ] );
       DIP_THROW_IF( axis == 0, dip::E::INVALID_PARAMETER );

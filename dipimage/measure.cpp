@@ -16,9 +16,12 @@
  * limitations under the License.
  */
 
+#include <iostream>
+
 #include "dip_matlab_interface.h"
 #include "diplib/measurement.h"
 #include "diplib/regions.h"
+#include "diplib/private/robin_map.h"
 
 void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    dml::streambuf streambuf;

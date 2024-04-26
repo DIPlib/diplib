@@ -19,14 +19,12 @@
 #include <limits>
 
 #include "dip_matlab_interface.h"
-
+#include "diplib/analysis.h"
+#include "diplib/chain_code.h"
+#include "diplib/detection.h"
 #include "diplib/regions.h"
 #include "diplib/segmentation.h"
-#include "diplib/detection.h"
-#include "diplib/analysis.h"
-
 #include "diplib/statistics.h"
-#include "diplib/chain_code.h"
 
 namespace {
 

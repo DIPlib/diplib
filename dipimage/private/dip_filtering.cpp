@@ -16,18 +16,20 @@
  * limitations under the License.
  */
 
-#include "dip_matlab_interface.h"
+#include <cmath>
+#include <utility>
+#include <vector>
 
+#include "dip_matlab_interface.h"
+#include "diplib/analysis.h"
+#include "diplib/generation.h"
 #include "diplib/linear.h"
 #include "diplib/nonlinear.h"
 #include "diplib/transform.h"
 
-#include "diplib/generation.h"
-#include "diplib/analysis.h"
-
 namespace {
 
-char const* wrongFilter = "Wrong filter definition";
+constexpr char const* wrongFilter = "Wrong filter definition";
 
 // Convert a real or complex floating-point array for `mxArray` to `std::vector<dip::dfloat>` by copy.
 // If the array was complex, the output contains real and imaginary elements interleaved.
@@ -136,8 +138,8 @@ void derivative( dip::Image const& in, dip::Image& out, int nrhs, const mxArray*
 struct DerivativeArguments {
    dip::FloatArray sigmas = { 1 };
    dip::String method = dip::S::BEST;
-   dip::StringArray bc = {};
-   dip::BooleanArray process = {};
+   dip::StringArray bc;
+   dip::BooleanArray process;
    dip::dfloat truncation = 3;
 };
 

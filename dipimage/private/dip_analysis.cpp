@@ -16,10 +16,14 @@
  * limitations under the License.
  */
 
-#include "dip_matlab_interface.h"
+#include <vector>
 
+#include "dip_matlab_interface.h"
 #include "diplib/analysis.h"
 #include "diplib/distance.h"
+#include "diplib/distribution.h"
+#include "diplib/histogram.h"
+#include "diplib/neighborlist.h"
 
 namespace {
 

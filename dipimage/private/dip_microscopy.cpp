@@ -17,9 +17,8 @@
  */
 
 #include "dip_matlab_interface.h"
-
-#include "diplib/microscopy.h"
 #include "diplib/deconvolution.h"
+#include "diplib/microscopy.h"
 
 namespace {
 

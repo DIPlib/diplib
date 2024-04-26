@@ -17,9 +17,8 @@
  */
 
 #include "dip_matlab_interface.h"
-
-#include "diplib/morphology.h"
 #include "diplib/binary.h"
+#include "diplib/morphology.h"
 
 namespace {
 

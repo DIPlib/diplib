@@ -16,12 +16,15 @@
  * limitations under the License.
  */
 
+#include <cmath>
+#include <tuple>
+#include <utility>
+
 #include "dip_matlab_interface.h"
-
-#include "diplib/generation.h"
 #include "diplib/boundary.h"
-
 #include "diplib/chain_code.h"
+#include "diplib/generation.h"
+#include "diplib/random.h"
 
 namespace {
 
@@ -645,7 +648,7 @@ void extendregion( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    dip::RangeArray ranges;
    dip::UnsignedArray origin;
    dip::UnsignedArray sizes;
-   bool useRanges;
+   bool useRanges{};
    int index = 1;
    if( mxIsCell( prhs[ index ] )) {
       useRanges = true;

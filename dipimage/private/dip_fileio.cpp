@@ -17,7 +17,6 @@
  */
 
 #include "dip_matlab_interface.h"
-
 #include "diplib/file_io.h"
 
 namespace {

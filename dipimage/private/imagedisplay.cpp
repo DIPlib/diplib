@@ -77,7 +77,11 @@
  *
  */
 
+#include <memory>
+#include <tuple>
+
 #include "dip_matlab_interface.h"
+#include "diplib/color.h"
 #include "diplib/display.h"
 #include "diplib/private/robin_map.h"
 
@@ -95,7 +99,7 @@ class MatlabInterfaceUInt8 : public dip::ExternalInterface {
 
    public:
 
-      virtual dip::DataSegment AllocateData(
+      dip::DataSegment AllocateData(
             void*& origin,
             dip::DataType datatype,
             dip::UnsignedArray const& sizes,
@@ -129,7 +133,7 @@ class MatlabInterfaceUInt8 : public dip::ExternalInterface {
 constexpr char const* className = "dip_imagedisplay";
 
 mxArray* CreateHandle( dip::uint handle ) {
-   mxArray* out;
+   mxArray* out{};
    mxArray* in[ 2 ];
    in[ 0 ] = mxCreateString( "create" );
    in[ 1 ] = dml::GetArray( handle );

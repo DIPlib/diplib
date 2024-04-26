@@ -16,16 +16,20 @@
  * limitations under the License.
  */
 
-#include "dip_matlab_interface.h"
+#include <algorithm>
+#include <cmath>
+#include <limits>
 
-#include "diplib/math.h"
-#include "diplib/statistics.h"
-#include "diplib/mapping.h"
-#include "diplib/lookup_table.h"
+#include "dip_matlab_interface.h"
+#include "diplib/accumulators.h"
 #include "diplib/display.h"
 #include "diplib/histogram.h"
-
+#include "diplib/iterators.h"
+#include "diplib/lookup_table.h"
+#include "diplib/mapping.h"
+#include "diplib/math.h"
 #include "diplib/multithreading.h"
+#include "diplib/statistics.h"
 
 namespace {
 
@@ -113,7 +117,7 @@ void errormeasure( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    dip::Image const mask = ( nrhs > 2 ) ? dml::GetImage( prhs[ 2 ] ) : dip::Image{};
    dip::String method = ( nrhs > 3 ) ? dml::GetString( prhs[ 3 ] ) : "mse";
    dip::ToLowerCase( method );
-   dip::dfloat error;
+   dip::dfloat error{};
    if( method == "mse" ) {
       error = dip::MeanSquareError( in, reference, mask );
    } else if( method == "rmse" ) {
@@ -444,10 +448,8 @@ void mdhistogrammap( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    for( dip::uint ii = 0; ii < nDims; ii++ ) {
       conf[ ii ].nBins = histImg.Size( ii );
    }
-   dip::uint N;
    if( mxIsCell( prhs[ 2 ] )) {
-      N = mxGetNumberOfElements( prhs[ 2 ] );
-      DIP_THROW_IF( N != nDims, dip::E::ARRAY_PARAMETER_WRONG_LENGTH );
+      DIP_THROW_IF( mxGetNumberOfElements( prhs[ 2 ] ) != nDims, dip::E::ARRAY_PARAMETER_WRONG_LENGTH );
       for( dip::uint ii = 0; ii < nDims; ii++ ) {
          dip::FloatArray bins = dml::GetFloatArray( mxGetCell( prhs[ 2 ], ii ) );
          DIP_STACK_TRACE_THIS( GetBinConfig( bins, conf[ ii ] ));
