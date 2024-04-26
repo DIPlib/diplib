@@ -217,6 +217,18 @@ void GrowRegionsWeighted(
       Image& out,
       dfloat distance
 ) {
+   DIP_THROW_IF( !label.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !label.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( !label.DataType().IsUInt(), E::DATA_TYPE_NOT_SUPPORTED );
+   if( grey.IsForged() ) {
+      DIP_THROW_IF( !grey.IsScalar(), E::IMAGE_NOT_SCALAR );
+      DIP_THROW_IF( !grey.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
+      DIP_THROW_IF( label.Sizes() != grey.Sizes(), E::SIZES_DONT_MATCH );
+   }
+   if( mask.IsForged() ) {
+      DIP_STACK_TRACE_THIS( mask.CheckIsMask( label.Sizes(), Option::AllowSingletonExpansion::DO_ALLOW ));
+   }
+
    // Compute grey-weighted distance transform
    Image bin = label == 0;
    Image dt;
