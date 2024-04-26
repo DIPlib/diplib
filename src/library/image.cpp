@@ -170,7 +170,7 @@ bool Image::CheckIsMask(
 ) const {
    if( sizes_ != sizes ) {
       if( allowSingletonExpansion == Option::AllowSingletonExpansion::DO_ALLOW ) {
-         if( IsSingletonExpansionPossible( sizes )) {
+         if( !IsSingletonExpansionPossible( sizes )) {
             DIP_THROW_IF( throwException == Option::ThrowException::DO_THROW, E::MASK_SIZES_NOT_COMPATIBLE );
             return false;
          }

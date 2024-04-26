@@ -521,7 +521,7 @@ void ThickeningThinning(
    DIP_THROW_IF( !in.DataType().IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( intervals.empty(), E::ARRAY_PARAMETER_WRONG_LENGTH );
    if( mask.IsForged() ) {
-      DIP_STACK_TRACE_THIS( mask.CheckIsMask( in.Sizes()));
+      DIP_STACK_TRACE_THIS( mask.CheckIsMask( in.Sizes() ));
    }
    Image tmp1;
    Image tmp2;

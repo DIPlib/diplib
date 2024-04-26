@@ -50,6 +50,8 @@ title: "Changes DIPlib 3.x.x"
 
 - Tensor indexing no longer removed color space information since the fix to the move constructor in 3.4.3.
 
+- `dip::Image::CheckIsMask()` didn't properly check for singleton-expandable masks, accepting masks of any size.
+
 ### Updated dependencies
 
 
