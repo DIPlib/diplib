@@ -1,5 +1,5 @@
 /*
- * (c)2017-2021, Cris Luengo.
+ * (c)2017-2024, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -155,10 +155,14 @@ DIP_NODISCARD inline Image VectorDistanceTransform(
 /// in the output, depending on whether `bin` was set or not. If `mask` is not forged, paths are not constrained.
 /// If `mask` is forged, it must be of the same sizes as `bin` and `grey`, and be binary and scalar.
 ///
-/// Computed distances use the pixel sizes (ignoring any units). To compute distances in pixels, reset the pixel
-/// size (\ref dip::Image::ResetPixelSize). Note that, when pixels sizes are correctly set, this function handles
-/// anisotropic sampling densities correctly. Pixel sizes are taken from `grey`, and if it doesn't have pixel
-/// sizes, they are taken from `bin`. Both images must not have pixel sizes for the algorithm to use pixel units.
+/// Note that if both `grey` and `mask` are not forged, the output will be an approximation to the Euclidean
+/// distance transform. Prefer to use \ref EuclideanDistanceTransform in this case, as it's much faster and can
+/// produce exact Euclidean distances.
+///
+/// The output distances are computed taking pixel sizes into account (ignoring any units). This means that this
+/// function will correctly handle anisotropic sampling densities. Pixel sizes are taken from `grey`, and if it
+/// doesn't have pixel sizes, they are taken from `bin`. To compute distances in pixels, reset the pixel
+/// size (\ref dip::Image::ResetPixelSize) of both images.
 ///
 /// This function uses one of two algorithms: the fast marching algorithm (Sethian, 1996), or a simpler propagation
 /// algorithm that uses a chamfer metric (after work by Verwer and Strasters). `metric` is used only in the latter
@@ -169,22 +173,13 @@ DIP_NODISCARD inline Image VectorDistanceTransform(
 /// - `"length"` also uses the chamfer metric algorithm, but outputs the length of the optimal path, rather
 ///   than the integral along the path.
 ///
-/// The chamfer metric is defined by the parameter `metric`. Any metric can be given, but a 3x3 or 5x5 chamfer metric
-/// is recommended for unbiased distances. See \ref dip::Metric for more information. If the `metric` doesn't have a
-/// pixel size set, but either `grey` or `bin` have a pixel size defined, then that pixel size will be added to the
-/// metric (the pixel size in `grey` will have precedence over the one in `bin` if they both have one defined). To
-/// avoid the use of any pixel size, define `metric` with a pixel size of 1. The magnitudes of the pixel sizes are
-/// used, ignoring any units.
-///
-/// With the fast marching algorithm, the pixel size in either `grey` or `bin` will be used to weight distances. The
-/// magnitudes of the pixel sizes are used, ignoring any units.
-///
 /// The fast marching algorithm approximates Euclidean distances. It yields the most isotropic result, though it
-/// is biased. The chamfer metric algorithm uses the metric as specified by `metric`, which could be, for example,
-/// `dip::Metric("city")`. The metrics `dip::Metric("chamfer", 3)` or `dip::Metric("chamfer", 5)` are to be preferred,
-/// as they produce unbiased distances (with octagonal and dodecagonal unit circles, respectively).
-/// The larger neighborhood produces more precise distances than the smaller neighborhood.
+/// is biased.
 ///
+/// The chamfer metric is defined by the parameter `metric`. Any metric can be given, but `dip::Metric("chamfer", 1)`
+/// or `dip::Metric("chamfer", 2)` are to be preferred, as they produce unbiased distances (with octagonal and
+/// dodecagonal unit circles, respectively). See \ref dip::Metric for more information. If the `metric` has a
+/// pixel size set, it will overrule any pixel sizes in `grey` and `bin`.
 /// The chamfer metric algorithm is a little faster than the fast marching algorithm,
 /// with smaller neighborhoods being faster than larger neighborhoods.
 ///

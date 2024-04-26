@@ -1,6 +1,6 @@
 /*
  * (c)2017-2021, Flagship Biosciences, Inc., written by Cris Luengo.
- * (c)2022, Cris Luengo.
+ * (c)2022-2024, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -171,10 +171,18 @@ void init_segmentation( py::module& m ) {
           "label"_a, "mask"_a = dip::Image{}, "connectivity"_a = -1, "iterations"_a = 0 );
    m.def( "GrowRegions", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image&, dip::sint, dip::uint >( &dip::GrowRegions ),
           "label"_a, "mask"_a = dip::Image{}, py::kw_only(), "out"_a, "connectivity"_a = -1, "iterations"_a = 0 );
-   m.def( "GrowRegionsWeighted", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const&, dip::Metric const& >( &dip::GrowRegionsWeighted ),
-          "label"_a, "grey"_a, "mask"_a = dip::Image{}, "metric"_a = dip::Metric{ dip::S::CHAMFER, 2 } );
-   m.def( "GrowRegionsWeighted", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const&, dip::Image&, dip::Metric const& >( &dip::GrowRegionsWeighted ),
-          "label"_a, "grey"_a, "mask"_a = dip::Image{}, py::kw_only(), "out"_a, "metric"_a = dip::Metric{ dip::S::CHAMFER, 2 } );
+   m.def( "GrowRegionsWeighted", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const&, dip::dfloat >( &dip::GrowRegionsWeighted ),
+          "label"_a, "grey"_a, "mask"_a = dip::Image{}, "distance"_a = dip::infinity );
+   m.def( "GrowRegionsWeighted", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const&, dip::Image&, dip::dfloat >( &dip::GrowRegionsWeighted ),
+          "label"_a, "grey"_a, "mask"_a = dip::Image{}, py::kw_only(), "out"_a, "distance"_a = dip::infinity );
+   m.def( "GrowRegionsWeighted", []( dip::Image const& label, dip::Image const& grey, dip::Image const& mask, dip::Metric const& /*metric*/ ) {
+          PyErr_WarnEx( PyExc_DeprecationWarning, "The `metric` argument is deprecated, and will be ignored.", 1 );
+          return dip::GrowRegionsWeighted( label, grey, mask );
+   }, "label"_a, "grey"_a, "mask"_a = dip::Image{}, "metric"_a );
+   m.def( "GrowRegionsWeighted", []( dip::Image const& label, dip::Image const& grey, dip::Image const& mask, dip::Image& out, dip::Metric const& /*metric*/ ) {
+          PyErr_WarnEx( PyExc_DeprecationWarning, "The `metric` argument is deprecated, and will be ignored.", 1 );
+          dip::GrowRegionsWeighted( label, grey, mask, out );
+   }, "label"_a, "grey"_a, "mask"_a = dip::Image{}, py::kw_only(), "out"_a, "metric"_a );
    m.def( "SplitRegions", py::overload_cast< dip::Image const&, dip::uint >( &dip::SplitRegions ),
           "label"_a, "connectivity"_a = 0 );
    m.def( "SplitRegions", py::overload_cast< dip::Image const&, dip::Image&, dip::uint >( &dip::SplitRegions ),

@@ -1,5 +1,5 @@
 /*
- * (c)2018, Cris Luengo.
+ * (c)2018-2024, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,13 +15,17 @@
  * limitations under the License.
  */
 
+#include <cmath>
+#include <limits>
 #include <queue>
 
 #include "diplib.h"
 #include "diplib/regions.h"
-#include "diplib/distance.h"
-#include "diplib/morphology.h"
 #include "diplib/border.h"
+#include "diplib/distance.h"
+#include "diplib/iterators.h"
+#include "diplib/morphology.h"
+#include "diplib/neighborlist.h"
 #include "diplib/overload.h"
 #include "../binary/binary_support.h"
 
@@ -186,7 +190,7 @@ void GrowRegions(
    );
 
    // Create arrays with offsets to neighbours for even iterations
-   dip::uint iterConnectivity0;
+   dip::uint iterConnectivity0{};
    DIP_STACK_TRACE_THIS( iterConnectivity0 = GetAbsBinaryConnectivity( nDims, connectivity, 0 ));
    NeighborList neighborhood0( { Metric::TypeCode::CONNECTED, iterConnectivity0 }, nDims );
    IntegerArray offsets0 = neighborhood0.ComputeOffsets( out.Strides() );
@@ -211,16 +215,46 @@ void GrowRegionsWeighted(
       Image const& grey,
       Image const& mask,
       Image& out,
-      Metric const& metric
+      dfloat distance
 ) {
    // Compute grey-weighted distance transform
-   Image binary = label == 0;
-   Image distance;
-   DIP_STACK_TRACE_THIS( GreyWeightedDistanceTransform( grey, binary, mask, distance, metric, S::CHAMFER )); // TODO: Use FASTMATCHING here!
-   binary.Strip();
+   Image bin = label == 0;
+   Image dt;
+   if( !grey.IsForged() && !mask.IsForged() ) {
+      DIP_STACK_TRACE_THIS( EuclideanDistanceTransform( bin, dt, S::OBJECT ));
+   } else {
+      DIP_STACK_TRACE_THIS( GreyWeightedDistanceTransform( grey, bin, mask, dt, {}, S::FASTMARCHING ));
+   }
+
+   // Compute mask for given distance
+   if( std::isfinite( distance ) && distance > 0 ) {
+      DIP_START_STACK_TRACE
+         NotGreater( dt, distance, bin );
+         if( mask.IsForged() ) {
+            bin &= mask;
+         }
+      DIP_END_STACK_TRACE
+   } else {
+      bin.Strip();
+      if( mask.IsForged() ) {
+         bin = mask.QuickCopy();
+      }
+   }
 
    // Grow regions
-   DIP_STACK_TRACE_THIS( SeededWatershed( distance, label, mask, out, 1, -1, 0, { S::NOGAPS } )); // maxDepth = -1: disables region merging
+   DIP_STACK_TRACE_THIS( SeededWatershed( dt, label, bin, out, 1, -1, 0, { S::NOGAPS } )); // maxDepth = -1: disables region merging
+}
+
+void GrowRegionsAnisotropic(
+dip::Image const& label,
+dip::Image& out,
+dip::dfloat max_distance // in physical units
+) {
+   dip::Image binary = label == 0;
+   dip::Image dt;
+   DIP_STACK_TRACE_THIS( dip::EuclideanDistanceTransform( binary, dt ));
+   dip::NotGreater( dt, max_distance, binary ); // binary determines how far we grow the regions
+   DIP_STACK_TRACE_THIS( dip::SeededWatershed( dt, label, binary, out, 1, -1, 0, { S::NOGAPS } )); // maxDepth = -1: disables region merging
 }
 
 } // namespace dip

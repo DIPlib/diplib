@@ -1,5 +1,5 @@
 /*
- * (c)2017-2020, Cris Luengo.
+ * (c)2017-2024, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
  *
@@ -15,6 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+#include <limits>
 
 #include "dip_matlab_interface.h"
 
@@ -55,28 +57,15 @@ void growregions( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
 
 void growregionsweighted( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    DML_MIN_ARGS( 2 );
-   DML_MAX_ARGS( 4 );
+   DML_MAX_ARGS( 5 );
    dip::Image const label = dml::GetImage( prhs[ 0 ] );
    dip::Image const grey = dml::GetImage( prhs[ 1 ] );
    dip::Image const mask = nrhs > 2 ? dml::GetImage( prhs[ 2 ] ) : dip::Image{};
-   dip::uint chamfer = nrhs > 3 ? dml::GetUnsigned( prhs[ 3 ] ) : 5;
-   dip::Metric metric;
-   switch( chamfer ) {
-      case 1:
-         metric = dip::Metric( dip::S::CONNECTED, 1 );
-         break;
-      case 3:
-         metric = dip::Metric( dip::S::CHAMFER, 1 );
-         break;
-      case 5:
-         metric = dip::Metric( dip::S::CHAMFER, 2 );
-         break;
-      default:
-         DIP_THROW( "Illegal value for CHAMFER parameter" );
-   }
+   // dip::uint chamfer = nrhs > 3 ? dml::GetUnsigned( prhs[ 3 ] ) : 5; // chamfer parameter is ignored
+   dip::dfloat distance = nrhs > 4 ? dml::GetFloat( prhs[ 4 ] ) : dip::infinity;
    dml::MatlabInterface mi;
    dip::Image out = mi.NewImage();
-   dip::GrowRegionsWeighted( label, grey, mask, out, metric );
+   dip::GrowRegionsWeighted( label, grey, mask, out, distance );
    plhs[ 0 ] = dml::GetArray( out );
 }
 
@@ -224,8 +213,8 @@ void threshold( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    dml::MatlabInterface mi;
    dip::Image out = mi.NewImage();
    if(( method == "double" ) || ( method == "hysteresis" )) {
-      dip::dfloat param1;
-      dip::dfloat param2;
+      dip::dfloat param1{};
+      dip::dfloat param2{};
       if( nrhs > index ) {
          dip::FloatArray parameter = dml::GetFloatArray( prhs[ index ] );
          DIP_THROW_IF( parameter.size() != 2, dip::E::ARRAY_PARAMETER_WRONG_LENGTH );

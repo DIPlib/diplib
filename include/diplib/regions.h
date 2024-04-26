@@ -1,5 +1,5 @@
 /*
- * (c)2016-2021, Cris Luengo.
+ * (c)2016-2024, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -193,10 +193,10 @@ DIP_NODISCARD inline Image SmallObjectsRemove(
 /// The `connectivity` parameter defines the metric, that is, the shape of the structuring element
 /// (see \ref connectivity). Alternating connectivity is only implemented for 2D and 3D images.
 ///
-/// If isotropy in the dilation is very important, compute the distance transform of the background component,
-/// then apply \ref dip::SeededWatershed.
+/// If isotropy in the dilation is very important, or if the image has anisotropic sampling density, use
+/// \ref GrowRegionsWeighted instead.
 ///
-/// \see dip::GrowRegionsWeighted, dip::SeededWatershed
+/// \see dip::GrowRegionsWeighted
 DIP_EXPORT void GrowRegions(
       Image const& label,
       Image const& mask,
@@ -220,31 +220,60 @@ DIP_NODISCARD inline Image GrowRegions(
 /// The regions in the input image `label` are grown according to a grey-weighted distance
 /// metric; the weights are given by `grey`. The optional mask image `mask` limits the
 /// growing. All three images must be scalar. `label` must be of an unsigned integer type,
-/// and `grey` must be real-valued.
+/// `grey` must be real-valued, and `mask` must be binary.
+///
+/// If `grey` is not forged, uniform weights are assumed. If both `grey` and `mask` are
+/// not forged, regions will grow according to the Euclidean distances, see below.
 ///
 /// `out` is of the type \ref dip::DT_LABEL, and contains the grown regions.
 ///
-/// Non-isotropic sampling is supported through `metric`, which assumes isotropic sampling
-/// by default. See \ref dip::GreyWeightedDistanceTransform for more information on how the
-/// grey-weighted distance is computed.
+/// This function works by first computing distances from the labeled pixels using
+/// \ref dip::GreyWeightedDistanceTransform, or using \ref dip::EuclideanDistanceTransform
+/// if both `grey` and `mask` are not forged. These distances are limited by `distance`.
+/// Then it applies \ref dip::SeededWatershed.
 ///
-/// \see dip::GrowRegions, dip::GreyWeightedDistanceTransform, dip::SeededWatershed
+/// This function will correctly handle anisotropic sampling densities. Pixel sizes are taken from `grey`,
+/// and if it doesn't have pixel sizes, they are taken from `bin`. To ignore the sampling density and grow
+/// isotropically, reset the pixel size (\ref dip::Image::ResetPixelSize) of both images. Note that
+/// these pixel sizes influence the distances computed, and so `distance` is affected by these sizes.
+///
+/// \see dip::GrowRegions, dip::GreyWeightedDistanceTransform, \ref dip::EuclideanDistanceTransform, dip::SeededWatershed
 DIP_EXPORT void GrowRegionsWeighted(
       Image const& label,
       Image const& grey,
       Image const& mask,
       Image& out,
-      Metric const& metric = { S::CHAMFER, 2 }
+      dfloat distance = infinity
 );
 DIP_NODISCARD inline Image GrowRegionsWeighted(
       Image const& label,
       Image const& grey,
       Image const& mask = {},
-      Metric const& metric = { S::CHAMFER, 2 }
+      dfloat distance = infinity
 ) {
    Image out;
-   GrowRegionsWeighted( label, grey, mask, out, metric );
+   GrowRegionsWeighted( label, grey, mask, out, distance );
    return out;
+}
+
+[[ deprecated( "The `Metric` argument is ignored." ) ]]
+inline void GrowRegionsWeighted(
+      Image const& label,
+      Image const& grey,
+      Image const& mask,
+      Image& out,
+      Metric const& /*ignored*/
+) {
+   GrowRegionsWeighted( label, grey, mask, out );
+}
+[[ deprecated( "The `Metric` argument is ignored." ) ]]
+DIP_NODISCARD inline Image GrowRegionsWeighted(
+      Image const& label,
+      Image const& grey,
+      Image const& mask,
+      Metric const& /*ignored*/
+) {
+   return GrowRegionsWeighted( label, grey, mask );
 }
 
 /// \brief Ensures a gap between regions with unequal labels.

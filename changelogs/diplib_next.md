@@ -33,8 +33,14 @@ title: "Changes DIPlib 3.x.x"
   For example, the mean value of each image row can be computed in parallel, but the mean value over the whole
   image is still not computed in parallel.
 
-- `dip::PairCorrelation`, `dip::ProbabilisticPairCorrelation`, `dip::Semivariogram`, and `dip::ChordLength`
+- `dip::PairCorrelation()`, `dip::ProbabilisticPairCorrelation()`, `dip::Semivariogram()`, and `dip::ChordLength()`
   Have been parallelized for `"random"` sampling.
+
+- `dip::GrowRegionsWeighted()` with a `dip::Metric` parameter has been deprecated. The new version of the function
+  uses the fast marching algorithm in the grey-weighted distance transform. If both `grey` and `mask` are not
+  forged, `dip::EuclideanDistanceTransform()` is called instead of `dip::GreyWeightedDistanceTransform()`.
+  This makes the function efficient for when isotropic growing is required. And the function now has a new float
+  parameter, `distance` that determines how far the regions are grown.
 
 ### Bug fixes
 

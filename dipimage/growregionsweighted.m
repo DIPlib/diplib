@@ -1,33 +1,39 @@
 %GROWREGIONSWEIGHTED   Grow labeled regions with a speed function given by a grey-value image
 %
 % SYNOPSIS:
-%  image_out = growregionsweighted(label_image,gray_image,mask,chamfer)
+%  image_out = growregionsweighted(label_image,gray_image,mask,chamfer,distance)
 %
 % PARAMETERS:
 %  label_image: a labeled image (of unsigned integer type).
-%  gray_image: a real-valued gray-scale image.
-%  mask: binary image to constrain the operation, or [].
-%  chamfer:  Chamfer distance of 1, 3 or 5.
-%            1: Only the 6 (8) direct neighbors in a 3x3 (3x3x3) neighbourhood
-%               are used.
-%            3: All neighbors in in a 3x3 (3x3x3) neighbouhood are used.
-%            5: A neighborhood of (5x5) or (5x5x5) is used.
+%  gray_image:  a real-valued gray-scale image, or [].
+%  mask:        binary image to constrain the operation, or [].
+%  chamfer:     ignored (kept for backwards compatibility)
+%  distance:    how far regions are grown.
 %
 % DEFAULTS:
 %  mask = []
 %  chamfer = 5
+%  distance = Inf
 %
-% NOTE:
+% NOTES:
 %  Computes the GDT of the background of LABEL_IMAGE, then applies
 %  WATERSEED with LABEL_IMAGE as seeds. MASK limits the region growing.
 %
+%  If GRAY_IMAGE is [], then all pixels are assumed to have a weight
+%  of 1. If both GRAY_IMAGE and MASK are [], the DT is computed.
+%
+%  Takes the pixel size of GRAY_IMAGE into account when computing the
+%  distance regions are grown. This also allows for anisotropic
+%  sampling densities. IF GRAY_IMAGE doesn't have a pixel size,
+%  it will use the pixel size of LABEL_IMAGE instead.
+%
 % SEE ALSO:
-%  growregions, gdt, waterseed
+%  growregions, gdt, dt, waterseed
 %
 % DIPlib:
 %  This function calls the DIPlib function dip::GrowRegionsWeighted.
 
-% (c)2020, Cris Luengo.
+% (c)2020-2024, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
