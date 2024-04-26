@@ -233,7 +233,7 @@ DIP_NODISCARD inline Image GrowRegions(
 /// Then it applies \ref dip::SeededWatershed.
 ///
 /// This function will correctly handle anisotropic sampling densities. Pixel sizes are taken from `grey`,
-/// and if it doesn't have pixel sizes, they are taken from `bin`. To ignore the sampling density and grow
+/// and if it doesn't have pixel sizes, they are taken from `label`. To ignore the sampling density and grow
 /// isotropically, reset the pixel size (\ref dip::Image::ResetPixelSize) of both images. Note that
 /// these pixel sizes influence the distances computed, and so `distance` is affected by these sizes.
 ///

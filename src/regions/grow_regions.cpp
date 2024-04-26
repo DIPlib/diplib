@@ -245,16 +245,4 @@ void GrowRegionsWeighted(
    DIP_STACK_TRACE_THIS( SeededWatershed( dt, label, bin, out, 1, -1, 0, { S::NOGAPS } )); // maxDepth = -1: disables region merging
 }
 
-void GrowRegionsAnisotropic(
-dip::Image const& label,
-dip::Image& out,
-dip::dfloat max_distance // in physical units
-) {
-   dip::Image binary = label == 0;
-   dip::Image dt;
-   DIP_STACK_TRACE_THIS( dip::EuclideanDistanceTransform( binary, dt ));
-   dip::NotGreater( dt, max_distance, binary ); // binary determines how far we grow the regions
-   DIP_STACK_TRACE_THIS( dip::SeededWatershed( dt, label, binary, out, 1, -1, 0, { S::NOGAPS } )); // maxDepth = -1: disables region merging
-}
-
 } // namespace dip
