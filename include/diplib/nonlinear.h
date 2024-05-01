@@ -564,8 +564,9 @@ DIP_NODISCARD inline Image CoherenceEnhancingDiffusion(
 /// \see dip::AdaptiveBanana, dip::StructureTensorAnalysis2D, dip::StructureTensorAnalysis3D
 ///
 /// !!! literature
-///     - T.Q. Pham, L.J. van Vliet and K. Schutte, "Robust fusion of irregularly sampled data using adaptive normalized
-///       convolution", EURASIP Journal on Applied Signal Processing, article ID 83268, 2006.
+///     - P. Bakker, "Image structure analysis for seismic interpretation". PhD Thesis, TU Delft, The Netherlands, 2001.
+///     - L. Haglund, "Adaptive Mulitdimensional Filtering", PhD Thesis, Linköping University, Sweden, 1992.
+///     - W.T. Freeman, "Steerable Filters and Local Analysis of Image Structure", PhD Thesis, MIT, USA, 1992.
 DIP_EXPORT void AdaptiveGauss(
       Image const& in,
       ImageConstRefArray const& params,
@@ -624,8 +625,9 @@ DIP_NODISCARD inline Image AdaptiveGauss(
 /// \see dip::AdaptiveGauss, dip::StructureTensorAnalysis2D
 ///
 /// !!! literature
-///     - T.Q. Pham, L.J. van Vliet and K. Schutte, "Robust fusion of irregularly sampled data using adaptive normalized
-///       convolution", EURASIP Journal on Applied Signal Processing, article ID 83268, 2006.
+///     - P. Bakker, "Image structure analysis for seismic interpretation". PhD Thesis, TU Delft, The Netherlands, 2001.
+///     - L. Haglund, "Adaptive Mulitdimensional Filtering", PhD Thesis, Linköping University, Sweden, 1992.
+///     - W.T. Freeman, "Steerable Filters and Local Analysis of Image Structure", PhD Thesis, MIT, USA, 1992.
 DIP_EXPORT void AdaptiveBanana(
       Image const& in,
       ImageConstRefArray const& params,
