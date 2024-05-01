@@ -33,6 +33,7 @@
 #include <iterator>
 #include <limits>
 #include <memory>
+#include <new>
 #include <stdexcept>
 #include <tuple>
 #include <type_traits>
@@ -85,6 +86,8 @@ static T numeric_cast(U value,
   if (!is_same_signedness && (ret < T{}) != (value < U{})) {
     TSL_RH_THROW_OR_TERMINATE(std::runtime_error, error_message);
   }
+
+  TSL_RH_UNUSED(error_message);
 
   return ret;
 }
@@ -195,6 +198,7 @@ class bucket_entry : public bucket_entry_hash<StoreHash> {
           value_type(other.value());
       m_dist_from_ideal_bucket = other.m_dist_from_ideal_bucket;
     }
+    tsl_rh_assert(empty() == other.empty());
   }
 
   /**
@@ -212,6 +216,7 @@ class bucket_entry : public bucket_entry_hash<StoreHash> {
           value_type(std::move(other.value()));
       m_dist_from_ideal_bucket = other.m_dist_from_ideal_bucket;
     }
+    tsl_rh_assert(empty() == other.empty());
   }
 
   bucket_entry& operator=(const bucket_entry& other) noexcept(
@@ -249,12 +254,22 @@ class bucket_entry : public bucket_entry_hash<StoreHash> {
 
   value_type& value() noexcept {
     tsl_rh_assert(!empty());
+#if defined(__cplusplus) && __cplusplus >= 201703L
+    return *std::launder(
+        reinterpret_cast<value_type*>(std::addressof(m_value)));
+#else
     return *reinterpret_cast<value_type*>(std::addressof(m_value));
+#endif
   }
 
   const value_type& value() const noexcept {
     tsl_rh_assert(!empty());
+#if defined(__cplusplus) && __cplusplus >= 201703L
+    return *std::launder(
+        reinterpret_cast<const value_type*>(std::addressof(m_value)));
+#else
     return *reinterpret_cast<const value_type*>(std::addressof(m_value));
+#endif
   }
 
   distance_type dist_from_ideal_bucket() const noexcept {
@@ -283,6 +298,7 @@ class bucket_entry : public bucket_entry_hash<StoreHash> {
   void swap_with_value_in_bucket(distance_type& dist_from_ideal_bucket,
                                  truncated_hash_type& hash, value_type& value) {
     tsl_rh_assert(!empty());
+    tsl_rh_assert(dist_from_ideal_bucket > m_dist_from_ideal_bucket);
 
     using std::swap;
     swap(value, this->value());
@@ -310,19 +326,16 @@ class bucket_entry : public bucket_entry_hash<StoreHash> {
 
  public:
   static const distance_type EMPTY_MARKER_DIST_FROM_IDEAL_BUCKET = -1;
-  static const distance_type DIST_FROM_IDEAL_BUCKET_LIMIT = 4096;
+  static const distance_type DIST_FROM_IDEAL_BUCKET_LIMIT = 8192;
   static_assert(DIST_FROM_IDEAL_BUCKET_LIMIT <=
                     std::numeric_limits<distance_type>::max() - 1,
                 "DIST_FROM_IDEAL_BUCKET_LIMIT must be <= "
                 "std::numeric_limits<distance_type>::max() - 1.");
 
  private:
-  using storage = typename std::aligned_storage<sizeof(value_type),
-                                                alignof(value_type)>::type;
-
   distance_type m_dist_from_ideal_bucket;
   bool m_last_bucket;
-  storage m_value;
+  alignas(value_type) unsigned char m_value[sizeof(value_type)];
 };
 
 /**
@@ -410,9 +423,9 @@ class robin_hash : private Hash, private KeyEqual, private GrowthPolicy {
       TSL_RH_UNUSED(bucket_count);
       return true;
     } else if (STORE_HASH && is_power_of_two_policy<GrowthPolicy>::value) {
-      tsl_rh_assert(bucket_count > 0);
-      return (bucket_count - 1) <=
-             std::numeric_limits<truncated_hash_type>::max();
+      return bucket_count == 0 ||
+             (bucket_count - 1) <=
+                 std::numeric_limits<truncated_hash_type>::max();
     } else {
       TSL_RH_UNUSED(bucket_count);
       return false;
@@ -536,23 +549,18 @@ class robin_hash : private Hash, private KeyEqual, private GrowthPolicy {
       : Hash(hash),
         KeyEqual(equal),
         GrowthPolicy(bucket_count),
-        m_buckets_data(
-            [&]() {
-              if (bucket_count > max_bucket_count()) {
-                TSL_RH_THROW_OR_TERMINATE(
-                    std::length_error,
-                    "The map exceeds its maximum bucket count.");
-              }
-
-              return bucket_count;
-            }(),
-            alloc),
+        m_buckets_data(bucket_count, alloc),
         m_buckets(m_buckets_data.empty() ? static_empty_bucket_ptr()
                                          : m_buckets_data.data()),
         m_bucket_count(bucket_count),
         m_nb_elements(0),
         m_grow_on_next_insert(false),
         m_try_shrink_on_next_insert(false) {
+    if (bucket_count > max_bucket_count()) {
+      TSL_RH_THROW_OR_TERMINATE(std::length_error,
+                                "The map exceeds its maximum bucket count.");
+    }
+
     if (m_bucket_count > 0) {
       tsl_rh_assert(!m_buckets_data.empty());
       m_buckets_data.back().set_as_last_bucket();
@@ -664,7 +672,7 @@ class robin_hash : private Hash, private KeyEqual, private GrowthPolicy {
 
   robin_hash& operator=(robin_hash&& other) {
     other.swap(*this);
-    other.clear();
+    other.clear_and_shrink();
 
     return *this;
   }
@@ -812,6 +820,10 @@ class robin_hash : private Hash, private KeyEqual, private GrowthPolicy {
     return try_emplace(std::forward<K>(key), std::forward<Args>(args)...).first;
   }
 
+  void erase_fast(iterator pos) {
+    erase_from_bucket(pos);
+  }
+
   /**
    * Here to avoid `template<class K> size_type erase(const K& key)` being used
    * when we use an `iterator` instead of a `const_iterator`.
@@ -827,8 +839,6 @@ class robin_hash : private Hash, private KeyEqual, private GrowthPolicy {
     if (pos.m_bucket->empty()) {
       ++pos;
     }
-
-    m_try_shrink_on_next_insert = true;
 
     return pos;
   }
@@ -908,8 +918,6 @@ class robin_hash : private Hash, private KeyEqual, private GrowthPolicy {
     auto it = find(key, hash);
     if (it != end()) {
       erase_from_bucket(it);
-      m_try_shrink_on_next_insert = true;
-
       return 1;
     } else {
       return 0;
@@ -1073,11 +1081,12 @@ class robin_hash : private Hash, private KeyEqual, private GrowthPolicy {
     m_max_load_factor = clamp(ml, float(MINIMUM_MAX_LOAD_FACTOR),
                               float(MAXIMUM_MAX_LOAD_FACTOR));
     m_load_threshold = size_type(float(bucket_count()) * m_max_load_factor);
+    tsl_rh_assert(bucket_count() == 0 || m_load_threshold < bucket_count());
   }
 
   void rehash(size_type count_) {
     count_ = std::max(count_,
-                     size_type(std::ceil(float(size()) / max_load_factor())));
+                      size_type(std::ceil(float(size()) / max_load_factor())));
     rehash_impl(count_);
   }
 
@@ -1202,6 +1211,7 @@ class robin_hash : private Hash, private KeyEqual, private GrowthPolicy {
       previous_ibucket = ibucket;
       ibucket = next_bucket(ibucket);
     }
+    m_try_shrink_on_next_insert = true;
   }
 
   template <class K, class... Args>
@@ -1224,7 +1234,7 @@ class robin_hash : private Hash, private KeyEqual, private GrowthPolicy {
       dist_from_ideal_bucket++;
     }
 
-    if (rehash_on_extreme_load()) {
+    while (rehash_on_extreme_load(dist_from_ideal_bucket)) {
       ibucket = bucket_for_hash(hash);
       dist_from_ideal_bucket = 0;
 
@@ -1276,6 +1286,8 @@ class robin_hash : private Hash, private KeyEqual, private GrowthPolicy {
   void insert_value_impl(std::size_t ibucket,
                          distance_type dist_from_ideal_bucket,
                          truncated_hash_type hash, value_type& value) {
+    tsl_rh_assert(dist_from_ideal_bucket >
+                  m_buckets[ibucket].dist_from_ideal_bucket());
     m_buckets[ibucket].swap_with_value_in_bucket(dist_from_ideal_bucket, hash,
                                                  value);
     ibucket = next_bucket(ibucket);
@@ -1284,7 +1296,7 @@ class robin_hash : private Hash, private KeyEqual, private GrowthPolicy {
     while (!m_buckets[ibucket].empty()) {
       if (dist_from_ideal_bucket >
           m_buckets[ibucket].dist_from_ideal_bucket()) {
-        if (dist_from_ideal_bucket >=
+        if (dist_from_ideal_bucket >
             bucket_entry::DIST_FROM_IDEAL_BUCKET_LIMIT) {
           /**
            * The number of probes is really high, rehash the map on the next
@@ -1309,6 +1321,7 @@ class robin_hash : private Hash, private KeyEqual, private GrowthPolicy {
     robin_hash new_table(count_, static_cast<Hash&>(*this),
                          static_cast<KeyEqual&>(*this), get_allocator(),
                          m_min_load_factor, m_max_load_factor);
+    tsl_rh_assert(size() <= new_table.m_load_threshold);
 
     const bool use_stored_hash =
         USE_STORED_HASH_ON_REHASH(new_table.bucket_count());
@@ -1369,8 +1382,11 @@ class robin_hash : private Hash, private KeyEqual, private GrowthPolicy {
    *
    * Return true if the table has been rehashed.
    */
-  bool rehash_on_extreme_load() {
-    if (m_grow_on_next_insert || size() >= m_load_threshold) {
+  bool rehash_on_extreme_load(distance_type curr_dist_from_ideal_bucket) {
+    if (m_grow_on_next_insert ||
+        curr_dist_from_ideal_bucket >
+            bucket_entry::DIST_FROM_IDEAL_BUCKET_LIMIT ||
+        size() >= m_load_threshold) {
       rehash_impl(GrowthPolicy::next_bucket_count());
       m_grow_on_next_insert = false;
 
@@ -1576,6 +1592,7 @@ class robin_hash : private Hash, private KeyEqual, private GrowthPolicy {
    */
   bucket_entry* static_empty_bucket_ptr() noexcept {
     static bucket_entry empty_bucket(true);
+    tsl_rh_assert(empty_bucket.empty());
     return &empty_bucket;
   }
 

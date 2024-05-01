@@ -104,7 +104,7 @@ limitations under the License.
   see [`dependencies/pocketfft/LICENSE.md`](dependencies/pocketfft/LICENSE.md)
 
 - *PCG Random Number Generation for C++*  
-  Copyright 2014-2017 Melissa O'Neill and the PCG Project contributors  
+  Copyright 2014-2022 Melissa O'Neill and the PCG Project contributors  
   Apache 2.0 License, or The MIT License, at your option  
   see [`include/diplib/private/pcg_*.hpp`](include/diplib/private/pcg_random.hpp)
 

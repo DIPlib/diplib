@@ -35,6 +35,16 @@
 #include <ratio>
 #include <stdexcept>
 
+// A change of the major version indicates an API and/or ABI break (change of
+// in-memory layout of the data structure)
+#define TSL_RH_VERSION_MAJOR 1
+// A change of the minor version indicates the addition of a feature without
+// impact on the API/ABI
+#define TSL_RH_VERSION_MINOR 3
+// A change of the patch version indicates a bugfix without additional
+// functionality
+#define TSL_RH_VERSION_PATCH 0
+
 #ifdef TSL_DEBUG
 #define tsl_rh_assert(expr) assert(expr)
 #else
@@ -51,15 +61,15 @@
 #define TSL_RH_THROW_OR_TERMINATE(ex, msg) throw ex(msg)
 #else
 #define TSL_RH_NO_EXCEPTIONS
-#ifdef NDEBUG
-#define TSL_RH_THROW_OR_TERMINATE(ex, msg) std::terminate()
-#else
+#ifdef TSL_DEBUG
 #include <iostream>
 #define TSL_RH_THROW_OR_TERMINATE(ex, msg) \
   do {                                     \
     std::cerr << msg << std::endl;         \
     std::terminate();                      \
   } while (0)
+#else
+#define TSL_RH_THROW_OR_TERMINATE(ex, msg) std::terminate()
 #endif
 #endif
 

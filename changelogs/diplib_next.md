@@ -54,6 +54,10 @@ title: "Changes DIPlib 3.x.x"
 
 ### Updated dependencies
 
+- Updated included header-only library *robin-map* to version 1.3.0.
+
+- Updated included header-only library *pcg-cpp* to the current master branch (last updated 2022-04-08).
+
 
 
 

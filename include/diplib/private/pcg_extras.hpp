@@ -44,7 +44,6 @@
 #include <utility>
 #include <locale>
 #include <iterator>
-#include <utility>
 
 #ifdef __GNUC__
     #include <cxxabi.h>
@@ -75,21 +74,22 @@
  * direct CPU support.
  *
  */
-#if __SIZEOF_INT128__
+#if __SIZEOF_INT128__ && !PCG_FORCE_EMULATED_128BIT_MATH
     namespace pcg_extras {
         typedef __uint128_t pcg128_t;
     }
     #define PCG_128BIT_CONSTANT(high,low) \
-            ((pcg128_t(high) << 64) + low)
+            ((pcg_extras::pcg128_t(high) << 64) + low)
 #else
     #include "pcg_uint128.hpp"
     namespace pcg_extras {
         typedef pcg_extras::uint_x4<uint32_t,uint64_t> pcg128_t;
     }
     #define PCG_128BIT_CONSTANT(high,low) \
-            pcg128_t(high,low)
+            pcg_extras::pcg128_t(high,low)
     #define PCG_EMULATED_128BIT_MATH 1
 #endif
+
 
 namespace pcg_extras {
 
@@ -175,8 +175,10 @@ operator>>(std::basic_istream<CharT,Traits>& in, pcg128_t& value)
     bool overflow = false;
     for(;;) {
         CharT wide_ch = in.get();
-        if (!in.good())
+        if (!in.good()) {
+            in.clear(std::ios::eofbit);
             break;
+        }
         auto ch = in.narrow(wide_ch, '\0');
         if (ch < '0' || ch > '9') {
             in.unget();
@@ -346,6 +348,31 @@ inline uint64_t rotr(uint64_t value, bitcount_t rot)
 }
 #endif // __x86_64__
 
+#elif defined(_MSC_VER)
+  // Use MSVC++ bit rotation intrinsics
+
+#pragma intrinsic(_rotr, _rotr64, _rotr8, _rotr16)
+
+inline uint8_t rotr(uint8_t value, bitcount_t rot)
+{
+    return _rotr8(value, rot);
+}
+
+inline uint16_t rotr(uint16_t value, bitcount_t rot)
+{
+    return _rotr16(value, rot);
+}
+
+inline uint32_t rotr(uint32_t value, bitcount_t rot)
+{
+    return _rotr(value, rot);
+}
+
+inline uint64_t rotr(uint64_t value, bitcount_t rot)
+{
+    return _rotr64(value, rot);
+}
+
 #endif // PCG_USE_INLINE_ASM
 
 
@@ -420,7 +447,7 @@ SrcIter uneven_copy_impl(
 
     while (dest_first != dest_last) {
         dest_t value(0UL);
-        dest_t shift = 0; // Changed from unsigned int (Cris Luengo, 2017-06-02)
+        unsigned int shift = 0;
 
         for (size_t i = 0; i < SCALE; ++i) {
             value |= dest_t(*src_first++) << shift;
@@ -621,7 +648,7 @@ std::ostream& operator<<(std::ostream& out, printable_typename<T>) {
 #ifdef __GNUC__
     int status;
     char* pretty_name =
-        abi::__cxa_demangle(implementation_typename, NULL, NULL, &status);
+        abi::__cxa_demangle(implementation_typename, nullptr, nullptr, &status);
     if (status == 0)
         out << pretty_name;
     free(static_cast<void*>(pretty_name));
