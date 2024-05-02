@@ -67,7 +67,7 @@ setup_kwargs = dict(
 name = os.path.join("$<TARGET_FILE_DIR:PyDIP_bin>", "staging", "dist", wheel_name(**setup_kwargs))
 
 setup(**setup_kwargs)
-print("To install, run\n  ${PYTHON_EXECUTABLE} -m pip install --upgrade ", name)
+print("To install, run\n  ${Python_EXECUTABLE} -m pip install --upgrade ", name)
 
 with open('$<TARGET_FILE_DIR:PyDIP_bin>/wheel.txt', 'w') as f:
     print(name, file=f)

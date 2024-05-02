@@ -17,11 +17,11 @@ cd build
 wget -nv https://downloads.openmicroscopy.org/bio-formats/7.0.0/artifacts/bioformats_package.jar
 
 # Basic configuration
-$CMAKE .. -DDIP_PYDIP_WHEEL_INCLUDE_LIBS=On -DBIOFORMATS_JAR=`pwd`/bioformats_package.jar 
+$CMAKE .. -DDIP_PYDIP_WHEEL_INCLUDE_LIBS=On -DBIOFORMATS_JAR=`pwd`/bioformats_package.jar
 
 # Build wheels
 for v in ${PYTHON_VERSIONS[@]}; do
-   $CMAKE .. -DPYBIND11_PYTHON_VERSION=$v -DPYTHON_EXECUTABLE=/opt/python/cp${v/./}-cp${v/./}/bin/python
+   $CMAKE .. -DPython_EXECUTABLE=/opt/python/cp${v/./}-cp${v/./}/bin/python
    make -j $BUILD_THREADS bdist_wheel
    auditwheel repair ${EXCLUDES[@]/#/--exclude } pydip/staging/dist/*.whl
 done;

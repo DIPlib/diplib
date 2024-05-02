@@ -15,6 +15,6 @@ cmake ^
 -DMatlab_ROOT_DIR:PATH="D:\MATLAB\R2018b" ^
 -DDIP_PYDIP_RELATIVE_LOCATION:BOOL=ON ^
 -DPYDIP_INSTALL_PATH:PATH=D:/local/DIPlib_2018b/lib ^
--DPYTHON_EXECUTABLE:FILEPATH=C:/Users/sup-rligteringen/.conda/envs/python37/python.exe ^
+-DPython_EXECUTABLE:FILEPATH=C:/Users/sup-rligteringen/.conda/envs/python37/python.exe ^
 d:/src/diplib ^
 %*

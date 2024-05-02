@@ -14,7 +14,7 @@
 
 
 # CMakeLists file for DIPlib 3
-cmake_minimum_required(VERSION 3.5...3.28)
+cmake_minimum_required(VERSION 3.12...3.28)
 
 project(DIPlib)
 
@@ -140,16 +140,12 @@ endif()
 
 
 ### PyDIP module for Python
-
-if(POLICY CMP0148)
-   cmake_policy(SET CMP0148 OLD)  # temporary while we figure out how to update the minimum required CMake version
+if(DEFINED PYTHON_EXECUTABLE AND NOT DEFINED Python_EXECUTABLE)
+   message(WARNING "PYTHON_EXECUTABLE is deprecated, use Python_EXECUTABLE instead.")
+   set(Python_EXECUTABLE "${PYTHON_EXECUTABLE}")
 endif()
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/dependencies/pybind11/tools")
-set(Python_ADDITIONAL_VERSIONS ${PYBIND11_PYTHON_VERSION} 3.12 3.11 3.10 3.9 3.8 3.7 3.6 3.5) # TODO: This line will need to be updated when new versions of Python are released
-   # CMake 3.5 knows about Python 3.6 and older, but by adding these version numbers here we make sure Python3 is found over Python2.
-find_package(PythonLibsNew)
-
-if(PYTHONLIBS_FOUND)
+find_package(Python 3.6 COMPONENTS Interpreter Development)
+if(Python_Development_FOUND)
    set(DIP_BUILD_PYDIP ON CACHE BOOL "Build the PyDIP Python module")
 endif()
 
@@ -354,7 +350,7 @@ endif()
 
 if(DIP_BUILD_PYDIP)
    message(" * PyDIP module added to 'all' target")
-   message(" * PyDIP compiled for Python version ${PYTHON_VERSION_STRING}")
+   message(" * PyDIP compiled for Python version ${Python_VERSION}")
    if(DIP_PYDIP_WHEEL_INCLUDE_LIBS)
       message(" * PyDIP includes libraries in binary wheel")
    else()

@@ -29,31 +29,31 @@ cmake .. -A x64 -DBIOFORMATS_JAR=%CD%\bioformats_package.jar -DFREEGLUT_INCLUDE_
 
 REM Python 3.8
 C:\hostedtoolcache\windows\Python\%PYTHON38%\x64\python.exe -m pip install setuptools wheel build
-cmake .. -A x64 -DPYTHON_EXECUTABLE=C:\hostedtoolcache\windows\Python\%PYTHON38%\x64\python.exe
+cmake .. -A x64 -DPython_EXECUTABLE=C:\hostedtoolcache\windows\Python\%PYTHON38%\x64\python.exe
 cmake --build . --target bdist_wheel --config Release
 copy pydip\Release\staging\dist\*.whl wheelhouse
 
 REM Python 3.9
 C:\hostedtoolcache\windows\Python\%PYTHON39%\x64\python.exe -m pip install setuptools wheel build
-cmake .. -A x64 -DPYTHON_EXECUTABLE=C:\hostedtoolcache\windows\Python\%PYTHON39%\x64\python.exe
+cmake .. -A x64 -DPython_EXECUTABLE=C:\hostedtoolcache\windows\Python\%PYTHON39%\x64\python.exe
 cmake --build . --target bdist_wheel --config Release
 copy pydip\Release\staging\dist\*.whl wheelhouse
 
 REM Python 3.10
 C:\hostedtoolcache\windows\Python\%PYTHON310%\x64\python.exe -m pip install setuptools wheel build
-cmake .. -A x64 -DPYTHON_EXECUTABLE=C:\hostedtoolcache\windows\Python\%PYTHON310%\x64\python.exe
+cmake .. -A x64 -DPython_EXECUTABLE=C:\hostedtoolcache\windows\Python\%PYTHON310%\x64\python.exe
 cmake --build . --target bdist_wheel --config Release
 copy pydip\Release\staging\dist\*.whl wheelhouse
 
 REM Python 3.11
 C:\hostedtoolcache\windows\Python\%PYTHON311%\x64\python.exe -m pip install setuptools wheel build
-cmake .. -A x64 -DPYTHON_EXECUTABLE=C:\hostedtoolcache\windows\Python\%PYTHON311%\x64\python.exe
+cmake .. -A x64 -DPython_EXECUTABLE=C:\hostedtoolcache\windows\Python\%PYTHON311%\x64\python.exe
 cmake --build . --target bdist_wheel --config Release
 copy pydip\Release\staging\dist\*.whl wheelhouse
 
 REM Python 3.12
 C:\hostedtoolcache\windows\Python\%PYTHON312%\x64\python.exe -m pip install setuptools wheel build
-cmake .. -A x64 -DPYTHON_EXECUTABLE=C:\hostedtoolcache\windows\Python\%PYTHON312%\x64\python.exe
+cmake .. -A x64 -DPython_EXECUTABLE=C:\hostedtoolcache\windows\Python\%PYTHON312%\x64\python.exe
 cmake --build . --target bdist_wheel --config Release
 copy pydip\Release\staging\dist\*.whl wheelhouse
 

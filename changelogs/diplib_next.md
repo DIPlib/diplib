@@ -42,6 +42,8 @@ title: "Changes DIPlib 3.x.x"
   This makes the function efficient for when isotropic growing is required. And the function now has a new float
   parameter, `distance` that determines how far the regions are grown.
 
+- Minimum required version of *CMake* is now 3.12.
+
 ### Bug fixes
 
 - `dip::PairCorrelation`, `dip::ProbabilisticPairCorrelation`, `dip::Semivariogram`, and `dip::ChordLength`
@@ -54,9 +56,9 @@ title: "Changes DIPlib 3.x.x"
 
 ### Updated dependencies
 
-- Updated included header-only library *robin-map* to version 1.3.0.
+- Updated bundled header-only library *robin-map* to version 1.3.0.
 
-- Updated included header-only library *pcg-cpp* to the current master branch (last updated 2022-04-08).
+- Updated bundled header-only library *pcg-cpp* to the current master branch (last updated 2022-04-08).
 
 
 
@@ -91,6 +93,12 @@ None, but see bugfixes to *DIPlib*.
   the library in Python: `dip.Error` is the new base class, raised exceptions are either `dip.ParameterError`,
   `dip.RunTimeError` or `dip.AssertionError`. `dip.Error` is derived from `Exception`.
 
+- The *CMake* option `PYTHON_EXECUTABLE` is no longer used, set `Python_EXECUTABLE` instead. The build script
+  will, for the time being, copy the value of the former to the latter if the former is set but the latter isn't.
+
+- The *CMake* option `PYBIND11_PYTHON_VERSION` is no longer used. It was mentioned in the documentation, but
+  probably never really worked.
+
 (See also changes to *DIPlib*.)
 
 ### Bug fixes
@@ -98,6 +106,10 @@ None, but see bugfixes to *DIPlib*.
 - `dip.viewer.Show()` would cause Python to crash if given a raw image.
 
 (See also bugfixes to *DIPlib*.)
+
+### Updated dependencies
+
+- Updated bundled *pybind11* to version 2.12.0.
 
 
 

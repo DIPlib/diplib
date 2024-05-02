@@ -177,8 +177,8 @@ Controlling the build of *DIPimage*:
 Controlling the build of *PyDIP*:
 
 - `DIP_BUILD_PYDIP`: `On` (default) or `Off`. Choose whether to build the *PyDIP* package, if *Python* is available.
-- `PYBIND11_PYTHON_VERSION`: Set the Python version to build *PyDIP* against (e.g. set to `3.10`).
-- `PYTHON_EXECUTABLE`: Set the path to the Python binary, in case it is not on the path and *Pybind11* can't find it.
+- `Python_EXECUTABLE`: Set the path to the Python binary, in case *CMake* doesn't find the right one. It is also
+    possible to instead set `Python_ROOT_DIR`, see [*FindPython*](https://cmake.org/cmake/help/latest/module/FindPython.html).
 - `DIP_PYDIP_WHEEL_INCLUDE_LIBS`: `On` or `Off` (default). Include the *DIPlib* libraries in the *PyDIP* wheel.
     Turn on for binary distribution, keep off for personal builds.
 

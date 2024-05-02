@@ -1,6 +1,5 @@
 # (c)2017-2021, Flagship Biosciences, Inc., written by Cris Luengo.
-# (c)2018-2022, Wouter Caarls.
-# (c)2022, Cris Luengo.
+# (c)2018-2024, Wouter Caarls, Cris Luengo.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,7 +15,7 @@
 
 
 # CMakeLists file for DIPlib 3
-cmake_minimum_required(VERSION 3.5...3.28)
+cmake_minimum_required(VERSION 3.12...3.28)
 
 project(PyDIP)
 
@@ -35,13 +34,10 @@ include(${CMAKE_CURRENT_LIST_DIR}/../tools/compiler_flags.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/../tools/update_deps_file.cmake)
 
 # Python
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../dependencies/pybind11/tools")
-set(Python_ADDITIONAL_VERSIONS ${PYBIND11_PYTHON_VERSION} 3.12 3.11 3.10 3.9 3.8 3.7 3.6 3.5) # TODO: This line will need to be updated when new versions of Python are released
-# CMake 3.5 knows about Python 3.6 and older, but by adding these version numbers here we make sure Python3 is found over Python2.
-find_package(PythonLibsNew REQUIRED)
+find_package(Python 3.6 REQUIRED COMPONENTS Interpreter Development)
 
 # Pybind11
-set(PYBIND11_PYTHON_VERSION ${PYTHON_VERSION}) # Avoid a warning message
+set(PYBIND11_FINDPYTHON On)
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../dependencies/pybind11" "${PROJECT_BINARY_DIR}/pybind11" EXCLUDE_FROM_ALL)
 
 # DIPlib
@@ -146,15 +142,15 @@ file(GENERATE
 file(GENERATE
    OUTPUT "$<TARGET_FILE_DIR:PyDIP_bin>/cmake_pip_install.cmake"
    CONTENT "file(STRINGS $<TARGET_FILE_DIR:PyDIP_bin>/wheel.txt PYDIP_WHEEL_NAME)
-   execute_process(COMMAND ${PYTHON_EXECUTABLE} -m pip install --upgrade --force-reinstall \${PYDIP_WHEEL_NAME})"
+   execute_process(COMMAND ${Python_EXECUTABLE} -m pip install --upgrade --force-reinstall \${PYDIP_WHEEL_NAME})"
 )
 
 add_custom_target(staging
-                  COMMAND ${PYTHON_EXECUTABLE} $<TARGET_FILE_DIR:PyDIP_bin>/stage_wheel.py
+                  COMMAND ${Python_EXECUTABLE} $<TARGET_FILE_DIR:PyDIP_bin>/stage_wheel.py
                   DEPENDS PyDIP)
 
 add_custom_target(bdist_wheel
-                  COMMAND ${CMAKE_COMMAND} -E chdir $<TARGET_FILE_DIR:PyDIP_bin>/staging ${PYTHON_EXECUTABLE} -m build --wheel --no-isolation
+                  COMMAND ${CMAKE_COMMAND} -E chdir $<TARGET_FILE_DIR:PyDIP_bin>/staging ${Python_EXECUTABLE} -m build --wheel --no-isolation
                   DEPENDS staging)
 
 add_custom_target(pip_install
@@ -162,7 +158,7 @@ add_custom_target(pip_install
                   DEPENDS bdist_wheel)
 
 add_custom_target(pip_uninstall
-                  COMMAND ${PYTHON_EXECUTABLE} -m pip uninstall diplib)
+                  COMMAND ${Python_EXECUTABLE} -m pip uninstall diplib)
 
 # PyDIP unit tests
 # Resolve standard CMake variables
@@ -175,7 +171,7 @@ file(GENERATE
 )
 
 add_custom_target(PyDIP_check
-                  COMMAND ${CMAKE_COMMAND} -E chdir $<TARGET_FILE_DIR:PyDIP_bin> ${PYTHON_EXECUTABLE} $<TARGET_FILE_DIR:PyDIP_bin>/unit_tests.py
+                  COMMAND ${CMAKE_COMMAND} -E chdir $<TARGET_FILE_DIR:PyDIP_bin> ${Python_EXECUTABLE} $<TARGET_FILE_DIR:PyDIP_bin>/unit_tests.py
                   DEPENDS staging)
 if(TARGET check)
    add_dependencies(check PyDIP_check)

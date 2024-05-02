@@ -47,9 +47,9 @@ You can find out the name and default value of the arguments using ``help``:
         Gauss(*args, **kwargs)
         Overloaded function.
     <BLANKLINE>
-        1. Gauss(in: staging.diplib.PyDIP_bin.Image, sigmas: List[float] = [1.0], derivativeOrder: List[int] = [0], method: str = 'best', boundaryCondition: List[str] = [], truncation: float = 3.0) -> staging.diplib.PyDIP_bin.Image
+        1. Gauss(in: staging.diplib.PyDIP_bin.Image, sigmas: list[float] = [1.0], derivativeOrder: list[int] = [0], method: str = 'best', boundaryCondition: list[str] = [], truncation: float = 3.0) -> staging.diplib.PyDIP_bin.Image
     <BLANKLINE>
-        2. Gauss(in: staging.diplib.PyDIP_bin.Image, *, out: staging.diplib.PyDIP_bin.Image, sigmas: List[float] = [1.0], derivativeOrder: List[int] = [0], method: str = 'best', boundaryCondition: List[str] = [], truncation: float = 3.0) -> None
+        2. Gauss(in: staging.diplib.PyDIP_bin.Image, *, out: staging.diplib.PyDIP_bin.Image, sigmas: list[float] = [1.0], derivativeOrder: list[int] = [0], method: str = 'best', boundaryCondition: list[str] = [], truncation: float = 3.0) -> None
     <BLANKLINE>
 
 The on-line documentation has more details about the meaning of each argument, and implementation details. For
