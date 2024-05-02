@@ -44,8 +44,8 @@ struct FileInformation {
       String                colorSpace;        ///< Color space
       PixelSize             pixelSize;         ///< Pixel size
       PhysicalQuantityArray origin;            ///< Real-world location of origin pixel
-      dip::uint             numberOfImages;    ///< Number of images in the file. Currently only TIFF can have more than 1 here.
-      StringArray           history;           ///< Assorted metadata in the file, in the form of strings.
+      dip::uint             numberOfImages;    ///< Number of images in the file, for file types that can store multiple images
+      StringArray           history;           ///< Assorted metadata in the file, in the form of strings
 };
 
 /// \brief A pure virtual base class for output buffers.

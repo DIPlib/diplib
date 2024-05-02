@@ -65,7 +65,7 @@ class PngInput {
       }
       PngInput( void const* buffer, dip::uint length ) {
          DIP_THROW_IF( !buffer, "Input buffer pointer must be valid" );
-         DIP_THROW_IF( length == 0, "Empry input buffer" );
+         DIP_THROW_IF( length == 0, "Empty input buffer" );
          ctx_ = spng_ctx_new( 0 );
          if( !ctx_ ) {
             DIP_THROW_RUNTIME( "Could not create a PNG context" );

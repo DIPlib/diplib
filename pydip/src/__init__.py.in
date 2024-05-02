@@ -76,7 +76,7 @@ if hasDIPviewer:
     _ShowViewer = viewer.Show
     def _ShowSlice(*args, **kwargs):
         """Show an image in a new SliceViewer window.
-        
+
         Parameters
         ----------
         in : dip.Image
@@ -195,7 +195,7 @@ def ImageRead(*args, **kwargs):
     2. Have a working installation of a Java VM. Download: https://www.java.com/en/
     3. Run `python -m diplib download_bioformats` from your shell.
 
-    PyDIP_bin.ImageRead can only read ICS, TIFF, JPEG and NPY files.
+    PyDIP_bin.ImageRead can only read ICS, TIFF, JPEG, PNG and NPY files.
 
     You can also use the imageio package to load image files.
     """

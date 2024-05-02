@@ -116,7 +116,7 @@ target_compile_definitions(DIP PRIVATE
                            EIGEN_DONT_PARALLELIZE) # This to prevent Eigen algorithms trying to run in parallel -- we parallelize at a larger scale.
 
 # zlib (for use in libics and libtiff)
-set(DIP_ENABLE_ZLIB ON CACHE BOOL "Enable zlib compression in ICS and TIFF (deflate)")
+set(DIP_ENABLE_ZLIB ON CACHE BOOL "Enable zlib compression in ICS and TIFF (deflate), required for PNG")
 if(DIP_ENABLE_ZLIB)
    add_subdirectory("${PROJECT_SOURCE_DIR}/dependencies/zlib" "${PROJECT_BINARY_DIR}/zlib" EXCLUDE_FROM_ALL)
 endif()

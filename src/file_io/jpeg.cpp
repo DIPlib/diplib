@@ -90,7 +90,7 @@ class JpegInput {
       JpegInput( void const* buffer, dip::uint length, std::jmp_buf const& setjmp_buffer, String& error_msg )
             : jerr_( error_msg ) {
          DIP_THROW_IF( !buffer, "Input buffer pointer must be valid" );
-         DIP_THROW_IF( length == 0, "Empry input buffer" );
+         DIP_THROW_IF( length == 0, "Empty input buffer" );
          cinfo_.err = jpeg_std_error( &jerr_.pub );
          jerr_.pub.error_exit = my_error_exit;
          std::memcpy( jerr_.setjmp_buffer, setjmp_buffer, sizeof( setjmp_buffer ));

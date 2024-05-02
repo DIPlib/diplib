@@ -76,6 +76,7 @@ namespace dip {
 /// - "ICS support": indicates ICS file reading and writing is available.
 /// - "TIFF support": indicates TIFF file reading and writing is available.
 /// - "JPEG support": indicates JPEG file reading and writing is available.
+/// - "PNG support": indicates PNG file reading and writing is available.
 struct DIP_NO_EXPORT LibraryInformation {
    String name;         ///< The library name
    String description;  ///< A short description string

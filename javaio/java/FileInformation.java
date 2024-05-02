@@ -19,7 +19,7 @@ package org.diplib;
 /// \brief A data structure with information about an image file.
 public class FileInformation {
    String                name;              ///< File name
-   String                fileType;          ///< File type (currently, "ICS" or "TIFF")
+   String                fileType;          ///< File type
    String                dataType;          ///< Data type for all samples
    long                  significantBits;   ///< Number of bits used for each sample
    long[]                sizes;             ///< Size of image in pixels
@@ -27,6 +27,6 @@ public class FileInformation {
    String                colorSpace;        ///< Color space
    PhysicalQuantity[]    pixelSize;         ///< Pixel size
    PhysicalQuantity[]    origin;            ///< Real-world location of origin pixel
-   long                  numberOfImages;    ///< Number of images in the file. Only TIFF can have more than 1 here.
-   String[]              history;           ///< Assorted metadata in the file, in the form of strings.
+   long                  numberOfImages;    ///< Number of images in the file, for file types that can store multiple images
+   String[]              history;           ///< Assorted metadata in the file, in the form of strings
 }
