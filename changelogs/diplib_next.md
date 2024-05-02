@@ -42,6 +42,9 @@ title: "Changes DIPlib 3.x.x"
   This makes the function efficient for when isotropic growing is required. And the function now has a new float
   parameter, `distance` that determines how far the regions are grown.
 
+- `dip::ImageRead()` throws a `dip::RunTimeError` instead of a `dip::ParameterError` if the file doesn't exist
+  or is of an unrecognized type.
+
 - Minimum required version of *CMake* is now 3.12.
 
 ### Bug fixes

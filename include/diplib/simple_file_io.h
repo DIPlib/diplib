@@ -70,22 +70,34 @@ inline FileInformation ImageRead(
       format = FileGetExtension( filename );
       if( !format.empty() ) {
          std::FILE* f = std::fopen(filename.c_str(), "rb");
-         DIP_THROW_IF( f == nullptr, "File could not be opened" );
+         if( f == nullptr ) {
+            DIP_THROW_RUNTIME( "File could not be opened" );
+         }
          std::fclose( f );
          if( StringCompareCaseInsensitive( format, "ics" ) || StringCompareCaseInsensitive( format, "ids" )) {
-            DIP_THROW_IF( !ImageIsICS( filename ), "File has an ICS extension but could not be read as an ICS file" );
+            if( !ImageIsICS( filename ) ) {
+               DIP_THROW_RUNTIME( "File has an ICS extension but could not be read as an ICS file" );
+            }
             format = "ics";
          } else if( StringCompareCaseInsensitive( format, "tif" ) || StringCompareCaseInsensitive( format, "tiff" )) {
-            DIP_THROW_IF( !ImageIsTIFF( filename ), "File has a TIFF extension but could not be read as a TIFF file" );
+            if( !ImageIsTIFF( filename )) {
+               DIP_THROW_RUNTIME( "File has a TIFF extension but could not be read as a TIFF file" );
+            }
             format = "tiff";
          } else if( StringCompareCaseInsensitive( format, "jpg" ) || StringCompareCaseInsensitive( format, "jpeg" )) {
-            DIP_THROW_IF( !ImageIsJPEG( filename ), "File has a JPEG extension but could not be read as a JPEG file" );
+            if( !ImageIsJPEG( filename )) {
+               DIP_THROW_RUNTIME( "File has a JPEG extension but could not be read as a JPEG file" );
+            }
             format = "jpeg";
          } else if( StringCompareCaseInsensitive( format, "png" )) {
-            DIP_THROW_IF( !ImageIsPNG( filename ), "File has a PNG extension but could not be read as a PNG file" );
+            if( !ImageIsPNG( filename )) {
+               DIP_THROW_RUNTIME( "File has a PNG extension but could not be read as a PNG file" );
+            }
             format = "png";
          } else if( StringCompareCaseInsensitive( format, "npy" )) {
-            DIP_THROW_IF( !ImageIsNPY( filename ), "File has an NPY extension but could not be read as an NPY file" );
+            if( !ImageIsNPY( filename )) {
+               DIP_THROW_RUNTIME( "File has an NPY extension but could not be read as an NPY file" );
+            }
             format = "npy";
          } else {
             format.clear();
@@ -106,7 +118,7 @@ inline FileInformation ImageRead(
 #ifdef DIP_CONFIG_HAS_DIPJAVAIO
             format = "bioformats";
 #else
-            DIP_THROW( "File not of a recognized format" );
+            DIP_THROW_RUNTIME( "File doesn't exist or it is not of a recognized format" );
 #endif
          }
       }
@@ -133,6 +145,7 @@ inline FileInformation ImageRead(
    }
    return info;
 }
+
 DIP_NODISCARD inline Image ImageRead(
       String const& filename,
       String const& format = ""
