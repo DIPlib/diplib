@@ -40,23 +40,29 @@ constexpr char const* bioformatsInterface = "org/diplib/BioFormatsInterface";
 ///
 /// `interface` can be one of:
 ///
-/// - `"org/diplib/BioFormatsInterface"`: The openmicroscopy.org Bio-Formats package (default).
-///   Can read [over 140 different image file formats](https://bio-formats.readthedocs.io/en/latest/supported-formats.html).
+/// - `"org/diplib/BioFormatsInterface"`: The *Bio-Formats* package (default).
+///   Can read [over 160 different image file formats](https://bio-formats.readthedocs.io/en/latest/supported-formats.html).
 ///   Limitation: each x-y plane of a (multi-dimensional) image must occupy no more than 2 GB when uncompressed,
-///   and each individual dimension must be smaller than 2^31^-1.
+///   and each individual dimension must be smaller than 2^31^-1. Metadata is currently not read.
+///
+/// If the file contains multiple images, select the desired one by setting `imageNumber`. Note that it is the
+/// interface that decides what an image is. For example, *Bio-Formats* will consider multi-page TIFF files
+/// to be either a single 3D image or a series of individual images depedning on some internal logic.
 ///
 /// Information about the file and all metadata are returned in the \ref dip::FileInformation output argument.
 DIPJAVAIO_EXPORT FileInformation ImageReadJavaIO(
       Image& out,
       String const& filename,
-      String const& interface = bioformatsInterface
+      String const& interface = bioformatsInterface,
+      dip::uint imageNumber = 0
 );
 DIP_NODISCARD inline Image ImageReadJavaIO(
       String const& filename,
-      String const& interface = bioformatsInterface
+      String const& interface = bioformatsInterface,
+      dip::uint imageNumber = 0
 ) {
    Image out;
-   ImageReadJavaIO( out, filename, interface );
+   ImageReadJavaIO( out, filename, interface, imageNumber );
    return out;
 }
 

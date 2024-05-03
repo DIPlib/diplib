@@ -26,41 +26,6 @@
 #include "diplib/geometry.h"
 #include "diplib/testing.h"
 
-namespace pybind11 {
-namespace detail {
-
-// Cast dip::FileInformation to Python dict, one way only.
-template<>
-class type_caster< dip::FileInformation > {
-   public:
-      using type = dip::FileInformation;
-
-      bool load( handle /*src*/, bool /*conver*/ ) { // no conversion from Python to DIPlib
-         return false;
-      }
-
-      static handle cast( dip::FileInformation const& src, return_value_policy /*policy*/, handle /*parent*/ ) {
-         py::dict out;
-         out[ "name" ] = py::cast( src.name );
-         out[ "fileType" ] = py::cast( src.fileType );
-         out[ "dataType" ] = py::cast( src.dataType );
-         out[ "significantBits" ] = py::cast( src.significantBits );
-         out[ "sizes" ] = py::cast( src.sizes );
-         out[ "tensorElements" ] = py::cast( src.tensorElements );
-         out[ "colorSpace" ] = py::cast( src.colorSpace );
-         out[ "pixelSize" ] = py::cast( src.pixelSize );
-         out[ "origin" ] = py::cast( src.origin );
-         out[ "numberOfImages" ] = py::cast( src.numberOfImages );
-         out[ "history" ] = py::cast( src.history );
-         return out.release();
-      }
-
-      PYBIND11_TYPE_CASTER( type, _( "FileInformation" ));
-};
-
-} // namespace detail
-} // namespace pybind11
-
 namespace {
 
 dip::ColorSpaceManager& colorSpaceManager() {
@@ -179,8 +144,10 @@ void init_assorted( py::module& m ) {
       return out;
    }, "filename"_a, "roi"_a = dip::RangeArray{}, "channels"_a = dip::Range{}, "mode"_a = "" );
    m.def( "ImageReadICS", []( dip::Image& out, dip::String const& filename, dip::RangeArray const& roi, dip::Range const& channels, dip::String const& mode ) {
-      dip::ImageReadICS( out, filename, roi, channels, mode );
+      auto fi = dip::ImageReadICS( out, filename, roi, channels, mode );
       OptionallyReverseDimensions( out );
+      OptionallyReverseDimensions( fi );
+      return fi;
    }, py::kw_only(), "out"_a, "filename"_a, "roi"_a = dip::RangeArray{}, "channels"_a = dip::Range{}, "mode"_a = "" );
    m.def( "ImageReadICS", []( dip::String const& filename, dip::UnsignedArray const& origin, dip::UnsignedArray const& sizes, dip::UnsignedArray const& spacing, dip::Range const& channels, dip::String const& mode ) {
       auto out = dip::ImageReadICS( filename, origin, sizes, spacing, channels, mode );
@@ -188,8 +155,10 @@ void init_assorted( py::module& m ) {
       return out;
    }, "filename"_a, "origin"_a = dip::UnsignedArray{}, "sizes"_a = dip::UnsignedArray{}, "spacing"_a = dip::UnsignedArray{}, "channels"_a = dip::Range{}, "mode"_a = "" );
    m.def( "ImageReadICS", []( dip::Image& out, dip::String const& filename, dip::UnsignedArray const& origin, dip::UnsignedArray const& sizes, dip::UnsignedArray const& spacing, dip::Range const& channels, dip::String const& mode ) {
-      dip::ImageReadICS( out, filename, origin, sizes, spacing, channels, mode );
+      auto fi = dip::ImageReadICS( out, filename, origin, sizes, spacing, channels, mode );
       OptionallyReverseDimensions( out );
+      OptionallyReverseDimensions( fi );
+      return fi;
    }, py::kw_only(), "out"_a, "filename"_a, "origin"_a = dip::UnsignedArray{}, "sizes"_a = dip::UnsignedArray{}, "spacing"_a = dip::UnsignedArray{}, "channels"_a = dip::Range{}, "mode"_a = "" );
    m.def( "ImageReadICSInfo", []( dip::String const& filename ) {
       auto fi = dip::ImageReadICSInfo( filename );
@@ -209,8 +178,10 @@ void init_assorted( py::module& m ) {
       return out;
    }, "filename"_a, "imageNumbers"_a = dip::Range{ 0 }, "roi"_a = dip::RangeArray{}, "channels"_a = dip::Range{}, "useColorMap"_a = dip::S::APPLY );
    m.def( "ImageReadTIFF", []( dip::Image& out, dip::String const& filename, dip::Range const& imageNumbers, dip::RangeArray const& roi, dip::Range const& channels, dip::String const& useColorMap ) {
-      dip::ImageReadTIFF( out, filename, imageNumbers, roi, channels, useColorMap );
+      auto fi = dip::ImageReadTIFF( out, filename, imageNumbers, roi, channels, useColorMap );
       OptionallyReverseDimensions( out );
+      OptionallyReverseDimensions( fi );
+      return fi;
    }, py::kw_only(), "out"_a, "filename"_a, "imageNumbers"_a = dip::Range{ 0 }, "roi"_a = dip::RangeArray{}, "channels"_a = dip::Range{}, "useColorMap"_a = dip::S::APPLY );
    m.def( "ImageReadTIFFSeries", []( dip::StringArray const& filenames, dip::String const& useColorMap ) {
       auto out = dip::ImageReadTIFFSeries( filenames, useColorMap );
@@ -241,8 +212,10 @@ void init_assorted( py::module& m ) {
    }, "filename"_a );
    m.def( "ImageReadJPEG", []( dip::Image& out, py::bytes* buffer ) {
       auto buf = GetBytesPointerAndLength( buffer );
-      dip::ImageReadJPEG( out, buf.ptr, buf.length );
+      auto fi = dip::ImageReadJPEG( out, buf.ptr, buf.length );
       OptionallyReverseDimensions( out );
+      OptionallyReverseDimensions( fi );
+      return fi;
    }, py::kw_only(), "out"_a, "buffer"_a );
    m.def( "ImageReadJPEG", []( dip::String const& filename ) {
       auto out = dip::ImageReadJPEG( filename );
@@ -250,8 +223,10 @@ void init_assorted( py::module& m ) {
       return out;
    }, "filename"_a );
    m.def( "ImageReadJPEG", []( dip::Image& out, dip::String const& filename ) {
-      dip::ImageReadJPEG( out, filename );
+      auto fi = dip::ImageReadJPEG( out, filename );
       OptionallyReverseDimensions( out );
+      OptionallyReverseDimensions( fi );
+      return fi;
    }, py::kw_only(), "out"_a, "filename"_a );
    m.def( "ImageReadJPEGInfo", []( py::bytes* buffer ) {
       auto buf = GetBytesPointerAndLength( buffer );
@@ -285,8 +260,10 @@ void init_assorted( py::module& m ) {
    }, "filename"_a );
    m.def( "ImageReadPNG", []( dip::Image& out, py::bytes* buffer ) {
       auto buf = GetBytesPointerAndLength( buffer );
-      dip::ImageReadPNG( out, buf.ptr, buf.length );
+      auto fi = dip::ImageReadPNG( out, buf.ptr, buf.length );
       OptionallyReverseDimensions( out );
+      OptionallyReverseDimensions( fi );
+      return fi;
    }, py::kw_only(), "out"_a, "buffer"_a );
    m.def( "ImageReadPNG", []( dip::String const& filename ) {
       auto out = dip::ImageReadPNG( filename );
@@ -294,8 +271,10 @@ void init_assorted( py::module& m ) {
       return out;
    }, "filename"_a );
    m.def( "ImageReadPNG", []( dip::Image& out, dip::String const& filename ) {
-      dip::ImageReadPNG( out, filename );
+      auto fi = dip::ImageReadPNG( out, filename );
       OptionallyReverseDimensions( out );
+      OptionallyReverseDimensions( fi );
+      return fi;
    }, py::kw_only(), "out"_a, "filename"_a );
    m.def( "ImageReadPNGInfo", []( py::bytes* buffer ) {
       auto buf = GetBytesPointerAndLength( buffer );
@@ -334,8 +313,10 @@ void init_assorted( py::module& m ) {
       return out;
    }, "filename"_a );
    m.def( "ImageReadNPY", []( dip::Image& out, dip::String const& filename ) {
-      dip::ImageReadNPY( out, filename );
+      auto fi = dip::ImageReadNPY( out, filename );
       OptionallyReverseDimensions( out );
+      OptionallyReverseDimensions( fi );
+      return fi;
    }, py::kw_only(), "out"_a, "filename"_a );
    m.def( "ImageReadNPYInfo", []( dip::String const& filename ) {
       auto fi = dip::ImageReadNPYInfo( filename );
@@ -355,6 +336,12 @@ void init_assorted( py::module& m ) {
       OptionallyReverseDimensions( out );
       return out;
    }, "filename"_a, "format"_a = "" );
+   m.def( "ImageRead", []( dip::Image& out, dip::String const& filename, dip::String const& format ) {
+      auto fi = dip::ImageRead( out, filename, format );
+      OptionallyReverseDimensions( out );
+      OptionallyReverseDimensions( fi );
+      return fi;
+   }, py::kw_only(), "out"_a, "filename"_a, "format"_a = "" );
    m.def( "ImageWrite", []( dip::Image const& image, dip::String const& filename, dip::String const& format, dip::String const& compression ) {
       auto tmp = image;
       OptionallyReverseDimensions( tmp );

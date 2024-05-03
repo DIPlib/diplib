@@ -35,9 +35,7 @@ void OptionallyReverseDimensions( dip::Image& img ) {
 
 void OptionallyReverseDimensions( dip::FileInformation& fi ) {
    if( !reverseDimensions ) {
-      fi.sizes.reverse();
-      fi.pixelSize.Reverse( fi.sizes.size() );
-      fi.origin.reverse(); // let's hope this array has the right number of elements...
+      ReverseDimensions( fi );
    }
 }
 

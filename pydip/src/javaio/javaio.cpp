@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
+#include "../pydip.h"
 #include "diplib/javaio.h"
 #include "diplib/simple_file_io.h"
 
@@ -30,21 +30,37 @@ bool AreDimensionsReversed() {
 PYBIND11_MODULE( PyDIPjavaio, m ) {
 
    // diplib/javaio.h
-   m.def( "ImageReadJavaIO", []( dip::String const& filename, dip::String const& interface ) {
-             auto out = dip::javaio::ImageReadJavaIO( filename, interface );
-             if( !AreDimensionsReversed() ) {
-                out.ReverseDimensions();
-             }
-             return out;
-          }, "filename"_a, "interface"_a = dip::javaio::bioformatsInterface );
+   m.def( "ImageReadJavaIO", []( dip::String const& filename, dip::String const& interface, dip::uint imageNumber ) {
+      auto out = dip::javaio::ImageReadJavaIO( filename, interface, imageNumber );
+      if( !AreDimensionsReversed() ) {
+         out.ReverseDimensions();
+      }
+      return out;
+   }, "filename"_a, "interface"_a = dip::javaio::bioformatsInterface, "imageNumber"_a = 0 );
+   m.def( "ImageReadJavaIO", []( dip::Image& out, dip::String const& filename, dip::String const& interface, dip::uint imageNumber ) {
+      auto fi = dip::javaio::ImageReadJavaIO( out, filename, interface, imageNumber );
+      if( !AreDimensionsReversed() ) {
+         out.ReverseDimensions();
+         ReverseDimensions( fi );
+      }
+      return fi;
+   }, py::kw_only(), "out"_a, "filename"_a, "interface"_a = dip::javaio::bioformatsInterface, "imageNumber"_a = 0 );
 
    // diplib/simple_file_io.h
    // We redefine ImageRead here, the version in PyDIP_bin is without DIPjavaio.
    m.def( "ImageRead", []( dip::String const& filename, dip::String const& format ) {
-             auto out = dip::ImageRead( filename, format );
-             if( !AreDimensionsReversed() ) {
-                out.ReverseDimensions();
-             }
-             return out;
-          }, "filename"_a, "format"_a = "" );
+      auto out = dip::ImageRead( filename, format );
+      if( !AreDimensionsReversed() ) {
+         out.ReverseDimensions();
+      }
+      return out;
+   }, "filename"_a, "format"_a = "" );
+   m.def( "ImageRead", []( dip::Image& out, dip::String const& filename, dip::String const& format ) {
+      auto fi = dip::ImageRead( out, filename, format );
+      if( !AreDimensionsReversed() ) {
+         out.ReverseDimensions();
+         ReverseDimensions( fi );
+      }
+      return fi;
+   }, py::kw_only(), "out"_a, "filename"_a, "format"_a = "" );
 }

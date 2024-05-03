@@ -24,6 +24,8 @@
 
 // IWYU pragma: begin_exports
 #include <pybind11/pybind11.h>
+#include <pybind11/cast.h>
+#include <pybind11/pytypes.h>
 #include <pybind11/complex.h>
 #include <pybind11/stl.h>
 #include <pybind11/operators.h>
@@ -66,6 +68,12 @@ dip::Random& RandomNumberGenerator();
 
 void OptionallyReverseDimensions( dip::Image& img );
 void OptionallyReverseDimensions( dip::FileInformation& fi );
+
+inline void ReverseDimensions( dip::FileInformation& fi ) {
+   fi.sizes.reverse();
+   fi.pixelSize.Reverse( fi.sizes.size() );
+   fi.origin.reverse(); // let's hope this array has the right number of elements...
+}
 
 namespace pybind11 {
 
@@ -341,6 +349,35 @@ class type_caster< dip::Image::Pixel > {
          return out.release();
       }
    PYBIND11_TYPE_CASTER( type, _( "Pixel" ));
+};
+
+// Cast dip::FileInformation to Python dict, one way only.
+template<>
+class type_caster< dip::FileInformation > {
+   public:
+   using type = dip::FileInformation;
+
+   bool load( handle /*src*/, bool /*conver*/ ) { // no conversion from Python to DIPlib
+      return false;
+   }
+
+   static handle cast( dip::FileInformation const& src, return_value_policy /*policy*/, handle /*parent*/ ) {
+      py::dict out;
+      out[ "name" ] = py::cast( src.name );
+      out[ "fileType" ] = py::cast( src.fileType );
+      out[ "dataType" ] = py::cast( src.dataType );
+      out[ "significantBits" ] = py::cast( src.significantBits );
+      out[ "sizes" ] = py::cast( src.sizes );
+      out[ "tensorElements" ] = py::cast( src.tensorElements );
+      out[ "colorSpace" ] = py::cast( src.colorSpace );
+      out[ "pixelSize" ] = py::cast( src.pixelSize );
+      out[ "origin" ] = py::cast( src.origin );
+      out[ "numberOfImages" ] = py::cast( src.numberOfImages );
+      out[ "history" ] = py::cast( src.history );
+      return out.release();
+   }
+
+   PYBIND11_TYPE_CASTER( type, _( "FileInformation" ));
 };
 
 } // namespace detail

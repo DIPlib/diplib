@@ -105,6 +105,12 @@ None, but see bugfixes to *DIPlib*.
     ```
     `dip.ImageRead()` still automatically loads *PyDIPjavaio* on first use.
 
+- `dip.ImageRead()` and `dip.javaio.ImageReadJavaIO()` now also have a version that takes the output image
+  as a keyword-only argument `out`.
+
+- All the functions named `dip.ImageRead...()` that have a keyword-only argument `out` now return the
+  `dip::FileInformation` structure (as a dict, just like `dip.ImageRead...Info()` does).
+
 - The *CMake* option `PYTHON_EXECUTABLE` is no longer used, set `Python_EXECUTABLE` instead. The build script
   will, for the time being, copy the value of the former to the latter if the former is set but the latter isn't.
 
@@ -145,5 +151,9 @@ None, but see bugfixes to *DIPlib*.
 ### New functionality
 
 ### Changed functionality
+
+- `dip::javaio::ImageReadJavaIO()` has an additional parameter `imageNumber` to select which image in a multi-image
+  file to read. The `dip::FileInformation` structure returned now correctly indicates how many images are in the file
+  in the `numberOfImages` element.
 
 ### Bug fixes
