@@ -80,7 +80,7 @@ jobs:
           else
             python_executable=`which python3`
           fi
-          cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} ${{matrix.dip_cmake_opts}} -DDIP_ENABLE_ASSERT=ON -DDIP_PYDIP_WHEEL_INCLUDE_LIBS=ON -DPython_EXECUTABLE=$python_executable
+          cmake -B '${{github.workspace}}/build' -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} ${{matrix.dip_cmake_opts}} -DDIP_ENABLE_ASSERT=ON -DDIP_PYDIP_WHEEL_INCLUDE_LIBS=ON -DPython_EXECUTABLE=$python_executable
         shell: bash
 
       - name: Build
