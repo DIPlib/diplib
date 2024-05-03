@@ -26,6 +26,7 @@
 
 #ifdef _WIN32
   #define WIN32_LEAN_AND_MEAN
+  #define NOMINMAX // windows.h must not define min() and max(), which conflict with std::min() and std::max()
   #include <Windows.h>
 #else
   #include <dlfcn.h>
