@@ -77,6 +77,7 @@ add_subdirectory(src)
 ### DIPjavaio
 
 find_package(Java COMPONENTS Development)
+unset(DIP_JAVAIO_INTERFACES)
 if(JAVA_FOUND)
    # Set JAVA_HOME so that the JNI found is from the same JDK as the Java package
    get_filename_component(JAVA_HOME "${Java_JAVAC_EXECUTABLE}" DIRECTORY) # strip off /javac
@@ -85,7 +86,7 @@ if(JAVA_FOUND)
    if(JNI_FOUND)
       set(DIP_BUILD_JAVAIO ON CACHE BOOL "Build the javaio module")
       include(UseJava)
-      find_jar(BIOFORMATS_JAR bioformats_package)
+      find_jar(BIOFORMATS_JAR bioformats_package DOC "Location of the Bio-Formats package JAR-file")
       if(BIOFORMATS_JAR)
          list(APPEND DIP_JAVAIO_INTERFACES "Bio-Formats")
       endif()
@@ -96,6 +97,10 @@ if(JAVA_FOUND)
 endif()
 
 if(DIP_BUILD_JAVAIO)
+   if(NOT DEFINED DIP_JAVAIO_INTERFACES)
+      message(WARNING "No interfaces for DIPjavaio were found -- disabling DIPjavaio")
+      set(DIP_BUILD_JAVAIO OFF CACHE BOOL "Build the javaio module" FORCE)
+   endif()
    add_subdirectory(javaio)
 endif()
 
