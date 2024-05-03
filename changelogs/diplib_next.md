@@ -59,9 +59,13 @@ title: "Changes DIPlib 3.x.x"
 
 ### Updated dependencies
 
-- Updated bundled header-only library *robin-map* to version 1.3.0.
+- Updated bundled header-only library *robin-map* to version 1.3.0. Assorted minor improvements.
 
 - Updated bundled header-only library *pcg-cpp* to the current master branch (last updated 2022-04-08).
+  Assorted minor improvements.
+
+- Updated bundled header-only library *PocketFFT* to the current master branch (last updated 2024-03-22).
+  This fixes a potential compilation problem.
 
 
 

@@ -1,12 +1,15 @@
 /*
 This file is part of pocketfft.
 
-Copyright (C) 2010-2021 Max-Planck-Society
+Copyright (C) 2010-2022 Max-Planck-Society
 Copyright (C) 2019-2020 Peter Bell
 
 For the odd-sized DCT-IV transforms:
   Copyright (C) 2003, 2007-14 Matteo Frigo
   Copyright (C) 2003, 2007-14 Massachusetts Institute of Technology
+
+For the prev_good_size search:
+  Copyright (C) 2024 Tan Ping Liang, Peter Bell
 
 Authors: Martin Reinecke, Peter Bell
 
@@ -43,7 +46,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #error This file is C++ and requires a C++ compiler.
 #endif
 
-#if !(__cplusplus >= 201103L || _MSVC_LANG+0L >= 201103L)
+#if !(__cplusplus >= 201103L || (defined(_MSVC_LANG) && _MSVC_LANG >= 201103L))
 #error This file requires at least C++11 support.
 #endif
 
@@ -149,7 +152,11 @@ template<> struct VLEN<double> { static constexpr size_t val=2; };
 #endif
 #endif
 
-#if __cplusplus >= 201703L
+// std::aligned_alloc is a bit cursed ... it doesn't exist on MacOS < 10.15
+// and in musl, and other OSes seem to have even more peculiarities.
+// Let's unconditionally work around it for now.
+# if 0
+//#if (__cplusplus >= 201703L) && (!defined(__MINGW32__)) && (!defined(_MSC_VER)) && (__MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_15)
 inline void *aligned_alloc(size_t align, size_t size)
   {
   // aligned_alloc() requires that the requested size is a multiple of "align"
@@ -449,6 +456,54 @@ struct util // hack to avoid duplicate symbols
       }
     return bestfac;
     }
+
+  /* returns the largest composite of 2, 3, 5, 7 and 11 which is <= n */
+  static POCKETFFT_NOINLINE size_t prev_good_size_cmplx(size_t n)
+  {
+    if (n<=12) return n;
+
+    size_t bestfound = 1;
+    for (size_t f11 = 1;f11 <= n; f11 *= 11)
+      for (size_t f117 = f11; f117 <= n; f117 *= 7)
+        for (size_t f1175 = f117; f1175 <= n; f1175 *= 5)
+        {
+          size_t x = f1175;
+          while (x*2 <= n) x *= 2;
+          if (x > bestfound) bestfound = x;
+          while (true)
+          {
+            if (x * 3 <= n) x *= 3;
+            else if (x % 2 == 0) x /= 2;
+            else break;
+
+            if (x > bestfound) bestfound = x;
+          }
+        }
+    return bestfound;
+  }
+
+  /* returns the largest composite of 2, 3, 5 which is <= n */
+  static POCKETFFT_NOINLINE size_t prev_good_size_real(size_t n)
+  {
+    if (n<=6) return n;
+
+    size_t bestfound = 1;
+    for (size_t f5 = 1; f5 <= n; f5 *= 5)
+    {
+      size_t x = f5;
+      while (x*2 <= n) x *= 2;
+      if (x > bestfound) bestfound = x;
+      while (true)
+      {
+        if (x * 3 <= n) x *= 3;
+        else if (x % 2 == 0) x /= 2;
+        else break;
+
+        if (x > bestfound) bestfound = x;
+      }
+    }
+    return bestfound;
+  }
 
   static size_t prod(const shape_t &shape)
     {
@@ -2631,11 +2686,13 @@ template<typename T0> class T_dcst23
         if (!cosine)
           for (size_t k=0, kc=N-1; k<kc; ++k, --kc)
             std::swap(c[k], c[kc]);
-        if (ortho) c[0]*=sqrt2*T0(0.5);
+        if (ortho)
+          cosine ? c[0]*=sqrt2*T0(0.5) : c[N-1]*=sqrt2*T0(0.5);
         }
       else
         {
-        if (ortho) c[0]*=sqrt2;
+        if (ortho)
+          cosine ? c[0]*=sqrt2 : c[N-1]*=sqrt2;
         if (!cosine)
           for (size_t k=0, kc=N-1; k<NS2; ++k, --kc)
             std::swap(c[k], c[kc]);

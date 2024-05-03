@@ -236,8 +236,8 @@ template<typename T> void dct(const shape_t &shape,
 /* if ortho==true, the transform is made orthogonal by these additional steps
    in every 1D sub-transform:
    Type 1 : nothing
-   Type 2 : divide first output value by sqrt(2)
-   Type 3 : multiply first input value by sqrt(2)
+   Type 2 : divide last output value by sqrt(2)
+   Type 3 : multiply last input value by sqrt(2)
    Type 4 : nothing */
 template<typename T> void dst(const shape_t &shape,
   const stride_t &stride_in, const stride_t &stride_out, const shape_t &axes,
