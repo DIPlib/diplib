@@ -20,6 +20,10 @@ indent_size = 3
 [*.{py,md}]
 indent_size = 4
 
+# GitHub .yml files use 2-space indentation
+[*.yml]
+indent_size = 2
+
 # In Markdown files we do want to keep trailing spaces. they're used to indicate newlines.
 [*.md]
 trim_trailing_whitespace = false
