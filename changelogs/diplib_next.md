@@ -96,6 +96,15 @@ None, but see bugfixes to *DIPlib*.
   the library in Python: `dip.Error` is the new base class, raised exceptions are either `dip.ParameterError`,
   `dip.RunTimeError` or `dip.AssertionError`. `dip.Error` is derived from `Exception`.
 
+- Made `diplib.PyDIPjavaio` more easily available as `diplib.javaio`. The new name matches the C++ library
+  namespace, and when imported properly loads the JVM before importing *PyDIPjavaio*. One can now:
+    ```python
+    import diplib as dip
+    import diplib.javaio
+    image = dip.javaio.ImageReadJavaIO("foo")
+    ```
+    `dip.ImageRead()` still automatically loads *PyDIPjavaio* on first use.
+
 - The *CMake* option `PYTHON_EXECUTABLE` is no longer used, set `Python_EXECUTABLE` instead. The build script
   will, for the time being, copy the value of the former to the latter if the former is set but the latter isn't.
 

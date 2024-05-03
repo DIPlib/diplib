@@ -10,6 +10,7 @@ src/filtering.cpp
 src/generation.cpp
 src/histogram.cpp
 src/image.cpp
+src/javaio.py
 src/loadjvm.py
 src/math.cpp
 src/measurement.cpp

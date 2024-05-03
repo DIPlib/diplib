@@ -21,6 +21,7 @@
 #include "diplib/color.h"
 #include "diplib/display.h"
 #include "diplib/file_io.h"
+#undef DIP_CONFIG_HAS_DIPJAVAIO  // We want the version of dip::ImageRead() here to not use DIPjavaio.
 #include "diplib/simple_file_io.h"
 #include "diplib/geometry.h"
 #include "diplib/testing.h"

@@ -1,5 +1,5 @@
 # (c)2017-2021, Flagship Biosciences, Inc., written by Cris Luengo.
-# (c)2022-2024, Cris Luengo.
+# (c)2022-2024, Cris Luengo, Wouter Caarls.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -160,25 +160,11 @@ if hasDIPviewer:
 @functools.lru_cache()
 def _get_javaio_imageread_or_error():
     # Here we import PyDIPjavaio if it exists
-    javaioError = (
-        "If you were trying to read an image format supported by BioFormats, "
-        "note that DIPjavaio is unavailable because:\n - ")
-    if importlib.util.find_spec('.PyDIPjavaio', __name__) is not None:
-        _lib = None
-        try:
-            from . import loadjvm
-            _lib = loadjvm.load_jvm()
-            from . import PyDIPjavaio
-            return PyDIPjavaio.ImageRead
-        except Exception as e:
-            javaioError += str(e)
-            if _lib:
-                javaioError += f"\nload_jvm returned '{_lib}'"
-            else:
-                javaioError += "\nlibjvm not found"
-    else:
-        javaioError += "PyDIPjavaio was not included in the build of the package."
-    return javaioError
+    try:
+       from . import javaio
+       return javaio.ImageRead
+    except Exception as e:
+       return str(e)
 
 
 _reportedDIPjavaio = False
@@ -209,9 +195,10 @@ def ImageRead(*args, **kwargs):
         global _reportedDIPjavaio
         try:
             return PyDIP_bin.ImageRead(*args, **kwargs)
-        except BaseException:
+        except PyDIP_bin.RunTimeError:
             if not _reportedDIPjavaio:
-                print(javaio_error)
+                print("If you were trying to read an image format supported by BioFormats, "
+                      "note that DIPjavaio is unavailable because:\n - " + javaio_error + "\n")
                 _reportedDIPjavaio = True
             raise
 
