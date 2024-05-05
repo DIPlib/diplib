@@ -173,6 +173,9 @@ constexpr char const* REAL = "real";
 constexpr char const* SYMMETRIC = "symmetric";
 constexpr char const* CORNER = "corner";
 //constexpr char const* FAST = "fast";
+constexpr char const* LARGER = "larger";
+constexpr char const* SMALLER = "smaller";
+constexpr char const* COMPLEX = "complex";
 
 // Distance transforms
 //constexpr char const* FAST = "fast";

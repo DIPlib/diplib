@@ -440,17 +440,18 @@ void ConvolveFT(
 
    // Prepare input image
    bool inPadding = ( inSpatial && filterSpatial && outSpatial && !boundaryCondition.empty() );
-   UnsignedArray inSizes = in.Sizes();
+   UnsignedArray const& inSizes = in.Sizes();
    bool real = true;
    Image inFT;
    bool reuseInFT = false;
    if( inSpatial ) {
       real &= in.DataType().IsReal();
+      dip::String purpose = real ? S::COMPLEX : S::REAL;
       if( inPadding ) {
          // Pad the input image with at least the size of `filter`, but make it larger so it's a nice size
          UnsignedArray sizes = inSizes;
          for( dip::uint ii = 0; ii < sizes.size(); ++ii ) {
-            sizes[ ii ] = OptimalFourierTransformSize( sizes[ ii ] + filter.Size( ii ) - 1 );
+            sizes[ ii ] = OptimalFourierTransformSize( sizes[ ii ] + filter.Size( ii ) - 1, S::LARGER, purpose );
          }
          ExtendImageToSize( in, inFT, sizes, S::CENTER, boundaryCondition );
          DIP_STACK_TRACE_THIS( FourierTransform( inFT, inFT ));

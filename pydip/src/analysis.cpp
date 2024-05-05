@@ -169,7 +169,7 @@ void init_analysis( py::module& m ) {
           "in"_a, "options"_a = dip::StringSet{}, "process"_a = dip::BooleanArray{} );
    m.def( "InverseFourierTransform", py::overload_cast< dip::Image const&, dip::Image&, dip::StringSet, dip::BooleanArray >( &dip::InverseFourierTransform ),
           "in"_a, py::kw_only(), "out"_a, "options"_a = dip::StringSet{}, "process"_a = dip::BooleanArray{} );
-   m.def( "OptimalFourierTransformSize", &dip::OptimalFourierTransformSize, "size"_a, "which"_a = "larger" );
+   m.def( "OptimalFourierTransformSize", &dip::OptimalFourierTransformSize, "size"_a, "which"_a = dip::S::LARGER, "purpose"_a = dip::S::REAL );
    m.def( "RieszTransform", py::overload_cast< dip::Image const&, dip::String const&, dip::String const&, dip::BooleanArray >( &dip::RieszTransform ),
           "in"_a, "inRepresentation"_a = dip::S::SPATIAL, "outRepresentation"_a = dip::S::SPATIAL, "process"_a = dip::BooleanArray{} );
    m.def( "RieszTransform", py::overload_cast< dip::Image const&, dip::Image&, dip::String const&, dip::String const&, dip::BooleanArray >( &dip::RieszTransform ),

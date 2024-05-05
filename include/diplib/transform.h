@@ -1,5 +1,5 @@
 /*
- * (c)2017-2021, Cris Luengo.
+ * (c)2017-2024, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -66,7 +66,7 @@ namespace dip {
 ///   transform to be computed.
 /// - "real": assumes that the (complex) input is conjugate symmetric, and returns a real-valued
 ///   result. Can only be used together with "inverse".
-/// - "fast": pads the input to a "nice" size, multiple of 2, 3 and 5, which can be processed faster.
+/// - "fast": pads the input to a "nice" size (multiple of small integers), which can be processed faster.
 /// - "corner": sets the origin to the top-left corner of the image (both in the spatial and the
 ///   frequency domain). This yields a standard DFT (Discrete Fourier Transform).
 /// - "symmetric": the normalization is made symmetric, where both forward and inverse transforms
@@ -131,18 +131,26 @@ DIP_NODISCARD inline Image InverseFourierTransform(
    return out;
 }
 
-/// \brief Returns the next larger (or smaller) multiple of {2, 3, 5}, an image of this size is more
+/// \brief Returns the next larger (or smaller) multiple of small integers. An image of this size is more
 /// efficient for FFT computations.
 ///
-/// The largest value that can be returned is 2125764000
-/// (smaller than 2^31^-1, the largest possible value of an `int` on most platforms).
+/// Pad an image with zeros to the next larger size or crop the image to the next smaller size to
+/// improve FFT performance.
+///
+/// The largest value that can be returned depends on the FFT implementation used. When using *FFTW*,
+/// the largest FFT that can be computed is 2^31^-1 (the maximum value for an `int`). Otherwise any
+/// `dip::uint` can be returned. If the result is larger than the maximum FFT size, an exception
+/// will be thrown.
 ///
 /// By default, `which` is `"larger"`, in which case it returns the next larger value. Set it
 /// to `"smaller"` to obtain the next smaller value instead.
 ///
-/// Pad an image with zeros to the next larger size or crop the image to the next smaller size to
-/// improve FFT performance.
-DIP_EXPORT dip::uint OptimalFourierTransformSize( dip::uint size, dip::String const& which = "larger" );
+/// `purpose` is either `"real"` (the default) or `"complex"`, and should be set according to the
+/// type of transform that will be computed. This determines what are considered "small primes".
+/// For *PocketFFT* this changes depending on whether the transform is complex-to-complex
+/// (complex-valued transform), or is real-to-complex or complex-to-real (real-valued transform).
+/// See \ref dip::GetOptimalDFTSize.
+DIP_EXPORT dip::uint OptimalFourierTransformSize( dip::uint size, dip::String const& which = S::LARGER, dip::String const& purpose = S::REAL );
 
 
 /// \brief Computes the Riesz transform of a scalar image.

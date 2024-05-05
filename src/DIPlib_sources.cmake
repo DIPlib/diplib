@@ -284,6 +284,7 @@ support/matrix.cpp
 support/numeric.cpp
 support/thin_plate_spline.cpp
 transform/dft.cpp
+transform/dft_optimal_size.cpp
 transform/fftw3api.h
 transform/fourier.cpp
 transform/haar.cpp

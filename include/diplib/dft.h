@@ -1,5 +1,5 @@
 /*
- * (c)2017-2022, Cris Luengo.
+ * (c)2017-2024, Cris Luengo.
  *
  * Encapsulates code Taken from OpenCV 3.1: (c)2000, Intel Corporation.
  * (see src/transform/opencv_dxt.cpp)
@@ -33,7 +33,10 @@
 namespace dip {
 
 
-/// \addtogroup transform
+/// \group transform_lowlevel Low-level transform support
+/// \ingroup transform
+/// \brief Low-level functionality for computing the Discrete Fourier Transform.
+/// \addtogroup
 
 
 namespace Option {
@@ -124,6 +127,7 @@ class DFT {
       /// buffers with this length. If `inverse` is `true`, an inverse transform will be computed.
       ///
       /// `options` determines some properties for the algorithm that will compute the DFT.
+      ///
       ///  - \ref Option::DFTOption::InPlace means the input and output pointers passed to \ref Apply must be the same.
       ///  - \ref Option::DFTOption::TrashInput means that the algorithm is free to overwrite the input array.
       ///    Ignored when working in place.
@@ -154,7 +158,7 @@ class DFT {
       /// regions of memory. When using FFTW, the `inplace` parameter to the constructor or \ref Initialize
       /// must be `true` if the two pointers here are the same, or `false` if they are different.
       ///
-      /// The input array is not marked `const`. If \ref Option::DFTOption::TrashInput` is given when planning,
+      /// The input array is not marked `const`. If \ref Option::DFTOption::TrashInput is given when planning,
       /// the input array can be overwritten with intermediate data, but otherwise will be left intact.
       ///
       /// `scale` is a real scalar that the output values are multiplied by. It is typically set to `1/size` for
@@ -280,6 +284,7 @@ class RDFT {
       /// The complex buffer has a size of `size/2+1`.
       ///
       /// `options` determines some properties for the algorithm that will compute the DFT.
+      ///
       ///  - \ref Option::DFTOption::InPlace means the input and output pointers passed to \ref Apply must be the same.
       ///    Do note that the complex array has one or two floats more than the real array, the buffer must be large
       ///    enough.
@@ -345,15 +350,21 @@ class RDFT {
 
 
 /// \brief Returns a size equal or larger to `size0` that is efficient for the DFT implementation.
+/// The value returned is a product of small primes.
 ///
 /// Set `larger` to false to return a size equal or smaller instead.
 ///
-/// Returns 0 if `size0` is too large for the DFT implementation.
+/// `maxFactor` should be 5, 7 or 11, and gives the largest integer that should be considered a "small prime".
+/// When using FFTW, set `maxFactor` to 7, as by default it works most efficiently for sizes that can be factored
+/// into primes smaller or equal to 7. When using PocketFFT, set it to 5 for complex-to-real or real-to-complex
+/// transforms, and to 11 for complex-to-complex transforms. See \ref dip::MaxFactor.
+///
+/// If there is no suitable size that the implementation can use (see \ref maximumDFTSize), this function
+/// will return 0.
 ///
 /// Prefer to use \ref dip::OptimalFourierTransformSize in your applications, it will throw an error if
-/// the transform size is too large.
-DIP_EXPORT dip::uint GetOptimalDFTSize( dip::uint size0, bool larger = true );
-
+/// the transform size is too large, and determines `maxFactor` for you.
+DIP_EXPORT dip::uint GetOptimalDFTSize( dip::uint size0, bool larger = true, dip::uint maxFactor = 5 );
 
 /// \brief The largest size supported by \ref DFT and \ref FourierTransform. Is equal to 2^31^-1 when using FFTW,
 /// or 2^64^-1 when using PocketFFT.
@@ -362,6 +373,9 @@ DIP_EXPORT extern dip::uint const maximumDFTSize;
 /// \brief Is `true` if `dip::DFT` and `dip::RDFT` use the FFTW library, or false if they use PocketFFT.
 DIP_EXPORT extern bool const usingFFTW;
 
+/// \brief The `maxFactor` parameter for \ref GetOptimalDFTSize. `complex` determines whether the transform to
+/// be computed is complex-to-complex or not.
+DIP_EXPORT dip::uint MaxFactor( bool complex = true );
 
 /// \endgroup
 

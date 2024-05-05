@@ -45,6 +45,15 @@ title: "Changes DIPlib 3.x.x"
 - `dip::ImageRead()` throws a `dip::RunTimeError` instead of a `dip::ParameterError` if the file doesn't exist
   or is of an unrecognized type.
 
+- `dip::GetOptimalDFTSize()` has a new argument `maxFactor` that determines what the largest factor for the output
+  integer can be. Valid values are 5, 7 and 11. A new function `dip::MaxFactor()` will give the appropriate value
+  depending on whether a real or complex-valued transform is being computed, and what FFT implementation is being
+  used. When using *PocketFFT*, this function can now also return much larger values than before.
+
+- `dip::OptimalFourierTransformSize()`, which depends on `dip::GetOptimalDFTSize()` (see the bullet point above
+  this one) has a new argument `purpose` that can be either `"real"` or `"complex"`, and uses the new
+  `dip::MaxFactor()` to fill in the `maxFactor` argument.
+
 - Minimum required version of *CMake* is now 3.12.
 
 ### Bug fixes

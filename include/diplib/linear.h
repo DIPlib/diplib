@@ -150,7 +150,7 @@ DIP_NODISCARD inline Image SeparableConvolution(
 /// then a periodic boundary condition is imposed. This is the natural boundary condition for the method,
 /// the image will be Fourier transformed as-is. For other boundary conditions, the image will be padded before
 /// the transform is applied. The padding will extend the image by at least half the size of `filter` in all
-/// dimensions, and the padding will make the image size a multiple of 2, 3 and/or 5 so that it is cheaper
+/// dimensions, and the padding will make the image size a multiple of small integers so that it is cheaper
 /// to compute the Fourier transform (see \ref dip::OptimalFourierTransformSize).
 /// The output image will be cropped to the size of the input.
 ///

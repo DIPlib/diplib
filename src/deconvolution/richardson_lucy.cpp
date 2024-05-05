@@ -71,7 +71,7 @@ void RichardsonLucy(
    if( pad ) {
       dip::UnsignedArray sizes = in.Sizes();
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
-         sizes[ ii ] += OptimalFourierTransformSize( sizes[ ii ] + psf.Size( ii ) - 1 );
+         sizes[ ii ] += OptimalFourierTransformSize( sizes[ ii ] + psf.Size( ii ) - 1, S::LARGER, S::REAL );
       }
       g = ExtendImageToSize( in, sizes, S::CENTER );
    } else {

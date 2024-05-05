@@ -56,12 +56,13 @@ inline void FourierTransformImageAndKernel(
    DIP_THROW_IF( pad && isOtf, E::ILLEGAL_FLAG_COMBINATION );
    if( pad || ( powersOfTwo > 0 )) {
       dip::uint multiple = static_cast< dip::uint >( std::pow( 2, powersOfTwo ));
+      dip::String purpose = in.DataType().IsComplex() ? S::COMPLEX : S::REAL;
       dip::UnsignedArray sizes = in.Sizes();
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
          if( pad ) {
             sizes[ ii ] += 2 * psf.Size( ii );
          }
-         sizes[ ii ] = OptimalFourierTransformSize( div_ceil( sizes[ ii ], multiple )) * multiple;
+         sizes[ ii ] = OptimalFourierTransformSize( div_ceil( sizes[ ii ], multiple ), S::LARGER, purpose ) * multiple;
       }
       Image tmp = ExtendImageToSize( in, sizes, S::CENTER );
       DIP_STACK_TRACE_THIS( FourierTransform( tmp, G ));

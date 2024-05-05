@@ -1,5 +1,5 @@
 /*
- * (c)2017-2022, Cris Luengo, Erik Schuitema
+ * (c)2017-2024, Cris Luengo, Erik Schuitema
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,17 +17,21 @@
 
 /* TODO
     - Implement a DCT function
-    - dip::GetOptimalDFTSize must work for sizes larger than 2^31-1.
     - dip::maximumDFTSize can be 2^63-1 for FFTW if we use the guru interface.
 */
 
+#include <cmath>
+#include <memory>
+#include <utility>
+
 #include "diplib.h"
-#include "diplib/transform.h"
+#include "diplib/boundary.h"
 #include "diplib/dft.h"
 #include "diplib/framework.h"
-#include "diplib/overload.h"
 #include "diplib/geometry.h"
 #include "diplib/math.h"
+#include "diplib/overload.h"
+#include "diplib/transform.h"
 
 
 namespace dip {
@@ -90,7 +94,7 @@ void ShiftCornerToCenterHalfLine( TPI* data, dip::uint length ) { // fftshift & 
 }
 
 template< typename T >
-static inline void CopyDataToBuffer(
+inline void CopyDataToBuffer(
       T const* inBuffer,
       dip::sint inStride,
       T* outBuffer,
@@ -157,7 +161,7 @@ void CopyForDFT( TPI const* in, dip::uint inLength, dip::sint inStride, TPI* out
 template< typename TPI >
 class MirrorInPlaceLineFilter : public Framework::SeparableLineFilter {
    public:
-      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint /*nTensorElements*/, dip::uint /*border*/, dip::uint /*procDim*/ ) override {
          return lineLength;
       }
       void Filter( Framework::SeparableLineFilterParameters const& params ) override {
@@ -205,7 +209,7 @@ class C2C_DFT_LineFilter : public Framework::SeparableLineFilter {
             }
          }
       }
-      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint /*nTensorElements*/, dip::uint /*border*/, dip::uint /*procDim*/ ) override {
          return 10 * lineLength * static_cast< dip::uint >( std::round( std::log2( lineLength )));
       }
       void Filter( Framework::SeparableLineFilterParameters const& params ) override {
@@ -246,7 +250,7 @@ class R2C_DFT_LineFilter : public Framework::SeparableLineFilter {
       ) : scale_( static_cast< TPI >( scale )), shift_( !corner ) {
          dft_.Initialize( outSize, false, Option::DFTOption::InPlace + Option::DFTOption::Aligned );
       }
-      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint /*nTensorElements*/, dip::uint /*border*/, dip::uint /*procDim*/ ) override {
          return 5 * lineLength * static_cast< dip::uint >( std::round( std::log2( lineLength )));
       }
       void Filter( Framework::SeparableLineFilterParameters const& params ) override {
@@ -283,7 +287,7 @@ class C2R_IDFT_LineFilter : public Framework::SeparableLineFilter {
       ) : scale_( static_cast< TPI >( scale )), shift_( !corner ), inSize_( inSize ) {
          dft_.Initialize( outSize, true, Option::DFTOption::Aligned + Option::DFTOption::TrashInput );
       }
-      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint /*nTensorElements*/, dip::uint /*border*/, dip::uint /*procDim*/ ) override {
          return 5 * lineLength * static_cast< dip::uint >( std::round( std::log2( lineLength )));
       }
       void Filter( Framework::SeparableLineFilterParameters const& params ) override {
@@ -526,10 +530,11 @@ void FourierTransform(
                                     // image, but we haven't allocated those yet... So we look at the input strides?
    UnsignedArray outSize = in.Sizes();
    dfloat scale = 1.0;
+   dip::uint maxFactor = fast ? MaxFactor( !realInput && !realOutput ) : 2; // Unused if !fast.
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
       if( process[ ii ] ) {
          if( fast ) {
-            dip::uint sz = GetOptimalDFTSize( outSize[ ii ] );
+            dip::uint sz = GetOptimalDFTSize( outSize[ ii ], true, maxFactor );
             DIP_THROW_IF( sz < 1u, "Cannot pad image dimension to a larger \"fast\" size" );
             outSize[ ii ] = sz;
          } else {
@@ -631,8 +636,10 @@ void FourierTransform(
 }
 
 
-dip::uint OptimalFourierTransformSize( dip::uint size, dip::String const& which ) {
-   DIP_STACK_TRACE_THIS( size = GetOptimalDFTSize( size, BooleanFromString( which, "larger", "smaller" )));
+dip::uint OptimalFourierTransformSize( dip::uint size, dip::String const& which, dip::String const& purpose ) {
+   bool larger = BooleanFromString( which, S::LARGER, S::SMALLER );
+   bool complex = BooleanFromString( purpose, S::COMPLEX, S::REAL );
+   DIP_STACK_TRACE_THIS( size = GetOptimalDFTSize( size, larger, MaxFactor( complex )));
    DIP_THROW_IF( size == 0, E::SIZE_EXCEEDS_LIMIT );
    return size;
 }
@@ -643,22 +650,6 @@ dip::uint OptimalFourierTransformSize( dip::uint size, dip::String const& which 
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
-
-DOCTEST_TEST_CASE("[DIPlib] testing the OptimalFourierTransformSize function") {
-   DOCTEST_CHECK_THROWS( dip::OptimalFourierTransformSize( 0 ));
-   DOCTEST_CHECK_THROWS( dip::OptimalFourierTransformSize( 2125764001 ));
-   DOCTEST_CHECK( dip::OptimalFourierTransformSize( 1 ) == 1 );
-   DOCTEST_CHECK( dip::OptimalFourierTransformSize( 2 ) == 2 );
-   DOCTEST_CHECK( dip::OptimalFourierTransformSize( 2125764000 ) == 2125764000 );
-   DOCTEST_CHECK( dip::OptimalFourierTransformSize( 1, "smaller" ) == 1 );
-   DOCTEST_CHECK( dip::OptimalFourierTransformSize( 2, "smaller" ) == 2 );
-   DOCTEST_CHECK( dip::OptimalFourierTransformSize( 2125764000, "smaller" ) == 2125764000 );
-   DOCTEST_CHECK( dip::OptimalFourierTransformSize( 500 ) == 500 );
-   DOCTEST_CHECK( dip::OptimalFourierTransformSize( 490 ) == 500 );
-   DOCTEST_CHECK( dip::OptimalFourierTransformSize( 500, "smaller" ) == 500 );
-   DOCTEST_CHECK( dip::OptimalFourierTransformSize( 510, "smaller" ) == 500 );
-}
-
 #include "diplib/generation.h"
 #include "diplib/statistics.h"
 
@@ -744,11 +735,13 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FourierTransform function") {
 
    // === Test "fast" option
    sz = { 97, 107 }; // prime sizes
-   dip::UnsignedArray expectedOutSz{ 100, 108 };
    input = dip::Image{ sz, 1, dip::DT_SFLOAT };
    input.Fill( 0 );
    dip::DrawBandlimitedPoint( input, { static_cast< dip::dfloat >( sz[ 0 ] / 2 ) + shift[ 0 ],
                                        static_cast< dip::dfloat >( sz[ 1 ] / 2 ) + shift[ 1 ] }, { 1 }, { sigma }, 7.0 );
+
+   // = Expected output with C2C transform
+   dip::UnsignedArray expectedOutSz{ 98, 108 }; // Same size for both FFT implementations
    expectedOutput = dip::Image{ expectedOutSz, 1, dip::DT_SFLOAT };
    expectedOutput.Fill( 0 );
    outSigma = { static_cast< dip::dfloat >( expectedOutSz[ 0 ] ) / ( 2.0 * dip::pi * sigma ),
@@ -774,6 +767,20 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FourierTransform function") {
    maxabs = dip::MaximumAbs( output - input ).As< double >();
    //std::cout << "max = " << maxabs << '\n';
    DOCTEST_CHECK( maxabs < 1e-9 );
+
+   // = Expected output with R2C/C2R transform
+   if( dip::usingFFTW ) {
+      expectedOutSz = { 98, 108 };
+   } else {
+      expectedOutSz = { 100, 108 };
+   }
+   expectedOutput = dip::Image{ expectedOutSz, 1, dip::DT_SFLOAT };
+   expectedOutput.Fill( 0 );
+   outSigma = { static_cast< dip::dfloat >( expectedOutSz[ 0 ] ) / ( 2.0 * dip::pi * sigma ),
+                static_cast< dip::dfloat >( expectedOutSz[ 1 ] ) / ( 2.0 * dip::pi * sigma ) };
+   dip::DrawBandlimitedPoint( expectedOutput, expectedOutput.GetCenter(), { 2.0 * dip::pi * outSigma.product() }, outSigma, 7.0 );
+   dip::ShiftFT( expectedOutput, expectedOutput, shift );
+   expectedOutput.Crop( sz );
 
    // Real-to-complex transform (fast)
    output = input.Copy();
@@ -846,11 +853,13 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FourierTransform function") {
 
    // === Test "corner" + "fast" option
    sz = { 97, 107 }; // prime sizes
-   expectedOutSz = { 100, 108 };
    input = dip::Image{ sz, 1, dip::DT_SFLOAT };
    input.Fill( 0 );
    dip::DrawBandlimitedPoint( input, { static_cast< dip::dfloat >( sz[ 0 ] / 2 ) + shift[ 0 ],
                                        static_cast< dip::dfloat >( sz[ 1 ] / 2 ) + shift[ 1 ] }, { 1 }, { sigma }, 7.0 );
+
+   // = Expected output with C2C transform
+   expectedOutSz = { 98, 108 };
    expectedOutput = dip::Image{ expectedOutSz, 1, dip::DT_SFLOAT };
    expectedOutput.Fill( 0 );
    outSigma = { static_cast< dip::dfloat >( expectedOutSz[ 0 ] ) / ( 2.0 * dip::pi * sigma ),
@@ -882,6 +891,27 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FourierTransform function") {
    maxabs = dip::MaximumAbs( output - expectedInverseOutput ).As< double >();
    //std::cout << "max = " << maxabs << '\n';
    DOCTEST_CHECK( maxabs < 1e-6 ); // interpolation error
+
+   // = Expected output with R2C/C2R transform
+   if( dip::usingFFTW ) {
+      expectedOutSz = { 98, 108 };
+   } else {
+      expectedOutSz = { 100, 108 };
+   }
+   expectedOutput = dip::Image{ expectedOutSz, 1, dip::DT_SFLOAT };
+   expectedOutput.Fill( 0 );
+   outSigma = { static_cast< dip::dfloat >( expectedOutSz[ 0 ] ) / ( 2.0 * dip::pi * sigma ),
+                static_cast< dip::dfloat >( expectedOutSz[ 1 ] ) / ( 2.0 * dip::pi * sigma ) };
+   dip::DrawBandlimitedPoint( expectedOutput, expectedOutput.GetCenter(), { 2.0 * dip::pi * outSigma.product() }, outSigma, 7.0 );
+   newShift = shift;
+   newShift += input.GetCenter();
+   dip::ShiftFT( expectedOutput, expectedOutput, newShift );
+   dip::Wrap( expectedOutput, expectedOutput, { -static_cast< dip::sint >( expectedOutSz[ 0 ] ) / 2,
+                                                -static_cast< dip::sint >( expectedOutSz[ 1 ] ) / 2 } );
+   zoom = { static_cast< dip::dfloat >( expectedOutSz[ 0 ] ) / static_cast< dip::dfloat >( sz[ 0 ] ),
+            static_cast< dip::dfloat >( expectedOutSz[ 1 ] ) / static_cast< dip::dfloat >( sz[ 1 ] )};
+   expectedInverseOutput = dip::Resampling( input, zoom );
+   expectedInverseOutput *= static_cast< dip::dfloat >( sz.product() ) / static_cast< dip::dfloat >( expectedOutSz.product() );
 
    // Real-to-complex transform (fast + corner)
    output = input.Copy();
