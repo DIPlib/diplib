@@ -1,4 +1,4 @@
-\comment (c)2016-2022, Cris Luengo.
+\comment (c)2016-2024, Cris Luengo.
 \comment Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 
 \comment Licensed under the Apache License, Version 2.0 [the "License"];
@@ -35,11 +35,10 @@ it is not possible to use pixel units (e.g. "1.0 px x 1.2 px").
 \section size_features Size features
 
 \subsection size_features_Size Size
-Computes the number of object pixels. If the image has a known pixel size, the number
-of pixels is multiplied by the area of each pixel to give an unbiased estimate of the
-object's area (2D), volume (3D), or hyper-volume (nD).
-
-This value is reported in physical units, anisotropic pixels are taken into account.
+Counts the number of object pixels to give an unbiased estimate of the object's area
+(2D), volume (3D), or hyper-volume (nD). If the image has a known pixel size, the number
+of pixels is multiplied by the size of each pixel to convert the estimate into physical units.
+This works correctly for anisotropic pixels.
 
 \subsection size_features_SolidArea SolidArea
 Computes the area of the object ignoring any holes. It uses the object's chain code
