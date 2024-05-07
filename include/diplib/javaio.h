@@ -38,7 +38,7 @@ constexpr char const* bioformatsInterface = "org/diplib/BioFormatsInterface";
 
 /// \brief Reads the image in a file `filename` recognized by a Java `interface` and puts it in `out`.
 ///
-/// `interface` can be one of:
+/// There is currently only one `interface` defined:
 ///
 /// - `"org/diplib/BioFormatsInterface"`: The *Bio-Formats* package (default).
 ///   Can read [over 160 different image file formats](https://bio-formats.readthedocs.io/en/latest/supported-formats.html).
@@ -47,7 +47,7 @@ constexpr char const* bioformatsInterface = "org/diplib/BioFormatsInterface";
 ///
 /// If the file contains multiple images, select the desired one by setting `imageNumber`. Note that it is the
 /// interface that decides what an image is. For example, *Bio-Formats* will consider multi-page TIFF files
-/// to be either a single 3D image or a series of individual images depedning on some internal logic.
+/// to be either a single 3D image or a series of individual images depending on some internal logic.
 ///
 /// Information about the file and all metadata are returned in the \ref dip::FileInformation output argument.
 DIPJAVAIO_EXPORT FileInformation ImageReadJavaIO(

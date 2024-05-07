@@ -62,19 +62,21 @@ title: "Changes DIPlib 3.x.x"
   did not properly compute step sizes for `"grid"` sampling, effectively ignoring the value of `probes`
   and using all pixels (as if `probes` were set to 0).
 
-- Tensor indexing no longer removed color space information since the fix to the move constructor in 3.4.3.
+- Tensor indexing did not remove color space information as expected, since the fix to the move constructor in 3.4.3.
 
 - `dip::Image::CheckIsMask()` didn't properly check for singleton-expandable masks, accepting masks of any size.
 
 ### Updated dependencies
 
-- Updated bundled header-only library *robin-map* to version 1.3.0. Assorted minor improvements.
+- Updated included header-only library *robin-map* to version 1.3.0. Assorted minor improvements.
 
-- Updated bundled header-only library *pcg-cpp* to the current master branch (last updated 2022-04-08).
+- Updated included header-only library *pcg-cpp* to the current master branch (last updated 2022-04-08).
   Assorted minor improvements.
 
-- Updated bundled header-only library *PocketFFT* to the current master branch (last updated 2024-03-22).
-  This fixes a potential compilation problem.
+- Updated bundled *pybind11* to version 2.12.0.
+
+- Updated bundled library *PocketFFT* to the current master branch (last updated 2024-03-22).
+  This fixes a potential compilation problem on macOS.
 
 
 
