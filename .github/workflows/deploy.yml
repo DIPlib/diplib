@@ -31,7 +31,7 @@ jobs:
         #     export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
         #     brew update
         run: |
-          brew install libomp glfw wget
+          brew install libomp glfw
 
       - name: Deploy
         run: bash tools/build/deploy_macos.sh
@@ -54,7 +54,7 @@ jobs:
         #     export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
         #     brew update
         run: |
-          brew install libomp glfw wget
+          brew install libomp glfw
 
       - name: Deploy
         run: bash tools/build/deploy_macos.sh

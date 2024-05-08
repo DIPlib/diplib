@@ -4,7 +4,7 @@ Few things to keep in mind:
 
 * No documentation
 * No Python interface
-* Build with BioFormats
+* No DIPjavaio
 * Build with Matlab R2018b
 * Matlab R2021b install has problems with root rights in display, use `xhost` line
 * Matlab R2018b requires g++-8
@@ -37,7 +37,6 @@ export CC=gcc-8
 export CXX=g++-8
 mkdir ~/diplib
 cd ~/diplib
-wget https://downloads.openmicroscopy.org/bio-formats/7.0.0/artifacts/bioformats_package.jar
 mkdir download source repository
 cd download
 wget http://www.fftw.org/fftw-3.3.10.tar.gz
@@ -69,17 +68,16 @@ git clone https://github.com/DIPlib/diplib.git
 cd diplib
 cmake .. -DCMAKE_INSTALL_PREFIX=~/diplib/diplib \
     -DDIP_BUILD_PYDIP=Off \
+    -DDIP_BUILD_JAVAIO=Off \
     -DDIP_ENABLE_FFTW=On \
     -DDIP_ENABLE_FREETYPE=On \
     -DFFTW3_LIBRARY_FFTW3=~/diplib/fftw/lib/libfftw3.so \
     -DFFTW3_LIBRARY_FFTW3F=~/diplib/fftw/lib/libfftw3f.so \
     -DFFTW3_LIBRARY_FFTW3_THREADS=~/diplib/fftw/lib/libfftw3_threads.so \
     -DFFTW3_LIBRARY_FFTW3F_THREADS=~/diplib/fftw/lib/libfftw3f_threads.so \
-    -DFFTW3_INCLUDE_DIR=~/diplib/fftw/include \
-    -DBIOFORMATS_JAR=~/diplib/bioformats_package.jar
+    -DFFTW3_INCLUDE_DIR=~/diplib/fftw/include
 make -j
 make -j check
 make install
-cp ~/diplib/bioformats_package.jar ~/diplib/diplib/share/DIPimage/private
 matlab
 ```

@@ -12,10 +12,9 @@ python3 -m pip install -U twine delocate
 
 mkdir build
 cd build
-wget -nv https://downloads.openmicroscopy.org/bio-formats/7.0.0/artifacts/bioformats_package.jar
 
 # Basic configuration
-cmake .. -DDIP_PYDIP_WHEEL_INCLUDE_LIBS=On -DBIOFORMATS_JAR=`pwd`/bioformats_package.jar -DDIP_BUILD_DIPIMAGE=Off -DCMAKE_CXX_FLAGS="-I$HOMEBREW_DIR/opt/libomp/include -L$HOMEBREW_DIR/opt/libomp/lib"
+cmake .. -DDIP_PYDIP_WHEEL_INCLUDE_LIBS=On -DDIP_BUILD_DIPIMAGE=Off -DCMAKE_CXX_FLAGS="-I$HOMEBREW_DIR/opt/libomp/include -L$HOMEBREW_DIR/opt/libomp/lib"
 
 # Build all wheels
 for v in ${PYTHON_VERSIONS[@]}; do

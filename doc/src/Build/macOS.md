@@ -212,11 +212,9 @@ This will change over time, as new versions of *GCC* are adopted by *HomeBrew*. 
 If building only *DIPimage* (the *MATLAB* toolbox), skip this section and instead follow the directions
 you can read when you do `help readim` in *MATLAB* after installation.
 
-First, make sure you have the *Java 8 SDK* (*JDK 8*) installed,
+First, make sure you have the *Java 8 SDK* (*JDK 8*) or later installed,
 you can obtain it from the [Oracle website](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
 for commercial purposes, or from [jdk.java.net](https://jdk.java.net) for an open-source build.
-Next, download `bioformats_package.jar` from the [*Bio-Formats* website](https://www.openmicroscopy.org/bio-formats/).
-You need to add the location of this file to the `cmake` command line using the `-DBIOFORMATS_JAR=<path>` flag.
 
 When running *CMake* with the proper *JDK* installed, the *DIPjavaio* module becomes available.
 
@@ -229,8 +227,7 @@ For example, on my Mac it might find the *JNI* that belongs to *Java 6*.
 In this case, add `-DJAVA_HOME=<path>` to the `cmake` command line:
 
 ```bash
-cmake .. -DBIOFORMATS_JAR=$HOME/java/bioformats_package.jar \
-         -DJAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_121.jdk/Contents/Home/
+cmake .. -DJAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_121.jdk/Contents/Home/
 ```
 
 Note that these arguments to `cmake` must be combined with the arguments mentioned earlier,

@@ -121,9 +121,8 @@ directory for the first parameter, and "lib-vc2015\glfw3.lib" for the second.
 don't have *MATLAB* installed, you are building 32-bit binaries, or the *Java SDK* could not
 be found. This is only necessary if you want to use the `viewslice` command from *DIPimage*.
 
-- If `BIOFORMATS_JAR` is not on the list, the *Java SDK* could not be found. If it is,
-point it to the "bioformats_package.jar" you downloaded earlier. This is only necessary if
-you want to import image formats that are not directly supported by *DIPlib*, and only
+- If `DIP_BUILD_JAVAIO` is not on the list, the *Java SDK* could not be found. This is only
+necessary if you want to import image formats that are not directly supported by *DIPlib*, and only
 for *Python* and C++ (*MATLAB* uses the *Bio-Formats* package differently, see `help readim`
 after installation).
 
