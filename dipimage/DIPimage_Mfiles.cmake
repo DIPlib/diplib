@@ -81,6 +81,7 @@ dipzoom.m
 displaylabelnumbers.m
 distancedistribution.m
 divergencevector.m
+download_bioformats.m
 drawline.m
 drawpolygon.m
 drawshape.m

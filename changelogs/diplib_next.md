@@ -85,7 +85,10 @@ title: "Changes DIPlib 3.x.x"
 
 ### New functionality
 
-- Added the CMake option `DIP_JAVA_VERSION`, which can be important when building *DIPimage* for older versions
+- Added the function `download_bioformats`, which does the same thing as `python -m diplib download_bioformats` in
+  *PyDIP*. This significantly simplifies the installation instructions for *Bio-Formats*.
+
+- Added the *CMake* option `DIP_JAVA_VERSION`, which can be important when building *DIPimage* for older versions
   of MATLAB. The Java version must be equal or older than the version used by MATLAB. Running `version -java`
   in MATLAB will tell you what version of Java it is using.
 
@@ -131,6 +134,11 @@ None, but see bugfixes to *DIPlib*.
 
 - The *CMake* option `PYBIND11_PYTHON_VERSION` is no longer used. It was mentioned in the documentation, but
   probably never really worked.
+
+- Significantly improved the command to download *Bio-Formats*: `python -m diplib download_bioformats` now
+  has an optional argument `-u` to force an update of the existing library, and another one to specify
+  which verison to download. By default, it downloads whatever the latest version is, we no longer hard-code
+  a specific version number.
 
 (See also changes to *DIPlib*.)
 

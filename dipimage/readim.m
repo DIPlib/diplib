@@ -14,20 +14,21 @@
 %
 % NOTES:
 %  If FORMAT is '', then the format will be guessed from the file name extension
-%  or the file contents. If READICS and READTIFF cannot read the file, this
-%  function attempts to read it using Bio-Formats. If that also fails, IMREAD
-%  is tried.
+%  or the file contents. If DIPlib cannot read the file, this function attempts
+%  to read it using Bio-Formats. If that also fails, IMREAD is tried.
 %
 %  If FORMAT is specified, then either READICS, READTIFF or IMREAD are called.
 %  See IMREAD for a list of formats it recognizes.
 %  If FORMAT is 'bioformats', then only the Bio-Formats reader is used.
 %
-%  If the file name as given is not found (note that READICS and READTIFF will
-%  also look for the file with an extension appended if not given), and no path
-%  was specified, then process above is repeated after prepending each of the
-%  directories listed in the 'ImageFilePath' property (see DIPSETPREF) to the
-%  file name. That is, if no directory is specified, first the current directory
-%  and then the default image directories are searched for the file.
+%  Note that the DIPlib image file readers will append various extensions when
+%  attempting to open the file.
+%
+%  If the file name as given is not found, and no path was specified, then
+%  process above is repeated after prepending each of the directories listed in
+%  the 'ImageFilePath' property (see DIPSETPREF) to the file name. That is, if
+%  no directory is specified, first the current directory and then the default
+%  image directories are searched for the file.
 %
 %  Format 'TIF' is an alias for 'TIFF'. Likewise, 'ICS' is an alias for 'ICSv2'.
 %
@@ -39,22 +40,14 @@
 %
 % INSTALLING BIO-FORMATS:
 %  The Bio-Formats library is not included in the DIPimage distribution. If you
-%  want to use this functionality, please download it separately.
-%
-%  You will find the latest version here:
-%     http://www.openmicroscopy.org/bio-formats/downloads/
-%  Select to download the "Bio-Formats Package", which will copy a Java JAR file
-%  to your computer. Copy or move this file to the 'private' directory under the
-%  DIPimage directory (the directory that contains this file). The following
-%  MATLAB command gives you the directory where the JAR file should reside:
-%     fileparts(which('bfGetReader','in','readim'))
+%  want to use this functionality, please use DOWNLOAD_BIOFORMATS.
 %
 %  Note that Bio-Formats is licensed under GLPv2
 %
 % SEE ALSO:
-%  writeim, readics, readtiff, imread, readtimeseries
+%  writeim, readics, readtiff, imread, readtimeseries, download_bioformats
 
-% (c)2017-2022, Cris Luengo.
+% (c)2017-2024, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %
@@ -239,9 +232,7 @@ persistent haveBioFormats;
 if isempty(haveBioFormats)
    haveBioFormats = bfCheckJavaPath();
    if ~haveBioFormats
-      warning('Bio-Formats is not installed')
-      disp('Bio-Formats is not installed. See HELP READIM for instructions on how to install it.')
-      disp(['The JAR file should be installed here: ',fileparts(which('bfGetReader','in','readim'))])
+      disp('Bio-Formats is not installed. See HELP DOWNLOAD_BIOFORMATS for instructions.')
    end
 end
 % Quick exit if we don't have Bio-Formats
