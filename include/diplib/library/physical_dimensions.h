@@ -243,6 +243,11 @@ class DIP_NO_EXPORT Units {
       /// what the constructor recognizes.
       void FromString( dip::String const& string );
 
+      /// \brief Units tests false if they're dimensionless.
+      constexpr explicit operator bool() const {
+         return !IsDimensionless();
+      };
+
       /// Swaps the values of `this` and `other`.
       void swap( Units& other ) noexcept {
          using std::swap;

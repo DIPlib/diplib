@@ -18,6 +18,8 @@ title: "Changes DIPlib 3.x.x"
 - Added macros `DIP_PARALLEL_ERROR_DECLARE`, `DIP_PARALLEL_ERROR_START` and `DIP_PARALLEL_ERROR_END`
   to simplify writing parallel code with OpenMP that properly handles exceptions.
 
+- Added an operator to convert `dip::Units` to `bool`. The units object will test false if it's unitless.
+
 ### Changed functionality
 
 - The `compressionLevel` argument to `dip::ImageWritePNG()` changed from `dip::uint` to `dip::sint`, allowing for
@@ -128,6 +130,9 @@ None, but see bugfixes to *DIPlib*.
 
 - All the functions named `dip.ImageRead...()` that have a keyword-only argument `out` now return the
   `dip::FileInformation` structure (as a dict, just like `dip.ImageRead...Info()` does).
+
+- Added bindings for `dip.Units.HasSameDimensions`, `dip.Units.IsDimensionless`, `dip.Units.IsPhysical`,
+  `dip.Units.AdjustThousands`, `dip.Units.Thousands`. Unitless `dip.Units` now test false.
 
 - The *CMake* option `PYTHON_EXECUTABLE` is no longer used, set `Python_EXECUTABLE` instead. The build script
   will, for the time being, copy the value of the former to the latter if the former is set but the latter isn't.
