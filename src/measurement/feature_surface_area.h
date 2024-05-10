@@ -45,7 +45,7 @@ class FeatureSurfaceArea : public ImageBased {
          PhysicalQuantity unitArea = label.PixelSize().UnitLength().Power( 2 );
          scale_ = unitArea.magnitude;
          out[ 0 ].units = unitArea.units;
-         out[ 0 ].name = "SurfaceArea";
+         out[ 0 ].name = "";
          return out;
       }
 
