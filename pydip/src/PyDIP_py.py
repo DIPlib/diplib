@@ -1,5 +1,5 @@
 # (c)2017-2019, Flagship Biosciences, Inc., written by Cris Luengo.
-# (c)2022, Cris Luengo.
+# (c)2022-2024, Cris Luengo.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -200,3 +200,29 @@ def HistogramShow(hist, range=(), complexMode='abs', projectionMode='mean',
         extent = (hist.BinCenter(0, dim1), hist.BinCenter(hist.Bins() - 1, dim1),
                   hist.BinCenter(0, dim2), hist.BinCenter(hist.Bins() - 1, dim2))
     Show(hist.GetImage(), range, complexMode, projectionMode, coordinates, dim1, dim2, colormap, extent)
+
+
+def MeasurementToDataFrame(measurement):
+    """Convert the measurement object into a Pandas DataFrame.
+
+    Both NumPy and Pandas will be imported when this function is called.
+    """
+    import numpy as np
+    import pandas as pd
+    columns = []
+    values = measurement.Values()
+    for feature in measurement.Features():
+        name = feature.name
+        start_index = feature.startColumn
+        for index in range(start_index, start_index + feature.numberValues):
+            value = values[index]
+            col = f"{name}, {value.name}" if value.name else name
+            # TODO: We might want to use pint-pandas to attach units to the DataFrame.
+            #       This will require we also convert dip.Units to pint.
+            #       -> Attach value.unit to this column
+            columns.append(col)
+    return pd.DataFrame(
+        data=np.asarray(measurement),
+        index=measurement.Objects(),
+        columns=columns,
+    )

@@ -134,6 +134,9 @@ None, but see bugfixes to *DIPlib*.
 - Added bindings for `dip.Units.HasSameDimensions`, `dip.Units.IsDimensionless`, `dip.Units.IsPhysical`,
   `dip.Units.AdjustThousands`, `dip.Units.Thousands`. Unitless `dip.Units` now test false.
 
+- Added `dip.Measurement.ToDataFrame()`, which converts the measurement results into a Pandas DataFrame.
+  This function will import NumPy and Pandas, they need to be installed.
+
 - The *CMake* option `PYTHON_EXECUTABLE` is no longer used, set `Python_EXECUTABLE` instead. The build script
   will, for the time being, copy the value of the former to the latter if the former is set but the latter isn't.
 

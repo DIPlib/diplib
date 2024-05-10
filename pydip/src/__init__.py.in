@@ -50,7 +50,8 @@ __version__ = PyDIP_bin.__version__
 from .PyDIP_py import *
 Image.Show = Show
 Histogram.Show = HistogramShow
-SE = StructuringElement  # for backwards compatibility
+SE = StructuringElement  # for backwards compatibility (and ease of use)
+Measurement.ToDataFrame = MeasurementToDataFrame
 
 
 # Here we import PyDIPviewer if it exists
