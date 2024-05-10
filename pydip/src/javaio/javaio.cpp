@@ -28,6 +28,7 @@ bool AreDimensionsReversed() {
 }
 
 PYBIND11_MODULE( PyDIPjavaio, m ) {
+   m.doc() = "The portion of the PyDIP module that contains the C++ DIPjavaio bindings.";
 
    // diplib/javaio.h
    m.def( "ImageReadJavaIO", []( dip::String const& filename, dip::String const& interface, dip::uint imageNumber ) {

@@ -14,7 +14,7 @@
 # limitations under the License.
 
 """
-The portion of the PyDIP module that contains Python code.
+The portion of the PyDIP module that contains the Python code.
 """
 
 from .PyDIP_bin import ImageDisplay, ApplyColorMap
@@ -100,6 +100,8 @@ def Show(img, range=(), complexMode='abs', projectionMode='mean', coordinates=()
     range, and not to the actual pixel value. Use
     `diplib.viewer.ShowModal()`, or `diplib.Image.ShowSlice()` and
     `diplib.viewer.Spin()`, for a more useful interactive image display.
+
+    Both NumPy and Matplotlib will be imported when this function is called.
     """
     global _reportedPlotLib
     if not hasMatPlotLib:
@@ -194,6 +196,10 @@ def Show(img, range=(), complexMode='abs', projectionMode='mean', coordinates=()
 
 def HistogramShow(hist, range=(), complexMode='abs', projectionMode='mean',
                   coordinates=(), dim1=0, dim2=1, colormap=''):
+    """Plot a histogram though dip.Show().
+
+    See help(dip.Show) for information on the arguments.
+    """
     if hist.Dimensionality() == 1:
         extent = (hist.BinCenter(0), hist.BinCenter(hist.Bins() - 1))
     else:

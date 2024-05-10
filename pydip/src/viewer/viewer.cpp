@@ -51,6 +51,7 @@ int drawHook() {
 }
 
 PYBIND11_MODULE( PyDIPviewer, m ) {
+   m.doc() = "The portion of the PyDIP module that contains the DIPviewer functionality.";
 
    // Close all windows on exit
    py::module_::import( "atexit" ).attr( "register" )(

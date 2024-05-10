@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-The portion of the PyDIP module contains the DIPjavaio functionality
+The portion of the PyDIP module that contains the DIPjavaio functionality.
 """
 
 import importlib.util
