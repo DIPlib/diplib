@@ -68,6 +68,8 @@ title: "Changes DIPlib 3.x.x"
 
 - `dip::Image::CheckIsMask()` didn't properly check for singleton-expandable masks, accepting masks of any size.
 
+- `dip::FourierTransform()` threw an exception when the real-to-complex dimension had a size of 2.
+
 ### Updated dependencies
 
 - Updated included header-only library *robin-map* to version 1.3.0. Assorted minor improvements.

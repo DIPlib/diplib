@@ -543,11 +543,16 @@ void FourierTransform(
          } else {
             DIP_THROW_IF( outSize[ ii ] > maximumDFTSize, "Image size too large for DFT algorithm" );
          }
-         if( !process[ optimalDimension ] || (
-               ( outSize[ ii ] > 2 ) &&
-               ( std::abs( in.Stride( ii )) < std::abs( in.Stride( optimalDimension )))
-         )) {
-            optimalDimension = ii;
+         if( ii != optimalDimension ) {
+            if( !process[ optimalDimension ] || (
+                ( outSize[ ii ] > 2 ) && (
+                   ( outSize[ optimalDimension ] <= 2 ) ||
+                   ( std::abs( in.Stride( ii )) < std::abs( in.Stride( optimalDimension )))
+                ))) {
+               // Note that we don't want a dimension with size == 2 to be the R2C dimension, as that wouldn't save
+               // any work compared to the normal C2C transform. We allow this only if there is no other candidate.
+               optimalDimension = ii;
+            }
          }
          scale /= static_cast< dfloat >( outSize[ ii ] );
       }
