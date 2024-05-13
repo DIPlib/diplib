@@ -15,14 +15,23 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
-#include "diplib/geometry.h"
-#include "diplib/boundary.h"
-#include "diplib/framework.h"
-#include "diplib/overload.h"
-#include "diplib/library/copy_buffer.h"
-
 #include "interpolation.h"
+
+#include <algorithm>
+#include <cmath>
+#include <complex>
+#include <memory>
+#include <type_traits>
+#include <utility>
+#include <vector>
+
+#include "diplib.h"
+#include "diplib/boundary.h"
+#include "diplib/dft.h"
+#include "diplib/framework.h"
+#include "diplib/geometry.h"
+#include "diplib/library/copy_buffer.h"
+#include "diplib/overload.h"
 
 namespace dip {
 
@@ -36,7 +45,7 @@ class ResamplingLineFilter : public Framework::SeparableLineFilter {
       void SetNumberOfThreads( dip::uint threads ) override {
          buffer_.resize( threads );
       }
-      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint procDim ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint /*nTensorElements*/, dip::uint /*border*/, dip::uint procDim ) override {
          return interpolation::GetNumberOfOperations( method_, lineLength, zoom_[ procDim ] );
       }
       void Filter( Framework::SeparableLineFilterParameters const& params ) override {
@@ -91,7 +100,7 @@ class FourierResamplingLineFilter : public Framework::SeparableLineFilter {
       void SetNumberOfThreads( dip::uint threads ) override {
          buffer_.resize( threads );
       }
-      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint procDim ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint /*nTensorElements*/, dip::uint /*border*/, dip::uint procDim ) override {
          dip::uint outLength = ift_[ procDim ].TransformSize();
          return 10 * lineLength * static_cast< dip::uint >( std::round( std::log2( lineLength )))
               + 10 * outLength  * static_cast< dip::uint >( std::round( std::log2( outLength  )));
@@ -136,7 +145,7 @@ void Resampling(
    for( auto z : zoom ) {
       DIP_THROW_IF( z <= 0.0, E::INVALID_PARAMETER );
    }
-   interpolation::Method method;
+   interpolation::Method method{};
    if( c_in.DataType().IsBinary() ) {
       method = interpolation::Method::NEAREST_NEIGHBOR;
    } else {
@@ -193,7 +202,7 @@ namespace {
 template< typename TPI > // TPI is a complex type
 class ShiftFTLineFilter : public Framework::ScanLineFilter {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint nTensorElements ) override {
+      dip::uint GetNumberOfOperations( dip::uint /*nInput*/, dip::uint /*nOutput*/, dip::uint nTensorElements ) override {
          return 40 + nTensorElements; // TODO: is this OK?
       }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
@@ -291,7 +300,7 @@ class SkewLineFilter : public Framework::SeparableLineFilter {
       void SetNumberOfThreads( dip::uint threads ) override {
          buffer_.resize( threads );
       }
-      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint /*nTensorElements*/, dip::uint /*border*/, dip::uint /*procDim*/ ) override {
          return interpolation::GetNumberOfOperations( method_, lineLength, 1.0 );
       }
       void Filter( Framework::SeparableLineFilterParameters const& params ) override {
@@ -358,7 +367,7 @@ dip::UnsignedArray Skew(
    dip::uint nDims = c_in.Dimensionality();
    DIP_THROW_IF( nDims < 2, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( axis >= nDims , E::ILLEGAL_DIMENSION );
-   interpolation::Method method;
+   interpolation::Method method{};
    if( c_in.DataType().IsBinary() ) {
       method = interpolation::Method::NEAREST_NEIGHBOR;
    } else {
@@ -826,7 +835,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the interpolation functions (except Fourier)
    dip::dfloat d_shift = -3.4;
    dip::dfloat d_scale = 5.23;
    outSize = dip::interpolation::ComputeOutputSize( inSize, d_scale );
-   std::vector< dip::dcomplex > d_output( outSize, -1e6 );
+   std::vector< dip::dcomplex > d_output( outSize, { -1e6, 0 } );
    dip::interpolation::BSpline< dip::dcomplex >( d_input, d_output.data(), outSize, d_scale, d_shift, d_tmpSpline.data() );
    dip::dcomplex d_offset{ 20.0 + d_shift, 200.0 - 20.0 - d_shift };
    dip::dfloat d_step = 1.0 / d_scale;
@@ -908,7 +917,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the Fourier interpolation function") {
       }
       dip::dfloat shift = 4.3;
       dip::uint outSize = inSize;
-      std::vector< dip::scomplex > output( outSize, -1e6f );
+      std::vector< dip::scomplex > output( outSize, { -1e6f, 0 } );
 
       dip::DFT< dip::sfloat > ft( inSize, false );
       dip::DFT< dip::sfloat > ift( outSize, true );
@@ -918,7 +927,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the Fourier interpolation function") {
       bool error = false;
       for( dip::uint ii = 0; ii < outSize; ++ii ) {
          auto x = ( static_cast< dip::dfloat >( ii ) - shift ) / static_cast< dip::dfloat >( outSize );
-         dip::scomplex expected = static_cast< dip::sfloat >( std::cos( 4.0 * dip::pi * x ));
+         dip::scomplex expected{ static_cast< dip::sfloat >( std::cos( 4.0 * dip::pi * x )), 0 };
          error |= abs_diff( output[ ii ], expected ) > 1e-6;
          //std::cout << x << ": " << output[ ii ] << " == " << expected << std::endl;
       }
@@ -940,7 +949,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the Fourier interpolation function") {
       error = false;
       for( dip::uint ii = 0; ii < outSize; ++ii ) {
          auto x = ( static_cast< dip::dfloat >( ii ) - shift * scale ) / static_cast< dip::dfloat >( outSize );
-         dip::scomplex expected = static_cast< dip::sfloat >( std::cos( 4.0 * dip::pi * x ));
+         dip::scomplex expected{ static_cast< dip::sfloat >( std::cos( 4.0 * dip::pi * x )), 0 };
          error |= abs_diff( output[ ii ], expected ) > 1e-6;
          //std::cout << x << ": " << output[ ii ] << " == " << expected << std::endl;
       }
@@ -963,7 +972,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the Fourier interpolation function") {
       error = false;
       for( dip::uint ii = 0; ii < outSize; ++ii ) {
          auto x = ( static_cast< dip::dfloat >( ii ) - shift * scale ) / static_cast< dip::dfloat >( outSize );
-         dip::scomplex expected = static_cast< dip::sfloat >( std::cos( 4.0 * dip::pi * x ));
+         dip::scomplex expected{ static_cast< dip::sfloat >( std::cos( 4.0 * dip::pi * x )), 0 };
          error |= abs_diff( output[ ii ], expected ) > 1e-6;
          //std::cout << x << ": " << output[ ii ] << " == " << expected << std::endl;
       }

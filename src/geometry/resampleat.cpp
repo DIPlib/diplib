@@ -16,20 +16,25 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/geometry.h"
-#include "diplib/generation.h"
-#include "diplib/math.h"
-#include "diplib/mapping.h"
-#include "diplib/generic_iterators.h"
-#include "diplib/overload.h"
+
+#include <algorithm>
+#include <memory>
+#include <utility>
+#include <vector>
+
+#include "diplib.h"
 #include "diplib/framework.h"
+#include "diplib/generation.h"
+#include "diplib/generic_iterators.h"
+#include "diplib/math.h"
+#include "diplib/overload.h"
 
 namespace dip {
 
 namespace {
 
-enum class Method {
+enum class Method : uint8 {
       NEAREST_NEIGHBOR,
       LINEAR,
       CUBIC_ORDER_3,
@@ -38,13 +43,14 @@ enum class Method {
 Method ParseMethod( String const& method ) {
    if( method.empty() || ( method == S::LINEAR )) {
       return Method::LINEAR;
-   } else if(( method == "cubic" ) || ( method == S::CUBIC_ORDER_3 )) {
-      return Method::CUBIC_ORDER_3;
-   } else if(( method == "nn" ) || ( method == S::NEAREST )) {
-      return Method::NEAREST_NEIGHBOR;
-   } else {
-      DIP_THROW_INVALID_FLAG( method );
    }
+   if(( method == "cubic" ) || ( method == S::CUBIC_ORDER_3 )) {
+      return Method::CUBIC_ORDER_3;
+   }
+   if(( method == "nn" ) || ( method == S::NEAREST )) {
+      return Method::NEAREST_NEIGHBOR;
+   }
+   DIP_THROW_INVALID_FLAG( method );
 }
 
 // Takes `coords` and subtracts the integer value. The base pixel offset is returned
@@ -190,7 +196,7 @@ void ThirdOrderCubicSplineInterpolationFunction( Image const& in, Image::Pixel c
 }
 
 InterpolationFunctionPointer GetInterpFunctionPtr( String const& method, DataType dt ) {
-   InterpolationFunctionPointer function;
+   InterpolationFunctionPointer function{};
    auto m = ParseMethod( method );
    if( dt == DT_BIN ) {
       m = Method::NEAREST_NEIGHBOR;
@@ -244,7 +250,7 @@ void ResampleAt(
    out.SetColorSpace( std::move( colorSpace ));
 
    // Find interpolator
-   InterpolationFunctionPointer function;
+   InterpolationFunctionPointer function{};
    DIP_STACK_TRACE_THIS( function = GetInterpFunctionPtr( method, in.DataType() ));
 
    // Iterate over coordinates and out
@@ -275,7 +281,7 @@ Image::Pixel ResampleAt(
    out.ReshapeTensor( in.Tensor() );
 
    // Find interpolator
-   InterpolationFunctionPointer function;
+   InterpolationFunctionPointer function{};
    DIP_STACK_TRACE_THIS( function = GetInterpFunctionPtr( method, in.DataType() ));
 
    // Call interpolator
@@ -301,7 +307,7 @@ InterpolationFunctionPointer PrepareResampleAtUnchecked(
    dip::uint nDims = in.Dimensionality();
    DIP_THROW_IF( nDims == 0, E::DIMENSIONALITY_NOT_SUPPORTED );
    // Find interpolator
-   InterpolationFunctionPointer function;
+   InterpolationFunctionPointer function{};
    DIP_STACK_TRACE_THIS( function = GetInterpFunctionPtr( method, in.DataType() ));
    return function;
 }
@@ -346,8 +352,7 @@ class ResampleAtLineFilter : public Framework::ScanLineFilter
          }
       }
 
-      void Filter( Framework::ScanLineFilterParameters const& params )
-      {
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          auto dims = in_.Dimensionality();
          auto elements = in_.TensorElements();
          auto map = params.inBuffer[0];
@@ -488,7 +493,7 @@ void AffineTransform(
    DIP_THROW_IF(( matrix.size() != nDims * nDims ) && ( matrix.size() != nDims * ( nDims + 1 )), E::ARRAY_PARAMETER_WRONG_LENGTH );
 
    // Find interpolator
-   InterpolationFunctionPointer function;
+   InterpolationFunctionPointer function{};
    DIP_STACK_TRACE_THIS( function = GetInterpFunctionPtr( method, c_in.DataType() ));
 
    // Preserve input
@@ -565,7 +570,7 @@ void WarpControlPoints(
    ThinPlateSpline thinPlateSpline( outCoordinates, inCoordinates, lambda );
 
    // Find interpolator
-   InterpolationFunctionPointer function;
+   InterpolationFunctionPointer function{};
    DIP_STACK_TRACE_THIS( function = GetInterpFunctionPtr( interpolationMethod, c_in.DataType() ));
 
    // Preserve input
@@ -602,7 +607,7 @@ void LogPolarTransform2D(
    DIP_THROW_IF( c_in.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
 
    // Find interpolator
-   InterpolationFunctionPointer function;
+   InterpolationFunctionPointer function{};
    DIP_STACK_TRACE_THIS( function = GetInterpFunctionPtr( method, c_in.DataType() ));
 
    // Preserve input

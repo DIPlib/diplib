@@ -19,8 +19,10 @@
 // NOTE!!! This file only to be included by `interpolation.cpp`.
 
 
-#include "diplib/library/types.h"
+#include "diplib/library/numeric.h"
 #include "diplib/library/sample_iterator.h"
+#include "diplib/library/stringparams.h"
+#include "diplib/library/types.h"
 #include "diplib/dft.h"
 
 namespace dip {

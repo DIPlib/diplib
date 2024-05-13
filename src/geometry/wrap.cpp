@@ -15,8 +15,12 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/geometry.h"
+
+#include <cmath>
+#include <memory>
+
+#include "diplib.h"
 #include "diplib/framework.h"
 #include "diplib/overload.h"
 
@@ -28,7 +32,7 @@ template< typename TPI >
 class WrapLineFilter : public Framework::SeparableLineFilter {
    public:
       WrapLineFilter( UnsignedArray const& wrap ) : wrap_( wrap ) {}
-      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint /*nTensorElements*/, dip::uint /*border*/, dip::uint /*procDim*/ ) override {
          return lineLength;
       }
       void Filter( Framework::SeparableLineFilterParameters const& params ) override {

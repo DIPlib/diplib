@@ -14,10 +14,16 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/geometry.h"
-#include "diplib/iterators.h"
+
+#include <algorithm>
+#include <cmath>
+#include <limits>
+#include <utility>
+
+#include "diplib.h"
 #include "diplib/generic_iterators.h"
+#include "diplib/iterators.h"
 
 namespace dip {
 
