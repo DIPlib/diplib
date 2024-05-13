@@ -396,6 +396,9 @@ void DFT_R2C_1D_finalize(
    DIP_ASSERT( !process[ dimension ] ); // the R2C process dimension should not be a C2C process dimension
    // Input: pixels 0 to size/2 are set
    dip::uint size = img.Size( dimension );
+   if( size <= 2 ) {
+      return;  // We've got nothing to do here
+   }
    RangeArray leftWindow( nDims );
    if( !( size & 1u )) {
       // even size: pixels 0 and size/2 stay where they are
@@ -540,7 +543,10 @@ void FourierTransform(
          } else {
             DIP_THROW_IF( outSize[ ii ] > maximumDFTSize, "Image size too large for DFT algorithm" );
          }
-         if( !process[ optimalDimension ] || ( std::abs( out.Stride( ii )) < std::abs( out.Stride( optimalDimension )))) {
+         if( !process[ optimalDimension ] || (
+               ( outSize[ ii ] > 2 ) &&
+               ( std::abs( in.Stride( ii )) < std::abs( in.Stride( optimalDimension )))
+         )) {
             optimalDimension = ii;
          }
          scale /= static_cast< dfloat >( outSize[ ii ] );

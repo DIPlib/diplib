@@ -389,7 +389,7 @@ void GaussFT(
       bool reuseInFT = false;
       if( inSpatial ) {
          real = !in.DataType().IsComplex();
-         inFT = FourierTransform( in );
+         DIP_STACK_TRACE_THIS( inFT = FourierTransform( in ));
          reuseInFT = true;
       } else {
          inFT = in;
@@ -417,6 +417,7 @@ void GaussFT(
          DIP_STACK_TRACE_THIS( FourierTransform( outFT, out, options ));
       }
    } else {
+      DIP_START_STACK_TRACE
       if( inSpatial == outSpatial ) {
          out = in;
       } else if( inSpatial ) {
@@ -424,6 +425,7 @@ void GaussFT(
       } else {
          FourierTransform( in, out, { S::INVERSE } );
       }
+      DIP_END_STACK_TRACE
    }
 }
 
