@@ -56,6 +56,9 @@ title: "Changes DIPlib 3.x.x"
   this one) has a new argument `purpose` that can be either `"real"` or `"complex"`, and uses the new
   `dip::MaxFactor()` to fill in the `maxFactor` argument.
 
+- `dip::GaussFT()` has a new parameter `boundaryCondition`, the default empty value gives the same behavior as
+  previously. `dip::Gauss()` now passes the boundary condition through to `dip::GaussFT()`.
+
 - Minimum required version of *CMake* is now 3.12.
 
 ### Bug fixes
@@ -111,6 +114,9 @@ None, but see bugfixes to *DIPlib*.
 ## Changes to *PyDIP*
 
 ### New functionality
+
+- Added bindings to `dip::GaussFIR()`, to complement `GaussIIR()` and `GaussFT()`. Though it is expected people will
+  keep using `dip.Gauss()` to access these various algorithms.
 
 ### Changed functionality
 

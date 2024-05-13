@@ -1,5 +1,5 @@
 /*
- * (c)2017-2022, Cris Luengo.
+ * (c)2017-2024, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -338,6 +338,19 @@ DIP_NODISCARD inline Image GaussFIR(
 /// see if the inputs in frequency domain have the complex conjugate symmetry required for the result
 /// to be real-valued. Use \ref dip::Image::Real if you expect the output to be real-valued in this case.
 ///
+/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See \ref dip::BoundaryCondition.
+/// The default empty boundary condition indicates no boundary extension is to be applied, the convolution will be
+/// circular (periodic boundary condition) as is natural with the DFT convolution. Specifying a boundary condition
+/// will cause the input image to be padded to a good DFT size (a product of small integers,
+/// see \ref dip::OptimalFourierTransformSize) that is large enough to prevent visible effects of the circular
+/// convolution. Thus, specifying `"periodic"` as the boundary condition could, depending on the sizes of the image,
+/// speed up the operation compared to leaving the boundary condition empty.
+///
+/// If `inRepresentation` is `"frequency"`, then `boundaryCondition` is ignored.
+///
+/// If `outRepresentation` is `"frequency"`, then the padding caused by `boundaryCondition` will affect the output size.
+/// Leave `boundaryCondition` empty in this case if a predictable output size is needed.
+///
 /// \see dip::Gauss, dip::GaussFIR, dip::GaussIIR, dip::Derivative, dip::FiniteDifference, dip::Uniform
 DIP_EXPORT void GaussFT(
       Image const& in,
@@ -346,7 +359,8 @@ DIP_EXPORT void GaussFT(
       UnsignedArray derivativeOrder = { 0 },
       dfloat truncation = 3,
       String const& inRepresentation = S::SPATIAL,
-      String const& outRepresentation = S::SPATIAL
+      String const& outRepresentation = S::SPATIAL,
+      StringArray const& boundaryCondition = {} // Added here later, this is why its location is not consistent with other filtering functions.
 );
 DIP_NODISCARD inline Image GaussFT(
       Image const& in,
@@ -354,10 +368,11 @@ DIP_NODISCARD inline Image GaussFT(
       UnsignedArray derivativeOrder = { 0 },
       dfloat truncation = 3,
       String const& inRepresentation = S::SPATIAL,
-      String const& outRepresentation = S::SPATIAL
+      String const& outRepresentation = S::SPATIAL,
+      StringArray const& boundaryCondition = {}
 ) {
    Image out;
-   GaussFT( in, out, std::move( sigmas ), std::move( derivativeOrder ), truncation, inRepresentation, outRepresentation );
+   GaussFT( in, out, std::move( sigmas ), std::move( derivativeOrder ), truncation, inRepresentation, outRepresentation, boundaryCondition );
    return out;
 }
 

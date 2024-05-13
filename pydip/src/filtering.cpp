@@ -1,6 +1,6 @@
 /*
  * (c)2017-2021, Flagship Biosciences, Inc., written by Cris Luengo.
- * (c)2022, Cris Luengo.
+ * (c)2022-2024, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,10 +79,14 @@ void init_filtering( py::module& m ) {
           "in"_a, "kernel"_a = dip::Kernel{}, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "Uniform", py::overload_cast< dip::Image const&, dip::Image&, dip::Kernel const&, dip::StringArray const& >( &dip::Uniform ),
           "in"_a, py::kw_only(), "out"_a, "kernel"_a = dip::Kernel{}, "boundaryCondition"_a = dip::StringArray{} );
-   m.def( "GaussFT", py::overload_cast< dip::Image const&, dip::FloatArray, dip::UnsignedArray, dip::dfloat, dip::String const&, dip::String const& >( &dip::GaussFT ),
-          "in"_a, "sigmas"_a = dip::FloatArray{ 1.0 }, "derivativeOrder"_a = dip::UnsignedArray{ 0 }, "truncation"_a = 3.0, "inRepresentation"_a = dip::S::SPATIAL, "outRepresentation"_a = dip::S::SPATIAL );
-   m.def( "GaussFT", py::overload_cast< dip::Image const&, dip::Image&, dip::FloatArray, dip::UnsignedArray, dip::dfloat, dip::String const&, dip::String const& >( &dip::GaussFT ),
-          "in"_a, py::kw_only(), "out"_a, "sigmas"_a = dip::FloatArray{ 1.0 }, "derivativeOrder"_a = dip::UnsignedArray{ 0 }, "truncation"_a = 3.0, "inRepresentation"_a = dip::S::SPATIAL, "outRepresentation"_a = dip::S::SPATIAL );
+   m.def( "GaussFIR", py::overload_cast< dip::Image const&, dip::FloatArray, dip::UnsignedArray, dip::StringArray const&, dip::dfloat >( &dip::GaussFIR ),
+          "in"_a, "sigmas"_a = dip::FloatArray{ 1.0 }, "derivativeOrder"_a = dip::UnsignedArray{ 0 }, "boundaryCondition"_a = dip::StringArray{}, "truncation"_a = 3.0 );
+   m.def( "GaussFIR", py::overload_cast< dip::Image const&, dip::FloatArray, dip::UnsignedArray, dip::StringArray const&, dip::dfloat >( &dip::GaussFIR ),
+          "in"_a, "sigmas"_a = dip::FloatArray{ 1.0 }, "derivativeOrder"_a = dip::UnsignedArray{ 0 }, "boundaryCondition"_a = dip::StringArray{}, "truncation"_a = 3.0 );
+   m.def( "GaussFT", py::overload_cast< dip::Image const&, dip::FloatArray, dip::UnsignedArray, dip::dfloat, dip::String const&, dip::String const&, dip::StringArray const& >( &dip::GaussFT ),
+          "in"_a, "sigmas"_a = dip::FloatArray{ 1.0 }, "derivativeOrder"_a = dip::UnsignedArray{ 0 }, "truncation"_a = 3.0, "inRepresentation"_a = dip::S::SPATIAL, "outRepresentation"_a = dip::S::SPATIAL, "boundaryCondition"_a = dip::StringArray{} );
+   m.def( "GaussFT", py::overload_cast< dip::Image const&, dip::Image&, dip::FloatArray, dip::UnsignedArray, dip::dfloat, dip::String const&, dip::String const&, dip::StringArray const& >( &dip::GaussFT ),
+          "in"_a, py::kw_only(), "out"_a, "sigmas"_a = dip::FloatArray{ 1.0 }, "derivativeOrder"_a = dip::UnsignedArray{ 0 }, "truncation"_a = 3.0, "inRepresentation"_a = dip::S::SPATIAL, "outRepresentation"_a = dip::S::SPATIAL, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "GaussIIR", py::overload_cast< dip::Image const&, dip::FloatArray, dip::UnsignedArray, dip::StringArray const&, dip::UnsignedArray, dip::String const&, dip::dfloat >( &dip::GaussIIR ),
           "in"_a, "sigmas"_a = dip::FloatArray{ 1.0 }, "derivativeOrder"_a = dip::UnsignedArray{ 0 }, "boundaryCondition"_a = dip::StringArray{}, "filterOrder"_a = dip::UnsignedArray{}, "designMethod"_a = dip::S::DISCRETE_TIME_FIT, "truncation"_a = 3.0 );
    m.def( "GaussIIR", py::overload_cast< dip::Image const&, dip::Image&, dip::FloatArray, dip::UnsignedArray, dip::StringArray const&, dip::UnsignedArray, dip::String const&, dip::dfloat >( &dip::GaussIIR ),

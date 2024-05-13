@@ -1,5 +1,5 @@
 /*
- * (c)2017-2021, Cris Luengo.
+ * (c)2017-2024, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,12 +15,18 @@
  * limitations under the License.
  */
 
+#include <algorithm>
+#include <cmath>
+#include <memory>
+#include <vector>
+
 #include "diplib.h"
+#include "diplib/boundary.h"
+#include "diplib/dft.h"
 #include "diplib/framework.h"
 #include "diplib/generation.h"
 #include "diplib/iterators.h"
 #include "diplib/linear.h"
-#include "diplib/math.h"
 #include "diplib/overload.h"
 #include "diplib/transform.h"
 
@@ -322,7 +328,7 @@ class GaussFTLineFilter : public Framework::ScanLineFilter {
             }
          }
       }
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 3; } // not counting initialization
+      dip::uint GetNumberOfOperations( dip::uint /*nInput*/, dip::uint /*nOutput*/, dip::uint /*nTensorElements*/ ) override { return 3; } // not counting initialization
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          auto bufferLength = params.bufferLength;
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
@@ -349,6 +355,21 @@ class GaussFTLineFilter : public Framework::ScanLineFilter {
       std::vector< std::vector< TPI >> gaussLUTs_;
 };
 
+dip::Image ExpandInput( dip::Image const& in, FloatArray const& sigmas, UnsignedArray const& order, dfloat truncation, StringArray const& boundaryCondition ) {
+   BoundaryConditionArray bc = StringArrayToBoundaryConditionArray( boundaryCondition );
+   UnsignedArray sizes = in.Sizes();
+   DIP_ASSERT( sigmas.size() == sizes.size() );  // Our caller has already expanded these arrays to be the right size.
+   DIP_ASSERT( order.size() == sizes.size() );
+   dip::uint maxFactor = MaxFactor( in.DataType().IsComplex() );
+   for( dip::uint ii = 0; ii < sizes.size(); ++ii ) {
+      sizes[ ii ] += 2 * HalfGaussianSize( sigmas[ ii ], order[ ii ], truncation, in.DataType() );
+      sizes[ ii ] = GetOptimalDFTSize( sizes[ ii ], true, maxFactor );
+   }
+   dip::Image out;
+   ExtendImageToSize( in, out, sizes, Option::CropLocation::CENTER, bc );
+   return out;
+}
+
 } // namespace
 
 void GaussFT(
@@ -358,16 +379,19 @@ void GaussFT(
       UnsignedArray order,
       dfloat truncation,
       String const& inRepresentation,
-      String const& outRepresentation
+      String const& outRepresentation,
+      StringArray const& boundaryCondition
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
-   bool inSpatial;
+   bool inSpatial; // NOLINT(*-init-variables)
    DIP_STACK_TRACE_THIS( inSpatial = BooleanFromString( inRepresentation, S::SPATIAL, S::FREQUENCY ));
-   bool outSpatial;
+   bool outSpatial; // NOLINT(*-init-variables)
    DIP_STACK_TRACE_THIS( outSpatial = BooleanFromString( outRepresentation, S::SPATIAL, S::FREQUENCY ));
    if( !inSpatial ) {
       DIP_THROW_IF( !in.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
    }
+   bool expanded = false;
+   UnsignedArray originalSizes = in.Sizes(); // NOLINT(*-unnecessary-copy-initialization)
    dip::uint nDims = in.Dimensionality();
    DIP_START_STACK_TRACE
       ArrayUseParameter( sigmas, nDims, 1.0 );
@@ -389,7 +413,9 @@ void GaussFT(
       bool reuseInFT = false;
       if( inSpatial ) {
          real = !in.DataType().IsComplex();
-         DIP_STACK_TRACE_THIS( inFT = FourierTransform( in ));
+         expanded = !boundaryCondition.empty();
+         dip::Image const& tmp = expanded ? ExpandInput( in, sigmas, order, truncation, boundaryCondition ) : in;
+         DIP_STACK_TRACE_THIS( inFT = FourierTransform( tmp ));
          reuseInFT = true;
       } else {
          inFT = in;
@@ -415,6 +441,9 @@ void GaussFT(
             options.insert( S::REAL );
          }
          DIP_STACK_TRACE_THIS( FourierTransform( outFT, out, options ));
+         if( expanded ) {
+            out.Crop( originalSizes );
+         }
       }
    } else {
       DIP_START_STACK_TRACE
@@ -434,7 +463,6 @@ void GaussFT(
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 #include "diplib/statistics.h"
-#include "diplib/iterators.h"
 #include "diplib/testing.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the Gaussian filters") {
@@ -478,6 +506,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the Gaussian filters") {
 #ifdef _OPENMP
 
 #include "diplib/multithreading.h"
+#include "diplib/random.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the separable framework under multithreading") {
 

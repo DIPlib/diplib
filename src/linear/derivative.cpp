@@ -1,5 +1,5 @@
 /*
- * (c)2017-2021, Cris Luengo.
+ * (c)2017-2024, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,10 +15,12 @@
  * limitations under the License.
  */
 
+#include <utility>
+
 #include "diplib.h"
+#include "diplib/generic_iterators.h"
 #include "diplib/linear.h"
 #include "diplib/math.h"
-#include "diplib/generic_iterators.h"
 
 namespace dip {
 
@@ -72,7 +74,9 @@ void Gauss(
    if(( method == "FIR" ) || ( method == FIR )) {
       DIP_STACK_TRACE_THIS( GaussFIR( in, out, std::move( sigmas ), std::move( derivativeOrder ), boundaryCondition, truncation ));
    } else if(( method == "FT" ) || ( method == FT )) {
-      DIP_STACK_TRACE_THIS( GaussFT( in, out, std::move( sigmas ), std::move( derivativeOrder ), truncation )); // ignores boundaryCondition
+      // For GaussFT, the empty boundary condition is not the same as our default boundary condition.
+      StringArray const& bc = boundaryCondition.empty() ? StringArray{ S::DEFAULT } : boundaryCondition;
+      DIP_STACK_TRACE_THIS( GaussFT( in, out, std::move( sigmas ), std::move( derivativeOrder ), truncation, S::SPATIAL, S::SPATIAL, bc ));
    } else if(( method == "IIR" ) || ( method == IIR )) {
       DIP_STACK_TRACE_THIS( GaussIIR( in, out, std::move( sigmas ), std::move( derivativeOrder ), boundaryCondition, {}, S::DISCRETE_TIME_FIT, truncation ));
    } else {
@@ -180,7 +184,7 @@ void GradientMagnitude(
    DIP_STACK_TRACE_THIS( dims = FindGradientDimensions( c_in.Sizes(), sigmas, std::move( process ), method == S::FINITEDIFF ));
    dip::uint nDims = dims.size();
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
-   Image in = c_in;
+   Image in = c_in; // NOLINT(*-unnecessary-copy-initialization)
    if( in.Aliases( out )) {
       out.Strip();
    }
@@ -395,7 +399,7 @@ void Laplace (
       kernel.At( ksz ) = static_cast< dfloat >( kernel.NumberOfPixels() ) - 1.0;
       DIP_STACK_TRACE_THIS( GeneralConvolution( c_in, kernel, out, boundaryCondition ));
    } else {
-      Image in = c_in;
+      Image in = c_in; // NOLINT(*-unnecessary-copy-initialization)
       if( in.Aliases( out )) {
          out.Strip();
       }
@@ -414,7 +418,7 @@ void Laplace (
 
 namespace {
 
-enum class DggFamilyVersion { Dgg, LaplacePlusDgg, LaplaceMinusDgg };
+enum class DggFamilyVersion : uint8 { Dgg, LaplacePlusDgg, LaplaceMinusDgg };
 
 void DggFamily(
       Image const& in,
@@ -429,8 +433,9 @@ void DggFamily(
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
 
-   Image g, H;
-   DIP_STACK_TRACE_THIS( Gradient( in, g, std::move( sigmas ), method, boundaryCondition, std::move( process ), truncation ));
+   Image g;
+   Image H;
+   DIP_STACK_TRACE_THIS( Gradient( in, g, sigmas, method, boundaryCondition, process, truncation ));
    DIP_STACK_TRACE_THIS( Hessian( in, H, std::move( sigmas ), method, boundaryCondition, std::move( process ), truncation ));
    DIP_ASSERT( g.TensorElements() == H.TensorRows() );
 
