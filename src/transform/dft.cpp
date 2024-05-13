@@ -15,10 +15,14 @@
  * limitations under the License.
  */
 
+#include "diplib/dft.h"
+
+#include <cmath>
+#include <complex>
 #include <limits>
+#include <vector>
 
 #include "diplib.h"
-#include "diplib/dft.h"
 
 #ifdef DIP_CONFIG_HAS_FFTW
 

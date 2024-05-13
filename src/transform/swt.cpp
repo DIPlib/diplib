@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/transform.h"
+
+#include <utility>
+#include <vector>
+
+#include "diplib.h"
 #include "diplib/linear.h"
 #include "diplib/generic_iterators.h"
 

@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
+#include <memory>
+#include <cmath>
 #include "diplib/transform.h"
+
+#include "diplib.h"
 #include "diplib/boundary.h"
 #include "diplib/framework.h"
 #include "diplib/overload.h"
@@ -29,7 +32,7 @@ class HaarWaveletLineFilter : public Framework::SeparableLineFilter {
       using TPF = FloatType< TPI >;
    public:
       HaarWaveletLineFilter( bool isForward ) : isForward( isForward ) {}
-      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint /*nTensorElements*/, dip::uint /*border*/, dip::uint /*procDim*/ ) override {
          return 2 * lineLength;
       }
       void Filter( Framework::SeparableLineFilterParameters const& params ) override {
@@ -86,7 +89,7 @@ void HaarWaveletTransform(
       out = in;
       return;
    }
-   bool isForward;
+   bool isForward{};
    DIP_STACK_TRACE_THIS( isForward = BooleanFromString( direction, S::FORWARD, S::INVERSE ));
 
    // Figure out what sizes out must have
@@ -104,7 +107,7 @@ void HaarWaveletTransform(
    }
 
    // Does out have the right sizes and data type?
-   Image inCopy = in; // in case *in == *out, and we need to strip out.
+   Image inCopy = in; // in case *in == *out, and we need to strip out. NOLINT(*-unnecessary-copy-initialization)
    if( out.IsForged() && ( out.Sizes() != sizes )) {
       // We'll have to resize it, let's strip now, make things easier later on.
       DIP_STACK_TRACE_THIS( out.Strip() );

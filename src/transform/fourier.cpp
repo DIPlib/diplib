@@ -20,6 +20,8 @@
     - dip::maximumDFTSize can be 2^63-1 for FFTW if we use the guru interface.
 */
 
+#include "diplib/transform.h"
+
 #include <cmath>
 #include <memory>
 #include <utility>
@@ -31,7 +33,6 @@
 #include "diplib/geometry.h"
 #include "diplib/math.h"
 #include "diplib/overload.h"
-#include "diplib/transform.h"
 
 
 namespace dip {
@@ -564,7 +565,7 @@ void FourierTransform(
    }
 
    // Do the processing
-   Image const in_copy = in; // Preserve input in case *in == *out
+   Image const in_copy = in; // Preserve input in case *in == *out. NOLINT(*-unnecessary-copy-initialization)
    if( realInput ) {
       // Real-to-complex transform
 
@@ -664,19 +665,18 @@ dip::uint OptimalFourierTransformSize( dip::uint size, dip::String const& which,
 #include "diplib/generation.h"
 #include "diplib/statistics.h"
 
-DOCTEST_TEST_CASE("[DIPlib] testing the FourierTransform function") {
-   // === 2D image, 2D transform ===
+DOCTEST_TEST_CASE("[DIPlib] testing the FourierTransform function (2D image, 2D transform)") {
    dip::UnsignedArray sz{ 128, 105 }; // 105 = 3*5*7
    dip::dfloat sigma = 7.0;
-   dip::FloatArray shift = { -5.432, -2.345 };
+   dip::FloatArray shift{ -5.432, -2.345 };
    dip::Image input{ sz, 1, dip::DT_SFLOAT };
    input.Fill( 0 );
    dip::DrawBandlimitedPoint( input, { static_cast< dip::dfloat >( sz[ 0 ] / 2 ) + shift[ 0 ],
                                        static_cast< dip::dfloat >( sz[ 1 ] / 2 ) + shift[ 1 ] }, { 1 }, { sigma }, 7.0 );
    dip::Image expectedOutput{ sz, 1, dip::DT_SFLOAT };
    expectedOutput.Fill( 0 );
-   dip::FloatArray outSigma = { static_cast< dip::dfloat >( sz[ 0 ] ) / ( 2.0 * dip::pi * sigma ),
-                                static_cast< dip::dfloat >( sz[ 1 ] ) / ( 2.0 * dip::pi * sigma ) };
+   dip::FloatArray outSigma{ static_cast< dip::dfloat >( sz[ 0 ] ) / ( 2.0 * dip::pi * sigma ),
+                             static_cast< dip::dfloat >( sz[ 1 ] ) / ( 2.0 * dip::pi * sigma ) };
    dip::DrawBandlimitedPoint( expectedOutput, expectedOutput.GetCenter(), { 2.0 * dip::pi * outSigma.product() }, outSigma, 7.0 );
    dip::ShiftFT( expectedOutput, expectedOutput, shift );
 
@@ -714,7 +714,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FourierTransform function") {
    //std::cout << "max = " << maxabs << '\n';
    DOCTEST_CHECK( maxabs < 1e-9 );
 
-   // === 2D image, 2D transform -- repeat with different R2C and C2R dimension ===
+   // === Repeat with different R2C and C2R dimension ===
    sz = { 64, 105 };
    input = dip::Image{ sz, 1, dip::DT_SFLOAT };
    input.Fill( 0 );
@@ -743,31 +743,34 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FourierTransform function") {
    maxabs = dip::MaximumAbs( output - input ).As< double >();
    //std::cout << "max = " << maxabs << '\n';
    DOCTEST_CHECK( maxabs < 1e-9 );
+}
 
-   // === Test "fast" option
-   sz = { 97, 107 }; // prime sizes
-   input = dip::Image{ sz, 1, dip::DT_SFLOAT };
+DOCTEST_TEST_CASE("[DIPlib] testing the FourierTransform function (fast option)") {
+   dip::dfloat sigma = 7.0;
+   dip::FloatArray shift{ -5.432, -2.345 };
+   dip::UnsignedArray sz{ 97, 107 }; // prime sizes
+   dip::Image input( sz, 1, dip::DT_SFLOAT );
    input.Fill( 0 );
    dip::DrawBandlimitedPoint( input, { static_cast< dip::dfloat >( sz[ 0 ] / 2 ) + shift[ 0 ],
                                        static_cast< dip::dfloat >( sz[ 1 ] / 2 ) + shift[ 1 ] }, { 1 }, { sigma }, 7.0 );
 
    // = Expected output with C2C transform
    dip::UnsignedArray expectedOutSz{ 98, 108 }; // Same size for both FFT implementations
-   expectedOutput = dip::Image{ expectedOutSz, 1, dip::DT_SFLOAT };
+   dip::Image expectedOutput( expectedOutSz, 1, dip::DT_SFLOAT );
    expectedOutput.Fill( 0 );
-   outSigma = { static_cast< dip::dfloat >( expectedOutSz[ 0 ] ) / ( 2.0 * dip::pi * sigma ),
-                static_cast< dip::dfloat >( expectedOutSz[ 1 ] ) / ( 2.0 * dip::pi * sigma ) };
+   dip::FloatArray outSigma{ static_cast< dip::dfloat >( expectedOutSz[ 0 ] ) / ( 2.0 * dip::pi * sigma ),
+                             static_cast< dip::dfloat >( expectedOutSz[ 1 ] ) / ( 2.0 * dip::pi * sigma ) };
    dip::DrawBandlimitedPoint( expectedOutput, expectedOutput.GetCenter(), { 2.0 * dip::pi * outSigma.product() }, outSigma, 7.0 );
    dip::ShiftFT( expectedOutput, expectedOutput, shift );
    expectedOutput.Crop( sz );
 
    // Complex-to-complex transform (fast)
-   output = dip::Convert( input, dip::DT_SCOMPLEX );
+   dip::Image output = dip::Convert( input, dip::DT_SCOMPLEX );
    dip::FourierTransform( output, output, { "fast" } );
    DOCTEST_CHECK( output.DataType() == dip::DT_SCOMPLEX );
    DOCTEST_CHECK( output.Sizes() == expectedOutSz );
    output.Crop( sz );
-   maxabs = dip::MaximumAbs( output - expectedOutput ).As< double >();
+   dip::dfloat maxabs = dip::MaximumAbs( output - expectedOutput ).As< double >();
    //std::cout << "max = " << maxabs << '\n';
    DOCTEST_CHECK( maxabs < 2e-7 );
 
@@ -811,17 +814,21 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FourierTransform function") {
    maxabs = dip::MaximumAbs( output - input ).As< double >();
    //std::cout << "max = " << maxabs << '\n';
    DOCTEST_CHECK( maxabs < 1e-9 );
+}
 
-   // === Test "corner" and "symmetric" option (we test these at the same time because they're orthogonal features)
-   sz = { 64, 105 };
-   input = dip::Image{ sz, 1, dip::DT_SFLOAT };
+DOCTEST_TEST_CASE("[DIPlib] testing the FourierTransform function (corner and symmetric options)") {
+   // Note that we test these at the same time because they're orthogonal features
+   dip::dfloat sigma = 7.0;
+   dip::FloatArray shift{ -5.432, -2.345 };
+   dip::UnsignedArray sz{ 64, 105 };
+   dip::Image input( sz, 1, dip::DT_SFLOAT );
    input.Fill( 0 );
    dip::DrawBandlimitedPoint( input, { static_cast< dip::dfloat >( sz[ 0 ] / 2 ) + shift[ 0 ],
                                        static_cast< dip::dfloat >( sz[ 1 ] / 2 ) + shift[ 1 ] }, { 1 }, { sigma }, 7.0 );
-   expectedOutput = dip::Image{ sz, 1, dip::DT_SFLOAT };
+   dip::Image expectedOutput( sz, 1, dip::DT_SFLOAT );
    expectedOutput.Fill( 0 );
-   outSigma = { static_cast< dip::dfloat >( sz[ 0 ] ) / ( 2.0 * dip::pi * sigma ),
-                static_cast< dip::dfloat >( sz[ 1 ] ) / ( 2.0 * dip::pi * sigma ) };
+   dip::FloatArray outSigma{ static_cast< dip::dfloat >( sz[ 0 ] ) / ( 2.0 * dip::pi * sigma ),
+                             static_cast< dip::dfloat >( sz[ 1 ] ) / ( 2.0 * dip::pi * sigma ) };
    dip::DrawBandlimitedPoint( expectedOutput, expectedOutput.GetCenter(), { 2.0 * dip::pi * outSigma.product() / std::sqrt( sz.product()) }, outSigma, 7.0 );
    dip::FloatArray newShift = shift;
    newShift += expectedOutput.GetCenter();
@@ -830,11 +837,11 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FourierTransform function") {
                                                 -static_cast< dip::sint >( sz[ 1 ] ) / 2 } );
 
    // Complex-to-complex transform (corner)
-   output = dip::Convert( input, dip::DT_SCOMPLEX );
+   dip::Image output = dip::Convert( input, dip::DT_SCOMPLEX );
    dip::FourierTransform( output, output, { "corner", "symmetric" } );
    DOCTEST_CHECK( output.DataType() == dip::DT_SCOMPLEX );
    DOCTEST_CHECK( output.Sizes() == sz );
-   maxabs = dip::MaximumAbs( output - expectedOutput ).As< double >();
+   dip::dfloat maxabs = dip::MaximumAbs( output - expectedOutput ).As< double >();
    //std::cout << "max = " << maxabs << '\n';
    DOCTEST_CHECK( maxabs < 1e-6 ); // Much larger error because of smaller image, but smaller error also because of normalization
 
@@ -870,7 +877,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FourierTransform function") {
                                        static_cast< dip::dfloat >( sz[ 1 ] / 2 ) + shift[ 1 ] }, { 1 }, { sigma }, 7.0 );
 
    // = Expected output with C2C transform
-   expectedOutSz = { 98, 108 };
+   dip::UnsignedArray expectedOutSz{ 98, 108 };
    expectedOutput = dip::Image{ expectedOutSz, 1, dip::DT_SFLOAT };
    expectedOutput.Fill( 0 );
    outSigma = { static_cast< dip::dfloat >( expectedOutSz[ 0 ] ) / ( 2.0 * dip::pi * sigma ),
@@ -941,20 +948,21 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FourierTransform function") {
    maxabs = dip::MaximumAbs( output - expectedInverseOutput ).As< double >();
    //std::cout << "max = " << maxabs << '\n';
    DOCTEST_CHECK( maxabs < 1e-6 ); // interpolation error
+}
 
-   // === 3D image, 1D transform ===
-   sz = { 3, 32, 2 };
+DOCTEST_TEST_CASE("[DIPlib] testing the FourierTransform function (3D image, 1D transform)") {
+   dip::UnsignedArray sz{ 3, 32, 2 };
    dip::BooleanArray process{ false, true, false };
-   shift = { 2.0, -1.765, 1.0 };
-   sigma = 3.0;
-   input = dip::Image{ sz, 1, dip::DT_DFLOAT };
+   dip::FloatArray shift{ 2.0, -1.765, 1.0 };
+   dip::dfloat sigma = 3.0;
+   dip::Image input( sz, 1, dip::DT_DFLOAT );
    input.Fill( 0 );
    dip::DrawBandlimitedPoint( input, { static_cast< dip::dfloat >( sz[ 0 ] / 2 ) + shift[ 0 ],
                                        static_cast< dip::dfloat >( sz[ 1 ] / 2 ) + shift[ 1 ],
                                        static_cast< dip::dfloat >( sz[ 2 ] / 2 ) + shift[ 2 ] }, { 1 }, { sigma }, 7.0 );
-   expectedOutput = dip::Image{ sz, 1, dip::DT_DFLOAT };
+   dip::Image expectedOutput( sz, 1, dip::DT_DFLOAT );
    expectedOutput.Fill( 0 );
-   outSigma = { sigma, static_cast< dip::dfloat >( sz[ 1 ] ) / ( 2.0 * dip::pi * sigma ), sigma };
+   dip::FloatArray outSigma{ sigma, static_cast< dip::dfloat >( sz[ 1 ] ) / ( 2.0 * dip::pi * sigma ), sigma };
    dip::DrawBandlimitedPoint( expectedOutput, { static_cast< dip::dfloat >( sz[ 0 ] / 2 ) + shift[ 0 ],
                                                 static_cast< dip::dfloat >( sz[ 1 ] / 2 ),
                                                 static_cast< dip::dfloat >( sz[ 2 ] / 2 ) + shift[ 2 ] },
@@ -962,11 +970,11 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FourierTransform function") {
    dip::ShiftFT( expectedOutput, expectedOutput, { 0.0, shift[ 1 ], 0.0 } );
 
     // Complex-to-complex transform (corner)
-   output = dip::Convert( input, dip::DT_DCOMPLEX );
+   dip::Image output = dip::Convert( input, dip::DT_DCOMPLEX );
    dip::FourierTransform( output, output, {}, process );
    DOCTEST_CHECK( output.DataType() == dip::DT_DCOMPLEX );
    DOCTEST_CHECK( output.Sizes() == sz );
-   maxabs = dip::MaximumAbs( output - expectedOutput ).As< double >();
+   dip::dfloat maxabs = dip::MaximumAbs( output - expectedOutput ).As< double >();
    //std::cout << "max = " << maxabs << '\n';
    DOCTEST_CHECK( maxabs < 1e-8 ); // Much larger error because of smaller image
 

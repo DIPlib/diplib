@@ -44,11 +44,12 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include "diplib/dft.h"
+
 #include <algorithm>
 #include <limits>
 
 #include "diplib.h"
-#include "diplib/dft.h"
 
 namespace dip {
 namespace {

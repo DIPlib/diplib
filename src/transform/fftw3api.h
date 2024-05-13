@@ -19,7 +19,7 @@
 #ifndef FFTWAPI_H
 #define FFTWAPI_H
 
-#include <fftw3.h>
+#include <fftw3.h> // IWYU pragma: export
 
 /// Struct for which several specializations are defined by macro expansion.
 /// Inspired by 'fftw-wrapper' ( https://github.com/dnbaker/fftw-wrapper ).

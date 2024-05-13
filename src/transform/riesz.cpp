@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/transform.h"
-#include "diplib/math.h"
+
+#include "diplib.h"
 #include "diplib/generation.h"
+#include "diplib/math.h"
 
 namespace dip {
 
@@ -32,9 +33,9 @@ void RieszTransform(
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    // Which dimensions to process?
    DIP_STACK_TRACE_THIS( ArrayUseParameter( process, in.Dimensionality(), true ));
-   bool inIsSpatial;
+   bool inIsSpatial{};
    DIP_STACK_TRACE_THIS( inIsSpatial = BooleanFromString( inRepresentation, S::SPATIAL, S::FREQUENCY ));
-   bool outIsSpatial;
+   bool outIsSpatial{};
    DIP_STACK_TRACE_THIS( outIsSpatial = BooleanFromString( outRepresentation, S::SPATIAL, S::FREQUENCY ));
    dip::uint tElems = process.count();
    // Compute Fourier transform of `in`, before reforging `out` in case `&in==&out`.
