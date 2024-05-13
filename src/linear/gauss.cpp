@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+#include "diplib/linear.h"
+
 #include <algorithm>
 #include <cmath>
 #include <memory>
@@ -26,7 +28,6 @@
 #include "diplib/framework.h"
 #include "diplib/generation.h"
 #include "diplib/iterators.h"
-#include "diplib/linear.h"
 #include "diplib/overload.h"
 #include "diplib/transform.h"
 

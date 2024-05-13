@@ -14,14 +14,19 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/linear.h"
-#include "diplib/math.h"
-#include "diplib/generation.h"
-#include "diplib/transform.h"
+
+#include <algorithm>
+#include <cmath>
+#include <complex>
+#include <vector>
+
+#include "diplib.h"
 #include "diplib/framework.h"
-#include "diplib/overload.h"
+#include "diplib/generation.h"
 #include "diplib/iterators.h"
+#include "diplib/math.h"
+#include "diplib/transform.h"
 
 namespace dip {
 
@@ -126,7 +131,7 @@ void CreateGabor(
    do {
       UnsignedArray const& coords = itOut.Coordinates();
       // Multiply 1D Kernels
-      dcomplex value = 1.0;
+      dcomplex value{1.0, 0.0};
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
          value *= ptrs[ ii ][ coords[ ii ]];
       }
@@ -234,13 +239,13 @@ void LogGaborFilterBank(
    bool onlyScale = nOrientations == 1;
    dip::uint nDims = in.Dimensionality();
    DIP_THROW_IF( !onlyScale && ( nDims != 2 ), E::DIMENSIONALITY_NOT_SUPPORTED );
-   bool spatialDomainOutput;
+   bool spatialDomainOutput{};
    DIP_STACK_TRACE_THIS( spatialDomainOutput = BooleanFromString( outRepresentation, S::SPATIAL, S::FREQUENCY ));
    bool inputIsReal = true; // if no input image is given, it's like we're given a delta pulse image -- it's real.
    Image ftIn;
    if( in.IsForged() ) {
       // Get Fourier-domain representation of input image
-      bool spatialDomainInput;
+      bool spatialDomainInput{};
       DIP_STACK_TRACE_THIS( spatialDomainInput = BooleanFromString( inRepresentation, S::SPATIAL, S::FREQUENCY ));
       if( spatialDomainInput ) {
          inputIsReal = !in.DataType().IsComplex();

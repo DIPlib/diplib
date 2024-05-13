@@ -15,11 +15,16 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/linear.h"
+
+#include <memory>
+
+#include "diplib.h"
+#include "diplib/boundary.h"
 #include "diplib/framework.h"
-#include "diplib/pixel_table.h"
+#include "diplib/kernel.h"
 #include "diplib/overload.h"
+#include "diplib/pixel_table.h"
 
 namespace dip {
 
@@ -31,7 +36,7 @@ class RectangularUniformLineFilter : public Framework::SeparableLineFilter {
    public:
       RectangularUniformLineFilter( UnsignedArray const& sizes ) :
             sizes_( sizes ) {}
-      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint procDim ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint /*nTensorElements*/, dip::uint /*border*/, dip::uint procDim ) override {
          return sizes_[ procDim ] + lineLength * 4;
       }
       void Filter( Framework::SeparableLineFilterParameters const& params ) override {
@@ -116,7 +121,7 @@ class PixelTableUniformLineFilter : public Framework::FullLineFilter {
             *out = sum * norm;
          }
       }
-      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint nRuns ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint /*nTensorElements*/, dip::uint /*nKernelPixels*/, dip::uint nRuns ) override {
          return lineLength * nRuns * 4    // number of adds
                 + lineLength * nRuns;     // iterating over pixel table runs
       }

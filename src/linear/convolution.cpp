@@ -15,20 +15,29 @@
  * limitations under the License.
  */
 
+#include "diplib/linear.h"
+
+#include <algorithm>
+#include <cmath>
+#include <complex>
 #include <cstdlib>   // std::malloc, std::free
+#include <memory>
+#include <type_traits>
+#include <vector>
 
 #include "diplib.h"
-#include "diplib/linear.h"
-#include "diplib/transform.h"
+#include "diplib/boundary.h"
 #include "diplib/framework.h"
-#include "diplib/pixel_table.h"
+#include "diplib/kernel.h"
 #include "diplib/overload.h"
+#include "diplib/pixel_table.h"
+#include "diplib/transform.h"
 
 namespace dip {
 
 namespace {
 
-enum class FilterSymmetry {
+enum class FilterSymmetry : uint8 {
       GENERAL,
       EVEN,
       ODD,
@@ -65,8 +74,7 @@ struct InternOneDimensionalFilter {
    FilterSymmetry symmetry = FilterSymmetry::GENERAL;
 
    InternOneDimensionalFilter( OneDimensionalFilter const& in, bool useDouble = true, bool useComplex = false )
-         : isDouble( useDouble ), isComplex( useComplex ) {
-      dataSize = size = in.filter.size();
+         : size( in.filter.size() ), dataSize( in.filter.size() ), isDouble( useDouble ), isComplex( useComplex ) {
       dip::uint sampleSize = isDouble ? sizeof( dfloat ) : sizeof( sfloat );
       if( in.isComplex ) {
          DIP_THROW_IF( dataSize & 1, "Complex filter must have an even number of values" );
@@ -150,6 +158,7 @@ struct InternOneDimensionalFilter {
    InternOneDimensionalFilter& operator=( InternOneDimensionalFilter const& ) = delete;
    InternOneDimensionalFilter( InternOneDimensionalFilter&& other ) = default;
    InternOneDimensionalFilter& operator=( InternOneDimensionalFilter&& other ) = default;
+   ~InternOneDimensionalFilter() = default;
 };
 
 using InternOneDimensionalFilterArray = std::vector< InternOneDimensionalFilter >;
@@ -424,11 +433,11 @@ void ConvolveFT(
    // Test inputs
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !filter.IsForged(), E::IMAGE_NOT_FORGED );
-   bool inSpatial;
+   bool inSpatial{};
    DIP_STACK_TRACE_THIS( inSpatial = BooleanFromString( inRepresentation, S::SPATIAL, S::FREQUENCY ));
-   bool filterSpatial;
+   bool filterSpatial{};
    DIP_STACK_TRACE_THIS( filterSpatial = BooleanFromString( filterRepresentation, S::SPATIAL, S::FREQUENCY ));
-   bool outSpatial;
+   bool outSpatial{};
    DIP_STACK_TRACE_THIS( outSpatial = BooleanFromString( outRepresentation, S::SPATIAL, S::FREQUENCY ));
 
    // Ensure `filter` has the right dimensionality and is not larger than the input image
@@ -522,7 +531,7 @@ namespace {
 template< typename TPI >
 class GeneralConvolutionLineFilter : public Framework::FullLineFilter {
    public:
-      void SetNumberOfThreads( dip::uint, PixelTableOffsets const& pixelTable ) override {
+      void SetNumberOfThreads( dip::uint /*threads*/, PixelTableOffsets const& pixelTable ) override {
          offsets_ = pixelTable.Offsets();
       }
       void Filter( Framework::FullLineFilterParameters const& params ) override {
@@ -555,7 +564,7 @@ template< typename TPI >
 class GeneralConvolutionLineFilterComplex : public Framework::FullLineFilter {
       // Idem as above, but for complex kernel weights. TPI is guaranteed a complex type
    public:
-      void SetNumberOfThreads( dip::uint, PixelTableOffsets const& pixelTable ) override {
+      void SetNumberOfThreads( dip::uint /*threads*/, PixelTableOffsets const& pixelTable ) override {
          offsets_ = pixelTable.Offsets();
       }
       void Filter( Framework::FullLineFilterParameters const& params ) override {
@@ -709,9 +718,10 @@ void Convolution(
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
-#include "diplib/statistics.h"
 #include "diplib/generation.h"
 #include "diplib/iterators.h"
+#include "diplib/random.h"
+#include "diplib/statistics.h"
 #include "diplib/testing.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the separable convolution") {

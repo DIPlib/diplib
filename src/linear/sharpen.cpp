@@ -15,8 +15,11 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/linear.h"
+
+#include <utility>
+
+#include "diplib.h"
 #include "diplib/math.h"
 
 namespace dip {

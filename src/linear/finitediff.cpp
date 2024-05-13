@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/linear.h"
-#include "diplib/framework.h"
+
+#include "diplib.h"
 
 namespace dip {
 

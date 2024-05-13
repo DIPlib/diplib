@@ -15,8 +15,9 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/linear.h"
+
+#include "diplib.h"
 #include "diplib/pixel_table.h"
 
 #if defined(__GNUG__) || defined(__clang__)

@@ -1152,7 +1152,7 @@ DIP_EXPORT void GaborIIR(
       FloatArray const& frequencies,
       StringArray const& boundaryCondition = {},
       BooleanArray process = {},
-      IntegerArray filterOrder = {},
+      IntegerArray const& filterOrder = {},
       dfloat truncation = 3
 );
 DIP_NODISCARD inline Image GaborIIR(
@@ -1161,11 +1161,11 @@ DIP_NODISCARD inline Image GaborIIR(
       FloatArray const& frequencies,
       StringArray const& boundaryCondition = {},
       BooleanArray process = {},
-      IntegerArray filterOrder = {},
+      IntegerArray const& filterOrder = {},
       dfloat truncation = 3
 ) {
    Image out;
-   GaborIIR( in, out, std::move( sigmas ), frequencies, boundaryCondition, std::move( process ), std::move( filterOrder ), truncation );
+   GaborIIR( in, out, std::move( sigmas ), frequencies, boundaryCondition, std::move( process ), filterOrder, truncation );
    return out;
 }
 

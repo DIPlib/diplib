@@ -16,10 +16,15 @@
  * limitations under the License.
  */
 
+#include "diplib/linear.h"
+
+#include <algorithm>
 #include <array>
+#include <cmath>
+#include <vector>
 
 #include "diplib.h"
-#include "diplib/linear.h"
+#include "diplib/boundary.h"
 #include "diplib/framework.h"
 
 namespace dip {
@@ -28,8 +33,7 @@ namespace {
 
 constexpr dip::uint MAX_IIR_ORDER = 6;
 
-struct GaborIIRParams
-{
+struct GaborIIRParams { // NOLINT(*-pro-type-member-init)
    dfloat sigma;
    dfloat frequency;
    dip::uint border;
@@ -57,21 +61,19 @@ GaborIIRParams FillGaborIIRParams(
    params.iir_order_den = {{ 3, 1, 3, 3, 1, 3 }};
 
    // Init a1, a2, b1, b2 and cc with zero
-   params.a1.fill( 0.0 );
-   params.a2.fill( 0.0 );
-   params.b1.fill( 0.0 );
-   params.b2.fill( 0.0 );
+   params.a1.fill( { 0.0, 0.0 } );
+   params.a2.fill( { 0.0, 0.0 } );
+   params.b1.fill( { 0.0, 0.0 } );
+   params.b2.fill( { 0.0, 0.0 } );
    params.cc = 0.0;
 
-   dfloat q;
+   dfloat q = -sigma;
    if( sigma > 0 ) {
       if( sigma >= 2.5 ) {
          q = sigma * 0.98711 - 0.96330;
       } else {
          q = 3.97156 - 4.14554 * sqrt( 1.0 - 0.26891 * sigma );
       }
-   } else {
-      q = -sigma;
    }
 
    dfloat w = frequency;
@@ -129,7 +131,7 @@ public:
    void SetNumberOfThreads( dip::uint threads ) override {
       buffers_.resize( threads );
    }
-   dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint /*procDim*/ ) override {
+   dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint /*nTensorElements*/, dip::uint /*border*/, dip::uint /*procDim*/ ) override {
       // TODO: figure out how filter parameters affect amount of computation
       //GaborIIRParams const& fParams = filterParams_[ procDim ];
       return lineLength * 40;
@@ -231,7 +233,7 @@ void GaborIIR(
    FloatArray const& frequencies,
    StringArray const& boundaryCondition,
    BooleanArray process,
-   IntegerArray, // filterOrder is ignored, treated as 0
+   IntegerArray const& /*filterOrder*/, // ignored, treated as 0
    dfloat truncation
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );

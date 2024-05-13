@@ -16,10 +16,15 @@
  * limitations under the License.
  */
 
+#include "diplib/linear.h"
+
+#include <algorithm>
 #include <array>
+#include <cmath>
+#include <vector>
 
 #include "diplib.h"
-#include "diplib/linear.h"
+#include "diplib/boundary.h"
 #include "diplib/framework.h"
 
 namespace dip {
@@ -42,7 +47,7 @@ struct GaussIIRParams {
    dfloat cc = 0;
 };
 
-enum class DesignMethod {
+enum class DesignMethod : uint8 {
       FORWARD_BACKWARD = 1,
       DISCRETE_TIME_FIT = 2
 };
@@ -448,7 +453,7 @@ class GaussIIRLineFilter : public Framework::SeparableLineFilter {
       void SetNumberOfThreads( dip::uint threads ) override {
          buffers_.resize( threads );
       }
-      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint /*procDim*/ ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint /*nTensorElements*/, dip::uint /*border*/, dip::uint /*procDim*/ ) override {
          // TODO: figure out how filter parameters affect amount of computation
          //GaussIIRParams const& fParams = filterParams_[ procDim ];
          return lineLength * 40;
@@ -489,7 +494,7 @@ class GaussIIRLineFilter : public Framework::SeparableLineFilter {
          // Recursive forward scan
          dfloat* p0 = in;
          dip::uint ii = 0;
-         dfloat r1, r2, r3, r4, r5;
+         dfloat r1{}, r2{}, r3{}, r4{}, r5{};
          switch( order1 ) {
             case 3:
                if( copy_forward ) {
@@ -743,7 +748,7 @@ void GaussIIR(
    } else {
       DIP_STACK_TRACE_THIS( ArrayUseParameter< dip::uint >( filterOrder, nDims, 3 ));
    }
-   DesignMethod method;
+   DesignMethod method{};
    DIP_STACK_TRACE_THIS( method = BooleanFromString( designMethod, S::FORWARD_BACKWARD, S::DISCRETE_TIME_FIT )
                                   ? DesignMethod::FORWARD_BACKWARD : DesignMethod::DISCRETE_TIME_FIT );
    // Filter parameters

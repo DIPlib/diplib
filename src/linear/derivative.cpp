@@ -15,11 +15,12 @@
  * limitations under the License.
  */
 
+#include "diplib/linear.h"
+
 #include <utility>
 
 #include "diplib.h"
 #include "diplib/generic_iterators.h"
-#include "diplib/linear.h"
 #include "diplib/math.h"
 
 namespace dip {
