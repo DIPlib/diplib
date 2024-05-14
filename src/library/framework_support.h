@@ -18,10 +18,11 @@
 #ifndef FRAMEWORK_SUPPORT_H
 #define FRAMEWORK_SUPPORT_H
 
+#include "diplib/framework.h"
+
 #include <vector>
 
 #include "diplib.h"
-#include "diplib/framework.h"
 
 namespace dip {
 namespace Framework {

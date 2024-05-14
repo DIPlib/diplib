@@ -15,10 +15,12 @@
  * limitations under the License.
  */
 
+#include "diplib/library/copy_buffer.h"
+
 #include <limits>
+#include <vector>
 
 #include "diplib.h"
-#include "diplib/library/copy_buffer.h"
 #include "diplib/boundary.h"
 #include "diplib/saturated_arithmetic.h"
 
@@ -33,14 +35,14 @@ namespace detail {
 namespace {
 
 template< class inT, class outT >
-static inline void cast_copy( ConstSampleIterator< inT > in, ConstSampleIterator< inT > end, SampleIterator< outT > out ) {
+inline void cast_copy( ConstSampleIterator< inT > in, ConstSampleIterator< inT > end, SampleIterator< outT > out ) {
    for( ; in != end; ++in, ++out ) {
       *out = clamp_cast< outT >( *in );
    }
 }
 
 template< typename inT, typename outT >
-static inline void CopyBufferFromTo(
+inline void CopyBufferFromTo(
       inT const* inBuffer,
       dip::sint inStride,
       dip::sint inTensorStride,
@@ -119,7 +121,7 @@ static inline void CopyBufferFromTo(
 }
 
 template< typename T >
-static inline void CopyBufferFromTo(
+inline void CopyBufferFromTo(
       T const* inBuffer,
       dip::sint inStride,
       dip::sint inTensorStride,
@@ -220,7 +222,7 @@ static inline void CopyBufferFromTo(
 }
 
 template< typename inT >
-static inline void CopyBufferFrom(
+inline void CopyBufferFrom(
       inT const* inBuffer,
       dip::sint inStride,
       dip::sint inTensorStride,
@@ -355,7 +357,7 @@ void CopyBuffer(
 namespace {
 
 template< typename DataType >
-static inline void ExpandBufferConstant(
+inline void ExpandBufferConstant(
       DataType* buffer,
       dip::sint stride,
       dip::uint pixels,
@@ -381,7 +383,7 @@ static inline void ExpandBufferConstant(
 // (i.e. function value matches the sample at the edge of the image line), and reaches 0 at the end of the expanded
 // boundary. This imposes a sort of windowing around the image.
 template< typename DataType >
-static inline void ExpandBufferFirstOrder(
+inline void ExpandBufferFirstOrder(
       DataType* buffer,
       dip::sint stride,
       dip::uint pixels, // guaranteed larger than 1
@@ -419,7 +421,7 @@ static inline void ExpandBufferFirstOrder(
 // to the image edge (i.e. function value matches the 2 samples at the edge of the image line), and reaches 0 at the
 // end of the expanded boundary. This imposes a sort of windowing around the image.
 template< typename DataType >
-static inline void ExpandBufferSecondOrder(
+inline void ExpandBufferSecondOrder(
       DataType* buffer,
       dip::sint stride,
       dip::uint pixels, // guaranteed larger than 1
@@ -467,7 +469,7 @@ static inline void ExpandBufferSecondOrder(
 // x = (a b^3-3 a b-2 a-b^3 c)/(b (b+1)^2)   and   y = (-2 a b^3-3 a b^2+a+2 b^3 c)/(b^2 (b+1)^2)   and   z = (a b^2+2 a b+a-b^2 c)/(b^2 (b+1)^2)
 // x = -(2 a)/b + a - (b^2 c)/(b+1)^2   and   y = (2 b c)/(b+1)^2 - (a (2 b-1))/b^2   and   z = a/b^2 - c/(b+1)^2
 template< typename DataType >
-static inline void ExpandBufferThirdOrder(
+inline void ExpandBufferThirdOrder(
       DataType* buffer,
       dip::sint stride,
       dip::uint pixels, // guaranteed larger than 2
@@ -511,7 +513,7 @@ static inline void ExpandBufferThirdOrder(
 }
 
 template< typename DataType, bool asymmetric >
-static inline void ExpandBufferMirror(
+inline void ExpandBufferMirror(
       DataType* buffer,
       dip::sint stride,
       dip::uint pixels, // guaranteed larger than 2
@@ -540,7 +542,7 @@ static inline void ExpandBufferMirror(
 }
 
 template< typename DataType, bool asymmetric >
-static inline void ExpandBufferPeriodic(
+inline void ExpandBufferPeriodic(
       DataType* buffer,
       dip::sint stride,
       dip::uint pixels, // guaranteed larger than 2
@@ -576,7 +578,7 @@ static inline void ExpandBufferPeriodic(
 }
 
 template< typename DataType >
-static inline void ExpandBufferFromTo(
+inline void ExpandBufferFromTo(
       DataType* buffer,
       dip::sint stride,
       dip::sint tensorStride,
@@ -762,12 +764,11 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FillBufferFromTo function") {
    // Parameter order: outBuffer, outStride, outTensorStride, pixels, tensorElements, value
 
    std::vector< dip::uint8 > output( 125 );
-   bool error;
 
    // Contiguous cases
    std::fill( output.begin(), output.end(), 101 );
    dip::detail::FillBufferFromTo< dip::uint8 >( output.data(), 1, 1, 20, 1, 42 );
-   error = false;
+   bool error = false;
    for( dip::uint ii = 0; ii < 20; ++ii ) {
       error |= output[ ii ] != 42;
    }
@@ -903,8 +904,6 @@ DOCTEST_TEST_CASE("[DIPlib] testing the CopyBuffer function") {
    std::vector< dip::uint8 > input( 100 );
    std::vector< dip::uint8 > output( 237 ); // part 1, mode 7 and part 2, mode 2 use this many elements
    std::iota( input.begin(), input.end(), 0 );
-   bool error;
-   dip::uint kk;
 
    // 1- Copying with identical types
 
@@ -913,7 +912,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the CopyBuffer function") {
          input.data(), dip::DT_UINT8, 0, 1,
          output.data(), dip::DT_UINT8, 1, 1,
          20, 1 );
-   error = false;
+   bool error = false;
    for( dip::uint ii = 0; ii < 20; ++ii ) {
       error |= output[ ii ] != 0;
    }
@@ -925,7 +924,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the CopyBuffer function") {
          output.data(), dip::DT_UINT8, 1, 1,
          20, 1 );
    error = false;
-   kk = 0;
+   dip::uint kk = 0;
    for( dip::uint ii = 0; ii < 20; ++ii ) {
       error |= output[ ii ] != kk++;
    }

@@ -16,8 +16,17 @@
  */
 
 #include "diplib/pixel_table.h"
-#include "diplib/iterators.h"
+
+#include <algorithm>
+#include <cmath>
+#include <limits>
+#include <type_traits>
+#include <utility>
+#include <vector>
+
+#include "diplib.h"
 #include "diplib/generic_iterators.h"
+#include "diplib/iterators.h"
 #include "diplib/overload.h"
 
 namespace dip {

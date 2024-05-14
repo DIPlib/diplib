@@ -15,11 +15,12 @@
  * limitations under the License.
  */
 
+#include "diplib/framework.h"
+
 #include <cstdlib>
 #include <vector>
 
 #include "diplib.h"
-#include "diplib/framework.h"
 
 #include "framework_support.h"
 

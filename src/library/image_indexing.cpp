@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+#include <utility>
+
 #include "diplib.h"
 
 
@@ -26,38 +28,38 @@ Image::View Image::Diagonal() const {
    dip::sint step = 1;
    tensor.ExtractDiagonal( step );
    Range out{ 0, static_cast< dip::sint >( tensor.Elements() - 1 ) * step, static_cast< dip::uint >( step ) };
-   DIP_STACK_TRACE_THIS( return Image::View( *this, std::move( out )));
+   DIP_STACK_TRACE_THIS( return Image::View( *this, out ));
 }
 
 Image::View Image::TensorRow( dip::uint index ) const {
    dip::Tensor tensor = tensor_;
    dip::sint step = 1;
-   dip::sint offset;
+   dip::sint offset{};
    DIP_STACK_TRACE_THIS( offset = tensor.ExtractRow( index, step ));
    Range out{ offset, offset + static_cast< dip::sint >( tensor.Elements() - 1 ) * step, static_cast< dip::uint >( step ) };
-   DIP_STACK_TRACE_THIS( return Image::View( *this, std::move( out )));
+   DIP_STACK_TRACE_THIS( return Image::View( *this, out ));
 }
 
 Image::View Image::TensorColumn( dip::uint index ) const {
    dip::Tensor tensor = tensor_;
    dip::sint step = 1;
-   dip::sint offset;
+   dip::sint offset{};
    DIP_STACK_TRACE_THIS( offset = tensor.ExtractColumn( index, step ));
    Range out{ offset, offset + static_cast< dip::sint >( tensor.Elements() - 1 ) * step, static_cast< dip::uint >( step ) };
-   DIP_STACK_TRACE_THIS( return Image::View( *this, std::move( out )));
+   DIP_STACK_TRACE_THIS( return Image::View( *this, out ));
 }
 
 Image::Pixel Image::At( dip::uint index ) const {
    if( index == 0 ) { // shortcut to the first pixel
       return Pixel( Origin(), dataType_, tensor_, tensorStride_ );
-   } else if( sizes_.size() < 2 ) {
-      dip::uint n = sizes_.size() == 0 ? 1 : sizes_[ 0 ];
+   }
+   if( sizes_.size() < 2 ) {
+      dip::uint n = sizes_.empty() ? 1 : sizes_[ 0 ];
       DIP_THROW_IF( index >= n, E::INDEX_OUT_OF_RANGE );
       return Pixel( Pointer( static_cast< dip::sint >( index ) * strides_[ 0 ] ),
                     dataType_, tensor_, tensorStride_ );
-   } else {
-      return At( IndexToCoordinates( index ));
    }
+   return At( IndexToCoordinates( index ));
 }
 
 Image::Pixel Image::At( dip::uint x_index, dip::uint y_index ) const {

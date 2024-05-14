@@ -20,7 +20,7 @@
 #define DIP_MULTITHREADING_H
 
 #ifdef _OPENMP
-#include <omp.h>
+#include <omp.h>  // IWYU pragma: export
 #else
 // We don't have OpenMP, these are OpenMP function stubs to avoid conditional compilation elsewhere.
 inline int omp_get_thread_num() { return 0; }

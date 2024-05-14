@@ -15,19 +15,19 @@
  * limitations under the License.
  */
 
+#include "diplib/framework.h"
+
 #include <algorithm>
-#include <exception>
 #include <utility>
 #include <vector>
 
 #include "diplib.h"
 #include "diplib/boundary.h"
-#include "diplib/framework.h"
-#include "diplib/kernel.h"
-#include "diplib/pixel_table.h"
 #include "diplib/generic_iterators.h"
+#include "diplib/kernel.h"
 #include "diplib/library/copy_buffer.h"
 #include "diplib/multithreading.h"
+#include "diplib/pixel_table.h"
 
 #include "framework_support.h"
 
@@ -201,7 +201,7 @@ void Full(
       dip::uint thread = static_cast< dip::uint >( omp_get_thread_num() );
 
       // Create input buffer data struct
-      FullBuffer inBuffer;
+      FullBuffer inBuffer{};
       inBuffer.tensorLength = input.TensorElements();
       inBuffer.tensorStride = input.TensorStride();
       inBuffer.stride = input.Stride( processingDim );
@@ -209,7 +209,7 @@ void Full(
 
       // Create output buffer data struct and allocate buffer if necessary
       AlignedBuffer outputBuffer;
-      FullBuffer outBuffer;
+      FullBuffer outBuffer{};
       outBuffer.tensorLength = output.TensorElements();
       if( useOutBuffer ) {
          outBuffer.tensorStride = 1;

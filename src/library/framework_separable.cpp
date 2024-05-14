@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
+#include "diplib/framework.h"
+
 #include <algorithm>
-#include <exception>
 #include <utility>
 #include <vector>
 
 #include "diplib.h"
 #include "diplib/boundary.h"
-#include "diplib/framework.h"
 #include "diplib/generic_iterators.h"
 #include "diplib/library/copy_buffer.h"
 #include "diplib/multithreading.h"
@@ -239,8 +239,8 @@ void Separable(
    Image inImage;
    Image outImage;
    std::vector< UnsignedArray > startCoords( nThreads );
-   dip::uint nLinesPerThread;
-   dip::uint dThreads;
+   dip::uint nLinesPerThread{};
+   dip::uint dThreads{};
 
    // Start threads, each thread makes its own buffers
    DIP_PARALLEL_ERROR_DECLARE
@@ -303,7 +303,7 @@ void Separable(
                                             && opts.Contains( SeparableOption::UseRealComponentOfOutput );
 
             // Create buffer data structs and (re-)allocate buffers
-            SeparableBuffer inBuffer;
+            SeparableBuffer inBuffer{};
             inBuffer.length = inLength;
             inBuffer.border = inBorder;
             if( inUseBuffer ) {
@@ -324,7 +324,7 @@ void Separable(
                inBuffer.buffer = nullptr;
                //std::cout << "   Not using input buffer\n";
             }
-            SeparableBuffer outBuffer;
+            SeparableBuffer outBuffer{};
             outBuffer.length = outLength;
             outBuffer.border = outBorder;
             outBuffer.tensorLength = outImage.TensorElements();
@@ -572,7 +572,7 @@ void OneDimensionalLineFilter(
       AlignedBuffer outBufferStorage;
 
       // Create buffer data structs and (re-)allocate buffers
-      SeparableBuffer inBuffer;
+      SeparableBuffer inBuffer{};
       inBuffer.length = inLength;
       inBuffer.border = inBorder;
       if( inUseBuffer ) {
@@ -593,7 +593,7 @@ void OneDimensionalLineFilter(
          inBuffer.buffer = nullptr;
          //std::cout << "   Not using input buffer\n";
       }
-      SeparableBuffer outBuffer;
+      SeparableBuffer outBuffer{};
       outBuffer.length = outLength;
       outBuffer.border = outBorder;
       outBuffer.tensorLength = output.TensorElements();

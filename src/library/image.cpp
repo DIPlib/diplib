@@ -16,7 +16,6 @@
  */
 
 #include <iostream>
-#include <algorithm>
 
 #include "diplib.h"
 

@@ -25,8 +25,11 @@
 #endif
 #endif
 
+#include <cstddef>
+#include <utility>
+
 #include "doctest.h"
-#include "diplib/library/types.h"
+#include "diplib.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the dip::bin class") {
    dip::bin A = false;
@@ -44,7 +47,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::bin class") {
 }
 
 DOCTEST_TEST_CASE("[DIPlib] testing the dip::detail::Options class") {
-   enum class MyOption { clean, fresh, shine, flower, burn };
+   enum class MyOption : dip::uint8 { clean, fresh, shine, flower, burn };
    //DIP_DECLARE_OPTIONS( MyOption, MyOptions ); // This does not work within a function
    using MyOptions = dip::detail::Options< MyOption >;
    constexpr MyOptions MyOption_freshNclean = MyOptions( MyOption::fresh ) + MyOption::clean; // because we haven't declared the operator, this is a little bit more verbose than it should be
@@ -107,7 +110,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::DimensionArray class") {
    }
 
    DOCTEST_SUBCASE("copy constructor I") {
-      dip::DimensionArray< int > b( a );
+      dip::DimensionArray< int > b( a ); // NOLINT(*-unnecessary-copy-initialization)
       DOCTEST_CHECK( a.size() == 6 );
       DOCTEST_CHECK( a.sum() == 63 );
       DOCTEST_CHECK( b.size() == 6 );
@@ -115,7 +118,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::DimensionArray class") {
    }
 
    DOCTEST_SUBCASE("copy constructor II") {
-      dip::DimensionArray< int > b = a;
+      dip::DimensionArray< int > b = a; // NOLINT(*-unnecessary-copy-initialization)
       DOCTEST_CHECK( a.size() == 6 );
       DOCTEST_CHECK( a.sum() == 63 );
       DOCTEST_CHECK( b.size() == 6 );
@@ -133,7 +136,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::DimensionArray class") {
 
    DOCTEST_SUBCASE("move constructor") {
       dip::DimensionArray< int > b( std::move( a ));
-      DOCTEST_CHECK( a.size() == 0 );
+      DOCTEST_CHECK( a.size() == 0 ); // NOLINT(*-use-after-move)
       DOCTEST_CHECK( b.size() == 6 );
       DOCTEST_CHECK( b.sum() == 63 );
    }
@@ -141,7 +144,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::DimensionArray class") {
    DOCTEST_SUBCASE("move assignment") {
       dip::DimensionArray< int > b;
       b = std::move( a );
-      DOCTEST_CHECK( a.size() == 0 );
+      DOCTEST_CHECK( a.size() == 0 ); // NOLINT(*-use-after-move)
       DOCTEST_CHECK( b.size() == 6 );
       DOCTEST_CHECK( b.sum() == 63 );
    }

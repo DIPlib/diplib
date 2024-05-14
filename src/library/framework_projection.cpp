@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
+#include "diplib/framework.h"
+
 #include <algorithm>
-#include <exception>
 #include <utility>
 #include <vector>
 
 #include "diplib.h"
-#include "diplib/framework.h"
 #include "diplib/multithreading.h"
 
 #include "framework_support.h"

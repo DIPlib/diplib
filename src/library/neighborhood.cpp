@@ -15,8 +15,11 @@
  * limitations under the License.
  */
 
+#include <cmath>
 #include "diplib/kernel.h"
 #include "diplib/neighborlist.h"
+
+#include "diplib.h"
 #include "diplib/pixel_table.h"
 #include "diplib/iterators.h"
 #include "diplib/math.h"
@@ -100,9 +103,10 @@ void NeighborList::ConstructConnectivity( dip::uint dimensionality, dip::uint co
    }
    IntegerArray coords( dimensionality, -1 );
    for( ;; ) {
-      dip::uint ii, kk = 0;
+      dip::uint kk = 0;
       dfloat dist2 = 0.0;
-      for( ii = 0; ii < dimensionality; ++ii ) {
+      dip::uint ii = 0;
+      for( ; ii < dimensionality; ++ii ) {
          if( coords[ ii ] != 0 ) {
             ++kk;
             dist2 += pixelSize[ ii ];
@@ -133,7 +137,8 @@ void NeighborList::ConstructChamfer( dip::uint dimensionality, dip::uint maxDist
       neighbors_.push_back( {{  1 }, pixelSize[ 0 ] } );
       // Other values for maxDistance make no sense -- ignore
       return;
-   } else if( dimensionality == 2 ) {
+   }
+   if( dimensionality == 2 ) {
       dfloat dx = pixelSize[ 0 ];
       dfloat dy = pixelSize[ 1 ];
       dfloat dxy = std::hypot( dx, dy );
@@ -150,7 +155,8 @@ void NeighborList::ConstructChamfer( dip::uint dimensionality, dip::uint maxDist
          neighbors_.push_back( {{  0,  1 }, dy } );
          neighbors_.push_back( {{  1,  1 }, dxy } );
          return;
-      } else if( maxDistance == 2 ) {
+      }
+      if( maxDistance == 2 ) {
          dfloat dxxy = std::hypot( 2 * dx, dy );
          dfloat dxyy = std::hypot( dx, 2 * dy );
          dx *= 0.9801;
@@ -219,7 +225,8 @@ void NeighborList::ConstructChamfer( dip::uint dimensionality, dip::uint maxDist
          neighbors_.push_back( {{  0,  1,  1}, dyz } );
          neighbors_.push_back( {{  1,  1,  1}, dxyz } );
          return;
-      } else if( maxDistance == 2 ) {
+      }
+      if( maxDistance == 2 ) {
          dfloat dxyy = std::hypot( dx, 2 * dy );
          dfloat dxzz = std::hypot( dx, 2 * dz );
          dfloat dxxy = std::hypot( dy, 2 * dx );
@@ -358,9 +365,9 @@ void NeighborList::ConstructChamfer( dip::uint dimensionality, dip::uint maxDist
    IntegerArray coords( dimensionality, -lim );
    for( ;; ) {
       bool use = false;
-      dip::uint ii;
       dfloat dist2 = 0.0;
-      for( ii = 0; ii < dimensionality; ++ii ) {
+      dip::uint ii = 0;
+      for( ; ii < dimensionality; ++ii ) {
          if( std::abs( coords[ ii ] ) == 1 ) {
             use = true;
             break;
@@ -419,7 +426,8 @@ bool IsProcessed( IntegerArray const& coords, dip::uint procDim ) {
       if( ii != procDim ) {
          if( coords[ ii ] > 0 ) {
             return false;
-         } else if( coords[ ii ] < 0 ) {
+         }
+         if( coords[ ii ] < 0 ) {
             return true;
          } // If 0, it depends on a previous coordinate.
       }
@@ -559,7 +567,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the NeighborList class") {
    DOCTEST_CHECK( *( ot++ ) == +1 +20 );
 
    dip::Image m( { 3, 3 }, 1, dip::DT_UINT8 );
-   dip::uint8* ptr = ( dip::uint8* )m.Origin();
+   dip::uint8* ptr = static_cast< dip::uint8* >( m.Origin() );
    for( dip::uint ii = 1; ii <= 9; ++ii ) {
       *( ptr++ ) = ( dip::uint8 )ii;
    }

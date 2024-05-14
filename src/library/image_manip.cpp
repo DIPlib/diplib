@@ -16,7 +16,8 @@
  */
 
 #include <algorithm>
-#include <iostream>
+#include <tuple>
+#include <utility>
 
 #include "diplib.h"
 
@@ -64,8 +65,8 @@ Image& Image::SwapDimensions( dip::uint dim1, dip::uint dim2 ) {
 
 Image& Image::Flatten() {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   dip::sint stride;
-   void* p;
+   dip::sint stride{};
+   void* p{};
    std::tie( stride, p ) = GetSimpleStrideAndOrigin();
    if( !p ) {
       // The image has no simple stride -- copy the samples over to a new data segment
@@ -91,8 +92,8 @@ Image& Image::Flatten() {
 
 Image& Image::FlattenAsMuchAsPossible() {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   dip::sint stride;
-   void* p;
+   dip::sint stride{};
+   void* p{};
    std::tie( stride, p ) = GetSimpleStrideAndOrigin();
    if( p ) {
       strides_ = { stride };
@@ -344,7 +345,7 @@ Image& Image::StandardizeStrides() {
    }
    // Un-mirror and un-expand spatial dimensions, sort strides, and remove singleton dimensions
    UnsignedArray order;
-   dip::sint offset;
+   dip::sint offset{};
    std::tie( order, offset ) = StandardizeStrides( strides_, sizes_ );
    // Modify origin
    origin_ = Pointer( offset );
@@ -502,9 +503,9 @@ Image& Image::ReinterpretCast( dip::DataType dataType ) {
    dip::uint inSize = dataType_.SizeOf();
    dip::uint outSize = dataType.SizeOf();
    if( inSize != outSize ) {
-      dip::uint dim;
       dip::uint nDims = Dimensionality();
-      for( dim = 0; dim < nDims; ++dim ) {
+      dip::uint dim = 0;
+      for( ; dim < nDims; ++dim ) {
          if(( sizes_[ dim ] > 1 ) && ( strides_[ dim ] == 1 )) {
             break;
          }
@@ -610,7 +611,7 @@ Image& Image::Crop( UnsignedArray const& sizes, Option::CropLocation cropLocatio
 }
 
 Image& Image::Crop( UnsignedArray const& sizes, String const& cropLocation ) {
-   Option::CropLocation flag;
+   Option::CropLocation flag{};
    DIP_STACK_TRACE_THIS( flag = TranslateCropLocationFlag( cropLocation ));
    return Crop( sizes, flag );
 }
@@ -621,7 +622,7 @@ RangeArray Image::CropWindow( UnsignedArray const& sizes, Option::CropLocation c
 }
 
 RangeArray Image::CropWindow( UnsignedArray const& sizes, String const& cropLocation ) const {
-   Option::CropLocation flag;
+   Option::CropLocation flag{};
    DIP_STACK_TRACE_THIS( flag = TranslateCropLocationFlag( cropLocation ));
    return CropWindow( sizes, flag );
 }
@@ -647,7 +648,7 @@ RangeArray Image::CropWindow(
       UnsignedArray const& windowSizes,
       String const& cropLocation
 ) {
-   Option::CropLocation flag;
+   Option::CropLocation flag{};
    DIP_STACK_TRACE_THIS( flag = TranslateCropLocationFlag( cropLocation ));
    return CropWindow( imageSizes, windowSizes, flag );
 }
@@ -668,7 +669,7 @@ Image Image::Pad( UnsignedArray const& sizes, Pixel const& value, Option::CropLo
 }
 
 Image Image::Pad( UnsignedArray const& sizes, Pixel const& value, String const& cropLocation ) const {
-   Option::CropLocation flag;
+   Option::CropLocation flag{};
    DIP_STACK_TRACE_THIS( flag = TranslateCropLocationFlag( cropLocation ));
    return Pad( sizes, value, flag );
 }
@@ -701,7 +702,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing dip::Image dimension manipulation functions"
    DOCTEST_CHECK_THROWS( img.PermuteDimensions( { 0, 1 } ));
    DOCTEST_CHECK_THROWS( img.PermuteDimensions( { 0, 1, 2, 3 } ));
    img.Flatten();
-   DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 5 * 10 * 15 } );
+   DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 5ull * 10 * 15 } );
    DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 3 } );
    DOCTEST_CHECK( img.Origin() == origin );
    img = src;
@@ -718,7 +719,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing dip::Image dimension manipulation functions"
    DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 3, 15, 150 } );
    DOCTEST_CHECK( img.Origin() == origin );
    img.FlattenAsMuchAsPossible();
-   DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 5 * 10 * 15 } );
+   DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 5ll * 10 * 15 } );
    DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 3 } );
    DOCTEST_CHECK( img.Origin() == origin );
    img = src.At( dip::RangeArray{ {}, { 5, 9 }, { 7, 11 } } );
@@ -726,13 +727,13 @@ DOCTEST_TEST_CASE("[DIPlib] testing dip::Image dimension manipulation functions"
    DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 3, 15, 150 } );
    DOCTEST_CHECK( img.Origin() != origin );
    img.FlattenAsMuchAsPossible();
-   DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 5 * 5, 5 } );
+   DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 5ull * 5, 5 } );
    DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 3, 150 } );
    DOCTEST_CHECK( img.Origin() != origin );
    img = src;
    img.SplitDimension( 1, 5 );
    DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 5, 5, 10 / 5, 15 } );
-   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 3, 15, 15 * 5, 150 } );
+   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 3, 15, 15ll * 5, 150 } );
 }
 
 DOCTEST_TEST_CASE("[DIPlib] testing dip::Image tensor dimension manipulation functions") {
@@ -754,7 +755,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing dip::Image tensor dimension manipulation fun
    DOCTEST_CHECK( img.TensorStride() == 3 );
    img.SplitComplex();
    DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 3, 10, 15, 2 } );
-   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 1*2, 15*2, 150*2, 1 } );
+   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 2, 30, 300, 1 } );
    DOCTEST_CHECK( img.TensorElements() == 5 );
    DOCTEST_CHECK( img.TensorStride() == 3*2 );
    img.MergeComplex();
@@ -765,7 +766,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing dip::Image tensor dimension manipulation fun
    img.TensorToSpatial();
    img.SplitComplexToTensor();
    DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 3, 10, 15, 5 } );
-   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 1*2, 15*2, 150*2, 3*2 } );
+   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 2, 30, 300, 6 } );
    DOCTEST_CHECK( img.TensorElements() == 2 );
    DOCTEST_CHECK( img.TensorStride() == 1 );
    img.MergeTensorToComplex();

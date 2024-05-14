@@ -15,13 +15,21 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/graph.h"
+
+#include <algorithm>
+#include <cmath>
+#include <cstdlib>
+#include <limits>
+#include <memory>
+#include <queue>
+#include <stack>
+#include <vector>
+
+#include "diplib.h"
 #include "diplib/framework.h"
 #include "diplib/overload.h"
 
-#include <queue>
-#include <stack>
 
 namespace dip {
 
@@ -92,7 +100,7 @@ Graph::Graph( Image const& image, dip::uint connectivity, String const& weights 
    DIP_THROW_IF( !image.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( image.Dimensionality() < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( connectivity != 1, E::NOT_IMPLEMENTED );
-   bool useDifferences;
+   bool useDifferences{};
    DIP_STACK_TRACE_THIS( useDifferences = BooleanFromString( weights, "difference", "average" ));
    std::unique_ptr< Framework::ScanLineFilter > lineFilter;
    DIP_OVL_NEW_REAL( lineFilter, CreateGraphLineFilter, ( *this, image.Sizes(), image.Strides(), useDifferences ), image.DataType() );
@@ -327,11 +335,8 @@ class Block {
       LookUpTable< dip::uint > lut;
 
       Block() = default;
-      Block( LookUpTable< dip::uint > lut, dip::uint sequenceLength, dip::uint firstIndex ) {
-         this->lut = std::move( lut );
-         lastIndex_internal_ = sequenceLength - 1;
-         firstIndex_external_ = firstIndex;
-      }
+      Block( LookUpTable< dip::uint > lut, dip::uint sequenceLength, dip::uint firstIndex )
+         : lut( std::move( lut ) ), lastIndex_internal_( sequenceLength - 1 ), firstIndex_external_( firstIndex ) {}
 
       dip::uint getIndexOfMinVal() const {
          return firstIndex_external_ + lut.getEntry( 0, lastIndex_internal_ );
@@ -355,8 +360,7 @@ class Block {
 
 class RangeMinimumQuery {
    public:
-      RangeMinimumQuery( std::vector< dip::uint > data )  {
-         data_ = std::move( data );
+      RangeMinimumQuery( std::vector< dip::uint > data ) : data_( std::move( data )) {
          dip::uint nelem = data_.size();
          luts_.resize( static_cast< dip::uint >( std::ceil( std::sqrt( static_cast< dfloat >( nelem )))));
          blockLength_ = static_cast< dip::uint >( std::ceil( std::log2( nelem ) / 2 ));

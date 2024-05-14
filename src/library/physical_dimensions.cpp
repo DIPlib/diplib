@@ -17,6 +17,12 @@
 
 #include "diplib/library/physical_dimensions.h"
 
+#include <cctype>
+#include <cstdlib>
+#include <string>
+
+#include "diplib.h"
+
 namespace dip {
 
 namespace {
@@ -70,7 +76,7 @@ bool ParsePower( dip::String const& string, dip::uint& ii, int& power ) {
          ++ii;
       }
       dip::uint n = 0;
-      while( isdigit( string[ ii + n ] )) {
+      while( std::isdigit( string[ ii + n ] )) {
          ++n;
       }
       if( n == 0 ) {
@@ -203,7 +209,7 @@ Units::Units( dip::String const& string ) {
    if(( string[ ii ] == '1' ) && ( string[ ii + 1 ] == '0' )) {
       // Starts with 10^{<N>|<n>}.
       ii += 2;
-      int power;
+      int power{};
       DIP_THROW_IF( !ParsePower( string, ii, power ), errorMessage );
       DIP_THROW_IF(( power == 0 ) || (( power % 3 ) != 0 ), errorMessage );
       DIP_THROW_IF( !ExpectCDot( string, ii ), errorMessage );
@@ -256,8 +262,8 @@ Units::Units( dip::String const& string ) {
       default:
          break;
    }
-   int power;
-   BaseUnits bu;
+   int power{};
+   BaseUnits bu{};
    DIP_THROW_IF( !ParseComponent( string, ii, bu, power ), errorMessage );
    power_[ unsigned( BaseUnits::THOUSANDS ) ] = static_cast< sint8 >( power_[ unsigned( BaseUnits::THOUSANDS ) ]  + thousands * power );
    power_[ unsigned( bu ) ] = static_cast< sint8 >( power_[ unsigned( bu ) ] + power );
@@ -434,7 +440,7 @@ dip::String Units::StringRepresentation( bool unicode ) const {
       if(( n < -5 ) || ( n > 6 )) {
          // We cannot print an SI prefix, just print a 10^n instead.
          n = 0;
-         p = power_[ 0 ] * 3;
+         p = static_cast< dip::sint >( power_[ 0 ] ) * 3;
       } else {
          p = ( power_[ 0 ] - n * p ) * 3;     // dip::PhysicalQuantity should make sure that p is 0 here, using AdjustThousands()
       }
@@ -477,6 +483,7 @@ dip::String Units::StringRepresentation( bool unicode ) const {
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
+#include <iostream>
 
 DOCTEST_TEST_CASE("[DIPlib] testing the dip::Units class") {
    // Note: further tested at the same time as dip::PhysicalQuantity below

@@ -15,9 +15,14 @@
  * limitations under the License.
  */
 
-#include <cstdlib>   // std::malloc, std::realloc, std::free
-#include <limits>
 #include <algorithm>
+#include <cstdint>
+#include <cstdlib>   // std::malloc, std::realloc, std::free
+#include <iostream>
+#include <limits>
+#include <memory>
+#include <random>
+#include <utility>
 
 #include "diplib.h"
 
@@ -350,9 +355,9 @@ bool Image::IsSingletonExpanded() const {
 // walk through all pixels. If this is not possible, porigin==nullptr.
 std::pair< dip::sint, void* > Image::GetSimpleStrideAndOrigin() const {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   dip::sint sstride;
-   dip::uint size;
-   dip::sint start;
+   dip::sint sstride{};
+   dip::uint size{};
+   dip::sint start{};
    void* origin = nullptr;
    if( FindSimpleStrideSizeAndStart( strides_, sizes_, sstride, size, start )) {
       origin = Pointer( start );
@@ -526,9 +531,9 @@ bool Image::Aliases( Image const& other ) const {
 
    // Quicky: if both have simple strides larger than one, and their offsets
    // do not differ by a multiple of that stride, they don't overlap.
-   dip::sint sstride1, sstride2;
-   dip::uint size1, size2;
-   dip::sint start1, start2;
+   dip::sint sstride1{}, sstride2{};
+   dip::uint size1{}, size2{};
+   dip::sint start1{}, start2{};
    FindSimpleStrideSizeAndStart( strides1, sizes1, sstride1, size1, start1 );
    FindSimpleStrideSizeAndStart( strides2, sizes2, sstride2, size2, start2 );
    start1 += static_cast< dip::sint >( origin1 );
@@ -680,7 +685,7 @@ void Image::Forge() {
       if( !IsForged() ) {
          dip::sint start = 0;
          if( HasValidStrides() ) {
-            dip::uint sz;
+            dip::uint sz{};
             GetDataBlockSizeAndStartWithTensor( sz, start );
             if( sz != size ) {
                SetNormalStrides();
@@ -757,39 +762,40 @@ CoordinatesComputer Image::IndexToCoordinatesComputer() const {
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 #include "diplib/random.h"
+#include <cmath>
 
 DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::Forge" ) {
    dip::Image img;
    img.SetSizes( { 5, 8, 7 } );
    img.SetTensorSizes( 3 );
    img.Forge();
-   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 3, 3 * 5, 3 * 5 * 8 } );
+   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 3, 3ll * 5, 3ll * 5 * 8 } );
    DOCTEST_CHECK( img.TensorStride() == 1 );
    DOCTEST_CHECK( img.Origin() == img.Data() );
    // Custom strides: swap tensor dimension and x axis
    img.Strip();
    img.SetTensorStride( 5 );
-   img.SetStrides( { 1, 5*3, 5*3*8 } );
+   img.SetStrides( { 1, 5ll * 3, 5ll * 3 * 8 } );
    img.Forge();
-   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 1, 5*3, 5*3*8 } );
+   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 1, 5ll * 3, 5ll * 3 * 8 } );
    DOCTEST_CHECK( img.TensorStride() == 5 );
    DOCTEST_CHECK( img.Origin() == img.Data() );
    // Custom strides that are not compact: yields normal strides
    img.Strip();
    img.SetTensorStride( 5 );
-   img.SetStrides( { 1, 5*3 + 5, ( 5*3 + 5 ) * 8 } );
+   img.SetStrides( { 1, 5ll * 3 + 5, ( 5ll * 3 + 5 ) * 8 } );
    img.Forge();
-   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 3, 3*5, 3*5*8 } );
+   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 3, 3ll * 5, 3ll * 5 * 8 } );
    DOCTEST_CHECK( img.TensorStride() == 1 );
    DOCTEST_CHECK( img.Origin() == img.Data() );
    // Custom strides: y dimension is flipped
    img.Strip();
    img.SetTensorStride( 5 );
-   img.SetStrides( { 1, -5*3, 5*3*8 } );
+   img.SetStrides( { 1, -5ll * 3, 5ll * 3 * 8 } );
    img.Forge();
-   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 1, -5*3, 5*3*8 } );
+   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 1, -5ll * 3, 5ll * 3 * 8 } );
    DOCTEST_CHECK( img.TensorStride() == 5 );
-   DOCTEST_CHECK( img.Origin() == static_cast< dip::uint8* >( img.Data() ) + 5*3*(8-1) * img.DataType().SizeOf() );
+   DOCTEST_CHECK( img.Origin() == static_cast< dip::uint8* >( img.Data() ) + 5ull * 3 * ( 8 - 1 ) * img.DataType().SizeOf() );
 }
 
 DOCTEST_TEST_CASE("[DIPlib] testing dip::Alias") {
@@ -804,7 +810,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing dip::Alias") {
    DOCTEST_CHECK( Alias( img1, img2 ));
    dip::Image img3 = img1[ 1 ];
    DOCTEST_CHECK( Alias( img1, img3 ));
-   DOCTEST_CHECK_FALSE( Alias( img2, img3 ));
+   DOCTEST_CHECK_FALSE( Alias( img2, img3 )); // NOLINT(*-suspicious-call-argument)
    dip::Image img4 = img1.At( dip::Range{}, dip::Range{}, dip::Range{ 10 } );
    DOCTEST_CHECK( Alias( img1, img4 ));
    dip::Image img5 = img1.At( dip::Range{}, dip::Range{}, dip::Range{ 11 } );
@@ -843,7 +849,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the index and offset computations") {
       try{
          img.Forge();
       } catch( dip::Error const& ) {
-         std::cout << "Couldn't forge an image of size " << sz << std::endl;
+         std::cout << "Couldn't forge an image of size " << sz << '\n';
          continue;
       }
       std::uniform_int_distribution< dip::uint > uniform2( 0, ndims - 1 );
@@ -907,9 +913,9 @@ DOCTEST_TEST_CASE("[DIPlib] testing dip::Image::MatchStrideOrder") {
    // img order is supposed to be: y, tensor, z, x
    // strides are: { 6*4*7, 1, 6*4 }, 6
    DOCTEST_REQUIRE( img.Strides().size() == 3 );
-   DOCTEST_CHECK( img.Stride( 0 ) == 6*4*7 );
+   DOCTEST_CHECK( img.Stride( 0 ) == 6 * 4 * 7 );
    DOCTEST_CHECK( img.Stride( 1 ) == 1 );
-   DOCTEST_CHECK( img.Stride( 2 ) == 6*4 );
+   DOCTEST_CHECK( img.Stride( 2 ) == 6 * 4 );
    DOCTEST_CHECK( img.TensorStride() == 6 );
 }
 
@@ -920,7 +926,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing dip::Image move constructor") {
    dip::Image other( std::move( img ));
    DOCTEST_CHECK( other.IsForged() );
    DOCTEST_CHECK( other.At( 4, 2 ) == 5 );
-   DOCTEST_CHECK( !img.IsForged() );
+   DOCTEST_CHECK( !img.IsForged() ); // NOLINT(*-use-after-move)
 }
 
 #endif // DIP_CONFIG_ENABLE_DOCTEST

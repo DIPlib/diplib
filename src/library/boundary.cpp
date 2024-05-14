@@ -15,8 +15,11 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/boundary.h"
+
+#include <utility>
+
+#include "diplib.h"
 #include "diplib/generic_iterators.h"
 #include "diplib/library/copy_buffer.h"
 
@@ -154,12 +157,11 @@ void ExtendImage(
       Option::ExtendImageFlags options
 ) {
    // Test input arguments
-   dip::uint nDims;
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( borderSizes.empty(), E::ARRAY_PARAMETER_EMPTY );
 
    // The output sizes
-   nDims = in.Dimensionality();
+   dip::uint nDims = in.Dimensionality();
    DIP_STACK_TRACE_THIS( ArrayUseParameter( borderSizes, nDims ));
    UnsignedArray sizes = in.Sizes();
    for( dip::uint ii = 0; ii < nDims; ++ii ) {

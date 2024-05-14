@@ -16,14 +16,17 @@
  */
 
 #include <cstring> // std::memcpy
+#include <utility>
+#include <vector>
+#include <tuple>
 
 #include "diplib.h"
-#include "diplib/statistics.h"
 #include "diplib/framework.h"
-#include "diplib/iterators.h"
 #include "diplib/generic_iterators.h"
-#include "diplib/overload.h"
+#include "diplib/iterators.h"
 #include "diplib/library/copy_buffer.h"
+#include "diplib/overload.h"
+#include "diplib/statistics.h"
 
 namespace dip {
 
@@ -49,7 +52,7 @@ void ReadSamples( void const* source, dfloat* dest, dip::uint n, dip::sint strid
 
 } // namespace
 
-Image::Pixel::Pixel( FloatArray const& values, dip::DataType dt ) : dataType_( dt ), tensor_( values.size() ) {
+Image::Pixel::Pixel( FloatArray const& values, dip::DataType dt ) : dataType_( dt ), tensor_( values.size() ) { // NOLINT(*-pro-type-member-init)
    SetInternalData();
    DIP_OVL_CALL_ALL( WriteSamples, ( values.data(), origin_, values.size() ), dataType_ );
 }
@@ -287,13 +290,13 @@ void Image::Copy( Image const& src ) {
       DIP_STACK_TRACE_THIS( Forge() );
    }
    // A single CopyBuffer call if both images have simple strides and same dimension order
-   dip::sint sstride_d;
-   void* origin_d;
+   dip::sint sstride_d{};
+   void* origin_d{};
    std::tie( sstride_d, origin_d ) = GetSimpleStrideAndOrigin();
    if( origin_d ) {
       //std::cout << "dip::Image::Copy: destination has simple strides\n";
-      dip::sint sstride_s;
-      void* origin_s;
+      dip::sint sstride_s{};
+      void* origin_s{};
       std::tie( sstride_s, origin_s ) = src.GetSimpleStrideAndOrigin();
       if( origin_s ) {
          //std::cout << "dip::Image::Copy: source has simple strides\n";
@@ -384,13 +387,13 @@ void ExpandTensor( Image const& c_in, Image& out ) {
    out.ReshapeTensor( tensor );
    out.SetPixelSize( in.PixelSize() );
    // A single CopyBuffer call if both images have simple strides and same dimension order
-   dip::sint outStride;
-   void* outOrigin;
+   dip::sint outStride{};
+   void* outOrigin{};
    std::tie( outStride, outOrigin ) = out.GetSimpleStrideAndOrigin();
    if( outOrigin ) {
       //std::cout << "dip::ExpandTensor: destination has simple strides\n";
-      dip::sint inStride;
-      void* inOrigin;
+      dip::sint inStride{};
+      void* inOrigin{};
       std::tie( inStride, inOrigin ) = in.GetSimpleStrideAndOrigin();
       if( inOrigin ) {
          //std::cout << "dip::ExpandTensor: in has simple strides\n";
@@ -458,8 +461,8 @@ void Image::Convert( dip::DataType dt ) {
       if( !IsShared() && ( dt.SizeOf() == dataType_.SizeOf() )) {
          // The operation can happen in place.
          // Loop over all pixels, casting with clamp each of the values; finally set the data type field.
-         dip::sint sstride;
-         void* origin;
+         dip::sint sstride{};
+         void* origin{};
          std::tie( sstride, origin ) = GetSimpleStrideAndOrigin();
          if( origin ) {
             // No need to loop
@@ -531,7 +534,7 @@ void InternSwapBytesInSample( Image& img ) {
 
 } // namespace
 
-void Image::SwapBytesInSample() {
+void Image::SwapBytesInSample() { // NOLINT(*-make-member-function-const)
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    if( DataType().SizeOf() == 1 ) {
       return; // nothing to do!
@@ -567,10 +570,10 @@ void Image::SwapBytesInSample() {
 namespace {
 
 template< typename TPI >
-static inline void InternFill( Image& dest, TPI value ) {
+inline void InternFill( Image& dest, TPI value ) {
    DIP_THROW_IF( !dest.IsForged(), E::IMAGE_NOT_FORGED );
-   dip::sint sstride;
-   void* origin;
+   dip::sint sstride{};
+   void* origin{};
    std::tie( sstride, origin ) = dest.GetSimpleStrideAndOrigin();
    if( origin ) {
       // No need to loop

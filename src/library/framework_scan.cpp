@@ -15,13 +15,12 @@
  * limitations under the License.
  */
 
+#include "diplib/framework.h"
+
 #include <algorithm>
-#include <utility>
-#include <exception>
 #include <vector>
 
 #include "diplib.h"
-#include "diplib/framework.h"
 #include "diplib/library/copy_buffer.h"
 #include "diplib/multithreading.h"
 
@@ -213,7 +212,7 @@ void Scan(
    DIP_START_STACK_TRACE
    for( dip::uint ii = 0; ii < nOut; ++ii ) {
       Image& tmp = c_out[ ii ].get();
-      dip::uint nTensor;
+      dip::uint nTensor{};
       if( opts.Contains( ScanOption::TensorAsSpatialDim )) {
          // Input parameter ignored, output matches singleton-expanded number of tensor elements.
          nTensor = tSize;

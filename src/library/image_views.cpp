@@ -15,6 +15,12 @@
  * limitations under the License.
  */
 
+#include <algorithm>
+#include <cstring>
+#include <utility>
+#include <limits>
+#include <memory>
+
 #include "diplib.h"
 #include "diplib/statistics.h"
 #include "diplib/generic_iterators.h"
@@ -267,9 +273,8 @@ Image::Pixel Image::View::At( UnsignedArray const& coords ) const {
    if( mask_.IsForged() || !offsets_.empty() ) {
       DIP_THROW_IF( coords.size() != 1, E::ILLEGAL_DIMENSIONALITY );
       return At( coords[ 0 ] );
-   } else {
-      DIP_STACK_TRACE_THIS( return reference_.At( coords ));
    }
+   DIP_STACK_TRACE_THIS( return reference_.At( coords ));
 }
 
 Image::Pixel Image::View::At( dip::uint index ) const {
@@ -284,12 +289,12 @@ Image::Pixel Image::View::At( dip::uint index ) const {
          }
       } while( ++it );
       DIP_THROW( E::INDEX_OUT_OF_RANGE );
-   } else if( !offsets_.empty() ) {
+   }
+   if( !offsets_.empty() ) {
       DIP_THROW_IF( index >= offsets_.size(), E::INDEX_OUT_OF_RANGE );
       return Pixel( reference_.Pointer( offsets_[ index ] ), reference_.dataType_, reference_.tensor_, reference_.tensorStride_ );
-   } else {
-      DIP_STACK_TRACE_THIS( return reference_.At( index ));
    }
+   DIP_STACK_TRACE_THIS( return reference_.At( index ));
 }
 
 Image::View Image::View::At( Range x_range ) const {
@@ -337,7 +342,8 @@ Image::View Image::View::At( Range x_range ) const {
          std::reverse( out.offsets_.begin(), out.offsets_.end() );
       }
       return out;
-   } else if( !offsets_.empty() ) {
+   }
+   if( !offsets_.empty() ) {
       DIP_STACK_TRACE_THIS( x_range.Fix( offsets_.size() ));
       View out( reference_ );
       out.offsets_.resize( x_range.Size() );
@@ -346,10 +352,9 @@ Image::View Image::View::At( Range x_range ) const {
          *outIt++ = offsets_[ ii ];
       }
       return out;
-   } else {
-      DIP_THROW_IF( Dimensionality() != 1, E::ILLEGAL_DIMENSIONALITY );
-      return At( RangeArray{ x_range } );
    }
+   DIP_THROW_IF( Dimensionality() != 1, E::ILLEGAL_DIMENSIONALITY );
+   return At( RangeArray{ x_range } );
 }
 
 Image::View Image::View::At( RangeArray ranges ) const {
@@ -460,6 +465,7 @@ Image::View::Iterator Image::View::end() const {
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
+#include "diplib/iterators.h"
 #include "diplib/testing.h"
 
 DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::Pixel and related classes" ) {
@@ -468,7 +474,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::Pixel and related classes" ) {
    dip::Image::Sample s{ 4.6 };
    DOCTEST_CHECK( s.DataType() == dip::DT_DFLOAT );
    dip::Image::Sample c{ dip::dcomplex{ 4.1, 2.1 }};
-   dip::Image::Pixel p{ dip::dcomplex{ 4.1, 2.1 }, dip::dcomplex{ 4.6 } };
+   dip::Image::Pixel p{ dip::dcomplex{ 4.1, 2.1 }, dip::dcomplex{ 4.6, 0 } };
    DOCTEST_CHECK( p.DataType() == dip::DT_DCOMPLEX );
    DOCTEST_CHECK( p.TensorElements() == 2 );
    DOCTEST_CHECK( p[ 0 ] == c );
@@ -608,16 +614,16 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::View" ) {
    DOCTEST_CHECK( ref.Sizes() == dip::UnsignedArray{ 3, 3, 3 } );
    DOCTEST_CHECK( ref.TensorElements() == 3 );
    viewR.Fill( 1 );
-   DOCTEST_CHECK( dip::Count( ref[ 0 ] ) == 3*3*3 );
-   DOCTEST_CHECK( dip::Count( img[ 0 ] ) == 3*3*3 ); // we didn't write into pixels not in the view
-   DOCTEST_CHECK( dip::Count( img[ 2 ] ) == 3*3*3 );
+   DOCTEST_CHECK( dip::Count( ref[ 0 ] ) == 27 );
+   DOCTEST_CHECK( dip::Count( img[ 0 ] ) == 27 ); // we didn't write into pixels not in the view
+   DOCTEST_CHECK( dip::Count( img[ 2 ] ) == 27 );
    dip::Image diff;
    diff.SetDataType( dip::DT_SFLOAT );
    diff.Protect();
    diff = viewR;
    DOCTEST_CHECK( diff.Sizes() == dip::UnsignedArray{ 3, 3, 3 } );
    DOCTEST_CHECK( diff.TensorElements() == 3 );
-   DOCTEST_CHECK( dip::Count( diff[ 0 ] == 1 ) == 3*3*3 );
+   DOCTEST_CHECK( dip::Count( diff[ 0 ] == 1 ) == 27 );
    diff.Unprotect();
    diff.Strip();
 
@@ -625,14 +631,14 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::View" ) {
    dip::Image mask = img[ 0 ] > 0;
    auto viewM = img.At( mask );
    ref = viewM;
-   DOCTEST_CHECK( ref.Sizes() == dip::UnsignedArray{ 3 * 3 * 3 } );
+   DOCTEST_CHECK( ref.Sizes() == dip::UnsignedArray{ 27 } );
    DOCTEST_CHECK( ref.TensorElements() == 3 );
-   DOCTEST_CHECK( dip::Count( ref[ 0 ] == 1 ) == 3*3*3 );
+   DOCTEST_CHECK( dip::Count( ref[ 0 ] == 1 ) == 27 );
    diff.Protect();
    diff = viewM;
-   DOCTEST_CHECK( diff.Sizes() == dip::UnsignedArray{ 3 * 3 * 3 } );
+   DOCTEST_CHECK( diff.Sizes() == dip::UnsignedArray{ 27 } );
    DOCTEST_CHECK( diff.TensorElements() == 3 );
-   DOCTEST_CHECK( dip::Count( diff[ 0 ] == 1 ) == 3*3*3 );
+   DOCTEST_CHECK( dip::Count( diff[ 0 ] == 1 ) == 27 );
    diff.Unprotect();
    diff.Strip();
 
@@ -669,14 +675,14 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::View" ) {
    DOCTEST_CHECK( ref.Sizes() == dip::UnsignedArray{ 3, 2, 1 } );
    DOCTEST_CHECK( ref.TensorElements() == 3 );
    viewRR = 4;
-   DOCTEST_CHECK( dip::Count( img[ 0 ] == 4 ) == 3*2*1 );
-   DOCTEST_CHECK( dip::Count( img[ 2 ] == 4 ) == 3*2*1 );
-   DOCTEST_CHECK( dip::Count( img[ 0 ] == 1 ) == 3*3*3 - 3*2*1 ); // we didn't write into pixels not in the view
+   DOCTEST_CHECK( dip::Count( img[ 0 ] == 4 ) == 6 );
+   DOCTEST_CHECK( dip::Count( img[ 2 ] == 4 ) == 6 );
+   DOCTEST_CHECK( dip::Count( img[ 0 ] == 1 ) == 27 - 6 ); // we didn't write into pixels not in the view
    DOCTEST_CHECK( dip::Count( img[ 0 ] == 3 ) == 0 );
 
    // Mask view
    DOCTEST_CHECK( viewM.At( 3 + 1 ) == 4 ); // indexed by viewRR
-   DOCTEST_CHECK( viewM.At( 2 * 3 ) == 1 ); // not indexed by viewRR
+   DOCTEST_CHECK( viewM.At( 6 ) == 1 ); // not indexed by viewRR
    auto viewMR = viewM.At( dip::Range{ 1, 12, 2 } );
    viewMR = 5;
    ref = viewMR;
@@ -685,7 +691,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::View" ) {
    DOCTEST_CHECK( dip::Count( img[ 0 ] == 5 ) == 6 );
    DOCTEST_CHECK( dip::Count( img[ 1 ] == 5 ) == 6 );
    DOCTEST_CHECK( dip::Count( img[ 0 ] == 4 ) == 3 );
-   DOCTEST_CHECK( dip::Count( img[ 0 ] == 1 ) == 3*3*3 - 6 - 3 ); // we didn't write into pixels not in the view
+   DOCTEST_CHECK( dip::Count( img[ 0 ] == 1 ) == 27 - 6 - 3 ); // we didn't write into pixels not in the view
 
    // Coordinate array view
    auto viewCR = viewC.At( dip::Range{ 2, 2 } );
@@ -789,8 +795,8 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::View" ) {
    srcR = 1; // already checked that it works
    img.Fill( 0 );
    viewR = srcR;
-   DOCTEST_CHECK( dip::Count( img[ 0 ] ) == 3*3*3 );
-   DOCTEST_CHECK( dip::Count( img[ 2 ] ) == 3*3*3 );
+   DOCTEST_CHECK( dip::Count( img[ 0 ] ) == 27 );
+   DOCTEST_CHECK( dip::Count( img[ 2 ] ) == 27 );
    DOCTEST_CHECK_THROWS( viewR = src.At( dip::Range{ 3, 9, 1 }, dip::Range{ 3, 9, 3 }, dip::Range{ 3, 9, 3 } ));
 
    // Regular indexing / indexing using mask image
@@ -799,8 +805,8 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::View" ) {
    srcM = 1; // already checked that it works
    img.Fill( 0 );
    viewR = srcM;
-   DOCTEST_CHECK( dip::Count( img[ 0 ] ) == 3*3*3 );
-   DOCTEST_CHECK( dip::Count( img[ 2 ] ) == 3*3*3 );
+   DOCTEST_CHECK( dip::Count( img[ 0 ] ) == 27 );
+   DOCTEST_CHECK( dip::Count( img[ 2 ] ) == 27 );
    DOCTEST_CHECK_THROWS( img.At( dip::Range{ 3, 9, 1 }, dip::Range{ 3, 9, 3 }, dip::Range{ 3, 9, 3 } ) = srcM );
 
    // Regular indexing / indexing using coordinate array
@@ -819,8 +825,8 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::View" ) {
    srcR = 1; // already checked that it works
    img.Fill( 0 );
    viewM = srcR;
-   DOCTEST_CHECK( dip::Count( img[ 0 ] ) == 3*3*3 );
-   DOCTEST_CHECK( dip::Count( img[ 2 ] ) == 3*3*3 );
+   DOCTEST_CHECK( dip::Count( img[ 0 ] ) == 27 );
+   DOCTEST_CHECK( dip::Count( img[ 2 ] ) == 27 );
    DOCTEST_CHECK_THROWS( viewM = src.At( dip::Range{ 3, 9, 1 }, dip::Range{ 3, 9, 3 }, dip::Range{ 3, 9, 3 } ));
 
    // Indexing using mask image / indexing using mask image
@@ -828,8 +834,8 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::View" ) {
    srcM = 1; // already checked that it works
    img.Fill( 0 );
    viewM = srcM;
-   DOCTEST_CHECK( dip::Count( img[ 0 ] ) == 3*3*3 );
-   DOCTEST_CHECK( dip::Count( img[ 2 ] ) == 3*3*3 );
+   DOCTEST_CHECK( dip::Count( img[ 0 ] ) == 27 );
+   DOCTEST_CHECK( dip::Count( img[ 2 ] ) == 27 );
    dip::Image altMask = mask.Similar();
    altMask.Fill( 0 );
    DOCTEST_CHECK_THROWS( viewM = src.At( altMask ));
