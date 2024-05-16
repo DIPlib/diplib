@@ -16,7 +16,10 @@
  */
 
 #include "diplib/library/numeric.h"
+
 #include <cmath>
+
+#include "diplib.h"
 
 namespace dip {
 
@@ -44,20 +47,19 @@ dfloat BesselJ0(
                                   + y * (    59272.64853
                                   + y * (    267.8532712 + y * 1.0 ))));
       return ans1 / ans2;
-   } else {
-      dfloat z = 8.0 / ax;
-      dfloat y = z * z;
-      dfloat xx = ax - 0.785398164;
-      dfloat ans1 = 1.0 + y * ( -0.1098628627e-2
-                        + y * (  0.2734510407e-4
-                        + y * ( -0.2073370639e-5
-                        + y *    0.2093887211e-6 )));
-      dfloat ans2 = -0.1562499995e-1 + y * (  0.1430488765e-3
-                                     + y * ( -0.6911147651e-5
-                                     + y * (  0.7621095161e-6
-                                     - y *     0.934935152e-7 )));
-      return std::sqrt( 0.636619772 / ax ) * ( std::cos( xx ) * ans1 - z * std::sin( xx ) * ans2 );
    }
+   dfloat z = 8.0 / ax;
+   dfloat y = z * z;
+   dfloat xx = ax - 0.785398164;
+   dfloat ans1 = 1.0 + y * ( -0.1098628627e-2
+                     + y * (  0.2734510407e-4
+                     + y * ( -0.2073370639e-5
+                     + y *    0.2093887211e-6 )));
+   dfloat ans2 = -0.1562499995e-1 + y * (  0.1430488765e-3
+                                  + y * ( -0.6911147651e-5
+                                  + y * (  0.7621095161e-6
+                                  - y *     0.934935152e-7 )));
+   return std::sqrt( 0.636619772 / ax ) * ( std::cos( xx ) * ans1 - z * std::sin( xx ) * ans2 );
 }
 
 dfloat BesselJ1(
@@ -76,21 +78,20 @@ dfloat BesselJ1(
                                    + y * ( 99447.43394
                                    + y * ( 376.9991397 + y * 1.0 ))));
       return ans1 / ans2;
-   } else {
-      dfloat z = 8.0 / ax;
-      dfloat y = z * z;
-      dfloat xx = ax - 2.356194491;
-      dfloat ans1 = 1.0 + y * ( 0.183105e-2 + y * ( -0.3516396496e-4
-                                            + y * ( 0.2457520174e-5
-                                            + y * ( -0.240337019e-6 ))));
-      dfloat ans2 = 0.04687499995 + y * ( -0.2002690873e-3
-                                  + y * ( 0.8449199096e-5
-                                  + y * ( -0.88228987e-6
-                                  + y * 0.105787412e-6 )));
-      dfloat ans = std::sqrt( 0.636619772 / ax ) * ( std::cos( xx ) * ans1 - z * std::sin( xx ) * ans2 );
-      if( x < 0.0 ) { ans = -ans; }
-      return ans;
    }
+   dfloat z = 8.0 / ax;
+   dfloat y = z * z;
+   dfloat xx = ax - 2.356194491;
+   dfloat ans1 = 1.0 + y * ( 0.183105e-2 + y * ( -0.3516396496e-4
+                                         + y * ( 0.2457520174e-5
+                                         + y * ( -0.240337019e-6 ))));
+   dfloat ans2 = 0.04687499995 + y * ( -0.2002690873e-3
+                               + y * ( 0.8449199096e-5
+                               + y * ( -0.88228987e-6
+                               + y * 0.105787412e-6 )));
+   dfloat ans = std::sqrt( 0.636619772 / ax ) * ( std::cos( xx ) * ans1 - z * std::sin( xx ) * ans2 );
+   if( x < 0.0 ) { ans = -ans; }
+   return ans;
 }
 
 dfloat BesselJN(
@@ -165,20 +166,19 @@ dfloat BesselY0(
                                   + y * (  47447.26470
                                   + y * (  226.1030244 + y * 1.0 ))));
       return ( ans1 / ans2 ) + 0.636619772 * BesselJ0( x ) * std::log( x );
-   } else {
-      dfloat z = 8.0 / x;
-      dfloat y = z * z;
-      dfloat xx = x - 0.785398164;
-      dfloat ans1 = 1.0 + y * ( -0.1098628627e-2
-                        + y * (  0.2734510407e-4
-                        + y * ( -0.2073370639e-5
-                        + y *    0.2093887211e-6 )));
-      dfloat ans2 = -0.1562499995e-1 + y * (  0.1430488765e-3
-                                     + y * ( -0.6911147651e-5
-                                     + y * (  0.7621095161e-6
-                                     + y * (  -0.934945152e-7 ))));
-      return std::sqrt( 0.636619772 / x ) * ( std::sin( xx ) * ans1 + z * std::cos( xx ) * ans2 );
    }
+   dfloat z = 8.0 / x;
+   dfloat y = z * z;
+   dfloat xx = x - 0.785398164;
+   dfloat ans1 = 1.0 + y * ( -0.1098628627e-2
+                     + y * (  0.2734510407e-4
+                     + y * ( -0.2073370639e-5
+                     + y *    0.2093887211e-6 )));
+   dfloat ans2 = -0.1562499995e-1 + y * (  0.1430488765e-3
+                                  + y * ( -0.6911147651e-5
+                                  + y * (  0.7621095161e-6
+                                  + y * (  -0.934945152e-7 ))));
+   return std::sqrt( 0.636619772 / x ) * ( std::sin( xx ) * ans1 + z * std::cos( xx ) * ans2 );
 }
 
 dfloat BesselY1(
@@ -197,20 +197,19 @@ dfloat BesselY1(
                                     + y * (  0.1020426050e6
                                     + y * (  0.3549632885e3 + y )))));
       return ( ans1 / ans2 ) + 0.636619772 * ( BesselJ1( x ) * std::log( x ) - 1.0 / x );
-   } else {
-      dfloat z = 8.0 / x;
-      dfloat y = z * z;
-      dfloat xx = x - 2.356194491;
-      dfloat ans1 = 1.0 + y * (      0.183105e-2
-                        + y * ( -0.3516396496e-4
-                        + y * (  0.2457520174e-5
-                        + y * (  -0.240337019e-6 ))));
-      dfloat ans2 = 0.04687499995 + y * ( -0.2002690873e-3
-                                  + y * (  0.8449199096e-5
-                                  + y * (   -0.88228987e-6
-                                  + y *     0.105787412e-6 )));
-      return std::sqrt( 0.636619772 / x ) * ( std::sin( xx ) * ans1 + z * std::cos( xx ) * ans2 );
    }
+   dfloat z = 8.0 / x;
+   dfloat y = z * z;
+   dfloat xx = x - 2.356194491;
+   dfloat ans1 = 1.0 + y * (      0.183105e-2
+                     + y * ( -0.3516396496e-4
+                     + y * (  0.2457520174e-5
+                     + y * (  -0.240337019e-6 ))));
+   dfloat ans2 = 0.04687499995 + y * ( -0.2002690873e-3
+                               + y * (  0.8449199096e-5
+                               + y * (   -0.88228987e-6
+                               + y *     0.105787412e-6 )));
+   return std::sqrt( 0.636619772 / x ) * ( std::sin( xx ) * ans1 + z * std::cos( xx ) * ans2 );
 }
 
 dfloat BesselYN(
@@ -240,6 +239,9 @@ dfloat BesselYN(
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
+
+#include <limits>
+
 #include "diplib/library/clamp_cast.h"
 #include "diplib/saturated_arithmetic.h"
 

@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
+#include <cmath>
+#include <utility>
 #include "diplib/library/numeric.h"
+
+#include "diplib.h"
 
 #if defined(__GNUG__) || defined(__clang__)
    // For Eigen, turn off -Wsign-conversion
@@ -28,8 +32,8 @@
    #endif
 #endif
 
-#include <Eigen/QR>
-#include <Eigen/Cholesky>
+#include <Eigen/QR> // IWYU pragma: keep
+#include <Eigen/Cholesky> // IWYU pragma: keep
 
 #if defined(__GNUG__) || defined(__clang__)
    #pragma GCC diagnostic pop
@@ -50,9 +54,8 @@ ThinPlateSpline::ThinPlateSpline(
       FloatCoordinateArray coordinate,    // use std::move if you can!
       FloatCoordinateArray const& value,  // correspondence points
       dfloat lambda
-) {
+) : c_( std::move( coordinate )) {
    // NOTE: `source` and `destination` are already checked for sizes
-   c_ = std::move( coordinate );
    dip::sint nPoints = static_cast< dip::sint >( c_.size() );
    dip::sint nDims = static_cast< dip::sint >( c_[ 0 ].size() );
 
@@ -81,7 +84,7 @@ ThinPlateSpline::ThinPlateSpline(
       }
    }
    if( lambda > 0.0 ) {
-      alpha /= static_cast< dfloat >( nPoints * ( nPoints - 1 ) / 2 );
+      alpha /= static_cast< dfloat >(( nPoints * ( nPoints - 1 )) / 2 ); // NOLINT(*-integer-division)
       alpha *= alpha * lambda;
       for( dip::sint ii = 0; ii < nPoints; ++ii ) {
          L( ii, ii ) = alpha;
@@ -93,7 +96,7 @@ ThinPlateSpline::ThinPlateSpline(
 
    // Solve equation Lx=b for x
    // Using Eigen::Ref to get in-place decomposition, it re-uses L to store the decomposition.
-   Eigen::HouseholderQR <Eigen::Ref< Eigen::MatrixXd >> decomposition( L );
+   Eigen::HouseholderQR< Eigen::Ref< Eigen::MatrixXd >> decomposition( L );
    //Eigen::ColPivHouseholderQR <Eigen::Ref< Eigen::MatrixXd >> decomposition( L );
    // TODO: Eigen::HouseholderQR is faster but less accurate than Eigen::ColPivHouseholderQR. Which one to pick?
    x_.resize( static_cast< dip::uint >( N * nDims ));

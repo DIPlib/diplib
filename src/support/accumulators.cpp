@@ -19,8 +19,13 @@
 #include "doctest.h"
 
 #include "diplib/accumulators.h"
-#include "diplib/random.h"
+
+#include <algorithm>
+#include <cmath>
+
+#include "diplib.h"
 #include "diplib/math.h"
+#include "diplib/random.h"
 #include "diplib/transform.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the statistical accumulators") {

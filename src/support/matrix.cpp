@@ -15,8 +15,15 @@
  * limitations under the License.
  */
 
-#include <array>
 #include "diplib/library/numeric.h"
+
+#include <algorithm>
+#include <array>
+#include <numeric>
+#include <utility>
+#include <vector>
+
+#include "diplib.h"
 
 #if defined(__GNUG__) || defined(__clang__)
    // For Eigen, turn off -Wsign-conversion
@@ -30,8 +37,8 @@
    #endif
 #endif
 
-#include <Eigen/Eigenvalues>
-#include <Eigen/SVD>
+#include <Eigen/Eigenvalues> // IWYU pragma: keep
+#include <Eigen/SVD> // IWYU pragma: keep
 
 #if defined(__GNUG__) || defined(__clang__)
    #pragma GCC diagnostic pop
@@ -412,6 +419,8 @@ void Solve(
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 
+#include <cmath>
+
 DOCTEST_TEST_CASE("[DIPlib] testing the EigenDecomposition functions") {
    // Test generic symmetric code with 2x2 matrix
    dip::dfloat matrix2[] = { 4, 8, 0 };
@@ -544,10 +553,10 @@ DOCTEST_TEST_CASE("[DIPlib] testing the EigenDecomposition functions") {
    dip::EigenDecomposition( 2, matrix22, c_lambdas, c_vectors );
    DOCTEST_CHECK( c_lambdas[ 0 ].real() == doctest::Approx( 4.0 ));
    DOCTEST_CHECK( c_lambdas[ 1 ].real() == doctest::Approx( 2.0 ));
-   DOCTEST_CHECK( c_vectors[ 0 ].real() == doctest::Approx(  cos( dip::pi/4 ))); // signs might be different here...
-   DOCTEST_CHECK( c_vectors[ 1 ].real() == doctest::Approx( -sin( dip::pi/4 )));
-   DOCTEST_CHECK( c_vectors[ 2 ].real() == doctest::Approx(  sin( dip::pi/4 )));
-   DOCTEST_CHECK( c_vectors[ 3 ].real() == doctest::Approx(  cos( dip::pi/4 )));
+   DOCTEST_CHECK( c_vectors[ 0 ].real() == doctest::Approx(  std::cos( dip::pi/4 ))); // signs might be different here...
+   DOCTEST_CHECK( c_vectors[ 1 ].real() == doctest::Approx( -std::sin( dip::pi/4 )));
+   DOCTEST_CHECK( c_vectors[ 2 ].real() == doctest::Approx(  std::sin( dip::pi/4 )));
+   DOCTEST_CHECK( c_vectors[ 3 ].real() == doctest::Approx(  std::cos( dip::pi/4 )));
    DOCTEST_CHECK( c_lambdas[ 0 ].imag() == 0 );
    DOCTEST_CHECK( c_lambdas[ 1 ].imag() == 0 );
    DOCTEST_CHECK( c_vectors[ 0 ].imag() == 0 );

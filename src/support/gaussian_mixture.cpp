@@ -16,6 +16,14 @@
 
 #include "diplib/library/numeric.h"
 
+#include <cmath>
+#include <cstdlib>
+#include <algorithm>
+#include <vector>
+
+#include "diplib.h"
+#include "diplib/random.h"
+
 namespace dip {
 
 std::vector< GaussianParameters > GaussianMixtureModel(
@@ -59,7 +67,7 @@ std::vector< GaussianParameters > GaussianMixtureModel(
             dif = isPeriodic ? std::min( std::min( std::abs( dif ), std::abs( dif - sz )), std::abs( dif + sz ))
                              : std::abs( dif );
             if( params[ kk ].sigma > 0 ) {
-               *tp = params[ kk ].amplitude * exp(( -0.5 * dif * dif ) / ( params[ kk ].sigma * params[ kk ].sigma ));
+               *tp = params[ kk ].amplitude * std::exp(( -0.5 * dif * dif ) / ( params[ kk ].sigma * params[ kk ].sigma ));
             } else {
                *tp = 0;
             }
