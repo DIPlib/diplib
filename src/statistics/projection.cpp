@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+#include "diplib/statistics.h"
+
 #include <functional>
 #include <limits>
 #include <memory>
@@ -25,7 +27,6 @@
 #include "diplib/iterators.h"
 #include "diplib/math.h"
 #include "diplib/overload.h"
-#include "diplib/statistics.h"
 
 namespace dip {
 

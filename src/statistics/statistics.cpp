@@ -15,10 +15,17 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/statistics.h"
-#include "diplib/math.h"
+
+#include <memory>
+#include <limits>
+#include <numeric>
+#include <vector>
+
+#include "diplib.h"
+#include "diplib/accumulators.h"
 #include "diplib/framework.h"
+#include "diplib/math.h"
 #include "diplib/overload.h"
 
 namespace dip {
@@ -27,7 +34,7 @@ namespace {
 
 class CountLineFilter : public Framework::ScanLineFilter {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 2; }
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override { return 2; }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          bin const* in = static_cast< bin const* >( params.inBuffer[ 0 ].buffer );
          dip::uint count = 0;
@@ -92,7 +99,7 @@ class MaxMinPixelLineFilter : public Framework::ScanLineFilter {
 template< typename TPI >
 class MaxPixelLineFilter : public MaxMinPixelLineFilter {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 2; }
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override { return 2; }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          UnsignedArray coord( params.position.size() );
@@ -187,7 +194,7 @@ class MaxPixelLineFilter : public MaxMinPixelLineFilter {
 template< typename TPI >
 class MinPixelLineFilter : public MaxMinPixelLineFilter {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 2; }
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override { return 2; }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          UnsignedArray coord( params.position.size() );
@@ -284,7 +291,7 @@ class MinPixelLineFilter : public MaxMinPixelLineFilter {
 UnsignedArray MaximumPixel( Image const& in, Image const& mask, String const& positionFlag ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
-   bool first;
+   bool first{};
    DIP_STACK_TRACE_THIS( first = BooleanFromString( positionFlag, S::FIRST, S::LAST ));
    DataType dataType = DataType::SuggestReal( in.DataType() );
    std::unique_ptr< MaxMinPixelLineFilter > scanLineFilter;
@@ -297,7 +304,7 @@ UnsignedArray MaximumPixel( Image const& in, Image const& mask, String const& po
 UnsignedArray MinimumPixel( Image const& in, Image const& mask, String const& positionFlag ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
-   bool first;
+   bool first{};
    DIP_STACK_TRACE_THIS( first = BooleanFromString( positionFlag, S::FIRST, S::LAST ));
    DataType dataType = DataType::SuggestReal( in.DataType() );
    std::unique_ptr< MaxMinPixelLineFilter > scanLineFilter;
@@ -312,7 +319,7 @@ namespace {
 template< typename TPI >
 class CumSumFilter : public Framework::SeparableLineFilter {
    public:
-      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override {
          return lineLength;
       }
       void Filter( Framework::SeparableLineFilterParameters const& params ) override {
@@ -364,7 +371,7 @@ class MaximumAndMinimumLineFilterBase : public Framework::ScanLineFilter {
 template< typename TPI >
 class MaximumAndMinimumLineFilter : public MaximumAndMinimumLineFilterBase {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 3; }
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override { return 3; }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          MinMaxAccumulator vars;
@@ -440,7 +447,7 @@ class SampleStatisticsLineFilterBase : public Framework::ScanLineFilter {
 template< typename TPI >
 class SampleStatisticsLineFilter : public SampleStatisticsLineFilterBase {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 23; }
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override { return 23; }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          StatisticsAccumulator vars;
@@ -504,7 +511,7 @@ class CovarianceLineFilterBase : public Framework::ScanLineFilter {
 template< typename TPI >
 class CovarianceLineFilter : public CovarianceLineFilterBase {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 10; }
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override { return 10; }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in1 = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          TPI const* in2 = static_cast< TPI const* >( params.inBuffer[ 1 ].buffer );
@@ -664,7 +671,7 @@ class CenterOfMassLineFilterBase : public Framework::ScanLineFilter {
 template< typename TPI >
 class CenterOfMassLineFilter : public CenterOfMassLineFilterBase {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return nD_ + 1; }
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override { return nD_ + 1; }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          FloatArray vars( nD_ + 1, 0.0 );
@@ -751,7 +758,7 @@ class MomentsLineFilterBase : public Framework::ScanLineFilter {
 template< typename TPI >
 class MomentsLineFilter : public MomentsLineFilterBase {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override {
          return nD_ * ( nD_ + 1 ) / 2 * 3 + nD_ + 2;
       }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {

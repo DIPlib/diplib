@@ -18,14 +18,19 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/statistics.h"
-#include "diplib/math.h"
-#include "diplib/linear.h"
-#include "diplib/mapping.h"
-#include "diplib/histogram.h"
+
+#include <algorithm>
+#include <cmath>
+#include <vector>
+
+#include "diplib.h"
 #include "diplib/distance.h"
 #include "diplib/framework.h"
+#include "diplib/histogram.h"
+#include "diplib/linear.h"
+#include "diplib/mapping.h"
+#include "diplib/math.h"
 
 namespace dip {
 
@@ -107,7 +112,7 @@ namespace {
 
 class IDivergenceLineFilter : public Framework::ScanLineFilter {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 23; }
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override { return 23; }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dfloat const* in1 = static_cast< dfloat const* >( params.inBuffer[ 0 ].buffer );
          dfloat const* in2 = static_cast< dfloat const* >( params.inBuffer[ 1 ].buffer );
@@ -382,7 +387,7 @@ SpatialOverlapMetrics SpatialOverlap( Image const& in, Image const& reference ) 
    DIP_THROW_IF( !in.IsScalar() || !reference.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( in.DataType().IsComplex() || reference.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( in.Sizes() != reference.Sizes(), E::SIZES_DONT_MATCH );
-   SpatialOverlapMetrics out;
+   SpatialOverlapMetrics out{};
    out.truePositives = TruePositives( in, reference );
    out.trueNegatives = TrueNegatives( in, reference );
    out.falsePositives = FalsePositives( in, reference );

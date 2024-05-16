@@ -384,9 +384,9 @@ void GaussFT(
       StringArray const& boundaryCondition
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
-   bool inSpatial; // NOLINT(*-init-variables)
+   bool inSpatial{};
    DIP_STACK_TRACE_THIS( inSpatial = BooleanFromString( inRepresentation, S::SPATIAL, S::FREQUENCY ));
-   bool outSpatial; // NOLINT(*-init-variables)
+   bool outSpatial{};
    DIP_STACK_TRACE_THIS( outSpatial = BooleanFromString( outRepresentation, S::SPATIAL, S::FREQUENCY ));
    if( !inSpatial ) {
       DIP_THROW_IF( !in.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );

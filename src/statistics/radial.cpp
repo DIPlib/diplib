@@ -15,11 +15,19 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
+#include <algorithm>
+#include <cmath>
 #include "diplib/statistics.h"
+
+#include <limits>
+#include <functional>
+#include <memory>
+#include <utility>
+
+#include "diplib.h"
 #include "diplib/framework.h"
-#include "diplib/overload.h"
 #include "diplib/iterators.h"
+#include "diplib/overload.h"
 
 namespace dip {
 
@@ -254,8 +262,9 @@ class ProjectionRadialMinMax : public ProjectionRadialBase< TPI, TPI > {
    protected:
       void ProcessPixel( ConstSampleIterator< TPI > pIn, SampleIterator< TPI > pOut, dip::uint tensorLength ) override {
          for( dip::uint iT = 0; iT < tensorLength; ++iT, ++pIn, ++pOut ) {
-            if( compareOp_( *pIn, *pOut ))
+            if( compareOp_( *pIn, *pOut )) {
                *pOut = *pIn;
+            }
          }
       }
 
@@ -281,7 +290,7 @@ class ProjectionRadialMax : public ProjectionRadialMinMax< TPI, std::greater< TP
             ProjectionRadialMinMax< TPI, std::greater< TPI >>( out, binSize, center, std::numeric_limits< TPI >::lowest() ) {}
 };
 
-enum class RadialProjectionType { sum, mean, min, max, };
+enum class RadialProjectionType : uint8 { sum, mean, min, max, };
 
 void RadialProjectionScan(
       RadialProjectionType type,
@@ -326,7 +335,7 @@ void RadialProjectionScan(
    //       Probably involves replacing ProjectionRadialBase::center_ by a TransformationArray member.
 
    // Determine radius
-   dfloat radius;
+   dfloat radius = 0;
    if( maxRadius == S::INNERRADIUS ) {
       radius = std::numeric_limits< dfloat >::max();
       // Find minimum size of dims to be processed
@@ -340,7 +349,6 @@ void RadialProjectionScan(
       DIP_ASSERT( radius >= 0.0 );
    } else if ( maxRadius == S::OUTERRADIUS ) {
       // Find the maximum diagonal
-      radius = 0.0;
       for( dip::uint iDim = 0; iDim < c_in.Dimensionality(); ++iDim ) {
          dfloat dimMax = std::max( center[ iDim ], static_cast< dfloat >( c_in.Size( iDim ) - 1 ) - center[ iDim ] );
          radius += dimMax * dimMax;
@@ -353,7 +361,7 @@ void RadialProjectionScan(
 
    // Make copy of input image header. This separates it from the output image, so we don't change it
    // when reforging `out`.
-   Image in = c_in;
+   Image in = c_in; // NOLINT(*-unnecessary-copy-initialization)
 
    // Create output image
    DataType dt = in.DataType();
