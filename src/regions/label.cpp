@@ -15,13 +15,18 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/regions.h"
-#include "diplib/union_find.h"
+
+#include <algorithm>
+#include <cstdlib>
+#include <functional>
+#include <utility>
+#include <vector>
+
+#include "diplib.h"
 #include "diplib/neighborlist.h"
 #include "diplib/iterators.h"
-#include "diplib/boundary.h"
-#include "diplib/framework.h" // for OptimalProcessingDim
+#include "diplib/framework.h"
 
 #include "labelingGrana2016.h"
 
@@ -36,7 +41,8 @@ bool IsConnected( IntegerArray const& coords, dip::uint connectivity ) {
       c = std::abs( c );
       if( c > 1 ) {
          return false;
-      } else if( c == 1 ) {
+      }
+      if( c == 1 ) {
          ++dist;
       }
    }
@@ -313,7 +319,7 @@ dip::uint Label(
       }
       // We use `c_out` here, not `out`, because we need to be sure of which dimension is being processed.
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
-         if(( boundaryCondition[ ii ] == "" ) || ( boundaryCondition[ ii ] == S::SYMMETRIC_MIRROR )) {
+         if(( boundaryCondition[ ii ].empty() ) || ( boundaryCondition[ ii ] == S::SYMMETRIC_MIRROR )) {
             // Do nothing.
          } else if( boundaryCondition[ ii ] == S::PERIODIC ) {
             if( c_out.Size( ii ) > 2 ) { // >2 because there's no effect for fewer pixels.
@@ -393,7 +399,7 @@ dip::uint Label(
    }
 
    // Relabel
-   dip::uint nLabel;
+   dip::uint nLabel{};
    if( largest_only ) {
       // Find largest label
       dip::uint max_size = 0;

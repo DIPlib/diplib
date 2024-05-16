@@ -15,18 +15,20 @@
  * limitations under the License.
  */
 
+#include "diplib/regions.h"
+
 #include <cmath>
 #include <limits>
 #include <queue>
 
 #include "diplib.h"
-#include "diplib/regions.h"
 #include "diplib/border.h"
 #include "diplib/distance.h"
 #include "diplib/iterators.h"
 #include "diplib/morphology.h"
 #include "diplib/neighborlist.h"
 #include "diplib/overload.h"
+
 #include "../binary/binary_support.h"
 
 namespace dip {

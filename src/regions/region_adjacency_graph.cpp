@@ -14,15 +14,20 @@
  * limitations under the License.
  */
 
-#include <queue>
+#include "diplib/regions.h"
+
+#include <algorithm>
+#include <memory>
+#include <vector>
 
 #include "diplib.h"
-#include "diplib/regions.h"
+#include "diplib/framework.h"
+#include "diplib/graph.h"
+#include "diplib/lookup_table.h"
+#include "diplib/measurement.h"
+#include "diplib/overload.h"
 #include "diplib/statistics.h"
 #include "diplib/union_find.h"
-#include "diplib/lookup_table.h"
-#include "diplib/framework.h"
-#include "diplib/overload.h"
 
 namespace dip {
 
@@ -140,7 +145,7 @@ Graph RegionAdjacencyGraphInternal( Image const& label, String const& mode, std:
    DIP_THROW_IF( !label.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !label.DataType().IsUInt(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( label.Dimensionality() < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
-   bool touching;
+   bool touching{};
    DIP_STACK_TRACE_THIS( touching = BooleanFromString( mode, "touching", "watershed" ));
    dip::uint nVertices = dip::Maximum( label ).As< dip::uint >() + 1;
    Graph graph( nVertices );

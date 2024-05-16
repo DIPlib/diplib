@@ -15,18 +15,24 @@
  * limitations under the License.
  */
 
+#include "diplib/regions.h"
+
+#include <algorithm>
 #include <map>
+#include <memory>
+#include <set>
+#include <utility>
 
 #include "diplib.h"
+#include "diplib/chain_code.h"
+#include "diplib/framework.h"
+#include "diplib/generation.h"
+#include "diplib/iterators.h"
+#include "diplib/measurement.h"
+#include "diplib/neighborlist.h"
+#include "diplib/overload.h"
 #include "diplib/private/robin_map.h"
 #include "diplib/private/robin_set.h"
-#include "diplib/regions.h"
-#include "diplib/measurement.h"
-#include "diplib/chain_code.h"
-#include "diplib/generation.h"
-#include "diplib/framework.h"
-#include "diplib/overload.h"
-#include "diplib/iterators.h"
 
 namespace dip {
 
@@ -88,7 +94,7 @@ UnsignedArray GetObjectLabels(
    if( mask.IsForged() ) {
       DIP_STACK_TRACE_THIS( mask.CheckIsMask( label.Sizes(), Option::AllowSingletonExpansion::DONT_ALLOW, Option::ThrowException::DO_THROW ));
    }
-   bool nullIsObject;
+   bool nullIsObject{};
    DIP_STACK_TRACE_THIS( nullIsObject = BooleanFromString( background, S::INCLUDE, S::EXCLUDE ));
 
    LabelSet objectIDs; // output
