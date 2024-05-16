@@ -15,12 +15,13 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/segmentation.h"
+
+#include "diplib.h"
+#include "diplib/binary.h"
 #include "diplib/linear.h"
 #include "diplib/nonlinear.h"
 #include "diplib/statistics.h"
-#include "diplib/binary.h"
 
 namespace dip {
 

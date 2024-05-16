@@ -15,16 +15,20 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/segmentation.h"
-#include "diplib/histogram.h"
-#include "diplib/math.h"
-#include "diplib/statistics.h"
+
+#include <limits>
+#include <memory>
+
+#include "diplib.h"
 #include "diplib/binary.h"
-#include "diplib/generation.h"
 #include "diplib/framework.h"
-#include "diplib/overload.h"
+#include "diplib/generation.h"
+#include "diplib/histogram.h"
 #include "diplib/lookup_table.h"
+#include "diplib/math.h"
+#include "diplib/overload.h"
+#include "diplib/statistics.h"
 
 namespace dip {
 
@@ -175,7 +179,7 @@ namespace {
 template< typename TPI >
 class RangeThresholdScanLineFilter : public Framework::ScanLineFilter {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 3; }
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override { return 3; }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          TPI* out = static_cast< TPI* >( params.outBuffer[ 0 ].buffer );

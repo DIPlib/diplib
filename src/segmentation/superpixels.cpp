@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/segmentation.h"
+
+#include "diplib.h"
 #include "diplib/generation.h"
-#include "diplib/nonlinear.h"
 #include "diplib/linear.h"
 #include "diplib/math.h"
 #include "diplib/morphology.h"
+#include "diplib/nonlinear.h"
+#include "diplib/random.h"
 
 namespace dip {
 

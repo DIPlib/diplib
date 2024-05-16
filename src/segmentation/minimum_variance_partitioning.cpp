@@ -15,12 +15,19 @@
  * limitations under the License.
  */
 
+#include "diplib/segmentation.h"
+
+#include <algorithm>
+#include <limits>
+#include <memory>
 #include <queue>
+#include <tuple>
+#include <utility>
+#include <vector>
 
 #include "diplib.h"
-#include "diplib/segmentation.h"
-#include "diplib/iterators.h"
 #include "diplib/framework.h"
+#include "diplib/iterators.h"
 #include "diplib/overload.h"
 
 /* Algorithm:
@@ -88,7 +95,7 @@ class KDTree {
          Image const& image;
          ComputeSumProjectionsFunction* computeSumProjections;
 
-         explicit Partition( Image const& img ) : image( img ) {}
+         explicit Partition( Image const& img ) : image( img ) {} // NOLINT(*-pro-type-member-init)
 
          void SetRootPartition() {
             nPixels = image.NumberOfPixels();
@@ -319,8 +326,8 @@ class PaintClustersLineFilter : public Framework::ScanLineFilter {
          UnsignedArray pos = params.position;
          dip::uint end = pos[ procDim ] + bufferLength;
          do {
-            LabelType label;
-            dip::uint last;
+            LabelType label{};
+            dip::uint last{};
             std::tie( label, last ) = clusters_.Lookup( pos, procDim );
             for( ; pos[ procDim ] <= last; ++pos[ procDim ], out += outStride ) {
                *out = label;

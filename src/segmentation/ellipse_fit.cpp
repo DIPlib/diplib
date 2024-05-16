@@ -15,8 +15,15 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/segmentation.h"
+
+#include <algorithm>
+#include <cmath>
+#include <limits>
+#include <numeric>
+#include <vector>
+
+#include "diplib.h"
 #include "diplib/statistics.h"
 
 namespace dip {
@@ -83,7 +90,7 @@ struct Node {
       ComputeEllipseParams();
    }
 
-   bool MatchesParams( PerObjectEllipsoidFitParameters const& params, sfloat value ) {
+   bool MatchesParams( PerObjectEllipsoidFitParameters const& params, sfloat value ) const {
       return ( area >= params.minSize ) &&
              ( value <= params.maxThreshold ) &&
              ( ellipseFit >= params.minEllipsoidFit ) &&
@@ -212,7 +219,7 @@ void FindObjectBelow(
       sfloat const* inData
 ) {
    dip::uint e = startE;
-   uint8 res;
+   uint8 res{};
    while( true ) {
       if( nodes[ e ].parentNode == e ) {
          res = NOT_OBJECT;

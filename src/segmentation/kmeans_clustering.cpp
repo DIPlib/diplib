@@ -15,8 +15,15 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/segmentation.h"
+
+#include <algorithm>
+#include <cstdlib>
+#include <limits>
+#include <memory>
+#include <vector>
+
+#include "diplib.h"
 #include "diplib/framework.h"
 #include "diplib/overload.h"
 #include "diplib/random.h"
