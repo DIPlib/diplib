@@ -15,15 +15,19 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/microscopy.h"
-#include "diplib/generation.h"
-#include "diplib/math.h"
-#include "diplib/statistics.h"
-#include "diplib/transform.h"
-#include "diplib/framework.h"
+
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <tuple>
+#include <vector>
+
+#include "diplib.h"
 #include "diplib/iterators.h"
 #include "diplib/multithreading.h"
+#include "diplib/statistics.h"
+#include "diplib/transform.h"
 
 namespace dip {
 
@@ -625,10 +629,10 @@ void RecursiveAttenuationCorrectionDET(
    dip::sint attHeight = height + trad;
 
    FloatArray	cosine_a, cossq_a, fAtten_a, bAtten_a;
-   dfloat ncossq, ncos;
+   dfloat ncossq{}, ncos{};
    FloatArray attBuff1, attBuff2, attBuff3;
    IntegerArray pos_a;
-   dip::sint coneSize;
+   dip::sint coneSize{};
    AbsCorAllocateTables( cosine_a, cossq_a, fAtten_a, bAtten_a, ncos, ncossq, attBuff1, attBuff2, attBuff3, pos_a,
          attWidth, attHeight, rad, theta, ratio, fAttenuation, bAttenuation, coneSize );
    // The following lines added to avoid compiler warnings when indexing using a signed integer:
@@ -1073,8 +1077,8 @@ void SimulatedAttenuation(
       FloatArray cosine( rad * rad );
       #pragma omp for schedule( dynamic, 1 )
       for( dip::sint z = 1; z < depth; ++z ) {
-         dip::sint radius;
-         sfloat norm_cos, norm_cossq;
+         dip::sint radius{};
+         sfloat norm_cos{}, norm_cossq{};
          std::tie( radius, norm_cos, norm_cossq ) = AttSimDrawLightCone( cosine, zxratio, theta, z );
          for( dip::sint y = 0; y < height; ++y ) {
             for( dip::sint x = 0; x < width; ++x ) {

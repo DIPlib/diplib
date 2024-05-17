@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/microscopy.h"
-#include "diplib/math.h"
+
+#include <vector>
+
+#include "diplib.h"
 #include "diplib/mapping.h"
+#include "diplib/math.h"
 
 namespace dip {
 

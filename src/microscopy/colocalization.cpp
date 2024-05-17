@@ -14,13 +14,18 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/microscopy.h"
-#include "diplib/statistics.h"
-#include "diplib/math.h"
-#include "diplib/histogram.h"
+
+#include <algorithm>
+#include <cmath>
+#include <vector>
+
+#include "diplib.h"
 #include "diplib/generic_iterators.h"
+#include "diplib/histogram.h"
+#include "diplib/iterators.h"
 #include "diplib/random.h"
+#include "diplib/statistics.h"
 
 namespace dip {
 

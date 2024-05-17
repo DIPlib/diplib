@@ -15,12 +15,15 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/microscopy.h"
-#include "diplib/generation.h"
-#include "diplib/math.h"
-#include "diplib/statistics.h"
+
+#include <cmath>
+#include <memory>
+
+#include "diplib.h"
 #include "diplib/framework.h"
+#include "diplib/generation.h"
+#include "diplib/statistics.h"
 
 namespace dip {
 
@@ -36,7 +39,7 @@ void IncoherentOTF(
    DIP_THROW_IF( out.Dimensionality() > 2, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( oversampling <= 0.0, E::INVALID_PARAMETER );
    DIP_THROW_IF( amplitude <= 0.0, E::INVALID_PARAMETER );
-   bool stokseth;
+   bool stokseth{};
    DIP_STACK_TRACE_THIS( stokseth = BooleanFromString( method, S::STOKSETH, "Hopkins" ));
    if( out.Dimensionality() == 0 ) {
       // No sizes given
@@ -111,7 +114,7 @@ void IncoherentOTF(
                      bjn = sinb * ( BesselJN( a, n2 - 1 ) - BesselJN( a, n2 + 1 ));
                      sum1 += bjn;
                   }
-                  sum1 *= cos( 0.5 * a * s );
+                  sum1 *= std::cos( 0.5 * a * s );
 
                   sign = 1.0;
                   n2 = 0;
