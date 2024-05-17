@@ -18,8 +18,6 @@
 #ifndef DIP_FEATURE_SURFACE_AREA_H
 #define DIP_FEATURE_SURFACE_AREA_H
 
-#include <array>
-
 #include "diplib.h"
 #include "diplib/measurement.h"
 

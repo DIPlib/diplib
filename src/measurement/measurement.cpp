@@ -14,13 +14,20 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/measurement.h"
 
-#include <iostream>
+#include <algorithm>
+#include <cmath>
 #include <fstream>
-#include <sstream>
 #include <iomanip>
+#include <iostream>
+#include <limits>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "diplib.h"
+#include "diplib/accumulators.h"
 
 namespace dip {
 
@@ -33,7 +40,6 @@ std::ostream& operator<<(
       return os;
    }
    // Figure out column widths
-   std::string const sep{ " | " };
    constexpr int separatorWidth = 3;
    constexpr int minimumColumnWidth = 10; // we format numbers with at least this many spaces: '-' + 4 digits of precision + '.' + 'e+NN'
    dip::uint maxID = msr.Objects().empty() ? 0 : *std::max_element( msr.Objects().begin(), msr.Objects().end() );

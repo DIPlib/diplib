@@ -15,10 +15,12 @@
  * limitations under the License.
  */
 
+#include "diplib/measurement.h"
+
 #include <algorithm>
+#include <utility>
 
 #include "diplib.h"
-#include "diplib/measurement.h"
 #include "diplib/lookup_table.h"
 
 namespace dip {

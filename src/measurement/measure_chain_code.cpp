@@ -15,59 +15,71 @@
  * limitations under the License.
  */
 
-#include <limits>
-#include <cmath>
+#include "diplib/chain_code.h"
+
+#include <algorithm>
 #include <array>
+#include <cmath>
+#include <limits>
+#include <vector>
 
 #include "diplib.h"
-#include "diplib/chain_code.h"
 
 namespace dip {
 
+namespace {
+
+dfloat Length8Connected( std::vector< ChainCode::Code > const& codes, bool includeBoundaryPixels ) {
+   dip::uint Ne = 0;
+   dip::uint No = 0;
+   dip::uint Nc = 0;
+   ChainCode::Code prev = codes.back();
+   for( auto code : codes ) {
+      if( includeBoundaryPixels || !code.IsBorder() ) {
+         // count the number of even and odd codes
+         if( code.IsOdd() ) {
+            No++;
+         } else {
+            Ne++;
+         }
+         if( code != prev ) {
+            Nc++;
+         }
+      }
+      prev = code;
+   }
+   return 0.980 * static_cast< dfloat >( Ne ) +
+          1.406 * static_cast< dfloat >( No ) -
+          0.091 * static_cast< dfloat >( Nc );
+}
+
+dfloat Length4Connected( std::vector< ChainCode::Code > const& codes, bool includeBoundaryPixels ) {
+   dip::uint Ne = 0;
+   dip::uint Nc = 0;
+   ChainCode::Code prev = codes.back();
+   for( auto code : codes ) {
+      if( includeBoundaryPixels || !code.IsBorder() ) {
+         Ne++;
+         if( code != prev ) {
+            Nc++;
+         }
+      }
+      prev = code;
+   }
+   return 0.948 * static_cast< dfloat >( Ne ) - 0.278 * static_cast< dfloat >( Nc );
+}
+
+} // namespace
+
 dfloat ChainCode::Length( String const& boundaryPixels ) const {
    DIP_THROW_IF( codes.size() == 1, "Received a weird chain code as input (N==1)" );
-   bool includeBoundaryPixels;
+   bool includeBoundaryPixels{};
    DIP_STACK_TRACE_THIS( includeBoundaryPixels = BooleanFromString( boundaryPixels, S::INCLUDE, S::EXCLUDE ));
    if( codes.empty() ) {
       return 0;
    }
-   if( is8connected ) {
-      dip::uint Ne = 0;
-      dip::uint No = 0;
-      dip::uint Nc = 0;
-      Code prev = codes.back();
-      for( auto code : codes ) {
-         if( includeBoundaryPixels || !code.IsBorder() ) {
-            // count the number of even and odd codes
-            if( code.IsOdd() ) {
-               No++;
-            } else {
-               Ne++;
-            }
-            if( code != prev ) {
-               Nc++;
-            }
-         }
-         prev = code;
-      }
-      return 0.980 * static_cast< dfloat >( Ne ) +
-             1.406 * static_cast< dfloat >( No ) -
-             0.091 * static_cast< dfloat >( Nc );
-   } else {
-      dip::uint Ne = 0;
-      dip::uint Nc = 0;
-      Code prev = codes.back();
-      for( auto code : codes ) {
-         if( !code.IsBorder() ) {
-            Ne++;
-            if( code != prev ) {
-               Nc++;
-            }
-         }
-         prev = code;
-      }
-      return 0.948 * static_cast< dfloat >( Ne ) - 0.278 * static_cast< dfloat >( Nc );
-   }
+   return is8connected ? Length8Connected( codes, includeBoundaryPixels )
+                       : Length4Connected( codes, includeBoundaryPixels );
 }
 
 FeretValues ChainCode::Feret( dfloat angleStep ) const {
@@ -89,8 +101,8 @@ FeretValues ChainCode::Feret( dfloat angleStep ) const {
    // Rotate the chain for each angle, and find largest x & y diameter
    feret.minDiameter = std::numeric_limits< dfloat >::max(); // other values initialized to 0.
    for( dfloat angle = 0.0; angle <= pi / 2.0; angle += angleStep ) {
-      std::array< dfloat, 8 > cosval;
-      std::array< dfloat, 8 > sinval;
+      std::array< dfloat, 8 > cosval{};
+      std::array< dfloat, 8 > sinval{};
       if( is8connected ) {
          for( dip::uint ii = 0; ii < 8; ii++ ) {
             cosval[ ii ] =  ( 1.0 + ( std::sqrt( 2.0 ) - 1.0 ) * static_cast< dfloat >( ii % 2 ))
@@ -170,18 +182,17 @@ dfloat ChainCode::BendingEnergy() const {
       for( dip::uint jj = 0; jj < 3; ++jj ) {
          dfloat sum = 0;
          dfloat stored[ k ];
-         dfloat saved;
          for( dip::uint ii = 0; ii < k; ++ii ) {
             stored[ ii ] = diff[ ii ];
             sum += diff[ ii ];
          }
          for( dip::uint ii = 0; ii < size1; ++ii ) {
-            saved = diff[ ii ];
+            dfloat saved = diff[ ii ];
             diff[ ii ] = sum / k;
             sum += diff[ ii + k ] - saved;
          }
          for( dip::uint ii = size1; ii < size; ++ii ) {
-            saved = diff[ ii ];
+            dfloat saved = diff[ ii ];
             diff[ ii ] = sum / k;
             sum += stored[ ii - size1 ] - saved;
          }

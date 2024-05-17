@@ -19,10 +19,15 @@
  * limitations under the License.
  */
 
+#include "diplib/chain_code.h"
+
+#include <algorithm>
+#include <cmath>
+#include <cstdlib>
 #include <deque>
+#include <utility>
 
 #include "diplib.h"
-#include "diplib/chain_code.h"
 #include "diplib/linear.h"
 
 namespace dip {

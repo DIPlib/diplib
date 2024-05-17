@@ -18,16 +18,16 @@
 #ifndef DIP_MEASUREMENT_H
 #define DIP_MEASUREMENT_H
 
+#include <iterator>
 #include <memory>
 #include <ostream>
-#include <iterator>
 #include <string>
-#include <vector>
 #include <utility>
+#include <vector>
 
 #include "diplib.h"
-#include "diplib/private/robin_map.h"
 #include "diplib/accumulators.h"
+#include "diplib/private/robin_map.h"
 
 
 /// \file

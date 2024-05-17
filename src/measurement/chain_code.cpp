@@ -15,8 +15,11 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/chain_code.h"
+
+#include <array>
+
+#include "diplib.h"
 
 namespace dip {
 

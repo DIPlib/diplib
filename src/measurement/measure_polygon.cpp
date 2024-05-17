@@ -15,8 +15,14 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/chain_code.h"
+
+#include <algorithm>
+#include <cmath>
+#include <limits>
+#include <vector>
+
+#include "diplib.h"
 #include "diplib/accumulators.h"
 
 namespace dip {
@@ -320,18 +326,16 @@ dfloat Polygon::BendingEnergy() const {
    dfloat be = 0;
    if( vertices.size() > 2 ) {
       dfloat prev = dip::Angle( vertices[ 0 ], vertices[ 1 ] );
-      dfloat a;
-      dfloat diff;
-      dip::uint ii;
-      for( ii = 1; ii < vertices.size() - 1; ++ii ) {
-         a = Angle( vertices[ ii ], vertices[ ii + 1 ] );
-         diff = AngleDifference( a, prev );
+      dip::uint ii = 1;
+      for( ; ii < vertices.size() - 1; ++ii ) {
+         dfloat a = Angle( vertices[ ii ], vertices[ ii + 1 ] );
+         dfloat diff = AngleDifference( a, prev );
          be += diff * diff * 2.0 / Distance( vertices[ ii - 1 ], vertices[ ii + 1 ] );
          prev = a;
       }
       // Add the two points that require straddling the boundary
-      a = Angle( vertices[ ii ], vertices[ 0 ] );
-      diff = AngleDifference( a, prev );
+      dfloat a = Angle( vertices[ ii ], vertices[ 0 ] );
+      dfloat diff = AngleDifference( a, prev );
       be += diff * diff * 2.0 / Distance( vertices[ ii - 1 ], vertices[ 0 ] );
       prev = a;
       a = Angle( vertices[ 0 ], vertices[ 1 ] );

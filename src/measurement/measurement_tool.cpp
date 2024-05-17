@@ -15,15 +15,19 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/measurement.h"
-#include "diplib/iterators.h"
+
+#include <cmath>
+#include <vector>
+
+#include "diplib.h"
 #include "diplib/chain_code.h"
 #include "diplib/framework.h"
+#include "diplib/iterators.h"
 #include "diplib/regions.h"
 
 // FEATURES:
-#include "feature_common_stuff.h"
+#include "feature_common_stuff.h" // IWYU pragma: keep
 // Size
 #include "feature_size.h"
 #include "feature_solid_area.h"

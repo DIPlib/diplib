@@ -16,9 +16,15 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
-#include "diplib/overload.h"
 #include "feature_surface_area.h"
+
+#include <algorithm>
+#include <array>
+#include <vector>
+
+#include "diplib.h"
+#include "diplib/measurement.h"
+#include "diplib/overload.h"
 
 namespace dip {
 
@@ -62,7 +68,7 @@ constexpr std::array< dfloat, 10 > sa = {{
 }};
 
 template< typename TPI >
-static void SurfaceAreaInternal(
+void SurfaceAreaInternal(
       Image const& label,
       ObjectIdToIndexMap const& objectIndex,
       std::vector< dfloat >& surfaceArea,
@@ -86,33 +92,15 @@ static void SurfaceAreaInternal(
 
             // For each pixel, evaluate its 4 connected neighborhood
             dip::uint nnt = 0;
-            std::array< dip::uint, 6 > nnn; // nearest neighbour labels
+            std::array< dip::uint, 6 > nnn{}; // nearest neighbour labels
             for( dip::uint ii = 0; ii < 6; ++ii ) {
                switch( ii ) {
-                  case 0:
-                     if( xx + 1 == dims[ 0 ] ) continue;
-                     break;
-
-                  case 1:
-                     if( yy + 1 == dims[ 1 ] ) continue;
-                     break;
-
-                  case 2:
-                     if( zz + 1 == dims[ 2 ] ) continue;
-                     break;
-
-                  case 3:
-                     if( xx == 0 ) continue;
-                     break;
-
-                  case 4:
-                     if( yy == 0 ) continue;
-                     break;
-
-                  case 5:
-                     if( zz == 0 ) continue;
-                     break;
-
+                  case 0: if( xx + 1 == dims[ 0 ] ) { continue; } break;
+                  case 1: if( yy + 1 == dims[ 1 ] ) { continue; } break;
+                  case 2: if( zz + 1 == dims[ 2 ] ) { continue; } break;
+                  case 3: if( xx == 0 ) { continue; } break;
+                  case 4: if( yy == 0 ) { continue; } break;
+                  case 5: if( zz == 0 ) { continue; } break;
                   default:
                      // since the not so clever code inspector
                      break;
@@ -191,13 +179,14 @@ std::vector< dfloat > SurfaceArea(
    }
 
    // Initialise nearest neighbour offsets
-   std::array< dip::sint, 6 > nn;
-   nn[ 0 ] =  label.Stride( 0 );
-   nn[ 1 ] =  label.Stride( 1 );
-   nn[ 2 ] =  label.Stride( 2 );
-   nn[ 3 ] = -label.Stride( 0 );
-   nn[ 4 ] = -label.Stride( 1 );
-   nn[ 5 ] = -label.Stride( 2 );
+   std::array< dip::sint, 6 > nn{{
+       label.Stride( 0 ),
+       label.Stride( 1 ),
+       label.Stride( 2 ),
+      -label.Stride( 0 ),
+      -label.Stride( 1 ),
+      -label.Stride( 2 ),
+   }};
 
    DIP_OVL_CALL_UINT( SurfaceAreaInternal, ( label, objectIndex, surfaceArea, nn ), label.DataType() );
 

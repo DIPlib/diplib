@@ -15,11 +15,12 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
-#include "diplib/private/robin_map.h"
 #include "diplib/chain_code.h"
-#include "diplib/regions.h"
+
+#include "diplib.h"
 #include "diplib/overload.h"
+#include "diplib/private/robin_map.h"
+#include "diplib/regions.h"
 
 namespace dip {
 
@@ -148,7 +149,7 @@ ChainCodeArray GetImageChainCodes(
 
    // Create a map for the object IDs
    ObjectIdList objectIdList;
-   dip::uint nObjects;
+   dip::uint nObjects{};
    if( objectIDs.empty() ) {
       UnsignedArray allObjectIDs = GetObjectLabels( labels, Image(), S::EXCLUDE );
       for( dip::uint ii = 0; ii < allObjectIDs.size(); ++ii ) {
