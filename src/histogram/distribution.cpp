@@ -15,8 +15,13 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/distribution.h"
+
+#include <limits>
+#include <utility>
+#include <vector>
+
+#include "diplib.h"
 #include "diplib/histogram.h"
 
 namespace dip {
@@ -242,7 +247,6 @@ void Distribution::SetSampling(
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
-#include "diplib/random.h"
 
 DOCTEST_TEST_CASE( "[DIPlib] testing dip::Distribution" ) {
    // Scalar distribution

@@ -15,8 +15,9 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/histogram.h"
+
+#include "diplib.h"
 
 namespace dip {
 

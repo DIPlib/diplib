@@ -15,15 +15,21 @@
  * limitations under the License.
  */
 
-#include <chrono> // std::chrono_literals::
-#include <thread> // std::this_thread::
-#include "diplib.h"
 #include "diplib/histogram.h"
-#include "diplib/statistics.h"
-#include "diplib/linear.h"
+
+#include <algorithm>
+#include <cmath>
+#include <memory>
+#include <utility>
+#include <vector>
+
+#include "diplib.h"
 #include "diplib/framework.h"
-#include "diplib/overload.h"
+#include "diplib/linear.h"
+#include "diplib/measurement.h"
 #include "diplib/multithreading.h"
+#include "diplib/overload.h"
+#include "diplib/statistics.h"
 
 namespace dip {
 
@@ -156,7 +162,7 @@ class HistogramBaseLineFilter : public Framework::ScanLineFilter {
 template< typename TPI >
 class ScalarImageHistogramLineFilter : public HistogramBaseLineFilter {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 6; }
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override { return 6; }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          auto bufferLength = params.bufferLength;
@@ -215,14 +221,14 @@ class ScalarImageHistogramLineFilter : public HistogramBaseLineFilter {
 template< typename TPI >
 class JointImageHistogramLineFilter : public HistogramBaseLineFilter {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint tensorElements ) override {
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint tensorElements ) override {
          return ( tensorInput_ ? tensorElements : 2 ) * 6;
       }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          std::vector< TPI const* > in;
          std::vector< dip::sint > stride;
-         dip::uint nDims;
-         dip::uint maskBuffer;
+         dip::uint nDims{};
+         dip::uint maskBuffer{};
          if( tensorInput_ ) {
             nDims = params.inBuffer[ 0 ].tensorLength;
             in.resize( nDims );
@@ -474,7 +480,7 @@ namespace {
 template< typename TPI >
 class ReverseLookupLineFilter : public Framework::ScanLineFilter {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint tensorElements ) override {
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint tensorElements ) override {
          return tensorElements * 6;
       }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
@@ -594,6 +600,7 @@ Histogram& Histogram::Smooth( FloatArray sigma ) {
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
+#include "diplib/iterators.h"
 #include "diplib/random.h"
 
 DOCTEST_TEST_CASE( "[DIPlib] testing dip::Histogram" ) {

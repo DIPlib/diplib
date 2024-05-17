@@ -15,12 +15,18 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/histogram.h"
+
+#include <algorithm>
+#include <cmath>
+#include <numeric>
+#include <vector>
+
+#include "diplib.h"
+#include "diplib/analysis.h"
+#include "diplib/chain_code.h"
 #include "diplib/segmentation.h"
 #include "diplib/statistics.h"
-#include "diplib/analysis.h"
-#include "diplib/chain_code.h" // for VertexFloat, TriangleHeight, etc.
 
 
 namespace dip {
@@ -84,10 +90,9 @@ FloatArray IsodataThreshold(
    do {
       old = thresholds;
       dip::uint origin1 = 0;
-      dip::uint origin2;
       FloatArray centers( nThresholds + 1 );
       for( dip::uint ii = 0; ii < nThresholds; ++ii ) {
-         origin2 = static_cast< dip::uint >( std::ceil( thresholds[ ii ] ));
+         dip::uint origin2 = static_cast< dip::uint >( std::ceil( thresholds[ ii ] ));
          dfloat moment = 0;
          dfloat sum = 0;
          for( dip::uint jj = origin1; jj < origin2; ++jj ) {

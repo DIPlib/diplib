@@ -16,8 +16,12 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/histogram.h"
+
+#include <utility>
+
+#include "diplib.h"
+#include "diplib/lookup_table.h"
 
 namespace dip {
 

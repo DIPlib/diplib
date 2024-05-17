@@ -15,11 +15,12 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/histogram.h"
+
+#include "diplib.h"
 #include "diplib/distribution.h"
-#include "diplib/statistics.h"
 #include "diplib/framework.h"
+#include "diplib/statistics.h"
 
 namespace dip {
 
@@ -118,9 +119,9 @@ Distribution PerObjectHistogram(
       }
       DIP_STACK_TRACE_THIS( configuration.Complete( scalarGrey, mask ));
    }
-   bool fraction;
+   bool fraction{};
    DIP_STACK_TRACE_THIS( fraction = BooleanFromString( mode, S::FRACTION, S::COUNT ));
-   bool include0;
+   bool include0{};
    DIP_STACK_TRACE_THIS( include0 = BooleanFromString( background, S::INCLUDE, S::EXCLUDE ));
 
    // Count labels

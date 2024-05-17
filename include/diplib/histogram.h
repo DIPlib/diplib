@@ -50,7 +50,8 @@ inline dip::sint FindBin( dfloat value, dfloat lowerBound, dfloat binSize, dip::
 
 /// \brief Computes and holds histograms.
 ///
-/// A histogram is computed by the constructor. There is no default-constructed `Histogram`.
+/// A histogram is computed by the constructor. A default-constructed `Histogram` is empty and can
+/// only be assigned to.
 ///
 /// A histogram can have multiple dimensions. In general, a scalar image will yield a classical
 /// one-dimensional histogram, and a tensor image will yield a multi-dimensional histogram, with
@@ -131,7 +132,7 @@ class DIP_NO_EXPORT Histogram {
          /// \brief A constructor takes an image data type, yielding a default histogram configuration for that data type.
          explicit Configuration( DataType dataType ) {
             if( dataType == DT_UINT8 ) {
-               // 256 bins between 0 and 255, this is the default.
+               // 256 bins between 0 and 256, this is the default.
             } else if ( dataType == DT_SINT8 ) {
                // 256 bins between -128 and 128.
                lowerBound = -128.0;
