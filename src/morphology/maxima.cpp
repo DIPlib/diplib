@@ -15,15 +15,18 @@
  * limitations under the License.
  */
 
-#include <queue>
+#include "diplib/morphology.h"
+
+#include <utility>
+#include <vector>
 
 #include "diplib.h"
-#include "diplib/morphology.h"
 #include "diplib/neighborlist.h"
 #include "diplib/overload.h"
 #include "diplib/iterators.h"
 #include "diplib/union_find.h"
 #include "diplib/framework.h"
+
 #include "watershed_support.h"
 
 namespace dip {
@@ -220,11 +223,11 @@ void Extrema(
    // Check input
    DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !c_in.IsScalar(), E::IMAGE_NOT_SCALAR );
-   UnsignedArray inSizes = c_in.Sizes();
+   UnsignedArray inSizes = c_in.Sizes(); // NOLINT(*-unnecessary-copy-initialization)
    dip::uint nDims = inSizes.size();
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( connectivity > nDims, E::ILLEGAL_CONNECTIVITY );
-   bool binaryOutput;
+   bool binaryOutput{};
    DIP_STACK_TRACE_THIS( binaryOutput = BooleanFromString( output, S::BINARY, S::LABELS ));
 
    // Make simplified copy of input image header so we can modify it at will.

@@ -15,12 +15,15 @@
  * limitations under the License.
  */
 
+#include "diplib/morphology.h"
+
 #include <array>
+#include <vector>
 
 #include "diplib.h"
-#include "diplib/morphology.h"
 #include "diplib/generation.h"
 #include "diplib/overload.h"
+
 #include "watershed_support.h"
 #include "../binary/hilditch_condition_lut.h"
 
@@ -380,7 +383,7 @@ void UpperSkeleton2D(
    }
 
    // End pixel condition
-   uint8 const* lut;
+   uint8 const* lut{};
    uint8 const* lut2 = luthil[ 0 ];
    if( s_endPixelCondition == S::NATURAL ) {
       lut = luthil[ 0 ];

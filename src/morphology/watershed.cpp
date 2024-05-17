@@ -16,23 +16,33 @@
  * limitations under the License.
  */
 
+#include "diplib/morphology.h"
+
+#include <algorithm>
+#include <cmath>
+#include <cstdlib>
 #include <functional>
+#include <limits>
+#include <numeric>
 #include <queue>
+#include <utility>
+#include <vector>
 
 #include "diplib.h"
-#include "diplib/morphology.h"
-#include "diplib/regions.h"
+#include "diplib/border.h"
+#include "diplib/framework.h"
 #include "diplib/generation.h"
+#include "diplib/graph.h"
+#include "diplib/iterators.h"
 #include "diplib/linear.h"
 #include "diplib/math.h"
-#include "diplib/statistics.h"
 #include "diplib/neighborlist.h"
-#include "diplib/iterators.h"
-#include "diplib/framework.h"
 #include "diplib/overload.h"
+#include "diplib/random.h"
+#include "diplib/regions.h"
+#include "diplib/statistics.h"
 #include "diplib/union_find.h"
-#include "diplib/border.h"
-#include "diplib/graph.h"
+
 #include "watershed_support.h"
 
 namespace dip {
@@ -97,7 +107,7 @@ inline bool WatershedShouldMerge(
 
 // --- FAST WATERSHED ---
 
-enum class FastWatershedOperation {
+enum class FastWatershedOperation : uint8 {
       WATERSHED,
       EXTREMA
 };
@@ -684,7 +694,7 @@ void SeededWatershed(
       DIP_THROW_IF( in.Strides() != out.Strides(), STRIDES_STILL_DONOT_MATCH );
       labels = out.QuickCopy();
    }
-   dip::uint numlabs;
+   dip::uint numlabs{};
    DIP_START_STACK_TRACE
       if( seeds.DataType().IsBinary() ) {
          numlabs = Label( seeds, labels, connectivity );
@@ -974,7 +984,7 @@ void CompactWatershed(
       DIP_THROW_IF( in.Strides() != out.Strides(), STRIDES_STILL_DONOT_MATCH );
       labels = out.QuickCopy();
    }
-   dip::uint numlabs;
+   dip::uint numlabs{};
    DIP_START_STACK_TRACE
    if( seeds.DataType().IsBinary() ) {
       numlabs = Label( seeds, labels, connectivity );
@@ -1068,7 +1078,7 @@ namespace {
 
 class ExactSWLineFilter : public Framework::ScanLineFilter {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 100; } // TODO: this is absolutely a wild guess...
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override { return 100; } // TODO: this is absolutely a wild guess...
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          sfloat* out = static_cast< sfloat* >( params.outBuffer[ 0 ].buffer );
          auto stride = params.outBuffer[ 0 ].stride;
@@ -1195,7 +1205,7 @@ void StochasticWatershed(
       return;
    }
    bool poisson = seeds == S::POISSON;
-   Image in = c_in;
+   Image in = c_in; // NOLINT(*-unnecessary-copy-initialization)
    if( out.Aliases( in )) {
       out.Strip();
    }

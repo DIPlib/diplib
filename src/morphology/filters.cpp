@@ -15,11 +15,14 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/morphology.h"
-#include "diplib/math.h"
-#include "diplib/mapping.h"
+
+#include <memory>
+
+#include "diplib.h"
 #include "diplib/framework.h"
+#include "diplib/mapping.h"
+#include "diplib/math.h"
 #include "diplib/overload.h"
 
 namespace dip {
@@ -51,7 +54,7 @@ void Average( Image const& in1, Image const& in2, Image& out ) {
 }
 
 // "texture", "object", "both", "dynamic"=="both"
-enum class EdgeType {
+enum class EdgeType : uint8 {
       TEXTURE,
       OBJECT,
       BOTH
@@ -60,13 +63,14 @@ enum class EdgeType {
 EdgeType GetEdgeType( String const& edgeType ) {
    if( edgeType == S::TEXTURE ) {
       return EdgeType::TEXTURE;
-   } else if( edgeType == S::OBJECT ) {
-      return EdgeType::OBJECT;
-   } else if(( edgeType == S::BOTH ) || ( edgeType == S::DYNAMIC )) {
-      return EdgeType::BOTH;
-   } else {
-      DIP_THROW_INVALID_FLAG( edgeType );
    }
+   if( edgeType == S::OBJECT ) {
+      return EdgeType::OBJECT;
+   }
+   if(( edgeType == S::BOTH ) || ( edgeType == S::DYNAMIC )) {
+      return EdgeType::BOTH;
+   }
+   DIP_THROW_INVALID_FLAG( edgeType );
 }
 
 } // namespace
@@ -397,7 +401,7 @@ void RankMaxOpening(
 
 namespace {
 
-enum class AlternatingSequentialFilterMode {
+enum class AlternatingSequentialFilterMode : uint8 {
       STRUCTURAL,
       RECONSTRUCTION,
       AREA
@@ -459,9 +463,9 @@ void AlternatingSequentialFilter(
       StringArray const& boundaryCondition
 ) {
    DIP_THROW_IF(( sizes.step < 1 ) || ( sizes.start < 2 ) || ( sizes.stop < sizes.start ), E::INVALID_PARAMETER );
-   bool openingFirst;
+   bool openingFirst{};
    DIP_STACK_TRACE_THIS( openingFirst = BooleanFromString( polarity, S::OPENCLOSE, S::CLOSEOPEN ));
-   AlternatingSequentialFilterMode mode;
+   AlternatingSequentialFilterMode mode{};
    if( s_mode == S::STRUCTURAL ) {
       mode = AlternatingSequentialFilterMode::STRUCTURAL;
    } else if( s_mode == S::RECONSTRUCTION ) {

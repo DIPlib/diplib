@@ -18,6 +18,8 @@
 #ifndef DIP_ONE_DIMENSIONAL_H
 #define DIP_ONE_DIMENSIONAL_H
 
+#include <utility>
+
 #include "diplib.h"
 #include "diplib/morphology.h"
 #include "diplib/boundary.h"
@@ -26,11 +28,11 @@ namespace dip {
 
 namespace detail {
 
-enum class DIP_NO_EXPORT Polarity {
+enum class DIP_NO_EXPORT Polarity : uint8 {
       DILATION,
       EROSION
 };
-enum class DIP_NO_EXPORT Mirror {
+enum class DIP_NO_EXPORT Mirror : uint8  {
       NO,
       YES
 };

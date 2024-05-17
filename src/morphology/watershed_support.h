@@ -18,6 +18,8 @@
 #ifndef DIP_WATERSHED_SUPPORT_H
 #define DIP_WATERSHED_SUPPORT_H
 
+#include <vector>
+
 #include "diplib.h"
 
 namespace dip {

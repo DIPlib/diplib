@@ -14,14 +14,23 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/morphology.h"
+
+#include <cmath>
+#include <cstdlib>
+#include <limits>
+#include <type_traits>
+#include <utility>
+#include <vector>
+
+#include "diplib.h"
 #include "diplib/binary.h"
-#include "diplib/neighborlist.h"
-#include "diplib/iterators.h"
 #include "diplib/boundary.h"
+#include "diplib/iterators.h"
+#include "diplib/neighborlist.h"
 #include "diplib/overload.h"
 #include "diplib/union_find.h"
+
 #include "watershed_support.h"
 
 namespace dip {
@@ -260,7 +269,7 @@ void VolumeOpeningInternal(
    ParametricOpeningInternal< TPI, VolumeOpenRegion< TPI >>( grey, labels, offsets, neighborOffsets, filterSize, lowFirst );
 }
 
-enum class ParametricOpeningMode {
+enum class ParametricOpeningMode : uint8 {
       AREA_OPENING,
       VOLUME_OPENING
 };
@@ -281,7 +290,7 @@ void ParametricOpening(
    dip::uint nDims = c_in.Dimensionality();
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( connectivity > nDims, E::ILLEGAL_CONNECTIVITY );
-   bool lowFirst;
+   bool lowFirst{};
    DIP_STACK_TRACE_THIS( lowFirst = BooleanFromString( polarity, S::CLOSING, S::OPENING ));
 
    // Add a 1-pixel boundary around the input image
@@ -359,7 +368,7 @@ void AreaOpening(
       dip::uint connectivity,
       String const& polarity
 ) {
-   bool lowFirst;
+   bool lowFirst{};
    DIP_STACK_TRACE_THIS( lowFirst = BooleanFromString( polarity, S::CLOSING, S::OPENING ));
    if( in.DataType().IsBinary() ) {
       DIP_START_STACK_TRACE

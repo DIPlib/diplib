@@ -15,15 +15,22 @@
  * limitations under the License.
  */
 
+#include "diplib/morphology.h"
+
+#include <cmath>
+#include <tuple>
+#include <memory>
+#include <limits>
 #include <utility>
+#include <vector>
 
 #include "diplib.h"
-#include "diplib/morphology.h"
-#include "diplib/kernel.h"
-#include "diplib/geometry.h"
+#include "diplib/boundary.h"
 #include "diplib/framework.h"
-#include "diplib/pixel_table.h"
+#include "diplib/geometry.h"
+#include "diplib/kernel.h"
 #include "diplib/overload.h"
+#include "diplib/pixel_table.h"
 #include "diplib/library/copy_buffer.h"
 
 #include "one_dimensional.h"
@@ -96,7 +103,7 @@ template< typename TPI >
 class FlatSEMorphologyLineFilter : public Framework::FullLineFilter {
    public:
       FlatSEMorphologyLineFilter( Polarity polarity ) : dilation_( polarity == Polarity::DILATION ) {}
-      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint nKernelPixels, dip::uint nRuns ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint /**/, dip::uint nKernelPixels, dip::uint nRuns ) override {
          // Number of operations depends on data, so we cannot guess as to how many we'll do. On average:
          dip::uint averageRunLength = div_ceil( nKernelPixels, nRuns );
          dip::uint timesNoMaxInFilter = lineLength / averageRunLength;
@@ -108,7 +115,7 @@ class FlatSEMorphologyLineFilter : public Framework::FullLineFilter {
                      nKernelPixels * 2                // number of comparisons
                      + 2 * nKernelPixels + nRuns );   // iterating over pixel table
       }
-      void SetNumberOfThreads( dip::uint, PixelTableOffsets const& pixelTable ) override {
+      void SetNumberOfThreads( dip::uint /**/, PixelTableOffsets const& pixelTable ) override {
          // Let's determine how to process the neighborhood
          dip::uint averageRunLength = div_ceil( pixelTable.NumberOfPixels(), pixelTable.Runs().size() );
          bruteForce_ = averageRunLength < 4; // Experimentally determined
@@ -165,7 +172,7 @@ class FlatSEMorphologyLineFilter : public Framework::FullLineFilter {
                         dip::sint position = run.offset + len * inStride;
                         TPI val = in[ position ];
                         if( max == val ) {
-                           index = std::max( index, static_cast< dip::sint >( len ));
+                           index = std::max( index, len );
                         } else if( val > max ) {
                            max = val;
                            index = len;
@@ -207,7 +214,7 @@ class FlatSEMorphologyLineFilter : public Framework::FullLineFilter {
                         dip::sint position = run.offset + len * inStride;
                         TPI val = in[ position ];
                         if( min == val ) {
-                           index = std::max( index, static_cast< dip::sint >( len ));
+                           index = std::max( index, len );
                         } else if( val < min ) {
                            min = val;
                            index = len;
@@ -251,10 +258,10 @@ template< typename TPI >
 class GreyValueSEMorphologyLineFilter : public Framework::FullLineFilter {
    public:
       GreyValueSEMorphologyLineFilter( Polarity polarity ) : dilation_( polarity == Polarity::DILATION ) {}
-      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint nKernelPixels, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint /**/, dip::uint nKernelPixels, dip::uint /**/ ) override {
          return lineLength * nKernelPixels * 3;
       }
-      void SetNumberOfThreads( dip::uint, PixelTableOffsets const& pixelTable ) override {
+      void SetNumberOfThreads( dip::uint /**/, PixelTableOffsets const& pixelTable ) override {
          offsets_ = pixelTable.Offsets();
       }
       void Filter( Framework::FullLineFilterParameters const& params ) override {
@@ -307,7 +314,7 @@ void GeneralSEMorphology(
       BasicMorphologyOperation operation
 ) {
    bool hasWeights = kernel.HasWeights();
-   UnsignedArray originalImageSize = in.Sizes();
+   UnsignedArray originalImageSize = in.Sizes(); // NOLINT(*-unnecessary-copy-initialization)
    Framework::FullOptions opts = {};
    DataType dtype = in.DataType();
    DataType ovltype = dtype;
@@ -388,7 +395,7 @@ class ParabolicMorphologyLineFilter : public Framework::SeparableLineFilter {
       void SetNumberOfThreads( dip::uint threads ) override {
          buffers_.resize( threads );
       }
-      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override {
          // Actual cost depends on data!
          return lineLength * 12;
       }
@@ -557,7 +564,7 @@ void ParabolicMorphology(
 template< typename TPI >
 class Elemental2DDiamondMorphologyLineFilter : public Framework::ScanLineFilter {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override {
          return 5; // number of pixels in SE.
       }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
@@ -806,8 +813,8 @@ void LineMorphology(
          l = -l;
       }
    }
-   dip::uint maxSize;
-   dip::uint steps;
+   dip::uint maxSize{};
+   dip::uint steps{};
    std::tie( maxSize, steps ) = PeriodicLineParameters( filterParam );
    if( steps == maxSize ) {
       // This means that all filterParam are the same (or 1)
@@ -987,7 +994,7 @@ void OctagonalMorphology(
          return;
       }
       // Given size = n + m + 1, determine n, the size of the diamond
-      dfloat n = 2.0 * floor(( smallestSize + 1.0 ) / 4.0 ) + 1.0;
+      dfloat n = 2.0 * std::floor(( smallestSize + 1.0 ) / 4.0 ) + 1.0;
       bool skipRect = true;
       FloatArray rectSize( size.size(), 1.0 );
       for( dip::uint ii = 0; ii < size.size(); ++ii ) {
@@ -1177,7 +1184,7 @@ void BasicMorphology(
 DOCTEST_TEST_CASE("[DIPlib] testing the basic morphological filters") {
    dip::Image in( { 64, 41 }, 1, dip::DT_UINT8 );
    in = 0;
-   dip::uint pval = 3 * 3;
+   dip::uint pval = 9;
    in.At( 32, 20 ) = pval;
    dip::Image out;
 
@@ -1389,8 +1396,9 @@ DOCTEST_TEST_CASE("[DIPlib] testing the basic morphological filters") {
 
 #ifdef _OPENMP
 
-#include "diplib/multithreading.h"
 #include "diplib/generation.h"
+#include "diplib/multithreading.h"
+#include "diplib/random.h"
 #include "diplib/testing.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the full framework under multithreading") {

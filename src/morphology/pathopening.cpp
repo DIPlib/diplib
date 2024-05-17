@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
+#include "diplib/morphology.h"
+
+#include <cstdlib>
+#include <limits>
 #include <queue>
+#include <vector>
 
 #include "diplib.h"
-#include "diplib/morphology.h"
 #include "diplib/math.h"
 #include "diplib/generation.h"
 #include "diplib/overload.h"
@@ -49,7 +53,8 @@ bool IsValidNeighbor(
          dip::sint tmp = std::abs( direction[ ii ] - coords[ ii ] );
          if( tmp > 1 ) {
             return false;
-         } else if( tmp == 0 ) {
+         }
+         if( tmp == 0 ) {
             hasUnchanged = true;
          }
       }
@@ -396,7 +401,7 @@ void PathOpening(
       DIP_THROW_IF( c_in.Size( ii ) < 3, E::IMAGE_TOO_SMALL );
    }
 
-   bool opening, constrained, robust;
+   bool opening{}, constrained{}, robust{};
    DIP_STACK_TRACE_THIS( ParsePathMode( polarity, mode, opening, constrained, robust ));
 
    // Make simplified copy of input image header so we can modify it at will.
@@ -404,7 +409,7 @@ void PathOpening(
    // at the same data, but we can strip the output image without destroying
    // the input pixel data.
    Image in = c_in.QuickCopy();
-   PixelSize pixelSize = c_in.PixelSize();
+   PixelSize pixelSize = c_in.PixelSize(); // NOLINT(*-unnecessary-copy-initialization)
    in.ResetExternalInterface(); // Assure we can do `in = ...` without copying data into our input image.
 
    // Check mask, expand mask singleton dimensions if necessary
@@ -591,7 +596,7 @@ void DirectedPathOpening(
    }
    DIP_THROW_IF( filterParam.size() != ndims, E::ARRAY_PARAMETER_WRONG_LENGTH );
 
-   bool opening, constrained, robust;
+   bool opening{}, constrained{}, robust{};
    DIP_STACK_TRACE_THIS( ParsePathMode( polarity, mode, opening, constrained, robust ));
 
    // Make simplified copy of input image header so we can modify it at will.
@@ -599,7 +604,7 @@ void DirectedPathOpening(
    // at the same data, but we can strip the output image without destroying
    // the input pixel data.
    Image in = c_in.QuickCopy();
-   PixelSize pixelSize = c_in.PixelSize();
+   PixelSize pixelSize = c_in.PixelSize(); // NOLINT(*-unnecessary-copy-initialization)
 
    // Check mask, expand mask singleton dimensions if necessary
    Image mask;

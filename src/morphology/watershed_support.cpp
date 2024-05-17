@@ -16,6 +16,10 @@
  */
 
 #include "watershed_support.h"
+
+#include <vector>
+
+#include "diplib.h"
 #include "diplib/overload.h"
 
 namespace dip {
@@ -31,8 +35,8 @@ std::vector< dip::sint > CreateOffsetsArray( UnsignedArray const& sizes, Integer
    UnsignedArray coords( ndims, 1 );
    for( ;; ) {
       dip::sint offset = 0;
-      dip::uint ii;
-      for( ii = 0; ii < ndims; ++ii ) {
+      dip::uint ii = 0;
+      for( ; ii < ndims; ++ii ) {
          offset += static_cast< dip::sint >( coords[ ii ] ) * strides[ ii ];
       }
       for( ii = 1; ii < sizes[ 0 ] - 1; ++ii ) {
@@ -60,13 +64,13 @@ std::vector< dip::sint > CreateOffsetsArray( Image const& maskim, IntegerArray c
    DIP_ASSERT( strides.size() == ndims );
    std::vector< dip::sint > offsets;
    IntegerArray const& maskstrides = maskim.Strides();
-   bin* mask = ( bin* )maskim.Origin();
+   bin* mask = static_cast< bin* >( maskim.Origin() );
    UnsignedArray coords( ndims, 1 );
    for( ;; ) {
       dip::sint offset = 0;
       dip::sint moffset = 0;
-      dip::uint ii;
-      for( ii = 0; ii < ndims; ++ii ) {
+      dip::uint ii = 0;
+      for( ; ii < ndims; ++ii ) {
          offset += static_cast< dip::sint >( coords[ ii ] ) * strides[ ii ];
          moffset += static_cast< dip::sint >( coords[ ii ] ) * maskstrides[ ii ];
       }

@@ -15,12 +15,23 @@
  * limitations under the License.
  */
 
-#include <utility>
-
 #include "one_dimensional.h"
-#include "diplib/geometry.h"
-#include "diplib/generic_iterators.h"
+
+#include <algorithm>
+#include <cmath>
+#include <cstring>
+#include <limits>
+#include <memory>
+#include <tuple>
+#include <utility>
+#include <vector>
+
+#include "diplib.h"
+#include "diplib/boundary.h"
 #include "diplib/framework.h"
+#include "diplib/generic_iterators.h"
+#include "diplib/geometry.h"
+#include "diplib/morphology.h"
 #include "diplib/overload.h"
 #include "diplib/library/copy_buffer.h"
 
@@ -65,7 +76,7 @@ class DilationErosionLineFilter : public Framework::SeparableLineFilter {
             buffers_.resize( threads );
          }
       }
-      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override {
          return lineLength * 6; // 3 comparisons, 3 iterations
       }
       void Filter( Framework::SeparableLineFilterParameters const& params ) override {
@@ -168,13 +179,10 @@ class DilationErosionLineFilter : public Framework::SeparableLineFilter {
             TPI* forwardBuffer = buffer.data();    // size = length + right
             TPI* backwardBuffer = forwardBuffer + length + right; // size = length + left
             // Copy input to forward and backward buffers, adding a margin on one side of each buffer
-            TPI* tmp;
-            TPI* buf;
-            TPI prev;
             if( hasMargin ) {
-               tmp = in - inStride;
-               buf = backwardBuffer + left - 1;
-               prev = *buf = *tmp;
+               TPI* tmp = in - inStride;
+               TPI* buf = backwardBuffer + left - 1;
+               TPI prev = *buf = *tmp;
                --buf;
                tmp -= inStride;
                for( dip::uint ii = 1; ii < left; ++ii ) {
@@ -192,7 +200,7 @@ class DilationErosionLineFilter : public Framework::SeparableLineFilter {
             dip::uint nBlocks = length / filterLength;
             dip::uint lastBlockSize = length % filterLength;
             for( dip::uint jj = 0; jj < nBlocks; ++jj ) {
-               prev = *forwardBuffer = *in;
+               TPI prev = *forwardBuffer = *in;
                ++forwardBuffer;
                in += inStride;
                for( dip::uint ii = 1; ii < filterLength; ++ii ) {
@@ -200,9 +208,9 @@ class DilationErosionLineFilter : public Framework::SeparableLineFilter {
                   ++forwardBuffer;
                   in += inStride;
                }
-               tmp = in - inStride;
+               TPI* tmp = in - inStride;
                backwardBuffer += filterLength;
-               buf = backwardBuffer - 1;
+               TPI* buf = backwardBuffer - 1;
                prev = *buf = *tmp;
                --buf;
                tmp -= inStride;
@@ -213,8 +221,8 @@ class DilationErosionLineFilter : public Framework::SeparableLineFilter {
                }
             }
             if( hasMargin ) {
-               tmp = in;
-               prev = *forwardBuffer = *tmp;
+               TPI* tmp = in;
+               TPI prev = *forwardBuffer = *tmp;
                ++forwardBuffer;
                tmp += inStride;
                for( dip::uint ii = 1; ii < std::min( lastBlockSize + right, filterLength ); ++ii ) {
@@ -234,8 +242,8 @@ class DilationErosionLineFilter : public Framework::SeparableLineFilter {
                }
             } else {
                if( lastBlockSize > 0 ) {
-                  tmp = in;
-                  prev = *forwardBuffer = *tmp;
+                  TPI* tmp = in;
+                  TPI prev = *forwardBuffer = *tmp;
                   ++forwardBuffer;
                   tmp += inStride;
                   for( dip::uint ii = 1; ii < lastBlockSize; ++ii ) {
@@ -255,7 +263,7 @@ class DilationErosionLineFilter : public Framework::SeparableLineFilter {
                      }
                   }
                } else {
-                  prev = *( in - inStride );
+                  TPI prev = *( in - inStride );
                   for( dip::uint ii = 0; ii < right; ++ii ) {
                      *forwardBuffer = prev;
                      ++forwardBuffer;
@@ -263,9 +271,9 @@ class DilationErosionLineFilter : public Framework::SeparableLineFilter {
                }
             }
             if( lastBlockSize > 0 ) {
-               tmp = in + static_cast< dip::sint >( lastBlockSize - 1 ) * inStride;
-               buf = backwardBuffer + ( lastBlockSize - 1 );
-               prev = *buf = *tmp;
+               TPI* tmp = in + static_cast< dip::sint >( lastBlockSize - 1 ) * inStride;
+               TPI* buf = backwardBuffer + ( lastBlockSize - 1 );
+               TPI prev = *buf = *tmp;
                --buf;
                tmp -= inStride;
                for( dip::uint ii = 1; ii < lastBlockSize; ++ii ) {
@@ -309,7 +317,7 @@ class PeriodicDilationErosionLineFilter : public Framework::SeparableLineFilter 
             buffers_.resize( threads );
          }
       }
-      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override {
          return lineLength * 6; // 3 comparisons, 3 iterations
       }
       void Filter( Framework::SeparableLineFilterParameters const& params ) override {
@@ -417,11 +425,9 @@ class PeriodicDilationErosionLineFilter : public Framework::SeparableLineFilter 
             TPI* forwardBuffer = buffer.data();    // size = length + right
             TPI* backwardBuffer = forwardBuffer + length + right; // size = length + left
             // Copy input to forward and backward buffers, adding a margin on one side of each buffer
-            TPI* tmp;
-            TPI* buf;
             if( hasMargin ) {
-               tmp = in - inStride;
-               buf = backwardBuffer + left - 1;
+               TPI* tmp = in - inStride;
+               TPI* buf = backwardBuffer + left - 1;
                for( dip::uint ii = 0; ii < std::min( stepSize_, left ); ++ii ) {
                   *buf = *tmp;
                   --buf;
@@ -452,9 +458,9 @@ class PeriodicDilationErosionLineFilter : public Framework::SeparableLineFilter 
                   ++forwardBuffer;
                   in += inStride;
                }
-               tmp = in - inStride;
+               TPI* tmp = in - inStride;
                backwardBuffer += filterLength_;
-               buf = backwardBuffer - 1;
+               TPI* buf = backwardBuffer - 1;
                for( dip::uint ii = 0; ii < stepSize_; ++ii ) {
                   *buf = *tmp;
                   --buf;
@@ -467,7 +473,7 @@ class PeriodicDilationErosionLineFilter : public Framework::SeparableLineFilter 
                }
             }
             if( hasMargin ) {
-               tmp = in;
+               TPI* tmp = in;
                for( dip::uint ii = 0; ii < std::min( stepSize_, lastBlockSize + right ); ++ii ) {
                   *forwardBuffer = *tmp;
                   ++forwardBuffer;
@@ -491,7 +497,7 @@ class PeriodicDilationErosionLineFilter : public Framework::SeparableLineFilter 
                   }
                }
             } else {
-               tmp = in;
+               TPI* tmp = in;
                for( dip::uint ii = 0; ii < std::min( stepSize_, lastBlockSize ); ++ii ) {
                   *forwardBuffer = *tmp;
                   ++forwardBuffer;
@@ -516,8 +522,8 @@ class PeriodicDilationErosionLineFilter : public Framework::SeparableLineFilter 
                }
             }
             if( lastBlockSize > 0 ) {
-               tmp = in + static_cast< dip::sint >( lastBlockSize - 1 ) * inStride;
-               buf = backwardBuffer + ( lastBlockSize - 1 );
+               TPI* tmp = in + static_cast< dip::sint >( lastBlockSize - 1 ) * inStride;
+               TPI* buf = backwardBuffer + ( lastBlockSize - 1 );
                for( dip::uint ii = 0; ii < std::min( stepSize_, lastBlockSize ); ++ii ) {
                   *buf = *tmp;
                   --buf;
@@ -795,7 +801,6 @@ class OpeningClosingLineFilter : public Framework::SeparableLineFilter {
             erosion_( filterLengths, Mirror::NO, maxSize ), dilation_( filterLengths, Mirror::YES, maxSize ),
             filterLengths_( filterLengths ), maxSize_( maxSize ), boundaryCondition_( bc ) {
          // Exactly one of `filterLengths_` is larger than 1, find it.
-         filterLength_ = 0;
          for( dip::uint ii = 0; ii < filterLengths_.size(); ++ii ) {
             filterLength_ = std::max( filterLength_, filterLengths_[ ii ] );
          }
@@ -807,7 +812,7 @@ class OpeningClosingLineFilter : public Framework::SeparableLineFilter {
             buffer_.resize( threads );
          }
       }
-      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override {
          return erosion_.GetNumberOfOperations( lineLength, 0, 0, 0 ) +
                 dilation_.GetNumberOfOperations( lineLength, 0, 0, 0 );
       }
@@ -929,7 +934,7 @@ class OpeningClosingLineFilter : public Framework::SeparableLineFilter {
       DilationErosionLineFilter< TPI, OP1 > erosion_;
       DilationErosionLineFilter< TPI, OP2 > dilation_;
       UnsignedArray const& filterLengths_;
-      dip::uint filterLength_;
+      dip::uint filterLength_ = 0;
       dip::uint maxSize_;
       BoundaryConditionArray const& boundaryCondition_;
       std::vector< std::vector< TPI >> buffer_; // one for each thread
@@ -953,7 +958,7 @@ class PeriodicOpeningClosingLineFilter : public Framework::SeparableLineFilter {
          dilation_.SetNumberOfThreads( threads );
          buffer_.resize( threads );
       }
-      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override {
          return erosion_.GetNumberOfOperations( lineLength, 0, 0, 0 ) +
                 dilation_.GetNumberOfOperations( lineLength, 0, 0, 0 );
       }
@@ -1286,7 +1291,7 @@ void FastLineMorphology(
    dip::uint maxLineLength = in.Size( 0 );
    std::vector< dip::sint > offsetsIn;
    std::vector< dip::sint > offsetsOut_buffer;
-   dip::sint* offsetsOut; // point at offsets for output image
+   dip::sint* offsetsOut{}; // point at offsets for output image
    UnsignedArray startPos( nDims, 0 );
    dip::sint offset = 0;
    for( dip::uint ii = 1; ii < nDims; ++ii ) {
@@ -1378,7 +1383,7 @@ void FastLineMorphology(
    // Create input buffer data struct and allocate buffer
    dip::uint inBufferSize = ( maxLineLength + 2 * border ) * sizeOf;
    std::vector< uint8 > inBuffer;
-   Framework::SeparableBuffer inBufferStruct;
+   Framework::SeparableBuffer inBufferStruct{};
    inBufferStruct.tensorLength = 1;
    inBufferStruct.tensorStride = 1;
    inBufferStruct.border = border;
@@ -1401,7 +1406,7 @@ void FastLineMorphology(
    // Create output buffer data struct and allocate buffer
    dip::uint outBufferSize = maxLineLength * sizeOf;
    std::vector< uint8 > outBuffer;
-   Framework::SeparableBuffer outBufferStruct;
+   Framework::SeparableBuffer outBufferStruct{};
    outBufferStruct.tensorLength = 1;
    outBufferStruct.tensorStride = 1;
    outBufferStruct.border = 0;
@@ -1458,12 +1463,11 @@ void FastLineMorphology(
          // For `end` we do the same thing. We compute the first integer `x` for which `y` == -1,
          // using the same math, then subtract one. That is the last integer `x` for which `y` == 0.
          // NOTE: stepSize(ii) <= 0 for any ii>0.
-         dfloat x;
          if( coords[ ii ] >= in.Size( ii )) {
-            x = ( static_cast< dfloat >( coords[ ii ] - in.Size( ii )) + BresenhamLineIterator::delta ) / -stepSize[ ii ];
+            dfloat x = ( static_cast< dfloat >( coords[ ii ] - in.Size( ii )) + BresenhamLineIterator::delta ) / -stepSize[ ii ];
             start = std::max( start, static_cast< dip::uint >( ceil_cast( x )));
          } // otherwise the line starts within the image domain
-         x = ( static_cast< dfloat >( coords[ ii ] ) + BresenhamLineIterator::delta ) / -stepSize[ ii ];
+         dfloat x = ( static_cast< dfloat >( coords[ ii ] ) + BresenhamLineIterator::delta ) / -stepSize[ ii ];
          end = std::min( end, static_cast< dip::uint >( ceil_cast( x )) - 1 );
       }
       //DIP_ASSERT( start <= end );
@@ -1516,8 +1520,8 @@ void FastLineMorphology(
       }
 
       // Find next start point
-      dip::uint dd;
-      for( dd = 1; dd < nDims; ++dd ) { // Loop over all dimensions except the first one
+      dip::uint dd = 1;
+      for( ; dd < nDims; ++dd ) { // Loop over all dimensions except the first one
          // Increment coordinate and adjust pointer
          ++coords[ dd ];
          inOrigin += inStridesBytes[ dd ];

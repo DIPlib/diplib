@@ -15,13 +15,17 @@
  * limitations under the License.
  */
 
+#include "diplib/morphology.h"
+
+#include <limits>
 #include <queue>
+#include <utility>
+#include <vector>
 
 #include "diplib.h"
 #include "diplib/binary.h"
 #include "diplib/generation.h"
 #include "diplib/iterators.h"
-#include "diplib/morphology.h"
 #include "diplib/math.h"
 #include "diplib/neighborlist.h"
 #include "diplib/overload.h"
@@ -232,7 +236,7 @@ void MorphologicalReconstruction (
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( inSizes != c_marker.Sizes(), E::SIZES_DONT_MATCH );
    DIP_THROW_IF( connectivity > nDims, E::ILLEGAL_CONNECTIVITY );
-   bool dilation;
+   bool dilation{};
    DIP_STACK_TRACE_THIS( dilation = BooleanFromString( direction, S::DILATION, S::EROSION ));
 
    if( c_in.DataType().IsBinary() && c_marker.DataType().IsBinary() ) {
@@ -322,7 +326,7 @@ void LimitedMorphologicalReconstruction(
       String const& direction
 ) {
    DIP_THROW_IF( maxDistance < 1, E::INVALID_PARAMETER );
-   bool dilation;
+   bool dilation{};
    DIP_STACK_TRACE_THIS( dilation = BooleanFromString( direction, S::DILATION, S::EROSION ));
    Image mask;
    if( dilation ) {
