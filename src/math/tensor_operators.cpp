@@ -15,9 +15,17 @@
  */
 
 #include "diplib/math.h"
+
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <functional>
+#include <memory>
+
+#include "diplib.h"
 #include "diplib/framework.h"
-#include "diplib/overload.h"
 #include "diplib/iterators.h"
+#include "diplib/overload.h"
 
 namespace dip {
 
@@ -27,7 +35,7 @@ template< typename TPI, typename TPO, typename F >
 class TensorMonadicScanLineFilter : public Framework::ScanLineFilter {
    public:
       TensorMonadicScanLineFilter( F const& func, dip::uint cost ) : func_( func ), cost_( cost ) {}
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return cost_; }
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override { return cost_; }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dip::uint const bufferLength = params.bufferLength;
          ConstLineIterator< TPI > in(
@@ -62,7 +70,7 @@ template< typename TPI, typename TPO, typename F >
 class TensorDyadicScanLineFilter : public Framework::ScanLineFilter {
    public:
       TensorDyadicScanLineFilter( F const& func, dip::uint cost ) : func_( func ), cost_( cost ) {}
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return cost_; }
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override { return cost_; }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dip::uint const bufferLength = params.bufferLength;
          ConstLineIterator< TPI > in(
@@ -104,7 +112,7 @@ template< typename TPI, typename TPO, typename F >
 class TensorTriadicScanLineFilter : public Framework::ScanLineFilter {
    public:
       TensorTriadicScanLineFilter( F const& func, dip::uint cost ) : func_( func ), cost_( cost ) {}
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return cost_; }
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override { return cost_; }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dip::uint const bufferLength = params.bufferLength;
          ConstLineIterator< TPI > in(
@@ -217,7 +225,7 @@ namespace {
 template< typename TPI >
 class CrossProductLineFilter : public Framework::ScanLineFilter {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint tensorElements ) override {
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint tensorElements ) override {
          return tensorElements == 2 ? 2 : 6;
       }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
@@ -271,7 +279,7 @@ void CrossProduct( Image const& lhs, Image const& rhs, Image& out ) {
    DIP_THROW_IF( lhs.TensorElements() != rhs.TensorElements(), E::NTENSORELEM_DONT_MATCH );
    DIP_THROW_IF( !lhs.IsVector() || !rhs.IsVector(), E::TENSOR_NOT_2_OR_3 );
    DataType dtype = DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() );
-   dip::uint nElem;
+   dip::uint nElem{};
    if( lhs.TensorElements() == 2 ) {
       nElem = 1;
    } else if( lhs.TensorElements() == 3 ) {
@@ -366,7 +374,7 @@ void Orientation( Image const& in, Image& out ) {
    DIP_THROW_IF( in.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
    DataType outtype = DataType::SuggestFloat( in.DataType() );
    std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
-   dip::uint outTensorElem;
+   dip::uint outTensorElem{};
    if( n == 2 ) {
       scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
             []( auto const& pin, auto const& pout ) {
@@ -536,12 +544,12 @@ void Eigenvalues( Image const& in, Image& out ) {
          switch( n ) {
             case 2:
                scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
-                     []( auto const& pin, auto const& pout ) { SymmetricEigenDecomposition2( pin, pout ); }, 400 * 2 // strange: it's much faster than EigenDecomposition, but parallelism is beneficial at same point.
+                     []( auto const& pin, auto const& pout ) { SymmetricEigenDecomposition2( pin, pout ); }, 400 * n // strange: it's much faster than EigenDecomposition, but parallelism is beneficial at same point.
                );
                break;
             case 3:
                scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
-                     []( auto const& pin, auto const& pout ) { SymmetricEigenDecomposition3( pin, pout ); }, 400 * 3 // strange: it's much faster than EigenDecomposition, but parallelism is beneficial at same point.
+                     []( auto const& pin, auto const& pout ) { SymmetricEigenDecomposition3( pin, pout ); }, 400 * n // strange: it's much faster than EigenDecomposition, but parallelism is beneficial at same point.
                );
                break;
             default:
@@ -579,7 +587,7 @@ template< typename TPI, typename TPO, typename F >
 class SelectEigenvalueLineFilter : public Framework::ScanLineFilter {
    public:
       SelectEigenvalueLineFilter( F function, dip::uint n, bool first ) : function_( function ), n_( n ), first_( first ) {}
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint tensorElements ) override {
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint tensorElements ) override {
          return ( typeid( TPI ) == typeid( dfloat ) ? 400 : 800 ) * tensorElements;
       }
       void SetNumberOfThreads( dip::uint threads ) override {
@@ -627,7 +635,7 @@ template< typename TPI, typename TPO, typename F >
 class SelectEigenvalueLineFilterN : public Framework::ScanLineFilter {
    public:
       SelectEigenvalueLineFilterN( F function, dip::uint n, bool first ) : function_( function ), n_( n ), first_( first ) {}
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint tensorElements ) override {
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint tensorElements ) override {
          return ( typeid( TPI ) == typeid( dfloat ) ? 400 : 800 ) * tensorElements;
       }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
@@ -646,7 +654,7 @@ class SelectEigenvalueLineFilterN : public Framework::ScanLineFilter {
                params.outBuffer[ 0 ].tensorLength, // == 1
                params.outBuffer[ 0 ].tensorStride
          );
-         std::array< TPO, 3 > buf; // NOTE!!! `function_` is either `SymmetricEigenDecomposition2` or `SymmetricEigenDecomposition3`
+         std::array< TPO, 3 > buf{}; // NOTE!!! `function_` is either `SymmetricEigenDecomposition2` or `SymmetricEigenDecomposition3`
          TPO* bufPtr = buf.data();
          if( !first_ ) {
             bufPtr += n_ - 1;

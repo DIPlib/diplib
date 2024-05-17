@@ -16,6 +16,9 @@
  */
 
 #include "diplib.h"
+
+#include <memory>
+
 #include "diplib/framework.h"
 #include "diplib/overload.h"
 

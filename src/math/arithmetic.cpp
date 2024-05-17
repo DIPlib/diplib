@@ -16,6 +16,9 @@
  */
 
 #include "diplib.h"
+
+#include <memory>
+
 #include "diplib/framework.h"
 #include "diplib/overload.h"
 #include "diplib/saturated_arithmetic.h"
@@ -56,7 +59,7 @@ namespace {
 template< typename TPI >
 class MultiplyLineFilter : public Framework::ScanLineFilter {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override {
          return nRows_ * nColumns_ * nInner_;
       }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
@@ -112,7 +115,7 @@ class MultiplyLineFilter : public Framework::ScanLineFilter {
 template< typename TPI >
 class MultiplySymmetricLineFilter : public Framework::ScanLineFilter {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override {
          return nOuter_ * ( nOuter_ + 1 ) * nInner_ / 2;
       }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
@@ -175,7 +178,7 @@ class MultiplySymmetricLineFilter : public Framework::ScanLineFilter {
 template< typename TPI >
 class MultiplyDiagonalLineFilter : public Framework::ScanLineFilter {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override {
          return lhsTensor_.Elements();
       }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {

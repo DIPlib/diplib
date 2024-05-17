@@ -15,10 +15,12 @@
  * limitations under the License.
  */
 
-#include <array>
+#include "diplib/math.h"
+
+#include <complex>
+#include <memory>
 
 #include "diplib.h"
-#include "diplib/math.h"
 #include "diplib/framework.h"
 #include "diplib/overload.h"
 
@@ -187,7 +189,7 @@ dip::uint AbsCost< dcomplex >() { return 20; }
 template< typename TPI >
 class AbsLineFilter : public Framework::ScanLineFilter {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return AbsCost< TPI >(); }
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override { return AbsCost< TPI >(); }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          dip::sint inStride = params.inBuffer[ 0 ].stride;;
@@ -205,7 +207,7 @@ class AbsLineFilter : public Framework::ScanLineFilter {
 template< typename TPI >
 class SquareModulusLineFilter : public Framework::ScanLineFilter {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 2; }
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override { return 2; }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          dip::sint inStride = params.inBuffer[ 0 ].stride;;
@@ -223,7 +225,7 @@ class SquareModulusLineFilter : public Framework::ScanLineFilter {
 template< typename TPI >
 class PhaseLineFilter : public Framework::ScanLineFilter {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 20; }
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override { return 20; }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          dip::sint inStride = params.inBuffer[ 0 ].stride;;
@@ -303,7 +305,7 @@ namespace {
 template< typename TPI >
 class SignLineFilter : public Framework::ScanLineFilter {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 2; }
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override { return 2; }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          dip::sint inStride = params.inBuffer[ 0 ].stride;;
@@ -336,7 +338,7 @@ namespace {
 template< typename TPI >
 class NearestIntLineFilter : public Framework::ScanLineFilter {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 3; }
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override { return 3; }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          dip::sint inStride = params.inBuffer[ 0 ].stride;;

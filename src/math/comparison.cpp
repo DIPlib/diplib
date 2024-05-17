@@ -15,9 +15,11 @@
  * limitations under the License.
  */
 
-#include <array>
-
 #include "diplib.h"
+
+#include <array>
+#include <memory>
+
 #include "diplib/framework.h"
 #include "diplib/overload.h"
 
@@ -36,9 +38,9 @@ class VariadicScanLineFilterBinOut : public Framework::ScanLineFilter {
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          DIP_ASSERT( params.inBuffer.size() == N );
          DIP_ASSERT( params.outBuffer.size() == 1 );
-         std::array< TPI const*, N > in;
-         std::array< dip::sint, N > inStride;
-         std::array< dip::sint, N > inTensorStride;
+         std::array< TPI const*, N > in{};
+         std::array< dip::sint, N > inStride{};
+         std::array< dip::sint, N > inTensorStride{};
          dip::uint const bufferLength = params.bufferLength;
          dip::uint const tensorLength = params.outBuffer[ 0 ].tensorLength; // all buffers have same number of tensor elements
          for( dip::uint ii = 0; ii < N; ++ii ) {

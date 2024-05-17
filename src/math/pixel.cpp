@@ -16,6 +16,9 @@
  */
 
 #include "diplib.h"
+
+#include <algorithm>
+
 #include "diplib/overload.h"
 
 namespace dip {
@@ -25,12 +28,11 @@ namespace {
 DataType SuggestArithmetic( DataType type1, DataType type2 ) {
    if( type1.IsComplex() || type2.IsComplex() ) {
       return DT_DCOMPLEX;
-   } else {
-      return DT_DFLOAT;
    }
+   return DT_DFLOAT;
 }
 
-enum class ComputationType {
+enum class ComputationType : uint8 {
       Class_Flex,    // dfloat, dcomplex
       Class_Float,   // dfloat
       Class_Integer, // all integer types
@@ -245,15 +247,14 @@ Image::Pixel operator*( Image::Pixel const& lhs, Image::Pixel const& rhs ) {
             lhs, rhs, dt, dt,
             [ = ]( auto in1, auto in2 ) { return in1 * in2; }
       );
-   } else {
-      // This one is complicated to implement, I don't really want to replicate what is already done for images.
-      Image tmp;
-      Multiply( Image{ lhs }, Image{ rhs }, tmp, SuggestArithmetic( lhs.DataType(), rhs.DataType() ));
-      Image::Pixel out( tmp.DataType(), tmp.TensorElements() );
-      out = tmp.At( 0 );
-      out.ReshapeTensor( tmp.Tensor() );
-      return out;
    }
+   // This one is complicated to implement, I don't really want to replicate what is already done for images.
+   Image tmp;
+   Multiply( Image{ lhs }, Image{ rhs }, tmp, SuggestArithmetic( lhs.DataType(), rhs.DataType() ));
+   Image::Pixel out( tmp.DataType(), tmp.TensorElements() );
+   out = tmp.At( 0 );
+   out.ReshapeTensor( tmp.Tensor() );
+   return out;
 }
 
 Image::Pixel operator/( Image::Pixel const& lhs, Image::Pixel const& rhs ) {
@@ -270,12 +271,11 @@ Image::Pixel operator%( Image::Pixel const& lhs, Image::Pixel const& rhs ) {
             lhs, rhs, lhs.DataType(), lhs.DataType(),
             [ = ]( auto in1, auto in2 ) { return std::fmod( in1, in2 ); }
       );
-   } else {
-      return DyadicOperator< ComputationType::Class_Integer >(
-            lhs, rhs, lhs.DataType(), lhs.DataType(),
-            [ = ]( auto in1, auto in2 ) { return in1 % in2; }
-      );
    }
+   return DyadicOperator< ComputationType::Class_Integer >(
+         lhs, rhs, lhs.DataType(), lhs.DataType(),
+         [ = ]( auto in1, auto in2 ) { return in1 % in2; }
+   );
 }
 
 Image::Pixel operator-( Image::Pixel const& in ) {

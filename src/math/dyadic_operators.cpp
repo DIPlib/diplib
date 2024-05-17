@@ -15,8 +15,11 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/math.h"
+
+#include <memory>
+
+#include "diplib.h"
 #include "diplib/framework.h"
 #include "diplib/overload.h"
 
@@ -56,7 +59,7 @@ template< typename TPI, typename F >
 class MultiScanLineFilter : public Framework::ScanLineFilter {
    public:
       MultiScanLineFilter( F const& func ) : func_( func ) {}
-      dip::uint GetNumberOfOperations( dip::uint nInput, dip::uint, dip::uint ) override { return nInput; } // assuming this is only used for Supremum and Infimum!
+      dip::uint GetNumberOfOperations( dip::uint nInput, dip::uint /**/, dip::uint /**/ ) override { return nInput; } // assuming this is only used for Supremum and Infimum!
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dip::uint N = params.inBuffer.size();
          dip::uint const bufferLength = params.bufferLength;
@@ -134,7 +137,7 @@ namespace {
 template< typename TPI >
 class LinearCombinationScanLineFilter: public Framework::ScanLineFilter {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 2; }
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override { return 2; }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dip::uint const bufferLength = params.bufferLength;
          TPI const* a = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );

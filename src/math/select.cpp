@@ -15,8 +15,11 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/math.h"
+
+#include <memory>
+
+#include "diplib.h"
 #include "diplib/framework.h"
 #include "diplib/overload.h"
 
@@ -29,7 +32,7 @@ template< typename TPI, typename F >
 class Select1ScanLineFilter : public Framework::ScanLineFilter {
    public:
       Select1ScanLineFilter( F func ) : func_( func ) {}
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 4; }
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override { return 4; }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dfloat const* in1 = static_cast< dfloat const* >( params.inBuffer[ 0 ].buffer );
          dfloat const* in2 = static_cast< dfloat const* >( params.inBuffer[ 1 ].buffer );
@@ -100,7 +103,7 @@ namespace {
 template< typename TPI >
 class Select2ScanLineFilter : public Framework::ScanLineFilter {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 2; }
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override { return 2; }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in1 = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          TPI const* in2 = static_cast< TPI const* >( params.inBuffer[ 1 ].buffer );
@@ -149,7 +152,7 @@ template< typename TPI >
 class ToggleScanLineFilter : public Framework::ScanLineFilter {
       using TPS = FlexType< TPI >; // we want to compute the difference in a signed type
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 8; }
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override { return 8; }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          TPI const* in1 = static_cast< TPI const* >( params.inBuffer[ 1 ].buffer );
