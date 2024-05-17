@@ -15,11 +15,19 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/mapping.h"
-#include "diplib/statistics.h"
+
+#include <algorithm>
+#include <cmath>
+#include <limits>
+#include <memory>
+#include <type_traits>
+#include <utility>
+
+#include "diplib.h"
 #include "diplib/framework.h"
 #include "diplib/overload.h"
+#include "diplib/statistics.h"
 
 namespace dip {
 
@@ -88,7 +96,7 @@ namespace {
 
 class ErfClipLineFilter: public Framework::ScanLineFilter {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override {
          return ( options_.clipLow || options_.clipHigh ) ? 22 : 1;
       }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
@@ -130,7 +138,7 @@ void ErfClip(
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    ClipOptions options;
    DIP_STACK_TRACE_THIS( options = ParseClipOptions( mode ));
-   dfloat threshold, range;
+   dfloat threshold{}, range{};
    if( options.range ) {
       threshold = low;
       range = high;
@@ -177,7 +185,7 @@ namespace {
 
 class ContrastStretchLineFilter_Linear : public Framework::ScanLineFilter {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 4; }
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override { return 4; }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dfloat const* in = static_cast< dfloat const* >( params.inBuffer[ 0 ].buffer );
          auto inStride = params.inBuffer[ 0 ].stride;
@@ -202,7 +210,7 @@ class ContrastStretchLineFilter_Linear : public Framework::ScanLineFilter {
 
 class ContrastStretchLineFilter_Logarithmic : public Framework::ScanLineFilter {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 27; }
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override { return 27; }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dfloat const* in = static_cast< dfloat const* >( params.inBuffer[ 0 ].buffer );
          auto inStride = params.inBuffer[ 0 ].stride;
@@ -227,7 +235,7 @@ class ContrastStretchLineFilter_Logarithmic : public Framework::ScanLineFilter {
 
 class ContrastStretchLineFilter_SignedLogarithmic : public Framework::ScanLineFilter {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 27; }
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override { return 27; }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dfloat const* in = static_cast< dfloat const* >( params.inBuffer[ 0 ].buffer );
          auto inStride = params.inBuffer[ 0 ].stride;
@@ -244,22 +252,19 @@ class ContrastStretchLineFilter_SignedLogarithmic : public Framework::ScanLineFi
             out += outStride;
          }
       }
-      ContrastStretchLineFilter_SignedLogarithmic( dfloat inMin, dfloat inMax, dfloat outMin, dfloat outMax ) {
-         inMax_ = std::max( std::abs( inMin ), std::abs( inMax ));
-         inMin_ = -inMax_;
-         scale_ = ( outMax - outMin ) / ( 2.0 * log( inMax_ + 1.0 ));
-         offset_ = ( outMax + outMin ) / 2.0;
-      }
+      ContrastStretchLineFilter_SignedLogarithmic( dfloat inMin, dfloat inMax, dfloat outMin, dfloat outMax ):
+         inMax_( std::max( std::abs( inMin ), std::abs( inMax ))), inMin_( -inMax_ ),
+         offset_(( outMax + outMin ) / 2.0 ), scale_(( outMax - outMin ) / ( 2.0 * log( inMax_ + 1.0 ))) {}
    private:
-      dfloat inMin_;
       dfloat inMax_;
+      dfloat inMin_;
       dfloat offset_;
       dfloat scale_;
 };
 
 class ContrastStretchLineFilter_Erf : public Framework::ScanLineFilter {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 30; }
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override { return 30; }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dfloat const* in = static_cast< dfloat const* >( params.inBuffer[ 0 ].buffer );
          auto inStride = params.inBuffer[ 0 ].stride;
@@ -285,7 +290,7 @@ class ContrastStretchLineFilter_Erf : public Framework::ScanLineFilter {
 
 class ContrastStretchLineFilter_Decade : public Framework::ScanLineFilter {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 30; }
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override { return 30; }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dfloat const* in = static_cast< dfloat const* >( params.inBuffer[ 0 ].buffer );
          auto inStride = params.inBuffer[ 0 ].stride;
@@ -320,7 +325,7 @@ inline dfloat sigmoid( dfloat x ) { return x / ( 1.0 + std::abs( x )); }
 
 class ContrastStretchLineFilter_Sigmoid : public Framework::ScanLineFilter {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 10; }
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override { return 10; }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dfloat const* in = static_cast< dfloat const* >( params.inBuffer[ 0 ].buffer );
          auto inStride = params.inBuffer[ 0 ].stride;

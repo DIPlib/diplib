@@ -16,10 +16,11 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/mapping.h"
-#include "diplib/lookup_table.h"
+
+#include "diplib.h"
 #include "diplib/histogram.h"
+#include "diplib/lookup_table.h"
 
 namespace dip {
 

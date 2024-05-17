@@ -15,8 +15,15 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/lookup_table.h"
+
+#include <algorithm>
+#include <complex>
+#include <iterator>
+#include <memory>
+#include <vector>
+
+#include "diplib.h"
 #include "diplib/framework.h"
 #include "diplib/overload.h"
 
@@ -67,7 +74,7 @@ template< typename TPI >
 class DirectLUT_Integer : public Framework::ScanLineFilter {
       // Applies the LUT with data type TPI, and no index, to an input image of type uint64.
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 3; }
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override { return 3; }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          uint64 const* in = static_cast< uint64 const* >( params.inBuffer[ 0 ].buffer );
          auto bufferLength = params.bufferLength;
@@ -118,7 +125,7 @@ template< typename TPI >
 class DirectLUT_Float : public Framework::ScanLineFilter {
       // Applies the LUT with data type TPI, and no index, to an input image of type dfloat.
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override {
          return interpolation_ == LookupTable::InterpolationMode::LINEAR ? 9 : 3;
       }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
@@ -200,7 +207,7 @@ template< typename TPI >
 class IndexedLUT_Float : public Framework::ScanLineFilter {
       // Applies the LUT with data type TPI, and an index, to an input image of type dfloat.
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override {
          return interpolation_ == LookupTable::InterpolationMode::LINEAR ? 9 : 3;
       }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
@@ -281,7 +288,7 @@ template< typename TPI >
 class IndexedArrayLUT_Float : public Framework::ScanLineFilter {
       // Applies the LUT consisting of an array of value images with data type TPI, and an index, to an input image of type dfloat.
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override {
          return interpolation_ == LookupTable::InterpolationMode::LINEAR ? 9 : 3;
       }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
