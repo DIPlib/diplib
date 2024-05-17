@@ -15,12 +15,17 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/nonlinear.h"
-#include "diplib/framework.h"
-#include "diplib/pixel_table.h"
-#include "diplib/overload.h"
+
+#include <memory>
+
+#include "diplib.h"
 #include "diplib/accumulators.h"
+#include "diplib/boundary.h"
+#include "diplib/framework.h"
+#include "diplib/kernel.h"
+#include "diplib/overload.h"
+#include "diplib/pixel_table.h"
 
 namespace dip {
 
@@ -29,7 +34,7 @@ namespace {
 template< typename TPI >
 class VarianceLineFilter : public Framework::FullLineFilter {
    public:
-      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint nKernelPixels, dip::uint nRuns ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint /**/, dip::uint nKernelPixels, dip::uint nRuns ) override {
          return 5 * nKernelPixels + lineLength * (
                nRuns * 2      // number of multiply-adds
                + nRuns );     // iterating over pixel table runs

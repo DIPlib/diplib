@@ -15,14 +15,21 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/nonlinear.h"
-#include "diplib/linear.h"
-#include "diplib/math.h"
+
+#include <limits>
+#include <memory>
+#include <vector>
+
+#include "diplib.h"
+#include "diplib/boundary.h"
 #include "diplib/framework.h"
 #include "diplib/generic_iterators.h"
-#include "diplib/pixel_table.h"
+#include "diplib/kernel.h"
+#include "diplib/linear.h"
+#include "diplib/math.h"
 #include "diplib/overload.h"
+#include "diplib/pixel_table.h"
 
 namespace dip {
 
@@ -48,7 +55,7 @@ struct SelectionLineFilterParameters {
 class SelectionLineFilterBase {
    public:
       virtual void Filter( SelectionLineFilterParameters const& params ) = 0;
-      virtual ~SelectionLineFilterBase() {};
+      virtual ~SelectionLineFilterBase() = default;
 };
 
 template< typename TPI >
@@ -118,7 +125,7 @@ void SelectionFilter(
    DIP_THROW_IF( !c_control.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !c_control.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( kernel.HasWeights(), E::KERNEL_NOT_BINARY );
-   bool minimum;
+   bool minimum{};
    DIP_STACK_TRACE_THIS( minimum = BooleanFromString( mode, S::MINIMUM, S::MAXIMUM ));
 
    // Determine boundary sizes

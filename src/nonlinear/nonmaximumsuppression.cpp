@@ -15,13 +15,17 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/nonlinear.h"
-#include "diplib/math.h"
-#include "diplib/overload.h"
+
+#include <memory>
+#include <utility>
+
+#include "diplib.h"
 #include "diplib/framework.h"
 #include "diplib/iterators.h"
+#include "diplib/math.h"
 #include "diplib/neighborlist.h"
+#include "diplib/overload.h"
 
 namespace dip {
 
@@ -86,7 +90,7 @@ class NonMaximumSuppression2D : public Framework::ScanLineFilter {
    public:
       NonMaximumSuppression2D( UnsignedArray const& sizes, IntegerArray const& gradmagStrides, bool interpolate ) :
             sizes_( sizes ), gradmagStrides_( gradmagStrides ), interpolate_( interpolate ) {}
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override {
          return interpolate_ ? 20 : 12;
       }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
@@ -178,7 +182,7 @@ class NonMaximumSuppression2D : public Framework::ScanLineFilter {
                } else {
 
                   // Get gradient magnitude values at nearest integer location
-                  dip::sint ss;
+                  dip::sint ss{};
                   if( absdx > absdy ) {
                      ss = round_cast( dy / dx ); // dy rounded to -1, 0 or 1
                      ss *= gmstridey;
@@ -220,7 +224,7 @@ class NonMaximumSuppressionND : public Framework::ScanLineFilter {
    public:
       NonMaximumSuppressionND( UnsignedArray const& sizes, IntegerArray const& gradmagStrides ) :
             sizes_( sizes ), gradmagStrides_( gradmagStrides ) {}
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override {
          return 6 * sizes_.size() + 2;
       }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
@@ -313,7 +317,7 @@ void NonMaximumSuppression(
       String const& mode
 ) {
    Image gradmag;
-   dip::uint nDims;
+   dip::uint nDims{};
    DataType ovlType;
    if( c_gradmag.IsForged() && ( c_gradmag.Dimensionality() == 1 )) {
 
@@ -351,7 +355,7 @@ void NonMaximumSuppression(
       DIP_END_STACK_TRACE
    }
 
-   bool interpolate;
+   bool interpolate{};
    DIP_STACK_TRACE_THIS( interpolate = BooleanFromString( mode, S::INTERPOLATE, S::ROUND ));
 
    if( nDims == 1 ) {
@@ -541,7 +545,7 @@ void MoveToLocalMinimum(
    DIP_THROW_IF( !c_bin.IsScalar() || !weights.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !c_bin.DataType().IsBinary() || !weights.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( c_bin.Sizes() != weights.Sizes(), E::SIZES_DONT_MATCH );
-   Image bin = c_bin;
+   Image bin = c_bin; // NOLINT(*-unnecessary-copy-initialization)
    if( out.SharesData( weights ) || out.Aliases( bin )) {
       out.Strip(); // Don't work in-place
    }

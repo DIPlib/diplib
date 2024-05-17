@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+#include "diplib/nonlinear.h"
+
 #include <cmath>
 #include <memory>
 #include <numeric>
@@ -22,11 +24,10 @@
 
 #include "diplib.h"
 #include "diplib/boundary.h"
-#include "diplib/nonlinear.h"
-#include "diplib/morphology.h"
 #include "diplib/framework.h"
-#include "diplib/pixel_table.h"
+#include "diplib/morphology.h"
 #include "diplib/overload.h"
+#include "diplib/pixel_table.h"
 
 
 // TODO: a binary specialization would just count the number of `true` pixels.
@@ -99,7 +100,7 @@ class OrderStatisticTree {
 
          // Find insertion point
          Node* q = root;
-         dip::uint I;
+         dip::uint I{};
          while( true ) {
             //DIP_ASSERT( q != nullptr );
             if( value == q->value ) {
@@ -467,12 +468,11 @@ class RankLineFilter : public Framework::FullLineFilter {
                    + static_cast< dip::uint >( std::round(
                          static_cast< dfloat >( lineLength * nRuns ) * ( 2 * std::log( nKernelPixels ) + 10 )
                    ));
-         } else {
-            return lineLength * (
-                  nKernelPixels // copying
-                  + 3 * nKernelPixels * static_cast< dip::uint >( std::round( std::log( nKernelPixels )))  // sorting
-                  + 2 * nKernelPixels + nRuns );   // iterating over pixel table
          }
+         return lineLength * (
+               nKernelPixels // copying
+               + 3 * nKernelPixels * static_cast< dip::uint >( std::round( std::log( nKernelPixels )))  // sorting
+               + 2 * nKernelPixels + nRuns );   // iterating over pixel table
       }
       void Filter( Framework::FullLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
@@ -558,8 +558,8 @@ void RankFilter(
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !se.IsFlat(), E::KERNEL_NOT_BINARY );
-   Kernel kernel;
-   dip::uint nPixels;
+   Kernel kernel{};
+   dip::uint nPixels{};
    DIP_START_STACK_TRACE
       kernel = se.Kernel();
       nPixels = kernel.NumberOfPixels( in.Dimensionality() );

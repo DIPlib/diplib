@@ -15,16 +15,22 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/nonlinear.h"
-#include "diplib/linear.h"
-#include "diplib/geometry.h"
-#include "diplib/math.h"
-#include "diplib/statistics.h"
+
+#include <cmath>
+#include <memory>
+#include <vector>
+
+#include "diplib.h"
 #include "diplib/analysis.h"
+#include "diplib/boundary.h"
 #include "diplib/framework.h"
-#include "diplib/overload.h"
+#include "diplib/geometry.h"
+#include "diplib/kernel.h"
+#include "diplib/linear.h"
+#include "diplib/math.h"
 #include "diplib/pixel_table.h"
+#include "diplib/statistics.h"
 
 namespace dip {
 
@@ -34,7 +40,7 @@ template< typename F >
 class PeronaMalikLineFilter : public Framework::FullLineFilter {
    public:
       PeronaMalikLineFilter( F g, dip::uint cost, sfloat lambda ) : g_( std::move( g )), cost_( cost ), lambda_( lambda ) {}
-      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override {
          return cost_ * lineLength;
       }
       void Filter( Framework::FullLineFilterParameters const& params ) override {
@@ -134,7 +140,7 @@ template< typename F >
 class GaussianAnisotropicDiffusionLineFilter : public Framework::ScanLineFilter {
    public:
       GaussianAnisotropicDiffusionLineFilter( F g, dip::uint cost ) : g_( std::move( g )), cost_( cost ) {}
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint nTensorElements ) override {
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint nTensorElements ) override {
          return cost_ + nTensorElements + 20;
       }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {

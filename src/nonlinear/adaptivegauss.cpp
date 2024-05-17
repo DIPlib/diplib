@@ -16,8 +16,18 @@
  */
 
 #include "diplib/nonlinear.h"
+
+#include <array>
+#include <cmath>
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "diplib.h"
+#include "diplib/boundary.h"
 #include "diplib/framework.h"
 #include "diplib/generation.h"
+#include "diplib/kernel.h"
 #include "diplib/overload.h"
 #include "diplib/pixel_table.h"
 #include "diplib/private/constfor.h"
@@ -31,7 +41,7 @@
    #endif
 #endif
 
-#include <Eigen/Geometry>
+#include <Eigen/Geometry> // IWYU pragma: keep
 
 #if defined(__GNUG__) || defined(__clang__)
    #pragma GCC diagnostic pop
@@ -477,7 +487,7 @@ class InputInterpolatorZOH : public InputInterpolatorFixedDims< nDims, TPI, TPO 
             }
          } else {
             // Mirror input coordinates. May fail -> return 0.
-            if( !this->template MapCoords_Mirror< nDims >( &coords[ 0 ] )) {
+            if( !this->template MapCoords_Mirror< nDims >( coords.data() )) {
                return 0;
             }
          }
@@ -520,7 +530,7 @@ class InputInterpolatorFOH : public InputInterpolatorFixedDims< nDims, TPI, TPO 
             }
          } else {
             // Mirror input coordinates. May fail -> return 0.
-            if( !this->template MapCoords_Mirror< nDims >( &coords[ 0 ] )) {
+            if( !this->template MapCoords_Mirror< nDims >( coords.data() )) {
                return 0;
             }
          }
@@ -528,8 +538,8 @@ class InputInterpolatorFOH : public InputInterpolatorFixedDims< nDims, TPI, TPO 
          // Start linear interpolation
          // Compute lower bound index and interpolation factor for all coordinates
          //  E.g.: if coords[i] == 1.1, then loBoundIndices[i] == 1.0 and factors[i] == 0.1
-         std::array< dip::sint, nDims > loBoundIndices;
-         std::array< InputAsFloat, nDims > factors; // Linear interpolation factors
+         std::array< dip::sint, nDims > loBoundIndices{};
+         std::array< InputAsFloat, nDims > factors{}; // Linear interpolation factors
          for( dip::uint iDim = 0; iDim < nDims; ++iDim ) {
             loBoundIndices[ iDim ] = floor_cast( coords[ iDim ] );   // Take lower bound using floor_cast
             if( loBoundIndices[ iDim ] == static_cast< dip::sint >( inSizes_[ iDim ] - 1 )) { // Because we interpolate between loBound and loBound+1, make sure we don't go beyond the image borders

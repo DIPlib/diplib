@@ -15,17 +15,27 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/nonlinear.h"
-#include "diplib/lookup_table.h"
-#include "diplib/pixel_table.h"
-#include "diplib/histogram.h"
+
+#include <algorithm>
+#include <cmath>
+#include <limits>
+#include <memory>
+#include <utility>
+#include <vector>
+
+#include "diplib.h"
+#include "diplib/boundary.h"
 #include "diplib/framework.h"
-#include "diplib/math.h"
-#include "diplib/linear.h"
-#include "diplib/statistics.h"
 #include "diplib/generation.h"
+#include "diplib/histogram.h"
+#include "diplib/kernel.h"
+#include "diplib/linear.h"
+#include "diplib/lookup_table.h"
+#include "diplib/math.h"
 #include "diplib/overload.h"
+#include "diplib/pixel_table.h"
+#include "diplib/statistics.h"
 
 namespace dip {
 
@@ -181,7 +191,7 @@ void FullBilateralFilter(
    center[ 0 ] = 0;
    kernelImg.At( kernelImg < kernelImg.At( center )) = nan;
    Kernel kernel( kernelImg );
-   
+
    DataType dataType = DataType::SuggestFlex( in.DataType() );
    DIP_START_STACK_TRACE
       std::unique_ptr< Framework::FullLineFilter > lineFilter;
@@ -261,7 +271,7 @@ void QuantizedBilateralFilter(
 
    // Determine best floating point type for the computations
    DataType compDataType = dip::DataType::SuggestFlex( in.DataType() );
-   
+
    // Create tonal LookupTable
    Image tonalGauss;
    dfloat luScaling = CreateTonalGauss( tonalGauss, tonalSigma, compDataType );
