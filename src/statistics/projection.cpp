@@ -665,7 +665,7 @@ class ProjectionPercentile : public Framework::ProjectionFunction {
             *static_cast< TPI* >( out.Origin() ) = TPI{};
             return;
          }
-         dip::sint rank = round_cast( static_cast< dfloat >(N - 1) * percentile_ / 100.0 );
+         dip::sint rank = round_cast( static_cast< dfloat >( N - 1 ) * percentile_ / 100.0 );
          buffer_[ thread ].resize( N );
          auto outIt = buffer_[ thread ].begin();
          if( mask.IsForged() ) {

@@ -1,6 +1,6 @@
 /*
  * (c)2017-2021, Flagship Biosciences, Inc., written by Cris Luengo.
- * (c)2022, Cris Luengo.
+ * (c)2022-2024, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -351,6 +351,8 @@ void init_measurement( py::module& m ) {
    // Other functions
    m.def( "ObjectToMeasurement", py::overload_cast< dip::Image const&, dip::Measurement::IteratorFeature const& >( &dip::ObjectToMeasurement ), "label"_a, "featureValues"_a );
    m.def( "MeasurementWriteCSV", &dip::MeasurementWriteCSV, "measurement"_a, "filename"_a, "options"_a = dip::StringSet{} );
+   // (Note that most of the functions below are resolved correctly because we don't include diplib/statistics.h,
+   // which defines functions with the same name but different arguments.)
    m.def( "Minimum", py::overload_cast< dip::Measurement::IteratorFeature const& >( &dip::Minimum ), "featureValues"_a );
    m.def( "Maximum", py::overload_cast< dip::Measurement::IteratorFeature const& >( &dip::Maximum ), "featureValues"_a );
    m.def( "Percentile", py::overload_cast< dip::Measurement::IteratorFeature const&, dip::dfloat >( &dip::Percentile ), "featureValues"_a, "percentile"_a );
@@ -362,6 +364,7 @@ void init_measurement( py::module& m ) {
           }, "featureValues"_a,
           "Instead of returning a `dip::MinMaxAccumulator` object, returns a tuple with\n"
           "the minimum and maximum values." );
+   m.def( "Quartiles", &dip::Quartiles, "featureValues"_a );
    m.def( "SampleStatistics", &dip::SampleStatistics, "featureValues"_a );
    m.def( "ObjectMinimum", &dip::ObjectMinimum, "featureValues"_a );
    m.def( "ObjectMaximum", &dip::ObjectMaximum, "featureValues"_a );

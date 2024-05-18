@@ -1,5 +1,5 @@
 /*
- * (c)2017-2022, Cris Luengo.
+ * (c)2017-2024, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@
 
 #include "diplib.h"
 #include "diplib/accumulators.h"
+#include "diplib/statistics.h"
 
 namespace dip {
 
@@ -392,6 +393,12 @@ MinMaxAccumulator MaximumAndMinimum( Measurement::IteratorFeature const& feature
       ++it;
    }
    return acc;
+}
+
+FloatArray Quartiles( Measurement::IteratorFeature const& featureValues ) {
+   dfloat* data = featureValues.Data();
+   Image image( NonOwnedRefToDataSegment( data ), data, DT_DFLOAT, { featureValues.NumberOfObjects() }, { featureValues.Stride() } );
+   return Quartiles( image );
 }
 
 StatisticsAccumulator SampleStatistics( Measurement::IteratorFeature const& featureValues ) {

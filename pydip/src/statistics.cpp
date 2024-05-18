@@ -36,6 +36,7 @@ void init_statistics( py::module& m ) {
           }, "in"_a, "mask"_a = dip::Image{},
           "Instead of returning a `dip::MinMaxAccumulator` object, returns a tuple with\n"
           "the minimum and maximum values." );
+   m.def( "Quartiles", py::overload_cast< dip::Image const&, dip::Image const& >( &dip::Quartiles ), "in"_a, "mask"_a = dip::Image{} );
    m.def( "SampleStatistics", py::overload_cast< dip::Image const&, dip::Image const& >( &dip::SampleStatistics ),
           "in"_a, "mask"_a = dip::Image{} );
    m.def( "Covariance", &dip::Covariance, "in1"_a, "in2"_a, "mask"_a = dip::Image{} );

@@ -1,5 +1,5 @@
 /*
- * (c)2016-2022, Cris Luengo.
+ * (c)2016-2024, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -1125,6 +1125,9 @@ DIP_EXPORT Measurement::ValueType Maximum( Measurement::IteratorFeature const& f
 
 /// \brief Returns the `percentile` feature value in the first column of `featureValues`.
 ///
+/// Percentiles are always one of the values in the set. The nearest value to a given partition
+/// is used, rather than interpolate as classically done.
+///
 /// The input `featureValues` is a view over a specific feature in a \ref dip::Measurement object. Only the
 /// first value of the feature is used. For features with multiple values, select a value using the
 /// \ref dip::Measurement::IteratorFeature::Subset method, or pick a column in the `dip::Measurement` object
@@ -1156,6 +1159,21 @@ DIP_EXPORT dfloat Mean( Measurement::IteratorFeature const& featureValues );
 /// \ref dip::Measurement::IteratorFeature::Subset method, or pick a column in the `dip::Measurement` object
 /// directly using \ref dip::Measurement::FeatureValuesView.
 DIP_EXPORT MinMaxAccumulator MaximumAndMinimum( Measurement::IteratorFeature const& featureValues );
+
+/// \brief Computes the minimum, lower quartile (25th percentile), median (50th percentile),
+/// upper quartile (75th percentile), and maximum.
+///
+/// Returns the values in that order in a 5-element output array.
+/// The interquartile range is `out[ 3 ] - out[ 1 ]`.
+///
+/// Percentiles are always one of the values in the set. The nearest value to a given partition
+/// is used, rather than interpolate as classically done.
+///
+/// The input `featureValues` is a view over a specific feature in a \ref dip::Measurement object. Only the
+/// first value of the feature is used. For features with multiple values, select a value using the
+/// \ref dip::Measurement::IteratorFeature::Subset method, or pick a column in the `dip::Measurement` object
+/// directly using \ref dip::Measurement::FeatureValuesView.
+DIP_EXPORT FloatArray Quartiles( Measurement::IteratorFeature const& featu );
 
 /// \brief Returns the first four central moments of the feature values in the first column of `featureValues`.
 ///

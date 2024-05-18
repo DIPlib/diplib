@@ -20,6 +20,8 @@ title: "Changes DIPlib 3.x.x"
 
 - Added an operator to convert `dip::Units` to `bool`. The units object will test false if it's unitless.
 
+- Added `dip::Quantiles()`.
+
 ### Changed functionality
 
 - The `compressionLevel` argument to `dip::ImageWritePNG()` changed from `dip::uint` to `dip::sint`, allowing for

@@ -1,5 +1,5 @@
 /*
- * (c)2014-2022, Cris Luengo.
+ * (c)2014-2024, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *                                (c)2011, Cris Luengo.
  *
@@ -96,6 +96,21 @@ DIP_NODISCARD inline Image CumulativeSum( Image const& in, Image const& mask = {
 /// samples, treats real and imaginary components as individual samples.
 DIP_EXPORT MinMaxAccumulator MaximumAndMinimum( Image const& in, Image const& mask = {} );
 DIP_DEFINE_VIEW_FUNCTION( MaximumAndMinimum, MinMaxAccumulator )
+
+/// \brief Computes the minimum, lower quartile (25th percentile), median (50th percentile),
+/// upper quartile (75th percentile), and maximum.
+///
+/// Returns the values in that order in a 5-element output array.
+/// The interquartile range is `out[ 3 ] - out[ 1 ]`.
+///
+/// Percentiles are always one of the values in the image. The nearest value to a given partition
+/// is used, rather than interpolate as classically done.
+///
+/// If `mask` is not forged, all input pixels are considered. In case of a tensor
+/// image, returns the maximum and minimum sample values. In case of a complex
+/// samples, treats real and imaginary components as individual samples.
+DIP_EXPORT FloatArray Quartiles( Image const& in, Image const& mask = {} );
+DIP_DEFINE_VIEW_FUNCTION( Quartiles, FloatArray )
 
 /// \brief Computes the first four central moments of the pixel intensities, within an optional mask.
 ///
@@ -539,13 +554,16 @@ DIP_DEFINE_PROJECTION_FUNCTIONS( MinimumAbs )
 /// \brief Calculates the percentile of the pixel values over all those dimensions which are specified by `process`.
 ///
 /// If `process` is an empty array, all dimensions are processed, and a 0D output image is generated containing
-/// the `percentile` percentile of the pixel values. Otherwise, the output has as many dimensions as elements in `process` that are `false`,
-/// and equals the percentile projection along the processing dimensions. To get the 30^th^ percentile of all pixels in the
-/// image:
+/// the `percentile` percentile of the pixel values. Otherwise, the output has as many dimensions as elements
+/// in `process` that are `false`, and equals the percentile projection along the processing dimensions.
+/// To get the 30^th^ percentile of all pixels in the image:
 ///
 /// ```cpp
 /// dip::Percentile( img, {}, 30.0 ).As< double >();
 /// ```
+///
+/// Note that the sample nearest the partition is picked, values are not interpolated if the partition falls in
+/// between samples.
 ///
 /// For tensor images, the result is computed for each element independently. Input must be not complex.
 ///
