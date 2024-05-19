@@ -215,13 +215,35 @@ py::buffer_info PolygonToBuffer( dip::Polygon& polygon ) {
 
 void init_measurement( py::module& m ) {
 
-   auto mm = m.def_submodule( "MeasurementTool",
-                              "A tool to quantify objects in an image.\n\n"
-                              "This is a submodule that uses a static `dip::Measurement` object. Functions\n"
-                              "defined in this module correspond to the object member functions in C++." );
+   // dip::MeasurementTool
+   auto tool = m.def_submodule( "MeasurementTool",
+                                "A tool to quantify objects in an image.\n\n"
+                                "This is a submodule that uses a static `dip::Measurement` object. Functions\n"
+                                "defined in this module correspond to the object member functions in C++." );
+   tool.def( "Configure", []( dip::String const& feature, dip::String const& parameter, dip::dfloat value ) {
+      measurementTool().Configure( feature, parameter, value );
+   }, "feature"_a, "parameter"_a, "value"_a );
+   tool.def( "Measure", []( dip::Image const& label, dip::Image const& grey, dip::StringArray const& features, dip::UnsignedArray const& objectIDs, dip::uint connectivity ) {
+      return measurementTool().Measure( label, grey, features, objectIDs, connectivity );
+   }, "label"_a, "grey"_a = dip::Image{}, "features"_a = dip::StringArray{ "Size" }, "objectIDs"_a = dip::StringArray{}, "connectivity"_a = 0 );
+   tool.def( "Features", []() {
+                auto features = measurementTool().Features();
+                std::vector< std::tuple< dip::String, dip::String >> out;
+                for( auto const& f : features ) {
+                   dip::String description = f.description;
+                   if( f.needsGreyValue ) {
+                      description += "*";
+                   }
+                   out.emplace_back( f.name, description );
+                }
+                return out;
+             },
+             "Returns a list of tuples. Each tuple has two strings: the name of a feature\n"
+             "and its description. If the description ends with a '*' character, a gray-value\n"
+             "image is required for the feature." );
 
    // dip::Measurement::FeatureInformation
-   auto fInfo = py::class_< dip::Measurement::FeatureInformation >( mm, "FeatureInformation", "Information about one measurement feature." );
+   auto fInfo = py::class_< dip::Measurement::FeatureInformation >( tool, "FeatureInformation", "Information about one measurement feature." );
    fInfo.def( "__repr__", []( dip::Measurement::FeatureInformation const& self ) {
       std::ostringstream os;
       os << "<FeatureInformation: name=" << self.name
@@ -234,7 +256,7 @@ void init_measurement( py::module& m ) {
    fInfo.def_readonly( "numberValues", &dip::Measurement::FeatureInformation::numberValues );
 
    // dip::Feature::ValueInformation
-   auto vInfo = py::class_< dip::Feature::ValueInformation >( mm, "ValueInformation", "Information about one measurement feature value." );
+   auto vInfo = py::class_< dip::Feature::ValueInformation >( tool, "ValueInformation", "Information about one measurement feature value." );
    vInfo.def( "__repr__", []( dip::Feature::ValueInformation const& self ) {
       std::ostringstream os;
       os << "<ValueInformation: name=" << self.name << ", units=" << self.units << '>';
@@ -242,54 +264,6 @@ void init_measurement( py::module& m ) {
    } );
    vInfo.def_readonly( "name", &dip::Feature::ValueInformation::name );
    vInfo.def_readonly( "units", &dip::Feature::ValueInformation::units );
-
-   // dip::Measurement::IteratorFeature
-   auto feat = py::class_< dip::Measurement::IteratorFeature >(
-         mm,
-         "MeasurementFeature",
-         py::buffer_protocol(),
-         "A Measurement table column group representing the results for one\nfeature." );
-   feat.def_buffer( []( dip::Measurement::IteratorFeature& self ) -> py::buffer_info { return MeasurementFeatureToBuffer( self ); } );
-   feat.def( "__repr__", []( dip::Measurement::IteratorFeature const& self ) {
-      std::ostringstream os;
-      os << "<MeasurementFeature for feature " << self.FeatureName() << " and " << self.NumberOfObjects() << " objects>";
-      return os.str();
-   } );
-   feat.def( "__getitem__", []( dip::Measurement::IteratorFeature const& self, dip::uint objectID ) {
-      return MeasurementValuesToList( self[ objectID ] );
-   }, "objectID"_a );
-   feat.def( "FeatureName", &dip::Measurement::IteratorFeature::FeatureName );
-   feat.def( "Values", &dip::Measurement::IteratorFeature::Values );
-   feat.def( "NumberOfValues", &dip::Measurement::IteratorFeature::NumberOfValues );
-   feat.def( "ObjectExists", &dip::Measurement::IteratorFeature::ObjectExists );
-   feat.def( "Objects", &dip::Measurement::IteratorFeature::Objects );
-   feat.def( "NumberOfObjects", &dip::Measurement::IteratorFeature::NumberOfObjects );
-
-   // dip::Measurement::IteratorObject
-   auto obj = py::class_< dip::Measurement::IteratorObject >(
-         mm,
-         "MeasurementObject",
-         py::buffer_protocol(),
-         "A Measurement table row representing the results for one object." );
-   obj.def_buffer( []( dip::Measurement::IteratorObject& self ) -> py::buffer_info {
-      return MeasurementObjectToBuffer( self );
-   } );
-   obj.def( "__repr__", []( dip::Measurement::IteratorObject const& self ) {
-      std::ostringstream os;
-      os << "<MeasurementObject with " << self.NumberOfFeatures() << " features for object " << self.ObjectID() << '>';
-      return os.str();
-   } );
-   obj.def( "__getitem__", []( dip::Measurement::IteratorObject const& self, dip::String const& name ) {
-      return MeasurementValuesToList( self[ name ] );
-   }, "name"_a );
-   obj.def( "ObjectID", &dip::Measurement::IteratorObject::ObjectID );
-   obj.def( "FeatureExists", &dip::Measurement::IteratorObject::FeatureExists );
-   obj.def( "Features", &dip::Measurement::IteratorObject::Features );
-   obj.def( "NumberOfFeatures", &dip::Measurement::IteratorObject::NumberOfFeatures );
-   obj.def( "Values", py::overload_cast< dip::String const& >( &dip::Measurement::IteratorObject::Values, py::const_ ), "name"_a );
-   obj.def( "Values", py::overload_cast<>( &dip::Measurement::IteratorObject::Values, py::const_ ));
-   obj.def( "NumberOfValues", py::overload_cast< dip::String const& >( &dip::Measurement::IteratorObject::NumberOfValues, py::const_ ), "name"_a );
-   obj.def( "NumberOfValues", py::overload_cast<>( &dip::Measurement::IteratorObject::NumberOfValues, py::const_ ));
 
    // dip::Measurement
    auto meas = py::class_< dip::Measurement >(
@@ -313,6 +287,8 @@ void init_measurement( py::module& m ) {
              "objectID"_a, py::return_value_policy::reference_internal );
    meas.def( "__getitem__", py::overload_cast< dip::String const& >( &dip::Measurement::operator[], py::const_ ),
              "name"_a, py::return_value_policy::reference_internal );
+   meas.def( "FeatureValuesView", &dip::Measurement::FeatureValuesView, "startValue"_a, "numberValues"_a = 1,
+             py::return_value_policy::reference_internal );
    meas.def( "FeatureExists", &dip::Measurement::FeatureExists );
    meas.def( "Features", &dip::Measurement::Features );
    meas.def( "NumberOfFeatures", &dip::Measurement::NumberOfFeatures );
@@ -325,28 +301,54 @@ void init_measurement( py::module& m ) {
    meas.def( "NumberOfObjects", &dip::Measurement::NumberOfObjects );
    meas.def( py::self + py::self );
 
-   // dip::MeasurementTool
-   mm.def( "Configure", []( dip::String const& feature, dip::String const& parameter, dip::dfloat value ) {
-      measurementTool().Configure( feature, parameter, value );
-   }, "feature"_a, "parameter"_a, "value"_a );
-   mm.def( "Measure", []( dip::Image const& label, dip::Image const& grey, dip::StringArray const& features, dip::UnsignedArray const& objectIDs, dip::uint connectivity ) {
-      return measurementTool().Measure( label, grey, features, objectIDs, connectivity );
-   }, "label"_a, "grey"_a = dip::Image{}, "features"_a = dip::StringArray{ "Size" }, "objectIDs"_a = dip::StringArray{}, "connectivity"_a = 0 );
-   mm.def( "Features", []() {
-              auto features = measurementTool().Features();
-              std::vector< std::tuple< dip::String, dip::String >> out;
-              for( auto const& f : features ) {
-                 dip::String description = f.description;
-                 if( f.needsGreyValue ) {
-                    description += "*";
-                 }
-                 out.emplace_back( f.name, description );
-              }
-              return out;
-           },
-           "Returns a list of tuples. Each tuple has two strings: the name of a feature\n"
-           "and its description. If the description ends with a '*' character, a gray-value\n"
-           "image is required for the feature." );
+   // dip::Measurement::IteratorFeature
+   auto feat = py::class_< dip::Measurement::IteratorFeature >(
+         meas,
+         "MeasurementFeature",
+         py::buffer_protocol(),
+         "A Measurement table column group representing the results for one\nfeature." );
+   feat.def_buffer( []( dip::Measurement::IteratorFeature& self ) -> py::buffer_info { return MeasurementFeatureToBuffer( self ); } );
+   feat.def( "__repr__", []( dip::Measurement::IteratorFeature const& self ) {
+      std::ostringstream os;
+      os << "<MeasurementFeature for feature " << self.FeatureName() << " and " << self.NumberOfObjects() << " objects>";
+      return os.str();
+   } );
+   feat.def( "__getitem__", []( dip::Measurement::IteratorFeature const& self, dip::uint objectID ) {
+      return MeasurementValuesToList( self[ objectID ] );
+   }, "objectID"_a );
+   feat.def( "Subset", &dip::Measurement::IteratorFeature::Subset, "first"_a, "number"_a = 1 );
+   feat.def( "FeatureName", &dip::Measurement::IteratorFeature::FeatureName );
+   feat.def( "Values", &dip::Measurement::IteratorFeature::Values );
+   feat.def( "NumberOfValues", &dip::Measurement::IteratorFeature::NumberOfValues );
+   feat.def( "ObjectExists", &dip::Measurement::IteratorFeature::ObjectExists );
+   feat.def( "Objects", &dip::Measurement::IteratorFeature::Objects );
+   feat.def( "NumberOfObjects", &dip::Measurement::IteratorFeature::NumberOfObjects );
+
+   // dip::Measurement::IteratorObject
+   auto obj = py::class_< dip::Measurement::IteratorObject >(
+         meas,
+         "MeasurementObject",
+         py::buffer_protocol(),
+         "A Measurement table row representing the results for one object." );
+   obj.def_buffer( []( dip::Measurement::IteratorObject& self ) -> py::buffer_info {
+      return MeasurementObjectToBuffer( self );
+   } );
+   obj.def( "__repr__", []( dip::Measurement::IteratorObject const& self ) {
+      std::ostringstream os;
+      os << "<MeasurementObject with " << self.NumberOfFeatures() << " features for object " << self.ObjectID() << '>';
+      return os.str();
+   } );
+   obj.def( "__getitem__", []( dip::Measurement::IteratorObject const& self, dip::String const& name ) {
+      return MeasurementValuesToList( self[ name ] );
+   }, "name"_a );
+   obj.def( "ObjectID", &dip::Measurement::IteratorObject::ObjectID );
+   obj.def( "FeatureExists", &dip::Measurement::IteratorObject::FeatureExists );
+   obj.def( "Features", &dip::Measurement::IteratorObject::Features );
+   obj.def( "NumberOfFeatures", &dip::Measurement::IteratorObject::NumberOfFeatures );
+   obj.def( "Values", py::overload_cast< dip::String const& >( &dip::Measurement::IteratorObject::Values, py::const_ ), "name"_a );
+   obj.def( "Values", py::overload_cast<>( &dip::Measurement::IteratorObject::Values, py::const_ ));
+   obj.def( "NumberOfValues", py::overload_cast< dip::String const& >( &dip::Measurement::IteratorObject::NumberOfValues, py::const_ ), "name"_a );
+   obj.def( "NumberOfValues", py::overload_cast<>( &dip::Measurement::IteratorObject::NumberOfValues, py::const_ ));
 
    // Other functions
    m.def( "ObjectToMeasurement", py::overload_cast< dip::Image const&, dip::Measurement::IteratorFeature const& >( &dip::ObjectToMeasurement ), "label"_a, "featureValues"_a );

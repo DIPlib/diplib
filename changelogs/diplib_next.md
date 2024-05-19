@@ -62,6 +62,7 @@ title: "Changes DIPlib 3.x.x"
 
 - `dip::GaussFT()` has a new parameter `boundaryCondition`, the default empty value gives the same behavior as
   previously. `dip::Gauss()` now passes the boundary condition through to `dip::GaussFT()`.
+  See [issue #159](https://github.com/DIPlib/diplib/issues/159).
 
 - Minimum required version of *CMake* is now 3.12.
 
@@ -76,6 +77,7 @@ title: "Changes DIPlib 3.x.x"
 - `dip::Image::CheckIsMask()` didn't properly check for singleton-expandable masks, accepting masks of any size.
 
 - `dip::FourierTransform()` threw an exception when the real-to-complex dimension had a size of 2.
+  See [issue #158](https://github.com/DIPlib/diplib/issues/158).
 
 ### Updated dependencies
 
@@ -122,6 +124,15 @@ None, but see bugfixes to *DIPlib*.
 - Added bindings to `dip::GaussFIR()`, to complement `GaussIIR()` and `GaussFT()`. Though it is expected people will
   keep using `dip.Gauss()` to access these various algorithms.
 
+- Added bindings for `dip.Units.HasSameDimensions`, `dip.Units.IsDimensionless`, `dip.Units.IsPhysical`,
+  `dip.Units.AdjustThousands`, `dip.Units.Thousands`.
+
+- Added `dip.Measurement.ToDataFrame()`, which converts the measurement results into a Pandas DataFrame.
+  This function will import NumPy and Pandas, they need to be installed.
+
+- Added `dip.Measurement.MeasurementFeature.Subset()` (binding for `dip::Measurement::IteratorFeature::Subset()`)
+  and `dip.Measurement.FeatureValuesView()`.
+
 ### Changed functionality
 
 - The *DIPlib* exception classes are now properly bound. This changes the type of the exceptions raised by
@@ -143,11 +154,11 @@ None, but see bugfixes to *DIPlib*.
 - All the functions named `dip.ImageRead...()` that have a keyword-only argument `out` now return the
   `dip::FileInformation` structure (as a dict, just like `dip.ImageRead...Info()` does).
 
-- Added bindings for `dip.Units.HasSameDimensions`, `dip.Units.IsDimensionless`, `dip.Units.IsPhysical`,
-  `dip.Units.AdjustThousands`, `dip.Units.Thousands`. Unitless `dip.Units` now test false.
+- Unitless `dip.Units` now test false.
 
-- Added `dip.Measurement.ToDataFrame()`, which converts the measurement results into a Pandas DataFrame.
-  This function will import NumPy and Pandas, they need to be installed.
+- Moved `dip.MeasurementTool.MeasurementFeature` to `dip.Measurement.MeasurementFeature` and
+  `dip.MeasurementTool.MeasurementObject` to `dip.Measurement.MeasurementObject`.
+  They are the bindings to `dip::Measurement::IteratorFeature` and `dip::Measurement::IteratorObject` respectively.
 
 - The *CMake* option `PYTHON_EXECUTABLE` is no longer used, set `Python_EXECUTABLE` instead. The build script
   will, for the time being, copy the value of the former to the latter if the former is set but the latter isn't.
