@@ -130,7 +130,7 @@ using ObjectIdToIndexMap = tsl::robin_map< dip::uint, dip::uint >;
 /// ```
 ///
 /// These three types of references are represented as iterators. Thus, it is also possible to iterate over
-/// all columns groups (or all rows), iterate over each of the cell groups within a column group (or within a row),
+/// all column groups (or all rows), iterate over each of the cell groups within a column group (or within a row),
 /// and iterate over the values within a cell group:
 ///
 /// ```cpp
@@ -305,6 +305,23 @@ class DIP_NO_EXPORT Measurement {
             ValueType* Data() const { return measurement_->Data() + static_cast< dip::sint >( startColumn_ ); }
             /// \brief The stride to use to access the next row of data (next object).
             dip::sint Stride() const { return measurement_->Stride(); }
+            /// \brief Returns an image that encapsulates the data in this feature for all objects.
+            /// The image doesn't own the data, the measurement must keep existing for as long as this image is used.
+            /// The image's sizes are `NumberOfValues()`x`NumberOfObjects()`. This function is intended to simplify
+            /// the implementation of some of the functions that can be applied to a `IteratorFeature`.
+            Image AsImage() const {
+               void* data = Data();
+               return { NonOwnedRefToDataSegment( data ), data, DT_DFLOAT, { NumberOfValues(), NumberOfObjects() }, { 1, Stride() }};
+            }
+            /// \brief Identical to \ref AsImage, but returns a 1D image with the `value` element of this feature.
+            /// `value` must be smaller than \ref NumberOfValues, and defaults to the first value in the set.
+            /// This function is intended to simplify the implementation of some of the functions that can be
+            /// applied to a `IteratorFeature`.
+            Image AsScalarImage( dip::uint value = 0 ) const {
+               DIP_THROW_IF( value >= NumberOfValues(), E::INDEX_OUT_OF_RANGE );
+               void* data = Data() + value;
+               return { NonOwnedRefToDataSegment( data ), data, DT_DFLOAT, { NumberOfObjects() }, { Stride() }};
+            }
 
          private:
             IteratorFeature( Measurement const& measurement, dip::uint index ) :

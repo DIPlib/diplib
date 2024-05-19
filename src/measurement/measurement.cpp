@@ -396,9 +396,7 @@ MinMaxAccumulator MaximumAndMinimum( Measurement::IteratorFeature const& feature
 }
 
 FloatArray Quartiles( Measurement::IteratorFeature const& featureValues ) {
-   dfloat* data = featureValues.Data();
-   Image image( NonOwnedRefToDataSegment( data ), data, DT_DFLOAT, { featureValues.NumberOfObjects() }, { featureValues.Stride() } );
-   return Quartiles( image );
+   return Quartiles( featureValues.AsScalarImage() );
 }
 
 StatisticsAccumulator SampleStatistics( Measurement::IteratorFeature const& featureValues ) {

@@ -22,6 +22,8 @@ title: "Changes DIPlib 3.x.x"
 
 - Added `dip::Quantiles()`.
 
+- Added `dip::Measurement::IteratorFeature::AsImage()` and `AsScalarImage()`.
+
 ### Changed functionality
 
 - The `compressionLevel` argument to `dip::ImageWritePNG()` changed from `dip::uint` to `dip::sint`, allowing for
