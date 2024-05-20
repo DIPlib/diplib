@@ -261,7 +261,7 @@ void hist_equalize( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
          v *= scale;
       }
       // Create a histogram of the right dimensions
-      dip::Histogram::Configuration config( 0.0, static_cast< int >( data.size() ), 1.0 );
+      dip::Histogram::Configuration config( 0.0, data.size(), 1.0 );
       dip::Histogram example( config );
       // Fill it with the input
       dip::Image img = example.GetImage().QuickCopy();

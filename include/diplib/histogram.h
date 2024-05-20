@@ -70,32 +70,21 @@ class DIP_NO_EXPORT Histogram {
       /// Constructors exist to set different subsets of the configuration; write upper bound and bin size
       /// as a floating point number so the right constructor can be selected (they differ in the location
       /// of the integer value). For example, note the difference between the following constructor calls,
-      /// where `10` indicates 10 bins, `10.0` indicates the upper bound, and `1.0` indicates the bin size:
+      /// where `10` indicates 10 bins, `100.0` indicates the upper bound, and `1.0` indicates the bin size:
       ///
       /// ```cpp
-      /// dip::Histogram::Configuration conf1( 0.0, 10.0, 1.0 );
-      /// dip::Histogram::Configuration conf1( 0.0, 10.0, 10 );
+      /// dip::Histogram::Configuration conf1( 0.0, 100.0, 1.0 );
+      /// dip::Histogram::Configuration conf1( 0.0, 100.0, 10 );
       /// dip::Histogram::Configuration conf2( 0.0, 10, 1.0 );
       /// ```
       ///
       /// An additional constructor takes a \ref dip::DataType, and selects appropriate values for an image of the
-      /// given data type:
-      ///
-      /// - For 8-bit images, the histogram has 256 bins, one for each possible input value.
-      /// - For other integer-valued images, the histogram has up to 256 bins, stretching from the lowest value
-      ///   in the image to the highest, and with bin size a power of two. This is the simplest way of correctly
-      ///   handling data from 10-bit, 12-bit and 16-bit sensors that can put data in the lower or the upper bits
-      ///   of the 16-bit words, and will handle other integer data correctly as well.
-      /// - For floating-point images, the histogram always has 256 bins, stretching from the lowest value in the
-      ///   image to the highest.
-      ///
-      /// A final constructor takes only an upper and lower bound, and choose the bin size from data statistics
-      /// using the Freedman--Diaconis rule.
+      /// given data type; see \ref Configuration(DataType).
       ///
       /// The functions \ref OptimalConfiguration and \ref OptimalConfigurationWithFullRange create configurations
       /// that are expected to be robust for arbitrary data. They choose the bin size based on the Freedman--Diaconis
-      /// rule. The former chooses histogram bounds to exclude outliers, the latter includes the full range. Note
-      /// that including the full range can potentially lead to an extremely large histograms.
+      /// rule. The former chooses histogram bounds to exclude only extreme outliers, the latter always includes the
+      /// full range. Note that including the full range can potentially lead to an extremely large histogram.
       ///
       /// Here are the rules followed to complete the configuration given:
       ///
@@ -150,14 +139,22 @@ class DIP_NO_EXPORT Histogram {
                lowerBound( lowerBound ), upperBound( upperBound ), nBins( nBins ) {}
          /// \brief A constructor takes a lower and upper bounds, and the number of bins. The bin size is computed.
          Configuration( dfloat lowerBound, dfloat upperBound, int nBins ) :
-               Configuration( lowerBound, upperBound, static_cast< dip::uint >( nBins )) {}
+               Configuration( lowerBound, upperBound, clamp_cast< dip::uint >( nBins )) {}
          /// \brief A constructor takes a lower bound, the number of bins and the bin size. The upper bound is computed.
          Configuration( dfloat lowerBound, dip::uint nBins, dfloat binSize ) :
                lowerBound( lowerBound ), nBins( nBins ), binSize( binSize ), mode( Mode::COMPUTE_UPPER ) {}
          /// \brief A constructor takes a lower bound, the number of bins and the bin size. The upper bound is computed.
          Configuration( dfloat lowerBound, int nBins, dfloat binSize ) :
-               Configuration( lowerBound, static_cast< dip::uint >( nBins ), binSize ) {}
+               Configuration( lowerBound, clamp_cast< dip::uint >( nBins ), binSize ) {}
          /// \brief A constructor takes an image data type, yielding a default histogram configuration for that data type.
+         ///
+         /// - For 8-bit images, the histogram has 256 bins, one for each possible input value.
+         /// - For other integer-valued images, the histogram has up to 256 bins, stretching from the lowest value
+         ///   in the image to the highest, and with bin size a power of two. This is the simplest way of correctly
+         ///   handling data from 10-bit, 12-bit and 16-bit sensors that can put data in the lower or the upper bits
+         ///   of the 16-bit words, and will handle other integer data correctly as well.
+         /// - For floating-point images, the histogram always has 256 bins, stretching from the lowest value in the
+         ///   image to the highest.
          explicit Configuration( DataType dataType ) {
             if( dataType == DT_UINT8 ) {
                // 256 bins between 0 and 256, this is the default.
@@ -212,16 +209,22 @@ class DIP_NO_EXPORT Histogram {
       };
 
       /// \brief Creates a \ref Configuration that uses the optimal bin size according to the Freedman--Diaconis rule.
-      /// The histogram limits are chosen to exclude outliers, defined as values below three interquantile ranges
-      /// below the lower quartile, or three interquantile ranges above the upper quantile.
+      ///
+      /// The Freedman--Diaconis rule sets the bin size to $2 \text{IQR} / \sqrt[3]{n}$, where IQR is the
+      /// interquartile range (the distance from the lower to the upper quartile), and $n$ is the number of samples
+      /// over which the histogram will be computed.
+      ///
+      /// The histogram limits are chosen to avoid extremely large histograms, by ignoring values 50 IQRs below the
+      /// lower quartile or above the upper quartile.
       static Configuration OptimalConfiguration() {
          Configuration conf;
          conf.mode = Configuration::Mode::ESTIMATE_BINSIZE_AND_LIMITS;
+         conf.excludeOutOfBoundValues = true;
          return conf;
       };
 
-      /// \brief Creates a \ref Configuration that uses the optimal bin size according to the Freedman--Diaconis rule.
-      /// The histogram limits are chosen to include the full data range (min to max).
+      /// \brief Like \ref OptimalConfiguration, but includes the full data range (min to max); note that this can
+      /// potentially lead to extremely large histograms.
       static Configuration OptimalConfigurationWithFullRange() {
          Configuration conf( 0.0, 100.0 );
          conf.lowerIsPercentile = true;
@@ -238,7 +241,7 @@ class DIP_NO_EXPORT Histogram {
       ///
       /// `configuration` should have as many elements as tensor elements in `input`. If `configuration` has only
       /// one element, it will be used for all histogram dimensions. If it is an empty array, appropriate configuration
-      /// values for `input` are chosen based on its data type (see \ref dip::Histogram::Configuration).
+      /// values for `input` are chosen based on its data type (see \ref dip::Histogram::Configuration(DataType)).
       explicit Histogram( Image const& input, Image const& mask = {}, ConfigurationArray configuration = {} ) {
          DIP_THROW_IF( !input.IsForged(), E::IMAGE_NOT_FORGED );
          DIP_THROW_IF( !input.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );

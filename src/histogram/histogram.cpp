@@ -127,14 +127,31 @@ void Histogram::Configuration::Complete( Image const& input, Image const& mask )
       DIP_START_STACK_TRACE
          auto quantiles = Quartiles( input, mask );
          dfloat iqr = quantiles[ 3 ] - quantiles[ 1 ];
-         dip::uint n = input.NumberOfSamples();
-         if( mask.IsForged() ) {
-            n = dip::Count( mask );
+         if( iqr == 0 ) {
+            // Case where the middle 50% of samples have the same value...
+            binSize = ( quantiles[ 4 ] - quantiles[ 0 ] ) / 256;
+            // Ensure we don't use lower and upper quartile later!
+            if( mode == Mode::ESTIMATE_BINSIZE_AND_LIMITS ) {
+               mode = Mode::ESTIMATE_BINSIZE;
+               lowerBound = quantiles[ 0 ];
+               upperBound = quantiles[ 4 ] * ( 1.0 + 1e-15 );
+               lowerIsPercentile = false;
+               upperIsPercentile = false;
+            }
+            // If this is zero also, then there's not a whole lot we can do here
+         } else {
+            dip::uint n = input.NumberOfSamples();
+            if( mask.IsForged() ) {
+               n = dip::Count( mask );
+            }
+            binSize = 2 * iqr / std::cbrt( n );
          }
-         binSize = 2 * iqr / std::cbrt( n );
          if( mode == Mode::ESTIMATE_BINSIZE_AND_LIMITS ) {
-            lowerBound = std::max( quantiles[ 0 ], quantiles[ 1 ] - 3 * iqr );
-            upperBound = std::min( quantiles[ 4 ], quantiles[ 3 ] + 3 * iqr ) * ( 1.0 + 1e-15 );
+            // We use the min and max, but avoid the full range being more than 101 times the IQR.
+            lowerBound = std::max( quantiles[ 0 ], quantiles[ 1 ] - 50 * iqr );
+            upperBound = std::min( quantiles[ 4 ], quantiles[ 3 ] + 50 * iqr ) * ( 1.0 + 1e-15 );
+            lowerIsPercentile = false;
+            upperIsPercentile = false;
          } else {
             // avoid computing the min and max again later, we already have these values computed.
             if( lowerIsPercentile && lowerBound <= 0 ) {

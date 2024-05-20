@@ -245,8 +245,8 @@ DIP_NODISCARD inline Image TriangleThreshold(
 ///
 /// Returns the threshold value used.
 ///
-/// See \ref dip::BackgroundThreshold(Histogram const&, dfloat, dfloat) for more information on the algorithm used and  the
-/// `sigma` parameter.
+/// See \ref dip::BackgroundThreshold(Histogram const&, dfloat, dfloat) for more information on the algorithm used
+/// and the `sigma` parameter.
 DIP_EXPORT dfloat BackgroundThreshold(
       Image const& in,
       Image const& mask,
