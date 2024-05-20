@@ -9,12 +9,14 @@
 %  mask:        region where histogram should be evaluted
 %  range1:      [min max] two values specifying the data range for IN1, or []
 %  range2:      [min max] two values specifying the data range for IN2, or []
-%  bin1:        number of bins for IN1
-%  bin2:        number of bins for IN2
+%  bin1:        number of bins for IN1, or 'optimal' (uses the Freedman-Diaconis
+%               rule to chose the optimal bin size)
+%  bin2:        number of bins for IN2, or 'optimal'
 %  contourhist: should a contour plot be made ('yes','no')
-%  logdisp:     log plot for axes ('none','x-axis','y-axis','z-axis','xy-axes','xyz-axes')
-%  contourfill: fill the contour plot? ('yes','no')
-%  contourlab : label the contour lines?  ('yes','no')
+%  logdisp:     log plot for axes ('none', 'x-axis', 'y-axis', 'z-axis',
+%               'xy-axes', 'xyz-axes')
+%  contourfill: fill the contour plot? ('yes', 'no')
+%  contourlab : label the contour lines?  ('yes', 'no')
 %  Nl:          number of contour lines, -1 for automatic
 %
 % DEFAULTS:
@@ -33,14 +35,14 @@
 %  handle: handle to the figure window with the contour plot
 %  bins:   cell array with bin centers for the two dimensions.
 %
-% HINTS: 
+% HINTS:
 %  Use Mappings -> Custom -> 'parula' for a nice colormap.
 %  Use axis xy to flip the axis.
 %
 % SEE ALSO:
 %  hist2image, diphist, mdhistogram
 
-% (c)2017-2018, Cris Luengo.
+% (c)2017-2024, Cris Luengo.
 % (c)1999-2014, Delft University of Technology.
 % Originally written by Bernd Rieger.
 %
@@ -132,9 +134,9 @@ if ischar(contourlab)
    contourlab = strcmpi(contourlab,'Yes') || strcmpi(contourlab,'On');
 end
 
-[hist,bins] = mdhistogram(newtensorim(ch1,ch2),mask,...
-      {{'lower',range1(1),'upper',range1(2),'bins',bins1,'lower_abs','upper_abs'},...
-       {'lower',range2(1),'upper',range2(2),'bins',bins2,'lower_abs','upper_abs'}});
+conf1 = build_configuration(range1, bins1);
+conf2 = build_configuration(range2, bins2);
+[hist,bins] = mdhistogram(newtensorim(ch1,ch2),mask,{conf1,conf2});
 
 hf = [];
 
@@ -197,4 +199,12 @@ if contourhist
       set(hc,'YTickLabel',s);
    end
 
+end
+
+function conf = build_configuration(range, bins)
+conf = {'lower',range(1),'upper',range(2),'lower_abs','upper_abs'};
+if ischar(bins)
+   conf = [conf,bins];
+else
+   conf = [conf,'bins',bins];
 end

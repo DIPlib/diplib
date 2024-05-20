@@ -1,5 +1,5 @@
 /*
- * (c)2015-2021, Cris Luengo.
+ * (c)2015-2024, Cris Luengo.
  * Based on original DIPlib/MATLAB interface code: (c)1999-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -581,6 +581,7 @@ inline dip::Histogram::Configuration GetHistogramConfiguration( mxArray const* m
    bool hasUpper = false;
    bool hasNBins = false;
    bool hasBinSize = false;
+   bool optimal = false;
    while( ii < N ) {
       dip::String key = dml::GetString( mxGetCell( mx, ii ));
       ++ii;
@@ -610,6 +611,8 @@ inline dip::Histogram::Configuration GetHistogramConfiguration( mxArray const* m
          out.upperIsPercentile = false;
       } else if( key == "exclude_out_of_bounds_values" ) {
          out.excludeOutOfBoundValues = true;
+      } else if( key == "optimal" ) {
+         optimal = true;
       } else {
          DIP_THROW( "SPECS key not recognized" );
       }
@@ -619,8 +622,15 @@ inline dip::Histogram::Configuration GetHistogramConfiguration( mxArray const* m
    if( hasUpper ) { ++N; };
    if( hasNBins ) { ++N; };
    if( hasBinSize ) { ++N; };
-   DIP_THROW_IF( N != 3, "SPECS requires exactly 3 of the 4 core value-pairs to be given" );
-   if( !hasLower ) {
+   DIP_THROW_IF( !optimal && ( N != 3 ), "SPECS requires exactly 3 of the 4 core value-pairs, or 'optimal', to be given" );
+   if( optimal ){
+      DIP_THROW_IF( hasNBins || hasBinSize, "'optimal' cannot be combined with a bin size or number of bins" );
+      if( hasLower && hasUpper ) {
+         out.mode = dip::Histogram::Configuration::Mode::ESTIMATE_BINSIZE;
+      } else {
+         out.mode = dip::Histogram::Configuration::Mode::ESTIMATE_BINSIZE_AND_LIMITS;
+      }
+   } else if( !hasLower ) {
       out.mode = dip::Histogram::Configuration::Mode::COMPUTE_LOWER;
    } else if( !hasUpper ) {
       out.mode = dip::Histogram::Configuration::Mode::COMPUTE_UPPER;

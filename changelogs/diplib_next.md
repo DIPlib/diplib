@@ -110,6 +110,8 @@ title: "Changes DIPlib 3.x.x"
 
 ### Changed functionality
 
+- Added `'optimal'` to `diphist`, `diphist2` and `mdhistogram` as an option to choose an optimal bin size.
+
 (See also changes to *DIPlib*.)
 
 ### Bug fixes

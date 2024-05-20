@@ -37,6 +37,9 @@
 %  'exclude_out_of_bounds_values': Values below 'lower' and above 'upper'
 %               are excluded from the histogram. By default, they are put
 %               into the first or last bin.
+%  'optimal':   Chooses 'binsize' according to the Freedman-Diaconis rule.
+%               If 'lower' and 'upper' are not given, chooses them to exclude
+%               outliers. Causes all other other options to be ignored.
 %
 % The HISTOGRAM output argument is an image where the first dimension (x)
 % corresponds to the first tensor element of IMAGE, etc.
@@ -67,7 +70,7 @@
 % this function. Should these be added back in?
 
 % (c)2001, Michael van Ginkel.
-% (c)2017-2018, Cris Luengo.
+% (c)2017-2024, Cris Luengo.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.

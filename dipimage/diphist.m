@@ -11,6 +11,10 @@
 %
 %   DIPHIST(B,...,n) displays the histogram using n bins.
 %
+%   DIPHIST(B,...,'optimal') displays the histogram with bin
+%   sizes determined according to the Freedman-Diaconis rule.
+%   Do not combine with the 'n' input above.
+%
 %   DIPHIST(B,...,mode) displays the histogram using a different
 %   plotting method instead of the default stem plot. MODE can be
 %   one of: 'stem' (the default), 'bar', 'line'.
@@ -22,7 +26,7 @@
 %
 %   See also: MDHISTOGRAM, DIPHIST2D
 
-% (c)2017, Cris Luengo.
+% (c)2017-2024, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
@@ -44,6 +48,7 @@ n = 256;
 mini = 0;
 maxi = 255;
 stretch = 0;
+has_range = false;
 mode = '';
 
 % Parse input
@@ -55,6 +60,8 @@ if nargin > 1
          switch lower(arg)
             case 'all'
                stretch = 1;
+            case 'optimal'
+               n = 'optimal';
             case {'stem','bar','line'}
                mode = lower(arg);
             otherwise
@@ -65,6 +72,7 @@ if nargin > 1
          if length(arg)==2
             mini = arg(1);
             maxi = arg(2);
+            has_range = true;
          elseif length(arg)==1
             n = arg;
          elseif isempty(arg)
@@ -97,10 +105,19 @@ end
 if stretch
    mini = 0;
    maxi = 100;
+   has_range = true;
 end
-conf = {'lower',mini,'upper',maxi,'bins',n};
-if ~stretch
-   conf = [conf,{'lower_abs','upper_abs'}];
+if ischar(n)  % n == 'optimal'
+   conf = {n};
+else
+   conf = {'bins',n};
+   has_range = true;
+end
+if has_range
+   conf = [conf,{'lower',mini,'upper',maxi}];
+   if ~stretch
+      conf = [conf,{'lower_abs','upper_abs'}];
+   end
 end
 
 % Do histogram.
