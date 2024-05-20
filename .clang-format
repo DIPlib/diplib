@@ -2,14 +2,13 @@
 Language: Cpp
 BasedOnStyle: LLVM
 AccessModifierOffset: 0
-AlignAfterOpenBracket: AlwaysBreak
 AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations: false
 AlignOperands: false
 AlignTrailingComments: false
 BinPackParameters: false
 BraceWrapping:
-  AfterCaseLabel: true
+  AfterCaseLabel: false
   AfterClass: false
   AfterControlStatement: false
   AfterEnum: false
@@ -40,8 +39,7 @@ IncludeCategories:
   - Regex: '.*'
     Priority: 3
 IncludeIsMainRegex: '([-_](test|unittest))?$'
-IndentAccessModifiers: true
-IndentCaseBlocks: true
+IndentAccessModifiers: True
 IndentCaseLabels: true
 IndentWidth: 3
 InsertNewlineAtEOF: true
