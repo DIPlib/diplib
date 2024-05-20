@@ -1,5 +1,5 @@
 /*
- * (c)2017-2021, Cris Luengo.
+ * (c)2017-2024, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,6 +36,8 @@ namespace dip {
 using CountType = Histogram::CountType;
 
 void Histogram::Configuration::Complete( bool isInteger ) {
+   DIP_THROW_IF( lowerIsPercentile || upperIsPercentile, "Cannot complete configuration without image data, bounds are percentiles" );
+   // Fixup wrong values silently
    if( mode != Mode::COMPUTE_BINS ) {
       if( nBins < 1 ) {
          nBins = 256;
@@ -48,21 +50,30 @@ void Histogram::Configuration::Complete( bool isInteger ) {
          binSize = 1.0;
       }
    }
-   if(( mode != Mode::COMPUTE_LOWER ) &&
-      ( mode != Mode::COMPUTE_UPPER )) {
+   if(( mode != Mode::COMPUTE_LOWER ) && ( mode != Mode::COMPUTE_UPPER )) {
       if( upperBound < lowerBound ) {
          std::swap( upperBound, lowerBound );
       } else if( upperBound == lowerBound ) {
          upperBound += 1.0;
       }
    }
-   switch( mode ) {
-      default:
-      //case Mode::COMPUTE_BINSIZE:
+   // For integer images, we need the bin size and bounds to be integer values
+   if( isInteger ) {
+      lowerBound = std::floor( lowerBound );
+      upperBound = std::ceil( upperBound );
+      if( mode == Mode::COMPUTE_BINSIZE ) {
          binSize = ( upperBound - lowerBound ) / static_cast< dfloat >( nBins );
+      }
+      binSize = std::ceil( binSize );
+   }
+   // Next, complete the configuration
+   switch( mode ) {
+      case Mode::COMPUTE_BINSIZE:
          if( isInteger ) {
-            binSize = std::ceil( binSize );
+            // We've aready computed the bin size earlier
             upperBound = lowerBound + static_cast< dfloat >( nBins ) * binSize;
+         } else {
+            binSize = ( upperBound - lowerBound ) / static_cast< dfloat >( nBins );
          }
          break;
       case Mode::COMPUTE_BINS:
@@ -80,9 +91,6 @@ void Histogram::Configuration::Complete( bool isInteger ) {
             // Update upper bound so that it matches what the histogram class would compute:
             upperBound = lowerBound + static_cast< dfloat >( nBins ) * binSize;
          } else {
-            if( isInteger ) {
-               binSize = std::ceil( binSize );
-            }
             nBins = static_cast< dip::uint >( std::round(( upperBound - lowerBound ) / binSize ));
             if( isInteger ) {
                upperBound = lowerBound + static_cast< dfloat >( nBins ) * binSize;
@@ -92,49 +100,67 @@ void Histogram::Configuration::Complete( bool isInteger ) {
          }
          break;
       case Mode::COMPUTE_LOWER:
-         if( isInteger ) {
-            binSize = std::ceil( binSize );
-         }
          lowerBound = upperBound - static_cast< dfloat >( nBins ) * binSize;
          break;
       case Mode::COMPUTE_UPPER:
-         if( isInteger ) {
-            binSize = std::ceil( binSize );
-         }
          upperBound = lowerBound + static_cast< dfloat >( nBins ) * binSize;
          break;
+      default:
+         // Mode::ESTIMATE_BINSIZE or Mode::ESTIMATE_BINSIZE_AND_LIMITS
+         DIP_THROW( "Cannot complete configuration without image data, mode requests choosing bin size according to data" );
    }
-   if( isInteger && ( binSize == std::round( binSize ))) {
-      // Let's make sure the bin centers are integers too
-      dfloat center = lowerBound + binSize / 2;
-      dfloat diff = center - std::floor( center );
-      if( diff > 0 ) {
-         lowerBound -= diff;
-         upperBound -= diff;
+   if( isInteger ) {
+      DIP_ASSERT( binSize == std::round( binSize ));
+      DIP_ASSERT( lowerBound == std::round( lowerBound ));
+      DIP_ASSERT( upperBound == std::round( upperBound ));
+      // Let's make sure the bin centers are integers
+      if( static_cast< dip::uint >( binSize ) % 2 ) {
+         // If the bin size is odd, then the center of a bin (at `(bound + binSize / 2)`) will be half-way between two integers
+         lowerBound -= 0.5;
+         upperBound -= 0.5;
       }
    }
 }
 
 void Histogram::Configuration::Complete( Image const& input, Image const& mask ) {
-   if( lowerIsPercentile && mode != Mode::COMPUTE_LOWER ) {
-      lowerBound = Percentile( input, mask, lowerBound ).As< dfloat >();
-   }
-   if( upperIsPercentile && mode != Mode::COMPUTE_UPPER ) {
-      // NOTE: we increase the upper bound when computed as a percentile, because we do lowerBound <= value < upperBound.
-      upperBound = Percentile( input, mask, upperBound ).As< dfloat >() * ( 1.0 + 1e-15 );
+   if( mode == Mode::ESTIMATE_BINSIZE || mode == Mode::ESTIMATE_BINSIZE_AND_LIMITS ) {
+      DIP_START_STACK_TRACE
+         auto quantiles = Quartiles( input, mask );
+         dfloat iqr = quantiles[ 3 ] - quantiles[ 1 ];
+         dip::uint n = input.NumberOfSamples();
+         if( mask.IsForged() ) {
+            n = dip::Count( mask );
+         }
+         binSize = 2 * iqr / std::cbrt( n );
+         if( mode == Mode::ESTIMATE_BINSIZE_AND_LIMITS ) {
+            lowerBound = std::max( quantiles[ 0 ], quantiles[ 1 ] - 3 * iqr );
+            upperBound = std::min( quantiles[ 4 ], quantiles[ 3 ] + 3 * iqr ) * ( 1.0 + 1e-15 );
+         } else {
+            // avoid computing the min and max again later, we already have these values computed.
+            if( lowerIsPercentile && lowerBound <= 0 ) {
+               lowerBound = quantiles[ 0 ];
+               lowerIsPercentile = false;
+            }
+            if( upperIsPercentile && upperBound >= 100 ) {
+               upperBound = quantiles[ 4 ] * ( 1.0 + 1e-15 );
+               upperIsPercentile = false;
+            }
+         }
+         nBins = 0;
+         mode = Mode::COMPUTE_BINS;
+      DIP_END_STACK_TRACE
+   } else {
+      if( lowerIsPercentile && mode != Mode::COMPUTE_LOWER ) {
+         lowerBound = Percentile( input, mask, lowerBound ).As< dfloat >();
+         lowerIsPercentile = false;
+      }
+      if( upperIsPercentile && mode != Mode::COMPUTE_UPPER ) {
+         // NOTE: we increase the upper bound when computed as a percentile, because we do lowerBound <= value < upperBound.
+         upperBound = Percentile( input, mask, upperBound ).As< dfloat >() * ( 1.0 + 1e-15 );
+         upperIsPercentile = false;
+      }
    }
    Complete( input.DataType().IsInteger() );
-}
-
-void Histogram::Configuration::Complete( Measurement::IteratorFeature const& featureValues ) {
-   if( lowerIsPercentile && mode != Mode::COMPUTE_LOWER ) {
-      lowerBound = Percentile( featureValues, lowerBound );
-   }
-   if( upperIsPercentile && mode != Mode::COMPUTE_UPPER ) {
-      // NOTE: we increase the upper bound when computed as a percentile, because we do lowerBound <= value < upperBound.
-      upperBound = Percentile( featureValues, upperBound ) * ( 1.0 + 1e-15 );
-   }
-   Complete( false );
 }
 
 namespace {
@@ -385,10 +411,9 @@ void Histogram::JointImageHistogram( Image const& input1, Image const& input2, I
    DIP_OVL_NEW_REAL( scanLineFilter, JointImageHistogramLineFilter, ( data_, configuration, false ), dtype );
    ImageConstRefArray inar{ input1, input2 };
    DataTypeArray inBufT{ dtype, dtype };
-   Image mask;
    if( c_mask.IsForged() ) {
       // If we have a mask, add it to the input array.
-      mask = c_mask.QuickCopy();
+      Image mask = c_mask.QuickCopy();
       DIP_START_STACK_TRACE
          mask.CheckIsMask( input1.Sizes(), Option::AllowSingletonExpansion::DO_ALLOW, Option::ThrowException::DO_THROW );
          mask.ExpandSingletonDimensions( input1.Sizes() );
@@ -624,13 +649,13 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Histogram" ) {
       dip::GaussianRandomGenerator normDist( random );
       dip::ImageIterator< dip::uint16 > it( img );
       do {
-         *it = dip::clamp_cast< dip::uint16 >( normDist( meanval, sigma ) );
+         *it = dip::clamp_cast< dip::uint16 >( normDist( meanval, sigma ));
       } while( ++it );
    }
    dip::dfloat upperBound = 2 * meanval;
    dip::uint nBins = 200;
    dip::dfloat binSize = upperBound / static_cast< dip::dfloat >( nBins );
-   dip::Histogram::Configuration settings( 0.0, upperBound, ( int )nBins );
+   dip::Histogram::Configuration settings( 0.0, upperBound, nBins );
    dip::Histogram gaussH( img, {}, settings );
    DOCTEST_CHECK( gaussH.Dimensionality() == 1 );
    DOCTEST_CHECK( gaussH.Bins() == nBins );
@@ -651,9 +676,22 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Histogram" ) {
    DOCTEST_CHECK( halfGaussH.BinSize() == binSize );
    DOCTEST_CHECK( halfGaussH.LowerBound() == 0.0 );
    DOCTEST_CHECK( halfGaussH.UpperBound() == upperBound );
-   DOCTEST_CHECK( halfGaussH.Count() == Count( mask ) );
+   DOCTEST_CHECK( halfGaussH.Count() == Count( mask ));
    DOCTEST_CHECK( halfGaussH.At( 95 ) == 0 );
-   DOCTEST_CHECK( halfGaussH.At( 105 ) == gaussH.At( 105 ) );
+   DOCTEST_CHECK( halfGaussH.At( 105 ) == gaussH.At( 105 ));
+
+   auto optimalSettings = dip::Histogram::OptimalConfiguration();
+   gaussH = dip::Histogram( img, {}, optimalSettings );
+   auto quantiles = dip::Quartiles( img );
+   dip::dfloat iqr = quantiles[ 3 ] - quantiles[ 1 ];
+   dip::dfloat expectedBinSize = std::ceil( 2 * iqr / std::cbrt( img.NumberOfPixels() ));
+   DOCTEST_CHECK( gaussH.Dimensionality() == 1 );
+   DOCTEST_CHECK( gaussH.BinSize() == expectedBinSize );
+   DOCTEST_CHECK( halfGaussH.LowerBound() >= quantiles[ 0 ] - 0.5 );  // If BinSize() is odd, 0.5 is subtracted from the lower bound
+   DOCTEST_CHECK( halfGaussH.LowerBound() >= quantiles[ 1 ] - 3 * iqr - 0.5);
+   DOCTEST_CHECK( halfGaussH.UpperBound() <= quantiles[ 4 ] );
+   DOCTEST_CHECK( halfGaussH.UpperBound() <= quantiles[ 3 ] + 3 * iqr );
+   DOCTEST_CHECK( gaussH.Count() == img.NumberOfPixels() );
 
    dip::Image complexIm( { 75, 25 }, 3, dip::DT_DCOMPLEX );
    DOCTEST_CHECK_THROWS( dip::Histogram{ complexIm } );
@@ -664,8 +702,8 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Histogram" ) {
       dip::GaussianRandomGenerator normDist( random );
       dip::ImageIterator< dip::sint32 > it( tensorIm );
       do {
-         it[ 0 ] = dip::clamp_cast< dip::sint32 >( normDist( meanval, sigma ) );
-         it[ 1 ] = dip::clamp_cast< dip::sint32 >( normDist( meanval, sigma ) );
+         it[ 0 ] = dip::clamp_cast< dip::sint32 >( normDist( meanval, sigma ));
+         it[ 1 ] = dip::clamp_cast< dip::sint32 >( normDist( meanval, sigma ));
          it[ 2 ] = 1000;
       } while( ++it );
    }
@@ -734,7 +772,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Histogram" ) {
    DOCTEST_CHECK( histograms[ 0 ].IsInitialized() );
    DOCTEST_CHECK( histograms[ 0 ].Count() == tensorIm.NumberOfPixels() );
    DOCTEST_CHECK( histograms[ 0 ].Dimensionality() == 3 );
-   DOCTEST_CHECK( histograms[ 1 ].Count() == Count( mask ) );
+   DOCTEST_CHECK( histograms[ 1 ].Count() == Count( mask ));
    DOCTEST_CHECK( histograms[ 1 ].Dimensionality() == 1 );
    DOCTEST_CHECK_THROWS( histograms[ 2 ].Count() );
 }

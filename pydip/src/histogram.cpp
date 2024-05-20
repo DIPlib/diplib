@@ -1,6 +1,6 @@
 /*
  * (c)2017-2021, Flagship Biosciences, Inc., written by Cris Luengo.
- * (c)2022, Cris Luengo.
+ * (c)2022-2024, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,8 @@ class type_caster< dip::Histogram::Configuration::Mode > {
             else if( mode == "COMPUTE_BINS" ) { value = dip::Histogram::Configuration::Mode::COMPUTE_BINS; }
             else if( mode == "COMPUTE_LOWER" ) { value = dip::Histogram::Configuration::Mode::COMPUTE_LOWER; }
             else if( mode == "COMPUTE_UPPER" ) { value = dip::Histogram::Configuration::Mode::COMPUTE_UPPER; }
+            else if( mode == "ESTIMATE_BINSIZE" ) { value = dip::Histogram::Configuration::Mode::ESTIMATE_BINSIZE; }
+            else if( mode == "ESTIMATE_BINSIZE_AND_LIMITS" ) { value = dip::Histogram::Configuration::Mode::ESTIMATE_BINSIZE_AND_LIMITS; }
             else { return false; }
             return true;
          }
@@ -64,6 +66,10 @@ class type_caster< dip::Histogram::Configuration::Mode > {
                return py::cast( "COMPUTE_LOWER" ).release();
             case dip::Histogram::Configuration::Mode::COMPUTE_UPPER:
                return py::cast( "COMPUTE_UPPER" ).release();
+            case dip::Histogram::Configuration::Mode::ESTIMATE_BINSIZE:
+               return py::cast( "ESTIMATE_BINSIZE" ).release();
+            case dip::Histogram::Configuration::Mode::ESTIMATE_BINSIZE_AND_LIMITS:
+               return py::cast( "ESTIMATE_BINSIZE_AND_LIMITS" ).release();
          }
          return py::cast( "Unrecognized configuration mode!?" ).release();
       }
@@ -102,6 +108,14 @@ dip::String ConfigRepr( dip::Histogram::Configuration const& s ) {
          os << '[' << s.lowerBound << Format( s.lowerIsPercentile )
             << ",?], " << s.nBins << " bins of width " << s.binSize;
          break;
+      case dip::Histogram::Configuration::Mode::ESTIMATE_BINSIZE:
+         os << '[' << s.lowerBound << Format( s.lowerIsPercentile )
+            << ',' << s.upperBound << Format( s.upperIsPercentile )
+            << "], bin width estimated with Freedman-Diaconis rule";
+         break;
+      case dip::Histogram::Configuration::Mode::ESTIMATE_BINSIZE_AND_LIMITS:
+         os << "bin width estimated with Freedman-Diaconis rule, limits adjusted to exclude outliers";
+         break;
    }
    os << '>';
    return os.str();
@@ -125,10 +139,13 @@ void init_histogram( py::module& m ) {
    conf.def_readwrite( "excludeOutOfBoundValues", &dip::Histogram::Configuration::excludeOutOfBoundValues, "If set, pixels outside of the histogram bounds are not counted." );
    conf.def( py::init<>() );
    conf.def( py::init< dip::dfloat, dip::dfloat, dip::dfloat >(), "lowerBound"_a, "upperBound"_a, "binSize"_a );
-   conf.def( py::init< dip::dfloat, dip::dfloat, dip::uint >(), "lowerBound"_a, "upperBound"_a, "nBins"_a = 256 );
+   conf.def( py::init< dip::dfloat, dip::dfloat, dip::uint >(), "lowerBound"_a, "upperBound"_a, "nBins"_a );
    conf.def( py::init< dip::dfloat, dip::uint, dip::dfloat >(), "lowerBound"_a, "nBins"_a, "binSize"_a );
+   conf.def( py::init< dip::dfloat, dip::dfloat >(), "lowerBound"_a, "upperBound"_a );
    conf.def( py::init< dip::DataType >(), "dataType"_a );
    conf.def( "__repr__", &ConfigRepr );
+   hist.def( "OptimalConfiguration", &dip::Histogram::OptimalConfiguration );
+   hist.def( "OptimalConfigurationWithFullRange", &dip::Histogram::OptimalConfigurationWithFullRange );
 
    hist.def( py::init< dip::Image const&, dip::Image const&, dip::Histogram::ConfigurationArray >(),
              "input"_a, "mask"_a = dip::Image{}, "configuration"_a = dip::Histogram::ConfigurationArray{} );

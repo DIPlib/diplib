@@ -24,6 +24,9 @@ title: "Changes DIPlib 3.x.x"
 
 - Added `dip::Measurement::IteratorFeature::AsImage()` and `AsScalarImage()`.
 
+- Added `dip::Histogram::OptimalConfiguration()` and `OptimalConfigurationWithFullRange()`, which make it possible
+  to configure the histogram to use the Freedman--Diaconis rule to choose the bin size.
+
 ### Changed functionality
 
 - The `compressionLevel` argument to `dip::ImageWritePNG()` changed from `dip::uint` to `dip::sint`, allowing for

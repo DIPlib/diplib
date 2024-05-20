@@ -1,5 +1,5 @@
 /*
- * (c)2017-2022, Cris Luengo.
+ * (c)2017-2024, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -67,13 +67,6 @@ class DIP_NO_EXPORT Histogram {
 
       /// \brief Configuration information for how the histogram is computed.
       ///
-      /// Note that if `mode == Mode::COMPUTE_BINS`, `binSize` will be adjusted so that a whole number of bins
-      /// fits between the bounds. If `binSize` was set to zero or a negative value, and the input image is of
-      /// any integer type, then `binSize` will be computed to be an integer power of two, and such that there
-      /// are no more than 256 bins in the histogram.
-      ///
-      /// Any illegal values in the configuration will silently be replaced with the default values.
-      ///
       /// Constructors exist to set different subsets of the configuration; write upper bound and bin size
       /// as a floating point number so the right constructor can be selected (they differ in the location
       /// of the integer value). For example, note the difference between the following constructor calls,
@@ -95,17 +88,52 @@ class DIP_NO_EXPORT Histogram {
       ///   of the 16-bit words, and will handle other integer data correctly as well.
       /// - For floating-point images, the histogram always has 256 bins, stretching from the lowest value in the
       ///   image to the highest.
+      ///
+      /// A final constructor takes only an upper and lower bound, and choose the bin size from data statistics
+      /// using the Freedman--Diaconis rule.
+      ///
+      /// The functions \ref OptimalConfiguration and \ref OptimalConfigurationWithFullRange create configurations
+      /// that are expected to be robust for arbitrary data. They choose the bin size based on the Freedman--Diaconis
+      /// rule. The former chooses histogram bounds to exclude outliers, the latter includes the full range. Note
+      /// that including the full range can potentially lead to an extremely large histograms.
+      ///
+      /// Here are the rules followed to complete the configuration given:
+      ///
+      /// - Any illegal values in the configuration will silently be replaced with the default values.
+      ///
+      /// - For integer images, the bin size and bounds will be forced to integer values.
+      ///
+      /// - For integer images, if `mode == Mode::COMPUTE_BINSIZE`, the upper bound will be adjusted so that a whole
+      ///   number of integer-sized bins fit within the bounds.
+      ///
+      /// - If `mode == Mode::COMPUTE_BINS`, the bin size is adjusted to that a whole number of bins fit within
+      ///   the given bounds. Except for integer images, where the bin size must be an integer as well. In this case,
+      ///   the upper bound is adjusted instead.
+      ///
+      /// - If `mode == Mode::COMPUTE_BINS`, `binSize` was set to zero or a negative value, and the input image is of
+      ///   an integer type, then `binSize` will be computed to be an integer power of two, and such that there
+      ///   are no more than 256 bins in the histogram.
+      ///
+      /// - For integer images, if the bin centers are not whole numbers, the bounds are shifted down by half
+      ///   to make the bin centers whole numbers. This should not affect the computed histogram, but make the display
+      ///   prettier.
       struct Configuration {
          dfloat lowerBound = 0.0;      ///< Lower bound for this dimension, corresponds to the lower bound of the first bin.
          dfloat upperBound = 256.0;    ///< Upper bound for this dimension, corresponds to the upper bound of the last bin.
          dip::uint nBins = 256;        ///< Number of bins for this dimension.
          dfloat binSize = 1.0;         ///< Size of each bin for this dimension.
-         /// Which of the four values to compute based on the other three
+         /// How to complete the configuration
          enum class Mode : uint8 {
-               COMPUTE_BINSIZE,
-               COMPUTE_BINS,
-               COMPUTE_LOWER,
-               COMPUTE_UPPER
+               COMPUTE_BINSIZE,     ///< Compute `binSize` from the other three values
+               COMPUTE_BINS,        ///< Compute `nBins` from the other three values
+               COMPUTE_LOWER,       ///< Compute `lowerBound` from the other three values
+               COMPUTE_UPPER,       ///< Compute `upperBound` from the other three values
+               ESTIMATE_BINSIZE,    ///< Choose `binSize` using the Freedman--Diaconis rule, then compute `nBins`.
+                                    /// If the data is not available to estimate `binSize`, 256 bins will be made.
+               ESTIMATE_BINSIZE_AND_LIMITS ///< Like `ESTIMATE_BINSIZE`, but also determines the lower and upper limits
+                                           /// to exclude outliers, defined as samples below three interquantile ranges
+                                           /// from the lower quartile, and above three interquartile ranges above the
+                                           /// upper quartile. Ignores all configuration values.
          };
          Mode mode = Mode::COMPUTE_BINSIZE;     ///< The given value is ignored and replaced by the computed value.
          bool lowerIsPercentile = false;        ///< If set, `lowerBound` is replaced by the given percentile pixel value.
@@ -174,11 +202,32 @@ class DIP_NO_EXPORT Histogram {
 
          // Complete the configuration, computing the value given by `mode`, as well as percentiles if
          // required. For integer images, bin sizes and bin centers are forced to be integer.
-         DIP_EXPORT void Complete( Image const& input, Image const& mask );
+         DIP_EXPORT void Complete( Image const& input, Image const& mask = {} );
 
          // Complete the configuration, computing the value given by `mode`, as well as percentiles if
          // required.
-         DIP_EXPORT void Complete( Measurement::IteratorFeature const& featureValues );
+         DIP_EXPORT void Complete( Measurement::IteratorFeature const& featureValues ) {
+            Complete( featureValues.AsScalarImage() );
+         }
+      };
+
+      /// \brief Creates a \ref Configuration that uses the optimal bin size according to the Freedman--Diaconis rule.
+      /// The histogram limits are chosen to exclude outliers, defined as values below three interquantile ranges
+      /// below the lower quartile, or three interquantile ranges above the upper quantile.
+      static Configuration OptimalConfiguration() {
+         Configuration conf;
+         conf.mode = Configuration::Mode::ESTIMATE_BINSIZE_AND_LIMITS;
+         return conf;
+      };
+
+      /// \brief Creates a \ref Configuration that uses the optimal bin size according to the Freedman--Diaconis rule.
+      /// The histogram limits are chosen to include the full data range (min to max).
+      static Configuration OptimalConfigurationWithFullRange() {
+         Configuration conf( 0.0, 100.0 );
+         conf.lowerIsPercentile = true;
+         conf.upperIsPercentile = true;
+         conf.mode = Configuration::Mode::ESTIMATE_BINSIZE;
+         return conf;
       };
 
       /// \brief An array of \ref Configuration objects, one per histogram dimension.
