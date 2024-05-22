@@ -961,7 +961,7 @@ class ProjectionFunction {
             return nPixels;
       }
       /// \brief A virtual destructor guarantees that we can destroy a derived class by a pointer to base
-      virtual ~ProjectionFunction() {}
+      virtual ~ProjectionFunction() = default;
 };
 
 /// \brief Framework for projecting one or more dimensions of an image.

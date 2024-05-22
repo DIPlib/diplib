@@ -237,7 +237,7 @@ DIP_NODISCARD inline Image GrowRegions(
 /// isotropically, reset the pixel size (\ref dip::Image::ResetPixelSize) of both images. Note that
 /// these pixel sizes influence the distances computed, and so `distance` is affected by these sizes.
 ///
-/// \see dip::GrowRegions, dip::GreyWeightedDistanceTransform, \ref dip::EuclideanDistanceTransform, dip::SeededWatershed
+/// \see dip::GrowRegions, dip::GreyWeightedDistanceTransform, dip::EuclideanDistanceTransform, dip::SeededWatershed
 DIP_EXPORT void GrowRegionsWeighted(
       Image const& label,
       Image const& grey,
