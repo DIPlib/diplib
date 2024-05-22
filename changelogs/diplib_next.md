@@ -67,6 +67,17 @@ title: "Changes DIPlib 3.x.x"
   previously. `dip::Gauss()` now passes the boundary condition through to `dip::GaussFT()`.
   See [issue #159](https://github.com/DIPlib/diplib/issues/159).
 
+- The versions of `dip::IsodataThreshold()`, `dip::OtsuThreshold()`, `dip::MinimumErrorThreshold()`,
+  `dip::GaussianMixtureModelThreshold()`, `dip::TriangleThreshold()` and `dip::BackgroundThreshold()` that take an
+  image as input, now compute the histogram using the new `dip::Histogram::OptimalConfiguration()` configuration.
+  This generally makes them more precise. In some cases, the previous behavior was not correct.
+  See [issue #161](https://github.com/DIPlib/diplib/issues/161).
+  To reproduce the previous behavior, compute a histogram with default configuration (`dip::Histogram(image)`),
+  and pass this histogram to the equivalent threshold estimation function. This function will return a threshold
+  value that can be applied to the image using the comparison operator (`image > threshold`).
+
+- `dip::EstimateNoiseVariance()` uses a potentially more precise threshold internally to exclude edges.
+
 - Minimum required version of *CMake* is now 3.12.
 
 ### Bug fixes

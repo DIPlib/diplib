@@ -42,7 +42,7 @@ FloatArray IsodataThreshold(
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    // TODO: if the input image is not scalar, we can apply KMeansClustering to the histogram, then do an inverse mapping.
    DIP_START_STACK_TRACE
-      FloatArray thresholds = IsodataThreshold( Histogram( in, mask ), nThresholds );
+      FloatArray thresholds = IsodataThreshold( Histogram( in, mask, Histogram::OptimalConfiguration() ), nThresholds );
       if( nThresholds == 1 ) {
          FixedThreshold( in, out, thresholds[ 0 ] );
       } else {
@@ -61,7 +61,7 @@ dfloat OtsuThreshold(
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    // TODO: if the input image is not scalar, we can apply MinimumVariancePartitioning to the histogram, then do an inverse mapping.
    DIP_START_STACK_TRACE
-      dfloat threshold = OtsuThreshold( Histogram( in, mask ) );
+      dfloat threshold = OtsuThreshold( Histogram( in, mask, Histogram::OptimalConfiguration() ) );
       FixedThreshold( in, out, threshold );
       return threshold;
    DIP_END_STACK_TRACE
@@ -75,7 +75,7 @@ dfloat MinimumErrorThreshold(
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_START_STACK_TRACE
-      dfloat threshold = MinimumErrorThreshold( Histogram( in, mask ) );
+      dfloat threshold = MinimumErrorThreshold( Histogram( in, mask, Histogram::OptimalConfiguration() ) );
       FixedThreshold( in, out, threshold );
       return threshold;
    DIP_END_STACK_TRACE
@@ -90,7 +90,7 @@ FloatArray GaussianMixtureModelThreshold(
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_START_STACK_TRACE
-      FloatArray thresholds = GaussianMixtureModelThreshold( Histogram( in, mask ), nThresholds );
+      FloatArray thresholds = GaussianMixtureModelThreshold( Histogram( in, mask, Histogram::OptimalConfiguration() ), nThresholds );
       if( nThresholds == 1 ) {
          FixedThreshold( in, out, thresholds[ 0 ] );
       } else {
@@ -109,7 +109,7 @@ dfloat TriangleThreshold(
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_START_STACK_TRACE
-      dfloat threshold = TriangleThreshold( Histogram( in, mask ), sigma );
+      dfloat threshold = TriangleThreshold( Histogram( in, mask, Histogram::OptimalConfiguration() ), sigma );
       FixedThreshold( in, out, threshold );
       return threshold;
    DIP_END_STACK_TRACE
@@ -125,7 +125,7 @@ dfloat BackgroundThreshold(
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_START_STACK_TRACE
-      dfloat threshold = BackgroundThreshold( Histogram( in, mask ), distance, sigma );
+      dfloat threshold = BackgroundThreshold( Histogram( in, mask, Histogram::OptimalConfiguration() ), distance, sigma );
       FixedThreshold( in, out, threshold );
       return threshold;
    DIP_END_STACK_TRACE
