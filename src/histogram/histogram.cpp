@@ -125,16 +125,16 @@ void Histogram::Configuration::Complete( bool isInteger ) {
 void Histogram::Configuration::Complete( Image const& input, Image const& mask ) {
    if( mode == Mode::ESTIMATE_BINSIZE || mode == Mode::ESTIMATE_BINSIZE_AND_LIMITS ) {
       DIP_START_STACK_TRACE
-         auto quantiles = Quartiles( input, mask );
-         dfloat iqr = quantiles[ 3 ] - quantiles[ 1 ];
+         auto quartiles = Quartiles( input, mask );
+         dfloat iqr = quartiles.upperQuartile - quartiles.lowerQuartile;
          if( iqr == 0 ) {
             // Case where the middle 50% of samples have the same value...
-            binSize = ( quantiles[ 4 ] - quantiles[ 0 ] ) / 256;
+            binSize = ( quartiles.maximum - quartiles.minimum ) / 256;
             // Ensure we don't use lower and upper quartile later!
             if( mode == Mode::ESTIMATE_BINSIZE_AND_LIMITS ) {
                mode = Mode::ESTIMATE_BINSIZE;
-               lowerBound = quantiles[ 0 ];
-               upperBound = quantiles[ 4 ] * ( 1.0 + 1e-15 );
+               lowerBound = quartiles.minimum;
+               upperBound = quartiles.maximum * ( 1.0 + 1e-15 );
                lowerIsPercentile = false;
                upperIsPercentile = false;
             }
@@ -148,18 +148,18 @@ void Histogram::Configuration::Complete( Image const& input, Image const& mask )
          }
          if( mode == Mode::ESTIMATE_BINSIZE_AND_LIMITS ) {
             // We use the min and max, but avoid the full range being more than 101 times the IQR.
-            lowerBound = std::max( quantiles[ 0 ], quantiles[ 1 ] - 50 * iqr );
-            upperBound = std::min( quantiles[ 4 ], quantiles[ 3 ] + 50 * iqr ) * ( 1.0 + 1e-15 );
+            lowerBound = std::max( quartiles.minimum, quartiles.lowerQuartile - 50 * iqr );
+            upperBound = std::min( quartiles.maximum, quartiles.upperQuartile + 50 * iqr ) * ( 1.0 + 1e-15 );
             lowerIsPercentile = false;
             upperIsPercentile = false;
          } else {
             // avoid computing the min and max again later, we already have these values computed.
             if( lowerIsPercentile && lowerBound <= 0 ) {
-               lowerBound = quantiles[ 0 ];
+               lowerBound = quartiles.minimum;
                lowerIsPercentile = false;
             }
             if( upperIsPercentile && upperBound >= 100 ) {
-               upperBound = quantiles[ 4 ] * ( 1.0 + 1e-15 );
+               upperBound = quartiles.maximum * ( 1.0 + 1e-15 );
                upperIsPercentile = false;
             }
          }
@@ -699,15 +699,15 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Histogram" ) {
 
    auto optimalSettings = dip::Histogram::OptimalConfiguration();
    gaussH = dip::Histogram( img, {}, optimalSettings );
-   auto quantiles = dip::Quartiles( img );
-   dip::dfloat iqr = quantiles[ 3 ] - quantiles[ 1 ];
+   auto quartiles = dip::Quartiles( img );
+   dip::dfloat iqr = quartiles.upperQuartile - quartiles.lowerQuartile;
    dip::dfloat expectedBinSize = std::ceil( 2 * iqr / std::cbrt( img.NumberOfPixels() ));
    DOCTEST_CHECK( gaussH.Dimensionality() == 1 );
    DOCTEST_CHECK( gaussH.BinSize() == expectedBinSize );
-   DOCTEST_CHECK( halfGaussH.LowerBound() >= quantiles[ 0 ] - 0.5 );  // If BinSize() is odd, 0.5 is subtracted from the lower bound
-   DOCTEST_CHECK( halfGaussH.LowerBound() >= quantiles[ 1 ] - 3 * iqr - 0.5);
-   DOCTEST_CHECK( halfGaussH.UpperBound() <= quantiles[ 4 ] );
-   DOCTEST_CHECK( halfGaussH.UpperBound() <= quantiles[ 3 ] + 3 * iqr );
+   DOCTEST_CHECK( halfGaussH.LowerBound() >= quartiles.minimum - 0.5 );  // If BinSize() is odd, 0.5 is subtracted from the lower bound
+   DOCTEST_CHECK( halfGaussH.LowerBound() >= quartiles.lowerQuartile - 50 * iqr - 0.5);
+   DOCTEST_CHECK( halfGaussH.UpperBound() <= quartiles.maximum );
+   DOCTEST_CHECK( halfGaussH.UpperBound() <= quartiles.upperQuartile + 50 * iqr );
    DOCTEST_CHECK( gaussH.Count() == img.NumberOfPixels() );
 
    dip::Image complexIm( { 75, 25 }, 3, dip::DT_DCOMPLEX );

@@ -395,7 +395,7 @@ MinMaxAccumulator MaximumAndMinimum( Measurement::IteratorFeature const& feature
    return acc;
 }
 
-FloatArray Quartiles( Measurement::IteratorFeature const& featureValues ) {
+QuartilesResult Quartiles( Measurement::IteratorFeature const& featureValues ) {
    return Quartiles( featureValues.AsScalarImage() );
 }
 

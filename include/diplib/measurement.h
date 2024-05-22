@@ -1180,9 +1180,6 @@ DIP_EXPORT MinMaxAccumulator MaximumAndMinimum( Measurement::IteratorFeature con
 /// \brief Computes the minimum, lower quartile (25th percentile), median (50th percentile),
 /// upper quartile (75th percentile), and maximum.
 ///
-/// Returns the values in that order in a 5-element output array.
-/// The interquartile range is `out[ 3 ] - out[ 1 ]`.
-///
 /// Percentiles are always one of the values in the set. The nearest value to a given partition
 /// is used, rather than interpolate as classically done.
 ///
@@ -1190,7 +1187,7 @@ DIP_EXPORT MinMaxAccumulator MaximumAndMinimum( Measurement::IteratorFeature con
 /// first value of the feature is used. For features with multiple values, select a value using the
 /// \ref dip::Measurement::IteratorFeature::Subset method, or pick a column in the `dip::Measurement` object
 /// directly using \ref dip::Measurement::FeatureValuesView.
-DIP_EXPORT FloatArray Quartiles( Measurement::IteratorFeature const& featu );
+DIP_EXPORT QuartilesResult Quartiles( Measurement::IteratorFeature const& featu );
 
 /// \brief Returns the first four central moments of the feature values in the first column of `featureValues`.
 ///

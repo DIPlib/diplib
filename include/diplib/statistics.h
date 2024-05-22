@@ -100,17 +100,14 @@ DIP_DEFINE_VIEW_FUNCTION( MaximumAndMinimum, MinMaxAccumulator )
 /// \brief Computes the minimum, lower quartile (25th percentile), median (50th percentile),
 /// upper quartile (75th percentile), and maximum.
 ///
-/// Returns the values in that order in a 5-element output array.
-/// The interquartile range is `out[ 3 ] - out[ 1 ]`.
-///
 /// Percentiles are always one of the values in the image. The nearest value to a given partition
 /// is used, rather than interpolate as classically done.
 ///
 /// If `mask` is not forged, all input pixels are considered. In case of a tensor
 /// image, returns the maximum and minimum sample values. In case of a complex
 /// samples, treats real and imaginary components as individual samples.
-DIP_EXPORT FloatArray Quartiles( Image const& in, Image const& mask = {} );
-DIP_DEFINE_VIEW_FUNCTION( Quartiles, FloatArray )
+DIP_EXPORT QuartilesResult Quartiles( Image const& in, Image const& mask = {} );
+DIP_DEFINE_VIEW_FUNCTION( Quartiles, QuartilesResult )
 
 /// \brief Computes the first four central moments of the pixel intensities, within an optional mask.
 ///
@@ -774,14 +771,14 @@ DIP_NODISCARD inline Image PositionMedian( Image const& in, Image const& mask = 
 }
 
 /// \brief Computes the radial projection of the sum of the pixel values of `in`.
-/// 
+///
 /// If the radial distance of a pixel to `center` is `r`, then the sum of
 /// the intensities of all pixels with `n * binSize <= r < (n + 1) * binSize` is
-/// stored at position `n` in the radial dimension of `out`. 
+/// stored at position `n` in the radial dimension of `out`.
 ///
 /// `binSize` sets the size of the bins (pixels) in the radial output dimension.
 /// If `maxRadius` is set to `"inner radius"`, the maximum radius that is projected is equal to
-/// the smallest distance from the given `center` to any edge pixel of the image. Otherwise, when 
+/// the smallest distance from the given `center` to any edge pixel of the image. Otherwise, when
 /// `maxRadius` is set to `"outer radius"`, the maximum radius is set to largest distance from the given
 /// `center` to any edge pixel.
 ///
@@ -811,14 +808,14 @@ inline Image RadialSum(
 }
 
 /// \brief Computes the radial projection of the mean of the pixel values of `in`.
-/// 
+///
 /// If the radial distance of a pixel to `center` is `r`, then the mean of
 /// the intensities of all pixels with `n * binSize <= r < (n + 1) * binSize` is
-/// stored at position `n` in the radial dimension of `out`. 
+/// stored at position `n` in the radial dimension of `out`.
 ///
 /// `binSize` sets the size of the bins (pixels) in the radial output dimension.
 /// If `maxRadius` is set to `"inner radius"`, the maximum radius that is projected is equal to
-/// the smallest distance from the given `center` to any edge pixel of the image. Otherwise, when 
+/// the smallest distance from the given `center` to any edge pixel of the image. Otherwise, when
 /// `maxRadius` is set to `"outer radius"`, the maximum radius is set to largest distance from the given
 /// `center` to any edge pixel.
 ///
@@ -848,7 +845,7 @@ inline Image RadialMean(
 }
 
 /// \brief Computes the radial projection of the minimum of the pixel values of `in`.
-/// 
+///
 /// If the radial distance of a pixel to `center` is `r`, then the minimum of
 /// the intensities of all pixels with `n * binSize <= r < (n + 1) * binSize` is
 /// stored at position `n` in the radial dimension of `out`.
@@ -885,7 +882,7 @@ inline Image RadialMinimum(
 }
 
 /// \brief Computes the radial projection of the maximum of the pixel values of `in`.
-/// 
+///
 /// If the radial distance of a pixel to `center` is `r`, then the maximum of
 /// the intensities of all pixels with `n * binSize <= r < (n + 1) * binSize` is
 /// stored at position `n` in the radial dimension of `out`.

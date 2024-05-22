@@ -440,7 +440,7 @@ MinMaxAccumulator MaximumAndMinimum(
 namespace {
 
 template< typename TPI >
-FloatArray QuartilesInternal( Image& buffer ) {
+QuartilesResult QuartilesInternal( Image& buffer ) {
    DIP_ASSERT( buffer.HasContiguousData() );
    dip::uint nSamples = buffer.NumberOfSamples();
    TPI* begin = static_cast< TPI* >( buffer.Origin() );
@@ -470,7 +470,7 @@ FloatArray QuartilesInternal( Image& buffer ) {
 
 } // namespace
 
-FloatArray Quartiles( Image const& in, Image const& mask ) {
+QuartilesResult Quartiles( Image const& in, Image const& mask ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    if( mask.IsForged() ) {
       DIP_STACK_TRACE_THIS( mask.CheckIsMask( in.Sizes(), Option::AllowSingletonExpansion::DONT_ALLOW ) );
@@ -489,9 +489,9 @@ FloatArray Quartiles( Image const& in, Image const& mask ) {
    } else {
       buffer.Copy( in );
    }
-   FloatArray quantiles;
-   DIP_OVL_CALL_ASSIGN_NONCOMPLEX( quantiles, QuartilesInternal, ( buffer ), buffer.DataType() );
-   return quantiles;
+   QuartilesResult quartiles;
+   DIP_OVL_CALL_ASSIGN_NONCOMPLEX( quartiles, QuartilesInternal, ( buffer ), buffer.DataType() );
+   return quartiles;
 }
 
 namespace {

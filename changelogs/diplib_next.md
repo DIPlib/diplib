@@ -20,7 +20,7 @@ title: "Changes DIPlib 3.x.x"
 
 - Added an operator to convert `dip::Units` to `bool`. The units object will test false if it's unitless.
 
-- Added `dip::Quantiles()`.
+- Added `dip::Quartiles()`.
 
 - Added `dip::Measurement::IteratorFeature::AsImage()` and `AsScalarImage()`.
 

@@ -325,7 +325,7 @@ dfloat EstimateNoiseVariance( Image const& in, Image const& c_mask ) {
             // In case of a multi-channel input, take maximum over the gradient magnitudes for each channel
             MaximumTensorElement( mask, mask );
          }
-         dfloat threshold = OtsuThreshold( Histogram( mask ));
+         dfloat threshold = OtsuThreshold( Histogram( mask, {}, Histogram::OptimalConfiguration() ));
          Lesser( mask, threshold, mask );
       DIP_END_STACK_TRACE
    }
