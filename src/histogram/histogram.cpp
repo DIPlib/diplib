@@ -698,17 +698,28 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Histogram" ) {
    DOCTEST_CHECK( halfGaussH.At( 105 ) == gaussH.At( 105 ));
 
    auto optimalSettings = dip::Histogram::OptimalConfiguration();
-   gaussH = dip::Histogram( img, {}, optimalSettings );
    auto quartiles = dip::Quartiles( img );
    dip::dfloat iqr = quartiles.upperQuartile - quartiles.lowerQuartile;
-   dip::dfloat expectedBinSize = std::ceil( 2 * iqr / std::cbrt( img.NumberOfPixels() ));
+   // The parameters to this configuration are not trivial, everything is re-computed to make bin size and bin centers integers
+   binSize = std::ceil( 2 * iqr / std::cbrt( img.NumberOfSamples() ));
+   dip::dfloat lowerBound = std::floor( std::max( quartiles.minimum, quartiles.lowerQuartile - 50 * iqr ));
+   upperBound = std::ceil( std::min( quartiles.maximum, quartiles.upperQuartile + 50 * iqr) * ( 1.0 + 1e-15 ));
+   binSize = std::ceil( binSize );
+   nBins = static_cast< dip::uint >( std::round(( upperBound - lowerBound ) / binSize ));
+   upperBound = lowerBound + static_cast< dip::dfloat >( nBins ) * binSize;
+   if( static_cast< int >( binSize ) % 2 ) {
+      // For odd bin sizes we move bounds down by 0.5
+      lowerBound -= 0.5;
+      upperBound -= 0.5;
+   }
+   dip::uint expectedCount = dip::Count(( img >= lowerBound ) & ( img < upperBound ));
+   gaussH = dip::Histogram( img, {}, optimalSettings );
    DOCTEST_CHECK( gaussH.Dimensionality() == 1 );
-   DOCTEST_CHECK( gaussH.BinSize() == expectedBinSize );
-   DOCTEST_CHECK( halfGaussH.LowerBound() >= quartiles.minimum - 0.5 );  // If BinSize() is odd, 0.5 is subtracted from the lower bound
-   DOCTEST_CHECK( halfGaussH.LowerBound() >= quartiles.lowerQuartile - 50 * iqr - 0.5);
-   DOCTEST_CHECK( halfGaussH.UpperBound() <= quartiles.maximum );
-   DOCTEST_CHECK( halfGaussH.UpperBound() <= quartiles.upperQuartile + 50 * iqr );
-   DOCTEST_CHECK( gaussH.Count() == img.NumberOfPixels() );
+   DOCTEST_CHECK( gaussH.Bins() == nBins );
+   DOCTEST_CHECK( gaussH.BinSize() == binSize );
+   DOCTEST_CHECK( gaussH.LowerBound() == lowerBound );
+   DOCTEST_CHECK( gaussH.UpperBound() == upperBound );
+   DOCTEST_CHECK( gaussH.Count() == expectedCount );
 
    dip::Image complexIm( { 75, 25 }, 3, dip::DT_DCOMPLEX );
    DOCTEST_CHECK_THROWS( dip::Histogram{ complexIm } );
@@ -725,8 +736,9 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Histogram" ) {
       } while( ++it );
    }
    nBins = 100;
-   settings.nBins = nBins;
+   upperBound = 2 * meanval;
    binSize = upperBound / static_cast< dip::dfloat >( nBins );
+   settings.nBins = nBins;
    dip::Histogram tensorH( tensorIm, {}, settings );
    DOCTEST_CHECK( tensorH.Dimensionality() == 3 );
    DOCTEST_CHECK( tensorH.Bins( 0 ) == nBins );
