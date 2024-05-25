@@ -23,6 +23,7 @@
 #include "diplib/segmentation.h"
 #include "diplib/graph.h"
 #include "diplib/regions.h"
+#include "diplib/label_map.h"
 #include "diplib/measurement.h"
 #include "diplib/neighborlist.h"
 
@@ -198,4 +199,31 @@ void init_segmentation( py::module& m ) {
    m.def( "RegionAdjacencyGraph", py::overload_cast< dip::Image const&, dip::Measurement::IteratorFeature const&, dip::String const& >( &dip::RegionAdjacencyGraph ),
           "label"_a, "featureValues"_a, "mode"_a = "touching" );
 
+   // diplib/label_map.h
+   auto lmap = py::class_< dip::LabelMap >( m, "LabelMap", "Represents a set of labels (object IDs), and maps them to new ones." );
+   lmap.def( py::init< dip::LabelType >(), "maxLabel"_a );
+   lmap.def( py::init< std::vector< dip::LabelType > const& >(), "labels"_a );
+   lmap.def( "__repr__", []( dip::LabelMap const& self ) {
+      std::ostringstream os;
+      os << "<LabelMap with " << self.Size() << " labels>";
+      return os.str();
+   } );
+   lmap.def( "__len__", []( dip::LabelMap const& self ) { return self.Size(); } );
+   lmap.def( "Size", &dip::LabelMap::Size );
+   lmap.def( "DestroyUnknownLabels", &dip::LabelMap::DestroyUnknownLabels );
+   lmap.def( "PreserveUnknownLabels", &dip::LabelMap::PreserveUnknownLabels );
+   lmap.def( "Apply", py::overload_cast< dip::Image const& >( &dip::LabelMap::Apply, py::const_ ), "in"_a );
+   lmap.def( "Apply", py::overload_cast< dip::Image const&, dip::Image& >( &dip::LabelMap::Apply, py::const_ ),
+             "in"_a, py::kw_only(), "out"_a );
+   lmap.def( "Negate", &dip::LabelMap::Negate );
+   lmap.def( "Relabel", &dip::LabelMap::Relabel );
+   lmap.def( "__getitem__", []( dip::LabelMap const& self, dip::LabelType label ) { return self[ label ]; } );
+   lmap.def( "__setitem__", []( dip::LabelMap& self, dip::LabelType label, dip::LabelType target ) { self[ label ] = target; } );
+   lmap.def( "__iand__", []( dip::LabelMap& self, dip::LabelMap const& rhs ) { self &= rhs; return self; }, py::is_operator() );
+   lmap.def( "__and__", []( dip::LabelMap const& lhs, dip::LabelMap const& rhs ) { return lhs & rhs; }, py::is_operator() );
+   lmap.def( "__ior__", []( dip::LabelMap& self, dip::LabelMap const& rhs ) { self |= rhs; return self; }, py::is_operator() );
+   lmap.def( "__or__", []( dip::LabelMap const& lhs, dip::LabelMap const& rhs ) { return lhs | rhs; }, py::is_operator() );
+   lmap.def( "__ixor__", []( dip::LabelMap& self, dip::LabelMap const& rhs ) { self ^= rhs; return self; }, py::is_operator() );
+   lmap.def( "__xor__", []( dip::LabelMap const& lhs, dip::LabelMap const& rhs ) { return lhs ^ rhs; }, py::is_operator() );
+   lmap.def( "__invert__", []( dip::LabelMap const& self ) { return ~self; }, py::is_operator() );
 }

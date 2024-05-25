@@ -27,6 +27,8 @@ title: "Changes DIPlib 3.x.x"
 - Added `dip::Histogram::OptimalConfiguration()` and `OptimalConfigurationWithFullRange()`, which make it possible
   to configure the histogram to use the Freedman--Diaconis rule to choose the bin size.
 
+- Added `dip::LabelMap`, a class that holds labels (object IDs) and can map them to new values.
+
 ### Changed functionality
 
 - The `compressionLevel` argument to `dip::ImageWritePNG()` changed from `dip::uint` to `dip::sint`, allowing for

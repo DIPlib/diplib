@@ -24,6 +24,7 @@ set(DIPlib_sources_bogus
 ../include/diplib/iterators.h
 ../include/diplib/javaio.h
 ../include/diplib/kernel.h
+../include/diplib/label_map.h
 ../include/diplib/library/clamp_cast.h
 ../include/diplib/library/copy_buffer.h
 ../include/diplib/library/datatype.h
@@ -266,6 +267,7 @@ nonlinear/variancefilter.cpp
 regions/grow_regions.cpp
 regions/label.cpp
 regions/label_manipulation.cpp
+regions/label_map.cpp
 regions/labelingGrana2016.h
 regions/region_adjacency_graph.cpp
 segmentation/canny.cpp
