@@ -29,6 +29,8 @@ title: "Changes DIPlib 3.x.x"
 
 - Added `dip::LabelMap`, a class that holds labels (object IDs) and can map them to new values.
 
+- Added `dip::UnionFind::Size()`.
+
 ### Changed functionality
 
 - The `compressionLevel` argument to `dip::ImageWritePNG()` changed from `dip::uint` to `dip::sint`, allowing for

@@ -167,6 +167,8 @@ void LabelMap::Relabel() {
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
+#include "diplib/regions.h"
+#include "diplib/testing.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing dip::LabelMap logical operations") {
    // This also tests constructors
@@ -232,6 +234,22 @@ DOCTEST_TEST_CASE("[DIPlib] testing dip::LabelMap logical operations") {
    DOCTEST_CHECK( labels[ 4 ] == 2 );
    DOCTEST_CHECK( labels[ 5 ] == 0 );
    DOCTEST_CHECK( labels[ 6 ] == 3 );
+}
+
+DOCTEST_TEST_CASE("[DIPlib] testing dip::LabelMap::Apply") {
+   dip::Image labels( { 10 }, 1, dip::DT_UINT8 );
+   dip::uint8* ptr = static_cast< dip::uint8* >( labels.Origin() );
+   for( dip::uint8 ii = 0; ii < 10; ++ii, ++ptr ) {
+      *ptr = ii;
+   }
+   auto list = dip::GetObjectLabels( labels );
+   dip::LabelMap map( list );
+   map[ 1 ] = 0;
+   map.Relabel();
+   dip::Image modified = map.Apply( labels );
+   DOCTEST_CHECK( modified.DataType() == dip::DT_LABEL );
+   labels -= 1;  // Note that 0 maps to 0 here
+   DOCTEST_CHECK( dip::testing::CompareImages( modified, labels ));
 }
 
 #endif // DIP_CONFIG_ENABLE_DOCTEST

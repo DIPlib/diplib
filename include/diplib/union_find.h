@@ -90,6 +90,12 @@ class UnionFind {
          }
       }
 
+      /// \brief Returns the number of elements in the data structure. Note that the 0th element
+      /// is counted but not used. This is not the number of trees.
+      dip::uint Size() const {
+         return list.size();
+      }
+
       /// \brief Returns the index (label) for the root of the tree that contains `index`.
       IndexType FindRoot( IndexType index ) const {
          if( list[ index ].parent == index ) {
@@ -149,7 +155,7 @@ class UnionFind {
       /// Returns the number of unique labels.
       ///
       /// !!! warning
-      ///     This function destroys the tree structure. After this call, you can only use `Label` and `LabelValue`.
+      ///     This function destroys the tree structure. After this call, you can only use `Size`, `Label` and `LabelValue`.
       dip::uint Relabel() {
          std::vector< IndexType > newLabels( list.size(), 0 );
          std::vector< ValueType > newValues( list.size() );
@@ -181,7 +187,7 @@ class UnionFind {
       /// Returns the number of unique labels.
       ///
       /// !!! warning
-      ///     This function destroys the tree structure. After this call, you can only use `Label` and `LabelValue`.
+      ///     This function destroys the tree structure. After this call, you can only use `Size`, `Label` and `LabelValue`.
       template< typename Constraint >
       dip::uint Relabel( Constraint constraint ) {
          std::vector< IndexType > newLabels( list.size(), 0 );

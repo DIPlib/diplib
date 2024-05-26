@@ -20,6 +20,7 @@
 #include <vector>
 
 #include "diplib.h"
+#include "diplib/union_find.h"
 #include "diplib/private/robin_map.h"
 
 /// \file
@@ -58,6 +59,15 @@ class DIP_NO_EXPORT LabelMap {
       };
 
       /// \brief Construct a map that maps `objectIDs` to themselves.
+      explicit LabelMap( std::vector< dip::uint > const& labels ) {
+         map_.reserve( labels.size() * 2 );  // Most efficient when load factor is < 0.5
+         for( dip::uint lab : labels ) {
+            LabelType l = clamp_cast< LabelType >( lab );
+            map_.insert( { l, l } );
+         }
+      };
+
+      /// \brief Construct a map that maps `objectIDs` to themselves.
       // NOTE I don't like GetObjectLabels() and Measurement::Objects() returning an UnsignedArray
       //      rather than a std::vector< LabelType >. dip::UnsignedArray is optimized for short arrays,
       //      and doesn't work as well as std::vector for larger collections of values.
@@ -68,6 +78,18 @@ class DIP_NO_EXPORT LabelMap {
             map_.insert( { l, l } );
          }
       };
+
+      /// \brief Construct a map from the Union-Find data structure. Must call `labels.Relabel()`
+      /// before converting to a `LabelMap`.
+      template< typename IndexType_, typename ValueType_, typename UnionFunction_ >
+      explicit LabelMap( UnionFind< IndexType_, ValueType_, UnionFunction_ > const& labels ) {
+         dip::uint nLabels = labels.Size();
+         map_.reserve( nLabels * 2 );  // Most efficient when load factor is < 0.5
+         for( dip::uint lab = 1; lab < nLabels; ++lab ) {
+            LabelType l = clamp_cast< LabelType >( lab );
+            map_.insert( { l, labels.Label( l ) } );
+         }
+      }
 
       /// \brief Construct a map that maps objectIDs 1 to `maxLabel` (inclusive) to themselves.
       explicit LabelMap( LabelType maxLabel ) {
