@@ -23,7 +23,7 @@
 #include "diplib.h"
 #include "diplib/framework.h"
 #include "diplib/graph.h"
-#include "diplib/lookup_table.h"
+#include "diplib/label_map.h"
 #include "diplib/measurement.h"
 #include "diplib/overload.h"
 #include "diplib/statistics.h"
@@ -200,15 +200,7 @@ void Relabel( Image const& label, Image& out, Graph const& graph ) {
       }
    }
    regions.Relabel();
-   dip::uint nLabels = Maximum( label ).As< dip::uint >() + 1;
-   Image lut_img( { nLabels }, 1, DT_LABEL );
-   LabelType* lut_ptr = static_cast< LabelType* >( lut_img.Origin() );
-   *lut_ptr = 0;
-   ++lut_ptr;
-   for( dip::uint ii = 1; ii < nLabels; ++ii, ++lut_ptr ) {
-      *lut_ptr = static_cast< LabelType >( regions.Label( ii ));
-   }
-   LookupTable lut( lut_img );
+   LabelMap lut( regions );
    lut.Apply( label, out );
 }
 
