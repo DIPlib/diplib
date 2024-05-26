@@ -306,8 +306,8 @@ Distribution ChordLength(
    if( object.DataType().IsBinary() ) {
       object.Convert( DT_UINT8 );
    }
-   UnsignedArray phases;
-   DIP_STACK_TRACE_THIS( phases = GetObjectLabels( object, mask, S::INCLUDE )); // Will test mask for us -- doesn't allow singleton expansion, so we don't need to here either
+   std::vector< LabelType > phases;
+   DIP_STACK_TRACE_THIS( phases = ListObjectLabels( object, mask, S::INCLUDE )); // Will test mask for us -- doesn't allow singleton expansion, so we don't need to here either
    PhaseLookupTable phaseLookupTable;
    for( dip::uint ii = 0; ii < phases.size(); ++ii ) {
       phaseLookupTable.emplace( phases[ ii ], ii );

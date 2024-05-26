@@ -31,7 +31,7 @@ constexpr VertexInteger ChainCode::deltas8[8];
 namespace {
 
 struct ObjectData { dip::uint index; bool done; };
-using ObjectIdList = tsl::robin_map< dip::uint, ObjectData >; // key is the objectID (label)
+using ObjectIdList = tsl::robin_map< LabelType, ObjectData >; // key is the objectID (label)
 
 template< typename TPI >
 ChainCode GetOneChainCode(
@@ -43,7 +43,7 @@ ChainCode GetOneChainCode(
       bool startDir0 = false
 ) {
    TPI const* data = static_cast< TPI const* >( data_ptr );
-   dip::uint label = static_cast< dip::uint >( *data );
+   LabelType label = CastLabelType( *data );
    DIP_THROW_IF( label == 0, "Start coordinates not on object boundary" );
    // Initialize the chain code of the object
    ChainCode out;
@@ -58,7 +58,7 @@ ChainCode GetOneChainCode(
       while( true ) {
          VertexInteger nc = coord + codeTable.pos[ dir ];
          dip::sint no = codeTable.offset[ dir ];
-         if( ( nc.x < 0 ) || ( nc.x > dims.x ) || ( nc.y < 0 ) || ( nc.y > dims.y ) || ( ( data[ no ] ) != label ) ) {
+         if(( nc.x < 0 ) || ( nc.x > dims.x ) || ( nc.y < 0 ) || ( nc.y > dims.y ) || ( data[ no ] != label )) {
             break;
          }
          ++dir;
@@ -69,7 +69,7 @@ ChainCode GetOneChainCode(
    do {
       VertexInteger nc = coord + codeTable.pos[ dir ];
       dip::sint no = offset + codeTable.offset[ dir ];
-      if(( nc.x >= 0 ) && ( nc.x <= dims.x ) && ( nc.y >= 0 ) && ( nc.y <= dims.y ) && (( data[ no ] ) == label ) ) {
+      if(( nc.x >= 0 ) && ( nc.x <= dims.x ) && ( nc.y >= 0 ) && ( nc.y <= dims.y ) && ( data[ no ] == label )) {
          // Add new chain
          bool border = ( nc.x == 0 ) || ( nc.x == dims.x ) || ( nc.y == 0 ) || ( nc.y == dims.y );
          out.Push( { dir, border } );
@@ -98,25 +98,25 @@ ChainCodeArray GetImageChainCodesInternal(
       dip::uint connectivity,
       ChainCode::CodeTable const& codeTable
 ) {
-   DIP_ASSERT( labels.DataType() == DataType( TPI( 0 ) ) );
+   DIP_ASSERT( labels.DataType() == DataType( TPI( 0 )));
    TPI* data = static_cast< TPI* >( labels.Origin() );
    ChainCodeArray ccArray( nObjects );  // output array
    VertexInteger dims = { static_cast< dip::sint >( labels.Size( 0 ) - 1 ), static_cast< dip::sint >( labels.Size( 1 ) - 1 ) }; // our local copy of `dims` now contains the largest coordinates
    IntegerArray const& strides = labels.Strides();
 
    // Find first pixel of requested label
-   dip::uint label = 0;
+   LabelType label = 0;
    VertexInteger coord;
    for( coord.y = 0; coord.y <= dims.y; ++coord.y ) {
       dip::sint pos = coord.y * strides[ 1 ];
       for( coord.x = 0; coord.x <= dims.x; ++coord.x ) {
          bool process = false;
          dip::uint index = 0;
-         dip::uint newlabel = static_cast< dip::uint >( data[ pos ] );
-         if( ( newlabel != 0 ) && ( newlabel != label ) ) {
+         LabelType newlabel = CastLabelType( data[ pos ] );
+         if(( newlabel != 0 ) && ( newlabel != label )) {
             // Check whether newlabel is start of not processed object
             auto it = objectIDs.find( newlabel );
-            if( ( it != objectIDs.end() ) && !it.value().done ) {
+            if(( it != objectIDs.end() ) && !it.value().done ) {
                it.value().done = true;
                index = it.value().index;
                label = newlabel;
@@ -136,7 +136,7 @@ ChainCodeArray GetImageChainCodesInternal(
 
 ChainCodeArray GetImageChainCodes(
       Image const& labels,
-      UnsignedArray const& objectIDs,
+      std::vector< LabelType > const& objectIDs,
       dip::uint connectivity
 ) {
    // Check input image
@@ -148,20 +148,13 @@ ChainCodeArray GetImageChainCodes(
    ChainCode::CodeTable codeTable = ChainCode::PrepareCodeTable( connectivity, labels.Strides() );
 
    // Create a map for the object IDs
+   std::vector< LabelType > const& ids = objectIDs.empty() ? ListObjectLabels( labels, Image(), S::EXCLUDE ) : objectIDs;
    ObjectIdList objectIdList;
-   dip::uint nObjects{};
-   if( objectIDs.empty() ) {
-      UnsignedArray allObjectIDs = GetObjectLabels( labels, Image(), S::EXCLUDE );
-      for( dip::uint ii = 0; ii < allObjectIDs.size(); ++ii ) {
-         objectIdList.emplace( allObjectIDs[ ii ], ObjectData{ ii, false } );
-      }
-      nObjects = allObjectIDs.size();
-   } else {
-      for( dip::uint ii = 0; ii < objectIDs.size(); ++ii ) {
-         objectIdList.emplace( objectIDs[ ii ], ObjectData{ ii, false } );
-      }
-      nObjects = objectIDs.size();
+   objectIdList.reserve( ids.size() * 2 );
+   for( dip::uint ii = 0; ii < ids.size(); ++ii ) {
+      objectIdList.emplace( ids[ ii ], ObjectData{ ii, false } );
    }
+   dip::uint nObjects = ids.size();
 
    // Get the chain code for each label
    ChainCodeArray ccArray;
@@ -189,9 +182,11 @@ ChainCode GetSingleChainCode(
    VertexInteger coord = { static_cast< dip::sint >( startCoord[ 0 ] ), static_cast< dip::sint >( startCoord[ 1 ] ) };
    VertexInteger dims = { static_cast< dip::sint >( labels.Size( 0 ) - 1 ), static_cast< dip::sint >( labels.Size( 1 ) - 1 ) };
    ChainCode cc;
-   DIP_OVL_CALL_ASSIGN_UNSIGNED( cc,
-                                 GetOneChainCode, ( data, coord, dims, connectivity, codeTable ),
-                                 labels.DataType() );
+   DataType dtype = labels.DataType();
+   if( dtype.IsBinary() ) {
+      dtype = DT_UINT8;  // same memory layout
+   }
+   DIP_OVL_CALL_ASSIGN_UINT( cc, GetOneChainCode, ( data, coord, dims, connectivity, codeTable ), dtype );
    return cc;
 }
 

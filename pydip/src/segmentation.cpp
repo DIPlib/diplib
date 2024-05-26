@@ -154,8 +154,12 @@ void init_segmentation( py::module& m ) {
           "binary"_a, "connectivity"_a = 0, "minSize"_a = 0, "maxSize"_a = 0, "boundaryCondition"_a = dip::StringArray{}, "mode"_a = dip::S::ALL );
    m.def( "Label", py::overload_cast< dip::Image const&, dip::Image&, dip::uint, dip::uint, dip::uint, dip::StringArray, dip::String const& >( &dip::Label ),
           "binary"_a, py::kw_only(), "out"_a, "connectivity"_a = 0, "minSize"_a = 0, "maxSize"_a = 0, "boundaryCondition"_a = dip::StringArray{}, "mode"_a = dip::S::ALL );
-   m.def( "GetObjectLabels", py::overload_cast< dip::Image const&, dip::Image const&, dip::String const& >( &dip::GetObjectLabels ),
+   m.def( "ListObjectLabels", py::overload_cast< dip::Image const&, dip::Image const&, dip::String const& >( &dip::ListObjectLabels ),
           "label"_a, "mask"_a = dip::Image{}, "background"_a = dip::S::EXCLUDE );
+   m.def( "GetObjectLabels", []( dip::Image const &label, dip::Image const &mask, dip::String const &background ) {
+          PyErr_WarnEx( PyExc_DeprecationWarning, "`GetObjectLabels()` is deprecated, use `ListObjectLabels() instead`.", 1 );
+          return dip::ListObjectLabels( label, mask, background );
+   }, "label"_a, "mask"_a = dip::Image{}, "background"_a = dip::S::EXCLUDE );
    m.def( "Relabel", py::overload_cast< dip::Image const& >( &dip::Relabel ),
           "label"_a );
    m.def( "Relabel", py::overload_cast< dip::Image const&, dip::Image& >( &dip::Relabel ),
@@ -192,7 +196,7 @@ void init_segmentation( py::module& m ) {
           "label"_a, "mode"_a = dip::S::FILLED );
    m.def( "MakeRegionsConvex2D", py::overload_cast< dip::Image const&, dip::Image&, dip::String const& >( &dip::MakeRegionsConvex2D ),
           "label"_a, py::kw_only(), "out"_a, "mode"_a = dip::S::FILLED );
-   m.def( "GetLabelBoundingBox", &dip::GetLabelBoundingBox,
+   m.def( "GetLabelBoundingBox", py::overload_cast< dip::Image const&, dip::LabelType >( &dip::GetLabelBoundingBox ),
           "label"_a, "objectID"_a );
    m.def( "RegionAdjacencyGraph", py::overload_cast< dip::Image const&, dip::String const& >( &dip::RegionAdjacencyGraph ),
           "label"_a, "mode"_a = "touching" );

@@ -19,6 +19,7 @@
 #define DIP_REGIONS_H
 
 #include <utility>
+#include <vector>
 
 #include "diplib.h"
 #include "diplib/neighborlist.h"
@@ -94,23 +95,49 @@ DIP_NODISCARD inline Image Label(
 ///
 /// If `background` is `"include"`, the label ID 0 will be included in the result if present in the image.
 /// Otherwise, `background` is `"exclude"`, and the label ID 0 will be ignored.
-DIP_EXPORT UnsignedArray GetObjectLabels(
+DIP_NODISCARD DIP_EXPORT std::vector< LabelType > ListObjectLabels(
       Image const& label,
       Image const& mask = {},
       String const& background = S::EXCLUDE
 );
+DIP_NODISCARD inline std::vector< LabelType > ListObjectLabels(
+      Image::View const& label,
+      String const& background = S::EXCLUDE
+) {
+   if( label.Offsets().empty() ) {
+      // This code works if either the view is regular or has a mask.
+      return ListObjectLabels( label.Reference(), label.Mask(), background );
+   }
+   // When the view uses indices, we copy the data over to a new image, it's not worth while writing separate code for this case.
+   return ListObjectLabels( Image( label ), {}, background );
+}
+
+[[ deprecated( "Use dip::ListObjectLabels instead." ) ]]
+DIP_NODISCARD inline UnsignedArray GetObjectLabels(
+      Image const& label,
+      Image const& mask = {},
+      String const& background = S::EXCLUDE
+) {
+   auto labels = ListObjectLabels( label, mask, background );
+   UnsignedArray out( labels.size() );
+   std::copy( labels.begin(), labels.end(), out.begin() );
+   return out;
+}
+[[ deprecated( "Use dip::ListObjectLabels instead." ) ]]
 DIP_NODISCARD inline UnsignedArray GetObjectLabels(
       Image::View const& label,
       String const& background = S::EXCLUDE
 ) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations" // GCC warns that we're using a deprecated function here. Duh!
    if( label.Offsets().empty() ) {
       // This code works if either the view is regular or has a mask.
       return GetObjectLabels( label.Reference(), label.Mask(), background );
    }
    // When the view uses indices, we copy the data over to a new image, it's not worth while writing separate code for this case.
    return GetObjectLabels( Image( label ), {}, background );
+#pragma GCC diagnostic pop
 }
-
 
 /// \brief Re-assigns labels to objects in a labeled image, such that all labels are consecutive.
 ///
@@ -345,8 +372,15 @@ DIP_NODISCARD inline Image MakeRegionsConvex2D(
 /// features \ref size_features_Minimum and \ref size_features_Maximum.
 RangeArray DIP_EXPORT GetLabelBoundingBox(
       Image const& label,
-      dip::uint objectID
+      LabelType objectID
 );
+[[ deprecated( "objectID as dip::uint is deprecated, it must be LabelType." ) ]]
+inline RangeArray GetLabelBoundingBox(
+      Image const& label,
+      dip::uint objectID
+) {
+   return GetLabelBoundingBox( label, CastLabelType( objectID ));
+}
 
 /// \brief Construct a graph for the given labeled image.
 ///

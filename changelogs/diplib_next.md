@@ -82,6 +82,33 @@ title: "Changes DIPlib 3.x.x"
 
 - `dip::EstimateNoiseVariance()` uses a potentially more precise threshold internally to exclude edges.
 
+- Made more consistent use of `dip::LabelType`, and we're no longer accepting any label (or object ID) with a value
+  that doesn't fit in that type. *DIPlib* has always produced labeled images of this type, but it accepts any
+  unsigned integer image as a label image. Both internally and in the API, sometimes we used `dip::LabelType`
+  (32-bit unsigned integer), and sometimes we used `dip::uint` (system-dependent size integer, usually 64-bit).
+  We now consistently use `dip::LabelType` everywhere:
+
+    - If the input labeled image is of type `uint64`, any pixel value outside the `dip::LabelType` range will cause
+      an exception to the thrown. This is true for the measurement functionality and the functions in `regions.h`.
+
+    - Added a version of `dip::Measurement::SetObjectIDs()` that takes a `std::vector< dip::LabelType >` as input.
+
+    - `dip::ListObjectLabels()` is identical to the deprecated `dip::GetObjectLabels()`, but it returns a
+      `std::vector< dip::LabelType >` instead of a `dip::UnsignedArray`. `dip::GetObjectLabels()` is deprecated.
+
+    - Added `dip::CastLabelType()`, which can be called with any unsigned integer as input, and the same value
+      as a `dip::LabelType`. If the value is too large to fit in that type, an exception is thrown.
+
+    - `dip::GetLabelBoundingBox()` with a `dip::uint` for the `objectID` parameter is deprecated,
+      it now needs to be a `dip::LabelType`.
+
+    - `dip::GetImageChainCodes()` with a `dip::UnsignedArray` for the `objectIDs` parameter is deprecated,
+      it now needs to be a `std::vector< dip::LabelType >`.
+
+    - `dip::ChainCode::objectID` is now of type `dip::LabelType`, was `dip::uint`.
+
+    - The measurement functions and data structures still use `dip::uint` for object IDs.
+
 - Minimum required version of *CMake* is now 3.12.
 
 ### Bug fixes

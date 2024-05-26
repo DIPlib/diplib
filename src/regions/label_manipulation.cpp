@@ -18,6 +18,7 @@
 #include "diplib/regions.h"
 
 #include <algorithm>
+#include <limits>
 #include <map>
 #include <memory>
 #include <set>
@@ -36,7 +37,7 @@
 
 namespace dip {
 
-using LabelSet = tsl::robin_set< dip::uint >;
+using LabelSet = tsl::robin_set< LabelType >;
 
 namespace {
 
@@ -51,12 +52,12 @@ class GetLabelsLineFilter: public Framework::ScanLineFilter {
          if( params.inBuffer.size() > 1 ) {
             bin* mask = static_cast< bin* >( params.inBuffer[ 1 ].buffer );
             dip::sint mask_stride = params.inBuffer[ 1 ].stride;
-            dip::uint prevID = 0;
+            LabelType prevID = 0;
             bool setPrevID = false;
             for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
                if( *mask ) {
                   if( !setPrevID || ( *data != prevID ) ) {
-                     prevID = static_cast< dip::uint >( *data );
+                     prevID = CastLabelType( *data );
                      setPrevID = true;
                      objectIDs_.insert( prevID );
                   }
@@ -65,10 +66,10 @@ class GetLabelsLineFilter: public Framework::ScanLineFilter {
                mask += mask_stride;
             }
          } else {
-            dip::uint prevID = static_cast< dip::uint >( *data ) + 1; // something that's different from the first pixel value
+            LabelType prevID = CastLabelType( *data ) + 1; // something that's different from the first pixel value
             for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
                if( *data != prevID ) {
-                  prevID = static_cast< dip::uint >( *data );
+                  prevID = CastLabelType( *data );
                   objectIDs_.insert( prevID );
                }
                data += stride;
@@ -82,7 +83,7 @@ class GetLabelsLineFilter: public Framework::ScanLineFilter {
 
 } // namespace
 
-UnsignedArray GetObjectLabels(
+std::vector< LabelType > ListObjectLabels(
       Image const& label,
       Image const& mask,
       String const& background
@@ -112,12 +113,8 @@ UnsignedArray GetObjectLabels(
    }
 
    // Copy the labels to output array
-   UnsignedArray out( objectIDs.size() );
-   dip::uint count = 0;
-   for( auto id : objectIDs ) {
-      out[ count ] = id;
-      ++count;
-   }
+   std::vector< LabelType > out( objectIDs.size() );
+   std::copy( objectIDs.begin(), objectIDs.end(), out.begin() );
 
    // Our set is unordered, we now need to sort the list of objects
    std::sort( out.begin(), out.end() );
@@ -443,7 +440,7 @@ namespace {
 template< typename TPI >
 RangeArray GetLabelBoundingBoxInternal(
       Image const& label,
-      dip::uint objectID
+      LabelType objectID
 ) {
    DIP_ASSERT( label.DataType() == DataType( TPI( 0 )));
    dip::uint nDims = label.Dimensionality();
@@ -474,7 +471,7 @@ RangeArray GetLabelBoundingBoxInternal(
 
 RangeArray GetLabelBoundingBox(
       Image const& label,
-      dip::uint objectID
+      LabelType objectID
 ) {
    DIP_THROW_IF( !label.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !label.IsScalar(), E::IMAGE_NOT_SCALAR );

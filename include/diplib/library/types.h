@@ -123,6 +123,21 @@ using dcomplex = std::complex< dfloat >;
 /// Type currently used for all labeled images, see \ref dip::DT_LABEL.
 using LabelType = uint32;
 
+/// Casting any unsigned integer type to \ref LabelType. Throws if `value` is too large.
+template< typename TPI, std::enable_if_t< std::numeric_limits< TPI >::is_integer &&
+                                          !std::numeric_limits< TPI >::is_signed &&
+                                          ( std::numeric_limits< TPI >::max() <= std::numeric_limits< LabelType >::max() ), int > = 0 >
+LabelType CastLabelType( TPI label ) {
+   return label;
+}
+template< typename TPI, std::enable_if_t< std::numeric_limits< TPI >::is_integer &&
+                                          !std::numeric_limits< TPI >::is_signed &&
+                                          ( std::numeric_limits< TPI >::max() > std::numeric_limits< LabelType >::max() ), int > = 0 >
+LabelType CastLabelType( TPI label ) {
+   DIP_THROW_IF( label > std::numeric_limits< LabelType >::max(), E::LABEL_OUT_OF_RANGE );
+   return static_cast< LabelType >( label );
+}
+
 namespace detail {
 
 template< typename T > struct IsSampleType { static constexpr bool value = false; };

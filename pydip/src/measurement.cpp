@@ -487,7 +487,8 @@ void init_measurement( py::module& m ) {
    chain.def( "Offset", &dip::ChainCode::Offset );
 
    // Chain code functions
-   m.def( "GetImageChainCodes", &dip::GetImageChainCodes, "labels"_a, "objectIDs"_a = dip::UnsignedArray{}, "connectivity"_a = 2 );
+   m.def( "GetImageChainCodes", py::overload_cast< dip::Image const&, std::vector< dip::LabelType > const&, dip::uint >( &dip::GetImageChainCodes ),
+          "labels"_a, "objectIDs"_a = dip::UnsignedArray{}, "connectivity"_a = 2 );
    m.def( "GetSingleChainCode", &dip::GetSingleChainCode, "labels"_a, "startCoord"_a, "connectivity"_a = 2 );
 
    // dip::CovarianceMatrix::EllipseParameters

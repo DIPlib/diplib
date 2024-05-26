@@ -191,8 +191,12 @@ Measurement MeasurementTool::Measure(
    Measurement measurement;
 
    // Fill out the object IDs
+   std::vector< LabelType > labelList;
    if( objectIDs.empty() ) {
-      measurement.SetObjectIDs( GetObjectLabels( label, Image{}, S::EXCLUDE ));
+      labelList = ListObjectLabels( label, Image{}, S::EXCLUDE );
+      UnsignedArray ids( labelList.size() );
+      std::copy( labelList.begin(), labelList.end(), ids.begin() );
+      measurement.SetObjectIDs( ids );
    } else {
       measurement.SetObjectIDs( objectIDs );
    }
@@ -300,7 +304,12 @@ Measurement MeasurementTool::Measure(
 
    // Let the chaincode based functions do their work
    if( doChaincodeBased || doPolygonBased || doConvHullBased ) {
-      ChainCodeArray chainCodeArray = GetImageChainCodes( label, measurement.Objects(), connectivity );
+      if( labelList.empty() ) {
+         auto const& ids = measurement.Objects();
+         labelList.resize( ids.size() );
+         std::copy( ids.begin(), ids.end(), labelList.begin() );
+      }
+      ChainCodeArray chainCodeArray = GetImageChainCodes( label, labelList, connectivity );
       auto itCC = chainCodeArray.begin();
       auto itObj = measurement.FirstObject(); // these two arrays are ordered the same way
       do {

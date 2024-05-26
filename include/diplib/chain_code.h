@@ -870,7 +870,7 @@ struct DIP_NO_EXPORT ChainCode {
 
    std::vector< Code > codes;       ///< The chain codes
    VertexInteger start = { -1, -1 };///< The coordinates of the start pixel, the default value is outside the image to indicate there's no chain code here
-   dip::uint objectID = 0;          ///< The label of the object from which this chain code is taken
+   LabelType objectID = 0;          ///< The label of the object from which this chain code is taken
    bool is8connected = true;        ///< Is false when connectivity = 1, true when connectivity = 2
 
    /// Adds a code to the end of the chain.
@@ -1010,9 +1010,19 @@ using ChainCodeArray = std::vector< ChainCode >;
 /// `labels` is a labeled image, and must be scalar and of an unsigned integer type.
 ChainCodeArray DIP_EXPORT GetImageChainCodes(
       Image const& labels,
-      UnsignedArray const& objectIDs = {},
+      std::vector< LabelType > const& objectIDs = {},
       dip::uint connectivity = 2
 );
+[[ deprecated( "objectIDs should be a std::vector< LabelType >." ) ]]
+inline ChainCodeArray GetImageChainCodes(
+      Image const& labels,
+      UnsignedArray const& objectIDs = {},
+      dip::uint connectivity = 2
+) {
+   std::vector< LabelType > ids( objectIDs.size() );
+   std::transform( objectIDs.begin(), objectIDs.end(), ids.begin(), []( dip::uint v ){ return CastLabelType( v ); } );
+   return GetImageChainCodes( labels, ids, connectivity );
+}
 
 /// \brief Returns the chain codes sequence that encodes the contour of one object in a binary or labeled image.
 ///

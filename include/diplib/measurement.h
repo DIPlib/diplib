@@ -458,7 +458,7 @@ class DIP_NO_EXPORT Measurement {
          }
       }
 
-      /// \brief Replaces existing objectID array with a new one. The `Measurement` object must be raw.
+      /// \brief Replaces all object IDs with a new list. The `Measurement` object must be raw.
       void SetObjectIDs( UnsignedArray objectIDs ) {
          DIP_THROW_IF( IsForged(), E::MEASUREMENT_NOT_RAW );
          dip::uint index = 0;
@@ -469,6 +469,20 @@ class DIP_NO_EXPORT Measurement {
             objectIndices_.emplace( objectID, index++ );
          }
          objects_.swap( objectIDs );
+      }
+
+      /// \brief Replaces all object IDs with a new list. The `Measurement` object must be raw.
+      void SetObjectIDs( std::vector< LabelType > const& objectIDs ) {
+         DIP_THROW_IF( IsForged(), E::MEASUREMENT_NOT_RAW );
+         dip::uint index = 0;
+         objectIndices_.clear();
+         objectIndices_.reserve( objectIDs.size() );
+         for( auto const& objectID : objectIDs ) {
+            DIP_THROW_IF( ObjectExists( objectID ), "Object already present: " + std::to_string( objectID ));
+            objectIndices_.emplace( objectID, index++ );
+         }
+         objects_.resize( objectIDs.size() );
+         std::copy( objectIDs.begin(), objectIDs.end(), objects_.begin() );
       }
 
       /// \brief Adds an object ID to a raw `Measurement` object.

@@ -242,7 +242,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing dip::LabelMap::Apply") {
    for( dip::uint8 ii = 0; ii < 10; ++ii, ++ptr ) {
       *ptr = ii;
    }
-   auto list = dip::GetObjectLabels( labels );
+   auto list = dip::ListObjectLabels( labels );
    dip::LabelMap map( list );
    map[ 1 ] = 0;
    map.Relabel();

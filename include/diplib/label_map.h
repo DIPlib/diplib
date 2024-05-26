@@ -17,6 +17,7 @@
 #ifndef DIP_LABEL_MAP_H
 #define DIP_LABEL_MAP_H
 
+#include <limits>
 #include <vector>
 
 #include "diplib.h"
@@ -32,7 +33,6 @@ namespace dip {
 
 
 /// \addtogroup regions
-
 
 /// \brief Represents a set of labels (object IDs), and maps them to new ones.
 ///
@@ -52,7 +52,7 @@ class DIP_NO_EXPORT LabelMap {
 
       /// \brief Construct a map that maps `objectIDs` to themselves.
       explicit LabelMap( std::vector< LabelType > const& labels ) {
-         map_.reserve( labels.size() * 2 );  // Most efficient when load factor is < 0.5
+         map_.reserve( static_cast< dip::uint >( labels.size() ) * 2 );  // Most efficient when load factor is < 0.5
          for( LabelType lab : labels ) {
             map_.insert( { lab, lab } );
          }
@@ -62,7 +62,7 @@ class DIP_NO_EXPORT LabelMap {
       explicit LabelMap( std::vector< dip::uint > const& labels ) {
          map_.reserve( labels.size() * 2 );  // Most efficient when load factor is < 0.5
          for( dip::uint lab : labels ) {
-            LabelType l = clamp_cast< LabelType >( lab );
+            LabelType l = CastLabelType( lab );
             map_.insert( { l, l } );
          }
       };
@@ -74,7 +74,7 @@ class DIP_NO_EXPORT LabelMap {
       explicit LabelMap( UnsignedArray const& labels ) {
          map_.reserve( labels.size() * 2 );  // Most efficient when load factor is < 0.5
          for( dip::uint lab : labels ) {
-            LabelType l = clamp_cast< LabelType >( lab );
+            LabelType l = CastLabelType( lab );
             map_.insert( { l, l } );
          }
       };
@@ -83,17 +83,16 @@ class DIP_NO_EXPORT LabelMap {
       /// before converting to a `LabelMap`.
       template< typename IndexType_, typename ValueType_, typename UnionFunction_ >
       explicit LabelMap( UnionFind< IndexType_, ValueType_, UnionFunction_ > const& labels ) {
-         dip::uint nLabels = labels.Size();
-         map_.reserve( nLabels * 2 );  // Most efficient when load factor is < 0.5
-         for( dip::uint lab = 1; lab < nLabels; ++lab ) {
-            LabelType l = clamp_cast< LabelType >( lab );
-            map_.insert( { l, labels.Label( l ) } );
+         LabelType nLabels = CastLabelType( labels.Size() );
+         map_.reserve( static_cast< dip::uint >( nLabels ) * 2 );  // Most efficient when load factor is < 0.5
+         for( LabelType lab = 1; lab < nLabels; ++lab ) {
+            map_.insert( { lab, CastLabelType( labels.Label( lab )) } );
          }
       }
 
       /// \brief Construct a map that maps objectIDs 1 to `maxLabel` (inclusive) to themselves.
       explicit LabelMap( LabelType maxLabel ) {
-         map_.reserve( maxLabel * 2 );  // Most efficient when load factor is < 0.5
+         map_.reserve( static_cast< dip::uint >( maxLabel ) * 2 );  // Most efficient when load factor is < 0.5
          for( LabelType lab = 1; lab <= maxLabel; ++lab ) {
             map_.insert( { lab, lab } );
          }

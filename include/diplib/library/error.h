@@ -199,6 +199,7 @@ constexpr char const* CONNECTIVITY_NOT_SUPPORTED = "Connectivity is not supporte
 constexpr char const* ILLEGAL_CONNECTIVITY = "Illegal connectivity value";
 constexpr char const* ILLEGAL_FLAG_COMBINATION = "Illegal flag combination";
 constexpr char const* ITERATOR_HAS_NO_PROCDIM = "Iterator has no processing dimension";
+constexpr char const* LABEL_OUT_OF_RANGE = "Label value out of range";
 
 }
 
