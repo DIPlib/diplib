@@ -219,8 +219,11 @@ void init_segmentation( py::module& m ) {
    lmap.def( "Apply", py::overload_cast< dip::Image const& >( &dip::LabelMap::Apply, py::const_ ), "in"_a );
    lmap.def( "Apply", py::overload_cast< dip::Image const&, dip::Image& >( &dip::LabelMap::Apply, py::const_ ),
              "in"_a, py::kw_only(), "out"_a );
+   lmap.def( "Apply", py::overload_cast< dip::Measurement const& >( &dip::LabelMap::Apply, py::const_ ), "in"_a );
    lmap.def( "Negate", &dip::LabelMap::Negate );
    lmap.def( "Relabel", &dip::LabelMap::Relabel );
+   lmap.def( "Contains", &dip::LabelMap::Contains );
+   lmap.def( "Count", &dip::LabelMap::Count );
    lmap.def( "__getitem__", []( dip::LabelMap const& self, dip::LabelType label ) { return self[ label ]; } );
    lmap.def( "__setitem__", []( dip::LabelMap& self, dip::LabelType label, dip::LabelType target ) { self[ label ] = target; } );
    lmap.def( "__iand__", []( dip::LabelMap& self, dip::LabelMap const& rhs ) { self &= rhs; return self; }, py::is_operator() );
