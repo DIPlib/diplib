@@ -186,6 +186,11 @@ DOCTEST_TEST_CASE("[DIPlib] testing dip::LabelMap logical operations") {
    // OR =         [ 1 0 3 4 5 0 7 0 ]
    // XOR =        [ 1 0 3 4 0 0 7 0 ]
    // NOT =        [ 0 2 0 4 0 6 ]
+   DOCTEST_CHECK( labels.Size() == 6 );
+   DOCTEST_CHECK( labels.Count() == 3 );
+   DOCTEST_CHECK( moreLabels.Size() == 6 );
+   DOCTEST_CHECK( moreLabels.Count() == 3 );
+
    auto AND = labels & moreLabels;
    DOCTEST_CHECK( AND[ 1 ] == 0 );
    DOCTEST_CHECK( AND[ 2 ] == 0 );
@@ -195,6 +200,9 @@ DOCTEST_TEST_CASE("[DIPlib] testing dip::LabelMap logical operations") {
    DOCTEST_CHECK( AND[ 6 ] == 0 );
    DOCTEST_CHECK( AND[ 7 ] == 0 );
    DOCTEST_CHECK( AND[ 8 ] == 0 );
+   DOCTEST_CHECK( AND.Size() == 8 );
+   DOCTEST_CHECK( AND.Count() == 1 );
+
    auto OR = labels | moreLabels;
    DOCTEST_CHECK( OR[ 1 ] == 1 );
    DOCTEST_CHECK( OR[ 2 ] == 0 );
@@ -204,6 +212,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing dip::LabelMap logical operations") {
    DOCTEST_CHECK( OR[ 6 ] == 0 );
    DOCTEST_CHECK( OR[ 7 ] == 7 );
    DOCTEST_CHECK( OR[ 8 ] == 0 );
+
    auto XOR = labels ^ moreLabels;
    DOCTEST_CHECK( XOR[ 1 ] == 1 );
    DOCTEST_CHECK( XOR[ 2 ] == 0 );
@@ -213,6 +222,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing dip::LabelMap logical operations") {
    DOCTEST_CHECK( XOR[ 6 ] == 0 );
    DOCTEST_CHECK( XOR[ 7 ] == 7 );
    DOCTEST_CHECK( XOR[ 8 ] == 0 );
+
    auto NOT = ~labels;
    DOCTEST_CHECK( NOT[ 1 ] == 0 );
    DOCTEST_CHECK( NOT[ 2 ] == 2 );
@@ -220,6 +230,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing dip::LabelMap logical operations") {
    DOCTEST_CHECK( NOT[ 4 ] == 4 );
    DOCTEST_CHECK( NOT[ 5 ] == 0 );
    DOCTEST_CHECK( NOT[ 6 ] == 6 );
+
    labels.Negate();
    DOCTEST_CHECK( labels[ 1 ] == 0 );
    DOCTEST_CHECK( labels[ 2 ] == 2 );
@@ -227,6 +238,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing dip::LabelMap logical operations") {
    DOCTEST_CHECK( labels[ 4 ] == 4 );
    DOCTEST_CHECK( labels[ 5 ] == 0 );
    DOCTEST_CHECK( labels[ 6 ] == 6 );
+
    labels.Relabel();
    DOCTEST_CHECK( labels[ 1 ] == 0 );
    DOCTEST_CHECK( labels[ 2 ] == 1 );
@@ -239,10 +251,13 @@ DOCTEST_TEST_CASE("[DIPlib] testing dip::LabelMap logical operations") {
    DOCTEST_CHECK( labels.Contains( 6 ));
    DOCTEST_CHECK( !labels.Contains( 7 ));
    DOCTEST_CHECK( labels[ 7 ] == 7 );
+   DOCTEST_CHECK( labels.Contains( 7 ));
    auto const& ref = labels;
    DOCTEST_CHECK( ref[ 9 ] == 9 );
    labels.DestroyUnknownLabels();
+   DOCTEST_CHECK( !labels.Contains( 8 ));
    DOCTEST_CHECK( labels[ 8 ] == 0 );
+   DOCTEST_CHECK( labels.Contains( 8 ));
    auto const& ref2 = labels;
    DOCTEST_CHECK( ref2[ 9 ] == 0 );
 }

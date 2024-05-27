@@ -17,7 +17,6 @@
 #ifndef DIP_LABEL_MAP_H
 #define DIP_LABEL_MAP_H
 
-#include <limits>
 #include <vector>
 
 #include "diplib.h"
@@ -108,7 +107,7 @@ class DIP_NO_EXPORT LabelMap {
          preserveUnknownLabels_ = true;
       }
 
-      /// \brief Returns the number of labels known.
+      /// \brief Returns the number of labels known (i.e. explicitly listed in the mapping). See also \ref Count.
       dip::uint Size() const {
          return map_.size();
       }
@@ -178,8 +177,20 @@ class DIP_NO_EXPORT LabelMap {
          return preserveUnknownLabels_ ? label : 0;
       }
 
+      /// \brief Checks to see if `label` is known (i.e. explicitly listed with a mapping).
       bool Contains( LabelType label ) const {
          return map_.count( label ) > 0;
+      }
+
+      /// \brief Counts how many labels have a non-zero mapping (i.e. how many objects are selected). See also \ref Size.
+      dip::uint Count() const {
+         dip::uint count = 0;
+         for( auto const& pair : map_ ) {
+            if( pair.second != 0 ) {
+               ++count;
+            }
+         }
+         return count;
       }
 
    private:
