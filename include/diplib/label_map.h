@@ -30,6 +30,7 @@
 
 namespace dip {
 
+class Measurement; // Defined in "diplib/measurement.h"
 
 /// \addtogroup regions
 
@@ -117,11 +118,20 @@ class DIP_NO_EXPORT LabelMap {
       /// `in` must be a label image (scalar, of an unsigned integer type). Out will be
       /// identical, but of type \ref DT_LABEL.
       DIP_EXPORT void Apply( Image const& in, Image& out ) const;
-      Image Apply( Image const& in ) const {
+      DIP_NODISCARD Image Apply( Image const& in ) const {
          Image out;
          Apply( in, out );
          return out;
       }
+
+      /// \brief Applies the label map to measurement data.
+      ///
+      /// Filters out objects (rows), and changes the object IDs for the remaining objects.
+      ///
+      /// Note that the mapping can map multiple objects to the same ID. In this case, the output
+      /// measurement data will contain only the measurements for the last object that mapped to
+      /// any given ID.
+      DIP_NODISCARD DIP_EXPORT Measurement Apply( Measurement const& in ) const;
 
       /// \brief Combines `*this` and `other` using logical AND.
       ///

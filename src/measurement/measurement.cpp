@@ -709,6 +709,8 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Measurement" ) {
    // Check feature comparison
 
    auto map = msr1[ "Feature1" ] > 10;
+   DOCTEST_CHECK( map.Size() == 10 );
+   DOCTEST_CHECK( map.Count() == 6 );
    DOCTEST_CHECK( !map.Contains( 1 ));
    DOCTEST_CHECK( map.Contains( 10 ));
    DOCTEST_CHECK( !map.Contains( 20 ));
@@ -717,6 +719,24 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Measurement" ) {
    DOCTEST_CHECK( map[ 14 ] == 14 );
    DOCTEST_CHECK( map[ 19 ] == 19 );
 
+   // Check LabelMap::Apply for measurement object
+
+   auto msr4 = map.Apply( msr1 );
+   DOCTEST_CHECK( msr4.NumberOfObjects() == 6 );
+   DOCTEST_CHECK( !msr4.ObjectExists( 10 ) );
+   DOCTEST_CHECK( !msr4.ObjectExists( 13 ) );
+   DOCTEST_CHECK( msr4.ObjectExists( 14 ) );
+   DOCTEST_CHECK( msr4.ObjectExists( 19 ) );
+
+   map.Relabel();
+   msr4 = map.Apply( msr1 );
+   DOCTEST_CHECK( msr4.NumberOfObjects() == 6 );
+   DOCTEST_CHECK( !msr4.ObjectExists( 0 ) );
+   DOCTEST_CHECK( msr4.ObjectExists( 1 ) );
+   DOCTEST_CHECK( msr4.ObjectExists( 6 ) );
+   DOCTEST_CHECK( !msr4.ObjectExists( 7 ) );
+   DOCTEST_CHECK( !msr4.ObjectExists( 10 ) );
+   DOCTEST_CHECK( !msr4.ObjectExists( 19 ) );
 }
 
 #endif // DIP_CONFIG_ENABLE_DOCTEST

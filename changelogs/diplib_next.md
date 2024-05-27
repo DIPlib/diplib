@@ -27,7 +27,9 @@ title: "Changes DIPlib 3.x.x"
 - Added `dip::Histogram::OptimalConfiguration()` and `OptimalConfigurationWithFullRange()`, which make it possible
   to configure the histogram to use the Freedman--Diaconis rule to choose the bin size.
 
-- Added `dip::LabelMap`, a class that holds labels (object IDs) and can map them to new values.
+- Added `dip::LabelMap`, a class that holds labels (object IDs) and can map them to new values. The mapping can be
+  applied to a labeled image or to a `dip::Measurement` object. You can also index into a `dip::Measurement`
+  object with a `dip::LabelMap`.
 
 - Added comparison operators for `dip::Measurement::IteratorFeature`. They return a `dip::LabelMap`.
 

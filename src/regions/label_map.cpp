@@ -20,6 +20,7 @@
 
 #include "diplib.h"
 #include "diplib/framework.h"
+#include "diplib/measurement.h"
 #include "diplib/overload.h"
 #include "diplib/private/robin_map.h"
 #include "diplib/private/robin_set.h"
@@ -74,6 +75,46 @@ void LabelMap::Apply( Image const& in, Image& out ) const {
    DIP_OVL_NEW_UINT( scanLineFilter, LabelMapApplyLineFilter, ( *this ), in.DataType() );
    ImageRefArray outar{ out };
    Framework::Scan( { in }, outar, { in.DataType() }, { DT_LABEL }, { DT_LABEL }, { 1 }, *scanLineFilter );
+}
+
+Measurement LabelMap::Apply( Measurement const& in ) const {
+   DIP_THROW_IF( !in.IsForged(), E::MEASUREMENT_NOT_FORGED );
+   // Code here to create a new measurement object is similar to that in dip::MeasurementTool::Measure().
+   Measurement out;
+   // Fill out the object IDs
+   tsl::robin_set< dip::uint > ids; // Using a set to avoid any duplicate IDs
+   ids.reserve( in.NumberOfObjects() * 2 );
+   for( auto id : in.Objects() ) {
+      auto out_id = ( *this )[ CastLabelType( id ) ];
+      if( out_id != 0 ) {
+         ids.insert(  out_id );
+      }
+   }
+   UnsignedArray objects( ids.size() );
+   std::copy( ids.begin(), ids.end(), objects.begin() );
+   std::sort( objects.begin(), objects.end() ); // not important, but nice
+   out.SetObjectIDs( objects );
+   // Copy over all the feature information
+   std::vector< Measurement::FeatureInformation > const& features = in.Features();
+   for( dip::uint ii = 0; ii < features.size(); ++ii ) {
+      out.AddFeature( features[ ii ].name, in.Values( features[ ii ].name ) );
+   }
+   // Allocate memory for all features and objects
+   out.Forge();
+   if( out.NumberOfObjects() == 0 ) {
+      return out;
+   }
+   // Copy over the data
+   dip::uint nValues = out.NumberOfValues();
+   auto in_it = in.FirstObject();
+   do {
+      auto out_id = ( *this )[ CastLabelType( in_it.ObjectID() ) ];
+      if( out_id != 0 ) {
+         // If multiple objects map to the same ID, this overwrites previous data, only the last object mapped to this ID remains.
+         std::copy_n( in_it.Data(), nValues, out[ out_id ].Data() );
+      }
+   } while( ++in_it );
+   return out;
 }
 
 LabelMap& LabelMap::operator&=( LabelMap const& rhs ) {
@@ -262,7 +303,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing dip::LabelMap logical operations") {
    DOCTEST_CHECK( ref2[ 9 ] == 0 );
 }
 
-DOCTEST_TEST_CASE("[DIPlib] testing dip::LabelMap::Apply") {
+DOCTEST_TEST_CASE("[DIPlib] testing dip::LabelMap::Apply for images") {
    dip::Image labels( { 10 }, 1, dip::DT_UINT8 );
    dip::uint8* ptr = static_cast< dip::uint8* >( labels.Origin() );
    for( dip::uint8 ii = 0; ii < 10; ++ii, ++ptr ) {

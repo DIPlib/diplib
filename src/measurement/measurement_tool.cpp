@@ -364,7 +364,7 @@ Measurement MeasurementTool::Measure(
 #include "doctest.h"
 #include "diplib/generation.h"
 
-DOCTEST_TEST_CASE( "[DIPlib] testing dip::Measurement" ) {
+DOCTEST_TEST_CASE( "[DIPlib] testing dip::MeasurementTool::Measure" ) {
    // A test image with a single circle
    dip::dfloat r = 22;
    dip::Image img = dip::CreateRadiusCoordinate( { 50, 50 } ) < r;
@@ -503,7 +503,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Measurement" ) {
    DOCTEST_CHECK( std::abs( msr_obj[ "GreyDimensionsEllipsoid" ][ 1 ] - 2 * r ) < 0.2 );
 
    // Repeat the above, but with a pixel size and scaling the gray values
-   img *= 2; // the object ID is not also 2!
+   img *= 2; // the object ID is now also 2!
    dip::dfloat ps = 0.21;
    img.SetPixelSize( ps * dip::Units::Micrometer() );
    msr = measurementTool.Measure( img, img, {

@@ -555,6 +555,11 @@ class DIP_NO_EXPORT Measurement {
          return { *this, startValue, numberValues };
       }
 
+      /// \brief Syntactic sugar for `map.Apply( *this )`. See \ref dip::LabelMap::Apply(dip::Measurement const&).
+      Measurement operator[]( LabelMap const& map ) const {
+         return map.Apply( *this );
+      }
+
       /// \brief A raw pointer to the data of the table. All values for one object are contiguous.
       /// The table must be forged.
       ValueType* Data() const {
