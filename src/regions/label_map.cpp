@@ -234,6 +234,17 @@ DOCTEST_TEST_CASE("[DIPlib] testing dip::LabelMap logical operations") {
    DOCTEST_CHECK( labels[ 4 ] == 2 );
    DOCTEST_CHECK( labels[ 5 ] == 0 );
    DOCTEST_CHECK( labels[ 6 ] == 3 );
+
+   DOCTEST_CHECK( labels.Contains( 1 ));
+   DOCTEST_CHECK( labels.Contains( 6 ));
+   DOCTEST_CHECK( !labels.Contains( 7 ));
+   DOCTEST_CHECK( labels[ 7 ] == 7 );
+   auto const& ref = labels;
+   DOCTEST_CHECK( ref[ 9 ] == 9 );
+   labels.DestroyUnknownLabels();
+   DOCTEST_CHECK( labels[ 8 ] == 0 );
+   auto const& ref2 = labels;
+   DOCTEST_CHECK( ref2[ 9 ] == 0 );
 }
 
 DOCTEST_TEST_CASE("[DIPlib] testing dip::LabelMap::Apply") {

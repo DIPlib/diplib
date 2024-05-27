@@ -163,7 +163,7 @@ class DIP_NO_EXPORT LabelMap {
       LabelType& operator[]( LabelType label ) {
          MapType::iterator it{};
          bool success{};
-         std::tie( it, success ) = map_.insert( { label, label } );
+         std::tie( it, success ) = map_.insert( { label, preserveUnknownLabels_ ? label : 0 } );
          // If `success`, then we just created a new entry. Either way, `it` points to `label`.
          return it.value();
       }
@@ -176,6 +176,10 @@ class DIP_NO_EXPORT LabelMap {
             return it.value();
          }
          return preserveUnknownLabels_ ? label : 0;
+      }
+
+      bool Contains( LabelType label ) const {
+         return map_.count( label ) > 0;
       }
 
    private:

@@ -27,6 +27,7 @@
 
 #include "diplib.h"
 #include "diplib/accumulators.h"
+#include "diplib/label_map.h"
 #include "diplib/private/robin_map.h"
 
 
@@ -1225,6 +1226,23 @@ DIP_EXPORT dip::uint ObjectMaximum( Measurement::IteratorFeature const& featureV
 
 // TODO: ObjectPercentile, ObjectMedian.
 
+/// \brief Selects objects where the first element of `featureValues` is equal to `value`.
+DIP_EXPORT LabelMap operator==( Measurement::IteratorFeature const& featureValues, Measurement::ValueType value );
+
+/// \brief Selects objects where the first element of `featureValues` is unequal to `value`.
+DIP_EXPORT LabelMap operator!=( Measurement::IteratorFeature const& featureValues, Measurement::ValueType value );
+
+/// \brief Selects objects where the first element of `featureValues` is greater than `value`.
+DIP_EXPORT LabelMap operator>( Measurement::IteratorFeature const& featureValues, Measurement::ValueType value );
+
+/// \brief Selects objects where the first element of `featureValues` is not smaller than `value`.
+DIP_EXPORT LabelMap operator>=( Measurement::IteratorFeature const& featureValues, Measurement::ValueType value );
+
+/// \brief Selects objects where the first element of `featureValues` is smaller than `value`.
+DIP_EXPORT LabelMap operator<( Measurement::IteratorFeature const& featureValues, Measurement::ValueType value );
+
+/// \brief Selects objects where the first element of `featureValues` is not greater than `value`.
+DIP_EXPORT LabelMap operator<=( Measurement::IteratorFeature const& featureValues, Measurement::ValueType value );
 
 /// \endgroup
 

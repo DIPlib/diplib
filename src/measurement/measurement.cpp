@@ -437,6 +437,48 @@ dip::uint ObjectMaximum( Measurement::IteratorFeature const& featureValues ) {
    return maxID;
 }
 
+namespace {
+
+template< typename ComparisonFunction >
+LabelMap ComparisonOperator( Measurement::IteratorFeature const& featureValues, ComparisonFunction comparisonFunction ) {
+   LabelMap output( featureValues.Objects() );
+   auto it = featureValues.FirstObject();
+   do {
+      if( !comparisonFunction( *it )) {
+         // The `LabelMap` constructor has already tested all the labels, no need to test again through `CastLabelType`.
+         output[ static_cast< LabelType >( it.ObjectID() ) ] = 0;
+      }
+   } while( ++it );
+   return output;
+}
+
+}
+
+LabelMap operator==( Measurement::IteratorFeature const& featureValues, Measurement::ValueType value ) {
+   return ComparisonOperator( featureValues, [ value ]( Measurement::ValueType in ){ return in == value; } );
+}
+
+LabelMap operator!=( Measurement::IteratorFeature const& featureValues, Measurement::ValueType value ) {
+   return ComparisonOperator( featureValues, [ value ]( Measurement::ValueType in ){ return in != value; } );
+}
+
+LabelMap operator>( Measurement::IteratorFeature const& featureValues, Measurement::ValueType value ) {
+   return ComparisonOperator( featureValues, [ value ]( Measurement::ValueType in ){ return in > value; } );
+}
+
+LabelMap operator>=( Measurement::IteratorFeature const& featureValues, Measurement::ValueType value ) {
+   return ComparisonOperator( featureValues, [ value ]( Measurement::ValueType in ){ return in >= value; } );
+}
+
+LabelMap operator<( Measurement::IteratorFeature const& featureValues, Measurement::ValueType value ) {
+   return ComparisonOperator( featureValues, [ value ]( Measurement::ValueType in ){ return in < value; } );
+}
+
+LabelMap operator<=( Measurement::IteratorFeature const& featureValues, Measurement::ValueType value ) {
+   return ComparisonOperator( featureValues, [ value ]( Measurement::ValueType in ){ return in <= value; } );
+}
+
+
 } // namespace dip
 
 
@@ -646,7 +688,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Measurement" ) {
    DOCTEST_CHECK_NOTHROW( msr3.Forge() );
 
    featIt = msr3.FirstFeature();
-   DOCTEST_CHECK( (bool)featIt );
+   DOCTEST_CHECK( static_cast< bool >( featIt ));
    while( featIt ) {
       itB = featIt.FirstObject();
       DOCTEST_CHECK( itB.IsAtEnd() );
@@ -663,6 +705,17 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Measurement" ) {
    DOCTEST_CHECK( featIt.NumberOfObjects() == 0 );
    ++featIt;
    DOCTEST_CHECK( featIt.IsAtEnd() );
+
+   // Check feature comparison
+
+   auto map = msr1[ "Feature1" ] > 10;
+   DOCTEST_CHECK( !map.Contains( 1 ));
+   DOCTEST_CHECK( map.Contains( 10 ));
+   DOCTEST_CHECK( !map.Contains( 20 ));
+   DOCTEST_CHECK( map[ 10 ] == 0 );
+   DOCTEST_CHECK( map[ 13 ] == 0 );
+   DOCTEST_CHECK( map[ 14 ] == 14 );
+   DOCTEST_CHECK( map[ 19 ] == 19 );
 
 }
 

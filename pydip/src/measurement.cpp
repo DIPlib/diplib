@@ -323,6 +323,12 @@ void init_measurement( py::module& m ) {
    feat.def( "ObjectExists", &dip::Measurement::IteratorFeature::ObjectExists );
    feat.def( "Objects", &dip::Measurement::IteratorFeature::Objects );
    feat.def( "NumberOfObjects", &dip::Measurement::IteratorFeature::NumberOfObjects );
+   feat.def( "__eq__", []( dip::Measurement::IteratorFeature const& lhs, dip::Measurement::ValueType rhs ) { return lhs == rhs; }, py::is_operator() );
+   feat.def( "__ne__", []( dip::Measurement::IteratorFeature const& lhs, dip::Measurement::ValueType rhs ) { return lhs != rhs; }, py::is_operator() );
+   feat.def( "__gt__", []( dip::Measurement::IteratorFeature const& lhs, dip::Measurement::ValueType rhs ) { return lhs > rhs; }, py::is_operator() );
+   feat.def( "__ge__", []( dip::Measurement::IteratorFeature const& lhs, dip::Measurement::ValueType rhs ) { return lhs >= rhs; }, py::is_operator() );
+   feat.def( "__lt__", []( dip::Measurement::IteratorFeature const& lhs, dip::Measurement::ValueType rhs ) { return lhs < rhs; }, py::is_operator() );
+   feat.def( "__le__", []( dip::Measurement::IteratorFeature const& lhs, dip::Measurement::ValueType rhs ) { return lhs <= rhs; }, py::is_operator() );
 
    // dip::Measurement::IteratorObject
    auto obj = py::class_< dip::Measurement::IteratorObject >(

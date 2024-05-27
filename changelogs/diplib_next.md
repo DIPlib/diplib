@@ -29,6 +29,8 @@ title: "Changes DIPlib 3.x.x"
 
 - Added `dip::LabelMap`, a class that holds labels (object IDs) and can map them to new values.
 
+- Added comparison operators for `dip::Measurement::IteratorFeature`. They return a `dip::LabelMap`.
+
 - Added `dip::UnionFind::Size()`.
 
 ### Changed functionality
