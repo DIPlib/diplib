@@ -192,10 +192,11 @@ void SmallObjectsRemove(
    } else if( in.DataType().IsUnsigned() ) {
       MeasurementTool msr;
       Measurement sizes = msr.Measure( in, {}, { "Size" }, {}, 1 );
-      // TODO: It would be more efficient to copy the ObjectToMeasurement function, and make a LUT that does all of the following in a single pass through the image.
-      Image tmp = ObjectToMeasurement( in, sizes[ "Size" ] );
-      tmp = tmp >= threshold;
-      MultiplySampleWise( in, tmp, out, in.DataType() );
+      if( !sizes.IsForged() ) {
+         return;
+      }
+      LabelMap selection = sizes[ "Size" ] >= static_cast< Measurement::ValueType >( threshold );
+      selection.Apply( in, out );
    } else {
       DIP_THROW( E::DATA_TYPE_NOT_SUPPORTED );
    }
