@@ -266,18 +266,26 @@ inline dip::FloatArray GetFloatArray( mxArray const* mx ) {
    DIP_THROW( "Floating-point array expected" );
 }
 
-/// \brief Convert a floating-point array for `mxArray` to `std::vector<dip::dfloat>` by copy.
-inline std::vector< dip::dfloat > GetStdVectorOfFloats( mxArray const* mx ) {
+/// \brief Convert a 1D real-valued numeric array from `mxArray` to `std::vector< T >` by copy.
+/// Data is cast as usual from doubles to the target type (see \ref dip::clamp_cast).
+template< typename T >
+inline std::vector< T > GetStdVector( mxArray const* mx ) {
    if( mxIsDouble( mx ) && !mxIsComplex( mx ) && IsVector( mx )) {
       dip::uint n = mxGetNumberOfElements( mx );
-      std::vector< dip::dfloat > out( n ); // Identical to dml::GetFloatArray except for this line...
+      std::vector< T > out( n ); // Identical to dml::GetFloatArray except for this line...
       double* data = mxGetPr( mx );
       for( dip::uint ii = 0; ii < n; ++ii ) {
-         out[ ii ] = data[ ii ];
+         out[ ii ] = dip::clamp_cast< T >( data[ ii ] );
       }
       return out;
    }
-   DIP_THROW( "Floating-point array expected" );
+   DIP_THROW( "Numeric array expected" );
+}
+
+/// \brief Convert a floating-point array from `mxArray` to `std::vector<dip::dfloat>` by copy.
+[[ deprecated( "Use GetStdVector<dip::dfloat> instead." ) ]]
+inline std::vector< dip::dfloat > GetStdVectorOfFloats( mxArray const* mx ) {
+   return GetStdVector< dip::dfloat >( mx );
 }
 
 /// \brief Convert an unsigned integer `mxArray` to a \ref dip::BooleanArray, where elements of the input are indices

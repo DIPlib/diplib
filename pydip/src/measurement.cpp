@@ -24,6 +24,7 @@
 #include "diplib/measurement.h"
 #include "diplib/accumulators.h"
 #include "diplib/chain_code.h"
+#include "diplib/label_map.h"
 
 namespace pybind11 {
 namespace detail {
@@ -287,6 +288,7 @@ void init_measurement( py::module& m ) {
              "objectID"_a, py::return_value_policy::reference_internal );
    meas.def( "__getitem__", py::overload_cast< dip::String const& >( &dip::Measurement::operator[], py::const_ ),
              "name"_a, py::return_value_policy::reference_internal );
+   meas.def( "__getitem__", py::overload_cast< dip::LabelMap const& >( &dip::Measurement::operator[], py::const_ ), "map"_a );
    meas.def( "FeatureValuesView", &dip::Measurement::FeatureValuesView, "startValue"_a, "numberValues"_a = 1,
              py::return_value_policy::reference_internal );
    meas.def( "FeatureExists", &dip::Measurement::FeatureExists );

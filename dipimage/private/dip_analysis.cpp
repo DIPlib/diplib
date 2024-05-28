@@ -68,7 +68,7 @@ void granulometry( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    if(( nrhs > 1) && !mxIsEmpty( prhs[ 1 ] ) && mxIsDouble( prhs[ 1 ] ) && dml::IsVector( prhs[ 1 ] )) {
       // Old-style params: in,scales,minimumFilterSize,maximumFilterSize,minimumZoom,maximumZoom,options,polarity
       DML_MAX_ARGS( 8 );
-      scales = dml::GetStdVectorOfFloats( prhs[ 1 ] );
+      scales = dml::GetStdVector< dip::dfloat >( prhs[ 1 ] );
       if( nrhs > 6 ) {
          options = dml::GetStringSet( prhs[ 6 ] ); // this one first, so we can add to it later.
       }
@@ -90,7 +90,7 @@ void granulometry( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       // New-style params: in,mask,scales,type,polarity,options
       DML_MAX_ARGS( 6 );
       if( nrhs > 1 ) { mask = dml::GetImage( prhs[ 1 ] ); }
-      if( nrhs > 2 ) { scales = dml::GetStdVectorOfFloats( prhs[ 2 ] ); }
+      if( nrhs > 2 ) { scales = dml::GetStdVector< dip::dfloat >( prhs[ 2 ] ); }
       if( nrhs > 3 ) { type = dml::GetString( prhs[ 3 ] ); }
       if( nrhs > 4 ) { polarity = GetPolarity( prhs[ 4 ] ); }
       if( nrhs > 5 ) { options = dml::GetStringSet( prhs[ 5 ] ); }

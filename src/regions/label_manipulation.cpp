@@ -18,17 +18,18 @@
 #include "diplib/regions.h"
 
 #include <algorithm>
-#include <limits>
 #include <map>
 #include <memory>
 #include <set>
 #include <utility>
+#include <vector>
 
 #include "diplib.h"
 #include "diplib/chain_code.h"
 #include "diplib/framework.h"
 #include "diplib/generation.h"
 #include "diplib/iterators.h"
+#include "diplib/label_map.h"
 #include "diplib/measurement.h"
 #include "diplib/neighborlist.h"
 #include "diplib/overload.h"

@@ -28,6 +28,7 @@
 
 #include "diplib.h"
 #include "diplib/accumulators.h"
+#include "diplib/label_map.h"
 #include "diplib/statistics.h"
 
 namespace dip {

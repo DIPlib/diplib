@@ -111,7 +111,7 @@ inline mxArray* GetArray( dip::ChainCode const& in ) {
 void traceobjects( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    DML_MAX_ARGS( 5 );
    dip::Image const in = dml::GetImage( prhs[ 0 ] );
-   dip::UnsignedArray objectIDs = nrhs > 1 ? dml::GetUnsignedArray( prhs[ 1 ] ) : dip::UnsignedArray{};
+   std::vector< dip::LabelType > objectIDs = nrhs > 1 ? dml::GetStdVector< dip::LabelType >( prhs[ 1 ] ) : std::vector< dip::LabelType >{};
    dip::uint connectivity = nrhs > 2 ? dml::GetUnsigned( prhs[ 2 ] ) : 2;
    dip::String output = nrhs > 3 ? dml::GetString( prhs[ 3 ] ) : "polygon";
    bool computePolygon = true;

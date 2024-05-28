@@ -17,6 +17,8 @@
 
 #include "diplib/chain_code.h"
 
+#include <vector>
+
 #include "diplib.h"
 #include "diplib/overload.h"
 #include "diplib/private/robin_map.h"
