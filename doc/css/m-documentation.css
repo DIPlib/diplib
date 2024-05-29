@@ -27,13 +27,6 @@ ul.m-doc li.m-doc-expansible > a:first-child, ul.m-doc li.m-doc-collapsible > a:
 .m-code.m-inverted.m-doc-include > a {
   text-decoration: none;
 }
-a.m-doc, a.m-doc-self {
-  font-weight: bold;
-}
-/* Make it possible to override the above */
-.m-thin a.m-doc, .m-thin a.m-doc-self {
-  font-weight: normal;
-}
 ul.m-doc li.m-doc-expansible > a:first-child,
 ul.m-doc li.m-doc-collapsible > a:first-child,
 ul.m-doc li.m-doc-expansible > a:first-child:hover,
