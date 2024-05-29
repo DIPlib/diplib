@@ -1150,6 +1150,7 @@ DIP_EXPORT void MeasurementWriteCSV(
 /// first value of the feature is used. For features with multiple values, select a value using the
 /// \ref dip::Measurement::IteratorFeature::Subset method, or pick a column in the `dip::Measurement` object
 /// directly using \ref dip::Measurement::FeatureValuesView.
+/// \relates Measurement::IteratorFeature
 DIP_EXPORT Measurement::ValueType Minimum( Measurement::IteratorFeature const& featureValues );
 
 /// \brief Returns the largest feature value in the first column of `featureValues`.
@@ -1158,6 +1159,7 @@ DIP_EXPORT Measurement::ValueType Minimum( Measurement::IteratorFeature const& f
 /// first value of the feature is used. For features with multiple values, select a value using the
 /// \ref dip::Measurement::IteratorFeature::Subset method, or pick a column in the `dip::Measurement` object
 /// directly using \ref dip::Measurement::FeatureValuesView.
+/// \relates Measurement::IteratorFeature
 DIP_EXPORT Measurement::ValueType Maximum( Measurement::IteratorFeature const& featureValues );
 
 /// \brief Returns the `percentile` feature value in the first column of `featureValues`.
@@ -1169,6 +1171,7 @@ DIP_EXPORT Measurement::ValueType Maximum( Measurement::IteratorFeature const& f
 /// first value of the feature is used. For features with multiple values, select a value using the
 /// \ref dip::Measurement::IteratorFeature::Subset method, or pick a column in the `dip::Measurement` object
 /// directly using \ref dip::Measurement::FeatureValuesView.
+/// \relates Measurement::IteratorFeature
 DIP_EXPORT Measurement::ValueType Percentile( Measurement::IteratorFeature const& featureValues, dfloat percentile );
 
 /// \brief Returns the median feature value in the first column of `featureValues`.
@@ -1177,6 +1180,7 @@ DIP_EXPORT Measurement::ValueType Percentile( Measurement::IteratorFeature const
 /// first value of the feature is used. For features with multiple values, select a value using the
 /// \ref dip::Measurement::IteratorFeature::Subset method, or pick a column in the `dip::Measurement` object
 /// directly using \ref dip::Measurement::FeatureValuesView.
+/// \relates Measurement::IteratorFeature
 inline dfloat Median( Measurement::IteratorFeature const& featureValues ) {
    return Percentile( featureValues, 50.0 );
 }
@@ -1187,6 +1191,7 @@ inline dfloat Median( Measurement::IteratorFeature const& featureValues ) {
 /// first value of the feature is used. For features with multiple values, select a value using the
 /// \ref dip::Measurement::IteratorFeature::Subset method, or pick a column in the `dip::Measurement` object
 /// directly using \ref dip::Measurement::FeatureValuesView.
+/// \relates Measurement::IteratorFeature
 DIP_EXPORT dfloat Mean( Measurement::IteratorFeature const& featureValues );
 
 /// \brief Returns the maximum and minimum feature values in the first column of `featureValues`.
@@ -1195,6 +1200,7 @@ DIP_EXPORT dfloat Mean( Measurement::IteratorFeature const& featureValues );
 /// first value of the feature is used. For features with multiple values, select a value using the
 /// \ref dip::Measurement::IteratorFeature::Subset method, or pick a column in the `dip::Measurement` object
 /// directly using \ref dip::Measurement::FeatureValuesView.
+/// \relates Measurement::IteratorFeature
 DIP_EXPORT MinMaxAccumulator MaximumAndMinimum( Measurement::IteratorFeature const& featureValues );
 
 /// \brief Computes the minimum, lower quartile (25th percentile), median (50th percentile),
@@ -1207,6 +1213,7 @@ DIP_EXPORT MinMaxAccumulator MaximumAndMinimum( Measurement::IteratorFeature con
 /// first value of the feature is used. For features with multiple values, select a value using the
 /// \ref dip::Measurement::IteratorFeature::Subset method, or pick a column in the `dip::Measurement` object
 /// directly using \ref dip::Measurement::FeatureValuesView.
+/// \relates Measurement::IteratorFeature
 DIP_EXPORT QuartilesResult Quartiles( Measurement::IteratorFeature const& featu );
 
 /// \brief Returns the first four central moments of the feature values in the first column of `featureValues`.
@@ -1215,38 +1222,47 @@ DIP_EXPORT QuartilesResult Quartiles( Measurement::IteratorFeature const& featu 
 /// first value of the feature is used. For features with multiple values, select a value using the
 /// \ref dip::Measurement::IteratorFeature::Subset method, or pick a column in the `dip::Measurement` object
 /// directly using \ref dip::Measurement::FeatureValuesView.
+/// \relates Measurement::IteratorFeature
 DIP_EXPORT StatisticsAccumulator SampleStatistics( Measurement::IteratorFeature const& featureValues );
 
 /// \brief Returns the object ID with the smallest feature value in the first column of `featureValues`.
 ///
 /// Same as \ref Minimum(Measurement::IteratorFeature const&), but returns the Object ID instead of
 /// the feature value.
+/// \relates Measurement::IteratorFeature
 DIP_EXPORT dip::uint ObjectMinimum( Measurement::IteratorFeature const& featureValues );
 
 /// \brief Returns the object ID with the largest feature value in the first column of `featureValues`.
 ///
 /// Same as \ref Maximum(Measurement::IteratorFeature const&), but returns the Object ID instead of
 /// the feature value.
+/// \relates Measurement::IteratorFeature
 DIP_EXPORT dip::uint ObjectMaximum( Measurement::IteratorFeature const& featureValues );
 
 // TODO: ObjectPercentile, ObjectMedian.
 
 /// \brief Selects objects where the first element of `featureValues` is equal to `value`.
+/// \relates Measurement::IteratorFeature
 DIP_EXPORT LabelMap operator==( Measurement::IteratorFeature const& featureValues, Measurement::ValueType value );
 
 /// \brief Selects objects where the first element of `featureValues` is unequal to `value`.
+/// \relates Measurement::IteratorFeature
 DIP_EXPORT LabelMap operator!=( Measurement::IteratorFeature const& featureValues, Measurement::ValueType value );
 
 /// \brief Selects objects where the first element of `featureValues` is greater than `value`.
+/// \relates Measurement::IteratorFeature
 DIP_EXPORT LabelMap operator>( Measurement::IteratorFeature const& featureValues, Measurement::ValueType value );
 
 /// \brief Selects objects where the first element of `featureValues` is not smaller than `value`.
+/// \relates Measurement::IteratorFeature
 DIP_EXPORT LabelMap operator>=( Measurement::IteratorFeature const& featureValues, Measurement::ValueType value );
 
 /// \brief Selects objects where the first element of `featureValues` is smaller than `value`.
+/// \relates Measurement::IteratorFeature
 DIP_EXPORT LabelMap operator<( Measurement::IteratorFeature const& featureValues, Measurement::ValueType value );
 
 /// \brief Selects objects where the first element of `featureValues` is not greater than `value`.
+/// \relates Measurement::IteratorFeature
 DIP_EXPORT LabelMap operator<=( Measurement::IteratorFeature const& featureValues, Measurement::ValueType value );
 
 /// \endgroup

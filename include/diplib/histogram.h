@@ -241,7 +241,7 @@ class DIP_NO_EXPORT Histogram {
       ///
       /// `configuration` should have as many elements as tensor elements in `input`. If `configuration` has only
       /// one element, it will be used for all histogram dimensions. If it is an empty array, appropriate configuration
-      /// values for `input` are chosen based on its data type (see \ref dip::Histogram::Configuration(DataType)).
+      /// values for `input` are chosen based on its data type (see \ref Configuration::Configuration(DataType)).
       explicit Histogram( Image const& input, Image const& mask = {}, ConfigurationArray configuration = {} ) {
          DIP_THROW_IF( !input.IsForged(), E::IMAGE_NOT_FORGED );
          DIP_THROW_IF( !input.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );

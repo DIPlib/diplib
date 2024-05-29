@@ -189,7 +189,7 @@ void LabelMap::Relabel() {
       }
    }
    // Create a lookup table for these target values, mapping to the new target values
-   tsl::robin_map< LabelType, LabelType >new_targets;
+   tsl::robin_map< LabelType, LabelType > new_targets;
    new_targets.reserve( targets.size() * 2 );
    LabelType v = 1;
    for( LabelType t : targets ) {

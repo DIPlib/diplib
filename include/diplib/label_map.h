@@ -209,25 +209,29 @@ class DIP_NO_EXPORT LabelMap {
       bool preserveUnknownLabels_ = true;
 };
 
-/// \brief Combines two maps using logical AND. See \ref LabelMap::operator&=.
+/// \brief Combines two maps using logical AND. See \ref dip-LabelMap-operator%26%3D-LabelMap-CL.
+/// \relates LabelMap
 inline LabelMap operator&( LabelMap lhs, LabelMap const& rhs ) {
    lhs &=  rhs;
    return lhs;
 }
 
-/// \brief Combines two maps using logical OR. See \ref LabelMap::::operator|=.
+/// \brief Combines two maps using logical OR. See \ref dip-LabelMap-operator%7C%3D-LabelMap-CL.
+/// \relates LabelMap
 inline LabelMap operator|( LabelMap lhs, LabelMap const& rhs ) {
    lhs |= rhs;
    return lhs;
 }
 
-/// \brief Combines two maps using logical XOR. See \ref LabelMap::::operator^=.
+/// \brief Combines two maps using logical XOR. See \ref dip-LabelMap-operator%5E%3D-LabelMap-CL.
+/// \relates LabelMap
 inline LabelMap operator^( LabelMap lhs, LabelMap const& rhs ) {
    lhs ^= rhs;
    return lhs;
 }
 
 /// \brief Applies logical NOT to the map. See \ref LabelMap::Negate.
+/// \relates LabelMap
 inline LabelMap operator~( LabelMap rhs ) {
    rhs.Negate();
    return rhs;
