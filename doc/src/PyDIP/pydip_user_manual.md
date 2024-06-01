@@ -51,13 +51,13 @@ a Python binding, with the following exceptions:
 - `dip::UnsignedArray`, `dip::FloatArray`, or similar: pass a Python list: `[5, 5]`.
   A scalar is accepted as a one-element list.
 
-- `dip::StringArray`: pass a list of strings (`['foo','bar']`).
+- `dip::StringArray`: pass a list of strings (`['foo', 'bar']`).
 
-- `dip::StringSet`: pass a dictionary (`{'foo','bar'}`).
+- `dip::StringSet`: pass a set of strings (`{'foo', 'bar'}`).
 
 By using named arguments, it is quite simple to set only needed arguments, and
 leave all others with their default values. All arguments that have a default
-value in C++ also have a default value in Python.
+value in C++ have the same default value in Python.
 
 \section pum_display Displaying images
 
@@ -123,7 +123,7 @@ img[0:-1:2, 0:-1:2] = 255
 ```
 
 Unlike in *DIPlib*, the square brackets index into spatial dimensions.
-To index into tensor dimensions, use round brackets (parenthesis):
+To index into tensor dimensions, use round brackets (parentheses):
 ```python
 img(0)
 img(0, 2)
@@ -136,7 +136,7 @@ image, so writing to that output also changes the original image:
 img2 = img(0)        # this copy shares data with img
 img2.Fill(100)       # same as img(0).Fill(100)
 img(1).Copy(img(0))
-img(2)[:,:] = img(0)
+img(2)[:,:] = img(0) # note that img(2) = img(0) is not allowed by Python
 
 img2 = img(0).Copy() # this copy does not share data with img
 img2.Fill(100)       # does not affect img
@@ -156,13 +156,55 @@ img[mask] = 0     # sets all pixels in mask to 0
 You can use either `IsForged()` or `IsEmpty()` to test if an image is forged.
 `IsEmpty()` is the opposite of `IsForged()`, and returns `True` if this image is not forged.
 
+An image in a Boolean context, such as `if image`, has the value of `IsForged()`. This means
+that the following two pieces of code are identical:
+```python
+if image.IsForged():
+    print("The image has data")
+
+if image:
+    print("The image has data")
+```
+
 Functions that expect an image interpret `None` as an empty (non-forged) image.
+
+
+\section pum_operators Operators applied to images
+
+Most operators have been overloaded to do what they do in C++:
+
+- Arithmetic operators: `+`, `-`, `/`, `%`, and the unary `+` and `-`.
+- Bit-wise logical operators: `&`, `|`, `^`.
+- Comparison operators: `<`, `<=`, `==`, `>=`, `>` and `!=`.
+
+Operators that work differently in Python and C++:
+
+- Indexing operators: see \ref pum_indexing.
+- Multiplication operators: Python has both `*` and `@`. `@` behaves like `*` in C++. `*` is always the
+  element-wise multiplication.
+- Exponentiation operator: Python has `**`, this doesn't exist in C++.
+
+For operators that have an in-place version (e.g. `+` has a `+=`), we have always overloaded the in-place
+version as well.
+
+Not overloaded are the integer division `//`, `del`, and the shift operators `<<` and `>>`. Logical operators
+`and`, `or` and `not` cannot be overloaded.
+
+`len()` and `str()` have also been overloaded. `len(image)` returns the number of pixels (i.e. it is the same
+as `image.NumberOfPixels()` if the image is forged, or 0 otherwise). `str(image)` returns a string containing
+what you'd see if you do `print(image)`.
+
+Note that operator chaining, where `x < y < z` is interpreted as `x < y and y < z`, does not work as expected
+with *DIPlib* images (in the same way it doesn't work with *NumPy* arrays). This expression, where `x` or `y`
+is an image, will evaluate to `y < z`. This is because `and` here first evaluates its left-hand-side argument
+as a boolean expression. If `x` or `y` is an image, this will always evaluate as true, as described
+in \ref pum_testing. `and` will then evaluate to its right-hand-side argument, `y < z`.
 
 
 \section pum_numpy Mixing *NumPy* arrays and *DIPlib* images
 
-A NumPy array can be passed instead of an image to any *DIPlib* function. In fact, any Python object
-that uses the buffer interface implicitly casts to an image. The reverse is also true: NumPy treats
+A *NumPy* array can be passed instead of an image to any *DIPlib* function. In fact, any Python object
+that uses the buffer interface implicitly casts to an image. The reverse is also true: *NumPy* treats
 *DIPlib* images as an array, you can call any *NumPy* function on an image. However, some code that
 accepts a *NumPy* array calls methods of the array, which would not be defined for a *DIPlib* image.
 For example,
@@ -175,7 +217,7 @@ img.max()                 # error! np.array method not defined for dip.Image
 img.shape                 # error! np.array property not defined for dip.Image
 ```
 
-One can "cast" from a *NumPy* array to a *DIPlib* image and back:
+One can "cast" from a *NumPy* array to a *DIPlib* image and back, without copying the data:
 ```python
 x = np.asarray(img)
 y = dip.Image(array)
@@ -227,6 +269,7 @@ default tensor shape in *DIPlib*). The threshold of 4 was picked because it will
 images. This threshold can be adjusted using `dip.SetTensorConversionThreshold()`. If set to 0, all arrays
 will be converted to a scalar image.
 
+
 \section pum_dipjavaio *DIPjavaio*, or how to use *Bio-Formats*
 
 When using an installation of *DIPlib* that has *DIPjavaio* (the installation from PyPI does), and *Bio-Formats*
@@ -239,7 +282,7 @@ argument will cause *Bio-Formats* to be used even for these known file types.
 
 `dip.ImageRead()` is a simple interface, it just reads the first image seen. *DIPlib* has specialized functions
 for each file type, which allow for specifying how an image is to be read. For the *Bio-Formats* "format",
-this function is `dip.javaio.ImageReadJavaIO()`. It has a parameter `interface`, which defaults to  our
+this function is `dip.javaio.ImageReadJavaIO()`. It has a parameter `interface`, which defaults to our
 *Bio-Formats* interface. In principle other parameters are possible here, but no other interfaces currently exist.
 The other parameter is `imageNumber`, which specifies which image from a multi-image file format to read.
 This is what *Bio-Formats* refers to as the "series".
@@ -259,8 +302,8 @@ import diplib.javaio
 ```
 Note that we cannot `import dip.javaio`, as `dip` is an alias and the `import` statement does not resolve it.
 But after importing we can refer to `dip.javaio`.
-As an alternative, one can
+As an alternative, one can, for example,
 ```python
-import diplib.javaio as dipjavaio
+import diplib.javaio as dj
 ```
-and then use `dipjavaio.ImageReadJavaIO()`.
+and then use `dj.ImageReadJavaIO()`.
