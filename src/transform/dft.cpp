@@ -64,7 +64,7 @@ namespace dip {
 #ifdef DIP_CONFIG_HAS_FFTW
 
 dip::uint const maximumDFTSize = static_cast< dip::uint >( std::numeric_limits< int >::max() );
-extern bool const usingFFTW = true;
+bool const usingFFTW = true;
 
 template< typename T >
 using complex = typename fftwapidef< T >::complex;
@@ -78,7 +78,7 @@ using RPlan = typename fftwapidef< T >::plan;
 #else // DIP_CONFIG_HAS_FFTW
 
 dip::uint const maximumDFTSize = std::numeric_limits< dip::uint >::max();
-extern bool const usingFFTW = false;
+bool const usingFFTW = false;
 
 template< typename T >
 using complex = pocketfft::cmplx< T >;
