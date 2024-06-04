@@ -21,8 +21,8 @@
 
 #include "diplib.h"
 #include "diplib/viewer/export.h"
-#include "diplib/viewer/viewer.h"
 #include "diplib/viewer/image.h"
+#include "diplib/viewer/viewer.h"
 
 /// \file
 /// \brief Declares \ref dip::viewer::HistogramViewPort.

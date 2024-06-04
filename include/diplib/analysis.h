@@ -21,8 +21,8 @@
 #include <vector>
 
 #include "diplib.h"
-#include "distribution.h"
-#include "random.h"
+#include "diplib/distribution.h"
+#include "diplib/random.h"
 
 
 /// \file

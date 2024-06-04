@@ -22,8 +22,8 @@
 #include <vector>
 
 #include "diplib.h"
-#include "diplib/random.h"
 #include "diplib/deconvolution.h" // for backwards compatibility
+#include "diplib/random.h"
 
 
 /// \file

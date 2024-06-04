@@ -22,7 +22,7 @@
 #include <vector>
 
 #include "diplib.h"
-#include "distribution.h"
+#include "diplib/distribution.h"
 
 /// \file
 /// \brief Functions for feature detection.

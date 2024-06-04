@@ -20,6 +20,7 @@
 
 #include <array>
 #include <utility>
+
 #include "diplib.h"
 #include "diplib/color.h"
 

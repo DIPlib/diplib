@@ -60,8 +60,8 @@ extern "C" {
 }
 
 #include "diplib.h" // IWYU pragma: export
-#include "diplib/file_io.h"      // Definition of dip::FileInformation
 #include "diplib/distribution.h" // Definition of dip::Distribution
+#include "diplib/file_io.h"      // Definition of dip::FileInformation
 #include "diplib/histogram.h"    // Definition of dip::Histogram::Configuration
 
 /// \file

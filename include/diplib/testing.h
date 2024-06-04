@@ -27,8 +27,8 @@
 #include <type_traits>
 
 #include "diplib.h"
-#include "diplib/statistics.h"
 #include "diplib/iterators.h"
+#include "diplib/statistics.h"
 
 
 /// \file

@@ -24,7 +24,7 @@
 #include <vector>
 
 #include "diplib.h"
-#include "accumulators.h"
+#include "diplib/accumulators.h"
 
 /// \file
 /// \brief Support for chain-code and polygon object representation and quantification. Everything declared in

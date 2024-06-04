@@ -24,8 +24,8 @@
 
 #include "diplib.h"
 #include "diplib/iterators.h"
-#include "diplib/measurement.h"
 #include "diplib/lookup_table.h"
+#include "diplib/measurement.h"
 
 
 /// \file

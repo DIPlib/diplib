@@ -17,9 +17,9 @@
 #ifndef DIP_VIEWER_GLUT_H_
 #define DIP_VIEWER_GLUT_H_
 
-#include <thread>
-#include <mutex>
 #include <map>
+#include <mutex>
+#include <thread>
 
 #include "diplib.h"
 #include "diplib/viewer/export.h"

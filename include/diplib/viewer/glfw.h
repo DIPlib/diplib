@@ -17,8 +17,8 @@
 #ifndef DIP_VIEWER_GLFW_H_
 #define DIP_VIEWER_GLFW_H_
 
-#include <mutex>
 #include <map>
+#include <mutex>
 #include <utility>
 
 #include "diplib.h"
