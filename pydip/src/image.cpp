@@ -490,6 +490,7 @@ void init_image( py::module& m ) {
 
    // Copy or write data
    img.def( "Pad", py::overload_cast< dip::UnsignedArray const&, dip::String const& >( &dip::Image::Pad, py::const_ ), "sizes"_a, "cropLocation"_a = "center" );
+   img.def( "Pad", py::overload_cast< dip::UnsignedArray const&, dip::Image::Pixel const&, dip::String const& >( &dip::Image::Pad, py::const_ ), "sizes"_a, "value"_a, "cropLocation"_a = "center" );
    img.def( "Copy", py::overload_cast<>( &dip::Image::Copy, py::const_ ));
    img.def( "Copy", py::overload_cast< dip::Image const& >( &dip::Image::Copy ), "src"_a );
    img.def( "Convert", &dip::Image::Convert, "dataType"_a );

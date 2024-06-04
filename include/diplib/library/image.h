@@ -2390,6 +2390,7 @@ class DIP_NO_EXPORT Image {
 
       /// \brief Extends the image by padding with zeros, overload for function above with `value` equal to 0.
       // Note that `Pixel` is not defined here yet, so we cannot put the function body here.
+      // We can also not add a default to the `value` argument in the overload above, which would make this function irrelevant.
       DIP_NODISCARD Image Pad( UnsignedArray const& sizes, Option::CropLocation cropLocation = Option::CropLocation::CENTER ) const;
 
       /// \brief Extends the image by padding with `value`.
