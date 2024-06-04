@@ -118,21 +118,23 @@ using ObjectIdToIndexMap = tsl::robin_map< dip::uint, dip::uint >;
 /// The columns of the `Measurement` table are the feature values. Since each feature can have multiple
 /// values, features represent column groups. The rows of the table are the objects.
 ///
-/// Indexing with a feature name produces a reference to a column group. Indexing with an object ID
-/// (an integer) produces a reference to a row. Each of these references can be indexed to
-/// produce a reference to a table cell group. A cell group contains the values produced by one feature for one
-/// object. The cell group can again be indexed to obtain each of the values. For example, the following two
-/// lines are equivalent, and access the second value of the Feret feature (smallest Feret diameter) for
-/// object ID 412:
+/// Indexing with a feature name produces a reference to a column group, see \ref IteratorFeature.
+/// Indexing with an object ID (an integer) produces a reference to a row, see \ref IteratorObject.
+/// Each of these references can be indexed to produce a reference to a table cell group.
+/// A cell group contains the values produced by one feature for one object. The cell group can again
+/// be indexed to obtain each of the values. For example, the following two lines are equivalent,
+/// and access the second value of the Feret feature (smallest Feret diameter) for object ID 412:
 ///
 /// ```cpp
 /// dip::dfloat width = measurement[ "Feret" ][ 412 ][ 1 ];
 /// dip::dfloat width = measurement[ 412 ][ "Feret" ][ 1 ];
 /// ```
 ///
-/// These three types of references are represented as iterators. Thus, it is also possible to iterate over
-/// all column groups (or all rows), iterate over each of the cell groups within a column group (or within a row),
-/// and iterate over the values within a cell group:
+/// These three types of references are represented as iterators. Thus, it is possible to iterate over
+/// all features (column groups), then iterate over each of the objects within that column group (cell groups),
+/// and then iteratore over the values for that feature and object. Conversely, it is possible to iterate
+/// over all objects (rows), then iterate over all features for that object (cell groups), and then iterate
+/// over the values for that object and feature. Here are two simple examples using these iterators:
 ///
 /// ```cpp
 /// auto colIt = measurement[ "Feret" ];
@@ -160,6 +162,10 @@ using ObjectIdToIndexMap = tsl::robin_map< dip::uint, dip::uint >;
 /// returns an invalid iterator (evaluates to `false`). This means that, given a `Measurement` obtained
 /// from an empty image, one can iterate as usual over features and over objects, without needing to write
 /// a special test for the case of an image without objects.
+///
+/// See \ref IteratorFeature to learn about other things you can do with a column group. In short,
+/// there are statistics functions for measurements, see \ref measurement, as well as comparison operators
+/// that can be used to select objects, see \ref dip::LabelMap.
 class DIP_NO_EXPORT Measurement {
    public:
       /// The type of the measurement data
@@ -183,7 +189,7 @@ class DIP_NO_EXPORT Measurement {
       /// values for that object. It is also possible to iterate over all objects. See \ref dip::Measurement for
       /// examples of using this class.
       ///
-      /// The `Subset` method selects a subset of the values of the current feature. This does not invalidate
+      /// The \ref Subset method selects a subset of the values of the current feature. This does not invalidate
       /// the iterator: incrementing it will select the next feature in the same way it would have if `Subset`
       /// hadn't been called. When indexing a subset feature using an object ID, the resulting table cell is
       /// the same subset of the cell, as one would expect. Thus, subsetting can be used to look at only one
@@ -194,6 +200,15 @@ class DIP_NO_EXPORT Measurement {
       /// auto featureValues = msr[ "Feret" ];
       /// featureValues.Subset( 1 ); // Select the "FeretMin" column only
       /// ```
+      ///
+      /// A series of functions (see \ref measurement) take a `FeatureInformation` object as input and produce
+      /// statistics for the first value of the feature. Use `Subset` to select which value these functions
+      /// operate on.
+      ///
+      /// Comparison operators can be used to compare a feature value (again the first value) against a constant,
+      /// selecting objects that satisfy the comparison. The output is a \ref dip::LabelMap, which records which
+      /// objects were selected. The `dip::LabelMap` can be used to modify a \ref dip::Measurement object or
+      /// a labeled image.
       class DIP_NO_EXPORT IteratorFeature {
          public:
             friend class Measurement;
