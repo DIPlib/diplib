@@ -99,7 +99,7 @@ title: "Changes DIPlib 3.x.x"
 
     - Added a version of `dip::Measurement::SetObjectIDs()` that takes a `std::vector< dip::LabelType >` as input.
 
-    - `dip::ListObjectLabels()` is identical to the deprecated `dip::GetObjectLabels()`, but it returns a
+    - `dip::ListObjectLabels()` is identical to `dip::GetObjectLabels()` (which is now deprecated), but it returns a
       `std::vector< dip::LabelType >` instead of a `dip::UnsignedArray`. `dip::GetObjectLabels()` is deprecated.
 
     - Added `dip::CastLabelType()`, which can be called with any unsigned integer as input, and the same value
@@ -114,6 +114,10 @@ title: "Changes DIPlib 3.x.x"
     - `dip::ChainCode::objectID` is now of type `dip::LabelType`, was `dip::uint`.
 
     - The measurement functions and data structures still use `dip::uint` for object IDs.
+
+- `dip::ListObjectLabels()` adds an option to list only labels touching the image edge.
+
+- `dip::EdgeObjectsRemove()` also works for labeled images.
 
 - Minimum required version of *CMake* is now 3.12.
 

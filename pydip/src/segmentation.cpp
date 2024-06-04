@@ -154,8 +154,8 @@ void init_segmentation( py::module& m ) {
           "binary"_a, "connectivity"_a = 0, "minSize"_a = 0, "maxSize"_a = 0, "boundaryCondition"_a = dip::StringArray{}, "mode"_a = dip::S::ALL );
    m.def( "Label", py::overload_cast< dip::Image const&, dip::Image&, dip::uint, dip::uint, dip::uint, dip::StringArray, dip::String const& >( &dip::Label ),
           "binary"_a, py::kw_only(), "out"_a, "connectivity"_a = 0, "minSize"_a = 0, "maxSize"_a = 0, "boundaryCondition"_a = dip::StringArray{}, "mode"_a = dip::S::ALL );
-   m.def( "ListObjectLabels", py::overload_cast< dip::Image const&, dip::Image const&, dip::String const& >( &dip::ListObjectLabels ),
-          "label"_a, "mask"_a = dip::Image{}, "background"_a = dip::S::EXCLUDE );
+   m.def( "ListObjectLabels", py::overload_cast< dip::Image const&, dip::Image const&, dip::String const&, dip::String const& >( &dip::ListObjectLabels ),
+          "label"_a, "mask"_a = dip::Image{}, "background"_a = dip::S::EXCLUDE, "region"_a = "" );
    m.def( "GetObjectLabels", []( dip::Image const &label, dip::Image const &mask, dip::String const &background ) {
           PyErr_WarnEx( PyExc_DeprecationWarning, "`GetObjectLabels()` is deprecated, use `ListObjectLabels() instead`.", 1 );
           return dip::ListObjectLabels( label, mask, background );

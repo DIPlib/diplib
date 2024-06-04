@@ -1,5 +1,5 @@
 /*
- * (c)2016-2022, Cris Luengo.
+ * (c)2016-2024, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,8 +23,10 @@
 #include <set>
 #include <utility>
 #include <vector>
+#include <sys/stat.h>
 
 #include "diplib.h"
+#include "diplib/binary.h"
 #include "diplib/chain_code.h"
 #include "diplib/framework.h"
 #include "diplib/generation.h"
@@ -42,52 +44,78 @@ using LabelSet = tsl::robin_set< LabelType >;
 
 namespace {
 
-template< typename TPI >
-class GetLabelsLineFilter: public Framework::ScanLineFilter {
+template< typename TPI, bool edgesOnly_ = false >
+class GetLabelsLineFilter : public Framework::ScanLineFilter {
    public:
       // not defining GetNumberOfOperations(), always called in a single thread
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* data = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          dip::sint stride = params.inBuffer[ 0 ].stride;
          dip::uint bufferLength = params.bufferLength;
+         bool isOnEdge = !edgesOnly_ || IsOnEdge( params.position, sizes_, params.dimension );
+         // If isOneEdge, this line goes along the image edge, include the whole line.
+         // Otherwise, use only the first and last pixels of this line.
+         // But: the test is only done when we only want edges. If we want the whole image,
+         // then isOnEdge is always true, meaning we always use the whole line.
          if( params.inBuffer.size() > 1 ) {
             bin* mask = static_cast< bin* >( params.inBuffer[ 1 ].buffer );
             dip::sint mask_stride = params.inBuffer[ 1 ].stride;
-            LabelType prevID = 0;
-            bool setPrevID = false;
-            for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-               if( *mask ) {
-                  if( !setPrevID || ( *data != prevID ) ) {
-                     prevID = CastLabelType( *data );
-                     setPrevID = true;
-                     objectIDs_.insert( prevID );
+            if( isOnEdge ) {
+               LabelType prevID = 0;
+               bool setPrevID = false;
+               for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
+                  if( *mask ) {
+                     if( !setPrevID || ( *data != prevID ) ) {
+                        prevID = CastLabelType( *data );
+                        setPrevID = true;
+                        objectIDs_.insert( prevID );
+                     }
                   }
+                  data += stride;
+                  mask += mask_stride;
                }
-               data += stride;
-               mask += mask_stride;
+            } else {
+               if( *mask ) {
+                  objectIDs_.insert( CastLabelType( *data ));
+               }
+               dip::sint n = static_cast< dip::sint >( bufferLength ) - 1;
+               if( *( mask + n * mask_stride )) {
+                  objectIDs_.insert( CastLabelType( *( data + n * stride )));
+               }
             }
          } else {
-            LabelType prevID = CastLabelType( *data ) + 1; // something that's different from the first pixel value
-            for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-               if( *data != prevID ) {
-                  prevID = CastLabelType( *data );
-                  objectIDs_.insert( prevID );
+            if( isOnEdge ) {
+               LabelType prevID = CastLabelType( *data ) + 1; // something that's different from the first pixel value
+               for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
+                  if( *data != prevID ) {
+                     prevID = CastLabelType( *data );
+                     objectIDs_.insert( prevID );
+                  }
+                  data += stride;
                }
-               data += stride;
+            } else {
+               objectIDs_.insert( CastLabelType( *data ));
+               dip::sint n = static_cast< dip::sint >( bufferLength ) - 1;
+               objectIDs_.insert( CastLabelType( *( data + n * stride )));
             }
          }
       }
-      GetLabelsLineFilter( LabelSet& objectIDs ): objectIDs_( objectIDs ) {}
+      GetLabelsLineFilter( LabelSet& objectIDs, UnsignedArray const& sizes ) : objectIDs_( objectIDs ), sizes_( sizes ) {}
    private:
       LabelSet& objectIDs_;
+      UnsignedArray const& sizes_;
 };
+
+template< typename TPI >
+using GetEdgeLabelsLineFilter = GetLabelsLineFilter< TPI, true >;
 
 } // namespace
 
 std::vector< LabelType > ListObjectLabels(
       Image const& label,
       Image const& mask,
-      String const& background
+      String const& background,
+      String const& region
 ) {
    // Check input
    DIP_THROW_IF( !label.IsForged(), E::IMAGE_NOT_FORGED );
@@ -98,15 +126,22 @@ std::vector< LabelType > ListObjectLabels(
    }
    bool nullIsObject{};
    DIP_STACK_TRACE_THIS( nullIsObject = BooleanFromString( background, S::INCLUDE, S::EXCLUDE ));
+   bool edgesOnly{};
+   DIP_STACK_TRACE_THIS( edgesOnly = BooleanFromString( region, "edges", "" ));
 
    LabelSet objectIDs; // output
 
-   // Get pointer to overloaded scan function
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
-   DIP_OVL_NEW_UINT( scanLineFilter, GetLabelsLineFilter, ( objectIDs ), label.DataType() );
-
-   // Do the scan
-   DIP_STACK_TRACE_THIS( Framework::ScanSingleInput( label, mask, label.DataType(), *scanLineFilter, Framework::ScanOption::NoMultiThreading ));
+   Framework::ScanOptions opts = Framework::ScanOption::NoMultiThreading;
+   if( edgesOnly ) {
+      // Scan the image edges only
+      DIP_OVL_NEW_UINT( scanLineFilter, GetEdgeLabelsLineFilter, ( objectIDs, label.Sizes() ), label.DataType() );
+      opts += Framework::ScanOption::NeedCoordinates;
+   } else {
+      // Scan the whole image
+      DIP_OVL_NEW_UINT( scanLineFilter, GetLabelsLineFilter, ( objectIDs, label.Sizes() ), label.DataType() );
+   }
+   DIP_STACK_TRACE_THIS( Framework::ScanSingleInput( label, mask, label.DataType(), *scanLineFilter, opts ));
 
    // Should we ignore the 0 label?
    if( !nullIsObject ) {
@@ -126,7 +161,7 @@ std::vector< LabelType > ListObjectLabels(
 namespace {
 
 template< typename TPI >
-class RelabelLineFilter: public Framework::ScanLineFilter {
+class RelabelLineFilter : public Framework::ScanLineFilter {
    public:
       // not defining GetNumberOfOperations(), always called in a single thread
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
@@ -198,6 +233,31 @@ void SmallObjectsRemove(
       }
       LabelMap selection = sizes[ "Size" ] >= static_cast< Measurement::ValueType >( threshold );
       selection.Apply( in, out );
+   } else {
+      DIP_THROW( E::DATA_TYPE_NOT_SUPPORTED );
+   }
+}
+
+void EdgeObjectsRemove( Image const& in, Image& out, dip::uint connectivity ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
+   if( in.DataType().IsBinary() ) {
+      DIP_START_STACK_TRACE
+         // Propagate with empty seed mask, iteration until done and treating outside the image as object
+         BinaryPropagation( Image(), in, out, static_cast< dip::sint >( connectivity ), 0, S::OBJECT );
+         // The out-image now contains the edge objects
+         // Remove them by toggling these bits in the in-image and writing the result in out
+         out ^= in;
+      DIP_END_STACK_TRACE
+   } else if( in.DataType().IsUInt() ) {
+      DIP_START_STACK_TRACE
+         auto edgeObjects = ListObjectLabels( in, {}, S::EXCLUDE, "edges" );
+         dip::LabelMap map; // Note that labels not in the map will be preserved, we only need to insert the zero mappings.
+         for( auto obj : edgeObjects ) {
+            map[ obj ] = 0;
+         }
+         map.Apply( in, out );
+      DIP_END_STACK_TRACE
    } else {
       DIP_THROW( E::DATA_TYPE_NOT_SUPPORTED );
    }

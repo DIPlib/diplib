@@ -22,9 +22,9 @@
 #include <vector>
 
 #include "diplib.h"
-#include "diplib/neighborlist.h"
 #include "diplib/graph.h"
-#include "diplib/measurement.h"
+#include "diplib/measurement.h"  // Sadly, we need to include this full header just for the `Measurement::IteratorFeature` reference in one function here. We cannot forward-declare a nested class.
+#include "diplib/neighborlist.h"
 
 
 /// \file
@@ -95,21 +95,26 @@ DIP_NODISCARD inline Image Label(
 ///
 /// If `background` is `"include"`, the label ID 0 will be included in the result if present in the image.
 /// Otherwise, `background` is `"exclude"`, and the label ID 0 will be ignored.
+///
+/// If `region` is `"edges"`, only the labels of objects touching the image edges will be listed. By default,
+/// the labels of all objects are listed.
 DIP_NODISCARD DIP_EXPORT std::vector< LabelType > ListObjectLabels(
       Image const& label,
       Image const& mask = {},
-      String const& background = S::EXCLUDE
+      String const& background = S::EXCLUDE,
+      String const& region = ""
 );
 DIP_NODISCARD inline std::vector< LabelType > ListObjectLabels(
       Image::View const& label,
-      String const& background = S::EXCLUDE
+      String const& background = S::EXCLUDE,
+      String const& region = ""
 ) {
    if( label.Offsets().empty() ) {
       // This code works if either the view is regular or has a mask.
-      return ListObjectLabels( label.Reference(), label.Mask(), background );
+      return ListObjectLabels( label.Reference(), label.Mask(), background, region );
    }
    // When the view uses indices, we copy the data over to a new image, it's not worth while writing separate code for this case.
-   return ListObjectLabels( Image( label ), {}, background );
+   return ListObjectLabels( Image( label ), {}, background, region );
 }
 
 [[ deprecated( "Use dip::ListObjectLabels instead." ) ]]
@@ -174,7 +179,6 @@ DIP_NODISCARD inline Image Relabel( Image const& label, Graph const& graph ) {
    Relabel( label, out, graph );
    return out;
 }
-
 
 /// \brief Removes small objects from a labeled or binary image.
 ///
@@ -314,15 +318,8 @@ DIP_NODISCARD inline Image GrowRegionsWeighted(
 ///
 /// This function works by finding pixels that have a neighbor with a larger value, and setting these pixels to
 /// zero (the background label).
-DIP_EXPORT void SplitRegions(
-      Image const& label,
-      Image& out,
-      dip::uint connectivity = 0
-);
-DIP_NODISCARD inline Image SplitRegions(
-      Image const& label,
-      dip::uint connectivity = 0
-) {
+DIP_EXPORT void SplitRegions( Image const& label, Image& out, dip::uint connectivity = 0 );
+DIP_NODISCARD inline Image SplitRegions( Image const& label, dip::uint connectivity = 0 ) {
    Image out;
    SplitRegions( label, out, connectivity );
    return out;
@@ -344,15 +341,8 @@ DIP_NODISCARD inline Image SplitRegions(
 /// If the input image is binary, a single convex hull is computed and drawn. The output image will be binary also.
 ///
 /// The image must have two dimensions, and be scalar.
-DIP_EXPORT void MakeRegionsConvex2D(
-      Image const& label,
-      Image& out,
-      String const& mode = S::FILLED
-);
-DIP_NODISCARD inline Image MakeRegionsConvex2D(
-      Image const& label,
-      String const& mode = S::FILLED
-) {
+DIP_EXPORT void MakeRegionsConvex2D( Image const& label, Image& out, String const& mode = S::FILLED );
+DIP_NODISCARD inline Image MakeRegionsConvex2D( Image const& label, String const& mode = S::FILLED ) {
    Image out;
    MakeRegionsConvex2D( label, out, mode );
    return out;
@@ -370,15 +360,9 @@ DIP_NODISCARD inline Image MakeRegionsConvex2D(
 ///
 /// To obtain the bounding box of all labels at once, use \ref dip::MeasurementTool::Measure with the
 /// features \ref size_features_Minimum and \ref size_features_Maximum.
-RangeArray DIP_EXPORT GetLabelBoundingBox(
-      Image const& label,
-      LabelType objectID
-);
+RangeArray DIP_EXPORT GetLabelBoundingBox( Image const& label, LabelType objectID );
 [[ deprecated( "objectID as dip::uint is deprecated, it must be LabelType." ) ]]
-inline RangeArray GetLabelBoundingBox(
-      Image const& label,
-      dip::uint objectID
-) {
+inline RangeArray GetLabelBoundingBox( Image const& label, dip::uint objectID ) {
    return GetLabelBoundingBox( label, CastLabelType( objectID ));
 }
 
@@ -424,7 +408,11 @@ DIP_EXPORT Graph RegionAdjacencyGraph( Image const& labels, String const& mode =
 /// directly using \ref dip::Measurement::FeatureValuesView.
 ///
 /// For the labels that do not appear in `featureValues`, their vertex value will be set to 0.
-DIP_EXPORT Graph RegionAdjacencyGraph( Image const& labels, Measurement::IteratorFeature const& featureValues, String const& mode = "touching" );
+DIP_EXPORT Graph RegionAdjacencyGraph(
+   Image const& labels,
+   Measurement::IteratorFeature const& featureValues,
+   String const& mode = "touching"
+);
 
 
 /// \endgroup

@@ -1,5 +1,5 @@
 /*
- * (c)2017-2021, Cris Luengo.
+ * (c)2017-2024, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -77,7 +77,7 @@ DIP_NODISCARD inline Image BinaryDilation(
 ///
 /// The `edgeCondition` parameter specifies whether pixels past the border of the image should be
 /// treated as object (by passing `"object"`) or as background (by passing `"background"`).
-/// 
+///
 /// For erosions with arbitrary structuring elements, see \ref dip::Erosion, for erosions with an isotropic (disk)
 /// structuring element, see \ref dip::IsotropicDilation.
 ///
@@ -262,7 +262,7 @@ DIP_NODISCARD inline Image IsotropicOpening(
 ///
 /// `inSeed` contains the seeds to propagate. To use no seeds, simply pass a raw image, i.e. `dip::Image()`.
 /// `inMask` contains the mask in which propagation is allowed.
-/// 
+///
 /// The `connectivity` parameter defines the metric, that is, the shape of
 /// the structuring element (see \ref connectivity). Alternating connectivity
 /// is only implemented for 2D and 3D images.
@@ -294,35 +294,20 @@ DIP_NODISCARD inline Image BinaryPropagation(
    return out;
 }
 
-/// \brief Remove edge objects from binary image.
+/// \brief Remove edge objects from a binary or labeled image.
 ///
-/// Removes those binary objects from `in` that are connected to the edges of the image.
-/// This function calls \ref dip::BinaryPropagation with no seed image and `edgeCondition` set to
-/// `"object"`. The result of the propagation is xor-ed with the input image.
+/// Removes those objects from `in` that are connected to the edges of the image.
 ///
-/// The `connectivity` parameter defines the metric, that is, the shape of
-/// the structuring element (see \ref connectivity).
-inline void EdgeObjectsRemove(
-      Image const& c_in,
-      Image& out,
-      dip::uint connectivity = 1
-){
-   DIP_START_STACK_TRACE
-      Image in = c_in;
-      if( out.Aliases( in )) {
-         out.Strip(); // prevent `in` data being overwritten if `out` points to the same data.
-      }
-      // Propagate with empty seed mask, iteration until done and treating outside the image as object
-      BinaryPropagation( Image(), in, out, static_cast< dip::sint >( connectivity ), 0, S::OBJECT );
-      // The out-image now contains the edge objects
-      // Remove them by toggling these bits in the in-image and writing the result in out
-      out ^= in;
-   DIP_END_STACK_TRACE
-}
-DIP_NODISCARD inline Image EdgeObjectsRemove(
-      Image const& in,
-      dip::uint connectivity = 1
-) {
+/// If the input image is binary. this function calls \ref dip::BinaryPropagation with no seed image
+/// and `edgeCondition` set to `"object"`. The result of the propagation is xor-ed with the input image.
+/// In this case, the `connectivity` parameter defines the metric, that is, the shape of the structuring
+/// element (see \ref connectivity).
+///
+/// If the input image is labeled, this function erases the labels that touch the image edge.
+/// In this case, `connectivity` is ignored. Note that a labeled image must be of an unsigned integer type.
+// NOTE! This function is declared in src/regions/label_manipulation.cpp, not in src/binary/
+DIP_EXPORT void EdgeObjectsRemove( Image const& c_in, Image& out, dip::uint connectivity = 1 );
+DIP_NODISCARD inline Image EdgeObjectsRemove( Image const& in, dip::uint connectivity = 1 ) {
    Image out;
    EdgeObjectsRemove( in, out, connectivity );
    return out;

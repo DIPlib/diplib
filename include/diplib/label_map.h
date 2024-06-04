@@ -68,9 +68,6 @@ class DIP_NO_EXPORT LabelMap {
       };
 
       /// \brief Construct a map that maps `objectIDs` to themselves.
-      // NOTE I don't like GetObjectLabels() and Measurement::Objects() returning an UnsignedArray
-      //      rather than a std::vector< LabelType >. dip::UnsignedArray is optimized for short arrays,
-      //      and doesn't work as well as std::vector for larger collections of values.
       explicit LabelMap( UnsignedArray const& labels ) {
          map_.reserve( labels.size() * 2 );  // Most efficient when load factor is < 0.5
          for( dip::uint lab : labels ) {
