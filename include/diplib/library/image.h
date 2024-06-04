@@ -204,6 +204,29 @@ class DIP_NO_EXPORT CoordinatesComputer {
 };
 
 
+/// \brief Determines whether the pixel at `coords` is on the edge of an image of size `sizes`.
+///
+/// `coords` and `sizes` must have the same size, this is not tested for.
+///
+/// `procDim` is the processing dimension. This dimension is ignored in the test. If it is outside the
+/// range of dimensions in `sizes` (as it is by default) then no dimension will be ignored.
+///
+/// In some algorithms, `coords` indicates the first pixel on a line. This pixel obviously is on the
+/// edge of the image. But the algorithm might be interested in knowing if all the pixels of the line
+/// are along an edge of the image, or only the first and last one. By setting `procDim` appropriately,
+/// this function will answer that question.
+inline bool IsOnEdge( UnsignedArray const& coords, UnsignedArray const& sizes, dip::uint procDim = std::numeric_limits< dip::uint >::max() ) {
+   for( dip::uint ii = 0; ii < coords.size(); ++ii ) {
+      if( ii != procDim ) {
+         if(( coords[ ii ] == 0 ) || ( coords[ ii ] == sizes[ ii ] - 1 )) {
+            return true;
+         }
+      }
+   }
+   return false;
+}
+
+
 //
 // The Image class
 //
@@ -1401,12 +1424,7 @@ class DIP_NO_EXPORT Image {
       bool IsOnEdge( UnsignedArray const& coords ) const {
          DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
          DIP_THROW_IF( coords.size() != sizes_.size(), E::ARRAY_PARAMETER_WRONG_LENGTH );
-         for( dip::uint ii = 0; ii < coords.size(); ++ii ) {
-            if(( coords[ ii ] == 0 ) || ( coords[ ii ] == sizes_[ ii ] - 1 )) {
-               return true;
-            }
-         }
-         return false;
+         return dip::IsOnEdge( coords, sizes_ );
       }
 
       /// \brief Returns whether the coordinates are inside the image

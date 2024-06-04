@@ -38,18 +38,9 @@ class CountNeighborsLineFilter : public Framework::ScanLineFilter {
          auto outStride = params.outBuffer[ 0 ].stride;
          dip::uint threshold = neighbors_.Size() / 2;
          // Determine if the processing line is on an edge of the image or not
-         bool isOnEdge = false;
-         for( dip::uint ii = 0; ii < sizes_.size(); ++ii ) {
-            if( ii != params.dimension ) {
-               if(( params.position[ ii ] == 0 ) || ( params.position[ ii ] == sizes_[ ii ] - 1 )) {
-                  isOnEdge = true;
-                  break;
-                  // TODO: Instead, remove elements from neighbors_ and offsets_ that point outside the image.
-               }
-            }
-         }
-         if( isOnEdge ) {
+         if( IsOnEdge( params.position, sizes_, params.dimension )) {
             // If so, tread carefully!
+            // TODO: Instead, remove elements from neighbors_ and offsets_ that point outside the image.
             UnsignedArray pos = params.position;
             for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
                if( all_ || *in ) {

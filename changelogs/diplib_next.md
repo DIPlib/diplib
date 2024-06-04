@@ -35,6 +35,8 @@ title: "Changes DIPlib 3.x.x"
 
 - Added `dip::UnionFind::Size()`.
 
+- Added `dip::IsOnEdge()`.
+
 ### Changed functionality
 
 - The `compressionLevel` argument to `dip::ImageWritePNG()` changed from `dip::uint` to `dip::sint`, allowing for

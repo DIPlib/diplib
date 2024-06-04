@@ -74,17 +74,6 @@ void NonMaximumSuppression1D(
    *pout = 0;
 }
 
-bool IsOnEdge( UnsignedArray const& coords, UnsignedArray const& sizes, dip::uint procDim ) {
-   for( dip::uint ii = 0; ii < coords.size(); ++ii ) {
-      if( ii != procDim ) {
-         if(( coords[ ii ] == 0 ) || ( coords[ ii ] == sizes[ ii ] - 1 )) {
-            return true;
-         }
-      }
-   }
-   return false;
-}
-
 template< typename TPI >
 class NonMaximumSuppression2D : public Framework::ScanLineFilter {
    public:

@@ -527,14 +527,7 @@ class DIP_NO_EXPORT ImageIterator {
       /// only returns true if all pixels on the line are edge pixels (i.e. the first and last pixel of the
       /// line are not counted).
       bool IsOnEdge() const {
-         for( dip::uint dd = 0; dd < coords_.size(); ++dd ) {
-            if( dd != procDim_ ) {
-               if(( coords_[ dd ] == 0 ) || ( coords_[ dd ] == sizes_[ dd ] - 1 )) {
-                  return true;
-               }
-            }
-         }
-         return false;
+         return dip::IsOnEdge( coords_, sizes_, procDim_ );
       }
 
       /// Return the current pointer
@@ -915,14 +908,7 @@ class DIP_NO_EXPORT JointImageIterator {
       /// only returns true if all pixels on the line are edge pixels (i.e. the first and last pixel of the
       /// line are not counted).
       bool IsOnEdge() const {
-         for( dip::uint dd = 0; dd < coords_.size(); ++dd ) {
-            if( dd != procDim_ ) {
-               if(( coords_[ dd ] == 0 ) || ( coords_[ dd ] == sizes_[ dd ] - 1 )) {
-                  return true;
-               }
-            }
-         }
-         return false;
+         return dip::IsOnEdge( coords_, sizes_, procDim_ );
       }
 
       /// Return the current pointer for image `I`
