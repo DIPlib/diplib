@@ -15,11 +15,18 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/generation.h"
+
+#include <algorithm>
+#include <cmath>
+#include <limits>
+#include <memory>
+#include <vector>
+
+#include "diplib.h"
 #include "diplib/framework.h"
 #include "diplib/overload.h"
-#include "diplib/saturated_arithmetic.h"
+
 #include "draw_support.h"
 
 namespace dip {
@@ -143,7 +150,7 @@ class DrawBandlimitedLineLineFilter : public Framework::ScanLineFilter {
    public:
       DrawBandlimitedLineLineFilter( FloatArray const& start, FloatArray const& end, Image::Pixel const& value,
                                      dip::uint nTensor, dfloat sigma, dfloat margin ):
-            A_( start ), B_( end ), sigma_( sigma ), scale_( -0.5 / ( sigma_ * sigma_ )), margin2_( margin * margin ) {
+            A_( start ), B_( end ), BA_( B_ ), sigma_( sigma ), scale_( -0.5 / ( sigma_ * sigma_ )), margin2_( margin * margin ) {
          CopyPixelToVector( value, value_, nTensor );
          FloatType< TPI > norm = static_cast< FloatType< TPI >>( 1.0 / ( std::sqrt( 2.0 * pi ) * sigma_ ));
          for( auto& v: value_ ) {
@@ -152,9 +159,9 @@ class DrawBandlimitedLineLineFilter : public Framework::ScanLineFilter {
          // Closest point on line AB to point P: C = A + t * BA, t = dot(PA,BA) / dot(BA,BA)
          // Distance of point P to line AB: norm(PC) = norm(PA - t * BA)
          // We pre-compute BA and dot(BA,BA)
-         BA_ = B_;
+         // BA_ = B_; // already initialized
          BA_ -= A_;
-         dot_BA_BA_ = 0;
+         // dot_BA_BA_ = 0; // already initialized
          for( dip::uint ii = 0; ii < A_.size(); ++ii ) {
             dot_BA_BA_ += BA_[ ii ] * BA_[ ii ];
          }
@@ -213,7 +220,7 @@ class DrawBandlimitedLineLineFilter : public Framework::ScanLineFilter {
       FloatArray const& A_;
       FloatArray const& B_;
       FloatArray BA_;
-      dfloat dot_BA_BA_;
+      dfloat dot_BA_BA_ = 0;
       std::vector< FlexType< TPI >> value_; // scaling of the blob for each channel.
       dfloat sigma_;
       dfloat scale_;
@@ -283,7 +290,7 @@ void AddLine(
    }
    start = std::max( start, dip::sint( 0 ));
    end = std::min( end, length - 1 );
-   out += static_cast< dip::sint >( start ) * stride;
+   out += start * stride;
    for( dip::sint jj = start; jj <= end; ++jj, out += stride ) {
       dip::sint offset = 0;
       for( dip::uint ii = 0; ii < value.size(); ++ii ) {
@@ -313,7 +320,7 @@ void BallBlurredEdge(
    start = std::max( start, dip::sint( 0 ));
    end = std::min( end, length - 1 );
    dfloat norm = -1.0 / ( sigma * std::sqrt( 2.0 ));
-   out += static_cast< dip::sint >( start ) * stride;
+   out += start * stride;
    for( dip::sint jj = start; jj <= end; ++jj, out += stride ) {
       dfloat d = static_cast< dfloat >( jj ) - origin;
       d = std::sqrt( distance2 + d * d ) - radius;
@@ -347,7 +354,7 @@ void BallBlurredLine(
    start = std::max( start, dip::sint( 0 ));
    end = std::min( end, length - 1 );
    dfloat scale = -0.5 / ( sigma * sigma );
-   out += static_cast< dip::sint >( start ) * stride;
+   out += start * stride;
    for( dip::sint jj = start; jj <= end; ++jj, out += stride ) {
       dfloat d = static_cast< dfloat >( jj ) - origin;
       d = std::sqrt( distance2 + d * d ) - radius;
@@ -375,7 +382,7 @@ class DrawBandlimitedBallLineFilter : public Framework::ScanLineFilter {
             }
          }
       }
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint nTensorElements ) override {
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint nTensorElements ) override {
          return ( filled_ ? 74 : 45 ) + nTensorElements; // This is not correct, we only do this for a subset of pixels on each line...
       }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
@@ -452,7 +459,7 @@ void DrawBandlimitedBall(
    DIP_THROW_IF( !value.IsScalar() && ( out.TensorElements() != value.TensorElements() ), E::NTENSORELEM_DONT_MATCH );
    DIP_THROW_IF( origin.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
    DIP_THROW_IF( diameter <= 0.0, E::INVALID_PARAMETER );
-   bool filled;
+   bool filled{};
    DIP_STACK_TRACE_THIS( filled = BooleanFromString( mode, S::FILLED, S::EMPTY ));
    DIP_THROW_IF( sigma <= 0.0, E::INVALID_PARAMETER );
    DIP_THROW_IF( truncation <= 0.0, E::INVALID_PARAMETER );
@@ -488,7 +495,7 @@ void AddWeightedLine(
    }
    start = std::max( start, dip::sint( 0 ));
    end = std::min( end, length - 1 );
-   out += static_cast< dip::sint >( start ) * stride;
+   out += start * stride;
    for( dip::sint jj = start; jj <= end; ++jj, out += stride ) {
       dip::sint offset = 0;
       for( dip::uint ii = 0; ii < value.size(); ++ii ) {
@@ -519,7 +526,7 @@ void BoxBlurredEdge(
    start = std::max( start, dip::sint( 0 ));
    end = std::min( end, length - 1 );
    dfloat norm = -1.0 / ( sigma * std::sqrt( 2.0 ));
-   out += static_cast< dip::sint >( start ) * stride;
+   out += start * stride;
    for( dip::sint jj = start; jj <= end; ++jj, out += stride ) {
       dfloat d = std::abs( static_cast< dfloat >( jj ) - origin ) - radius;
       d = std::max( d, distance );
@@ -553,7 +560,7 @@ void BoxBlurredLine(
    start = std::max( start, dip::sint( 0 ));
    end = std::min( end, length - 1 );
    dfloat scale = -0.5 / ( sigma * sigma );
-   out += static_cast< dip::sint >( start ) * stride;
+   out += start * stride;
    for( dip::sint jj = start; jj <= end; ++jj, out += stride ) {
       dfloat d = std::abs( static_cast< dfloat >( jj ) - origin ) - radius;
       d = std::max( d, distance );
@@ -581,7 +588,7 @@ class DrawBandlimitedBoxLineFilter : public Framework::ScanLineFilter {
             }
          }
       }
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint nTensorElements ) override {
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint nTensorElements ) override {
          return ( filled_ ? 55 : 25 ) + nTensorElements; // This is not correct, we only do this for a subset of pixels on each line...
       }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
@@ -672,7 +679,7 @@ void DrawBandlimitedBox(
       DIP_THROW_IF( s <= 0.0, E::INVALID_PARAMETER );
    }
    DIP_THROW_IF( origin.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
-   bool filled;
+   bool filled{};
    DIP_STACK_TRACE_THIS( filled = BooleanFromString( mode, S::FILLED, S::EMPTY ));
    DIP_THROW_IF( sigma <= 0.0, E::INVALID_PARAMETER );
    DIP_THROW_IF( truncation <= 0.0, E::INVALID_PARAMETER );
@@ -806,7 +813,7 @@ class GaussianEdgeClipLineFilter : public Framework::ScanLineFilter {
             v *= FloatType< TPI >( 0.5 );
          }
       }
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint nTensorElements ) override {
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint nTensorElements ) override {
          return 52 + nTensorElements; // but only on a subset of pixels...
       }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
@@ -873,7 +880,7 @@ class GaussianLineClipLineFilter : public Framework::ScanLineFilter {
             v *= norm;
          }
       }
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint nTensorElements ) override {
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint nTensorElements ) override {
          return 22 + nTensorElements; // but only on a subset of pixels...
       }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {

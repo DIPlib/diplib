@@ -15,10 +15,16 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/generation.h"
+
+#include <algorithm>
+#include <cmath>
+#include <vector>
+
+#include "diplib.h"
 #include "diplib/border.h"
 #include "diplib/overload.h"
+
 #include "draw_support.h"
 
 namespace dip {

@@ -15,17 +15,22 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/generation.h"
-#include "diplib/math.h"
-#include "diplib/statistics.h"
-#include "diplib/geometry.h"
-#include "diplib/transform.h"
-#include "diplib/linear.h"
-#include "diplib/microscopy.h"
-#include "diplib/mapping.h"
+
+#include <algorithm>
+#include <cmath>
+#include <utility>
+
+#include "diplib.h"
 #include "diplib/framework.h"
-#include "diplib/overload.h"
+#include "diplib/geometry.h"
+#include "diplib/linear.h"
+#include "diplib/mapping.h"
+#include "diplib/math.h"
+#include "diplib/microscopy.h"
+#include "diplib/random.h"
+#include "diplib/statistics.h"
+#include "diplib/transform.h"
 
 namespace dip {
 
@@ -47,7 +52,7 @@ dfloat ModifiedSinc( dfloat rr, dfloat scale, dfloat center ) {
 
 class FTBoxLineFilter : public Framework::ScanLineFilter {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override {
          return center_.size() * 20;
       }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
@@ -78,7 +83,7 @@ class FTBoxLineFilter : public Framework::ScanLineFilter {
 
 class FTCrossLineFilter : public Framework::ScanLineFilter {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override {
          return center_.size() * 20;
       }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
@@ -279,7 +284,7 @@ void TestObject(
    DIP_THROW_IF( params.objectSizes.empty(), E::ARRAY_PARAMETER_EMPTY );
    dip::uint nDims = out.Dimensionality();
    DIP_THROW_IF(( params.objectSizes.size() != 1 ) && ( params.objectSizes.size() != nDims ), E::ARRAY_PARAMETER_WRONG_LENGTH );
-   bool isFT;
+   bool isFT{};
    DIP_STACK_TRACE_THIS( isFT = BooleanFromString( params.generationMethod, S::FOURIER, S::GAUSSIAN ));
 
    // Origin for "gauss" method

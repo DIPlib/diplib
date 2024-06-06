@@ -14,11 +14,16 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/generation.h"
 
+#include <algorithm>
+#include <cmath>
+#include <vector>
+
+#include "diplib.h"
+
 #ifdef DIP_CONFIG_HAS_FREETYPE
-#  include <ft2build.h>
+#  include <ft2build.h> // IWYU pragma: keep
 #  include FT_FREETYPE_H
 #  include FT_GLYPH_H
 #endif

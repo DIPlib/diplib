@@ -15,12 +15,17 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
-#include "diplib/random.h"
 #include "diplib/generation.h"
+
+#include <cmath>
+#include <memory>
+#include <vector>
+
+#include "diplib.h"
+#include "diplib/framework.h"
+#include "diplib/random.h"
 #include "diplib/statistics.h"
 #include "diplib/transform.h"
-#include "diplib/framework.h"
 
 namespace dip {
 
@@ -29,7 +34,7 @@ namespace dip {
 namespace {
 class UniformScanLineFilter : public Framework::ScanLineFilter {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 40; }
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override { return 40; }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dfloat const* in = static_cast< dfloat const* >( params.inBuffer[ 0 ].buffer );
          dip::sint inStride = params.inBuffer[ 0 ].stride;
@@ -59,6 +64,10 @@ class UniformScanLineFilter : public Framework::ScanLineFilter {
       // Make the class non copyable (generatorArray_ cannot be copied)
       UniformScanLineFilter( const UniformScanLineFilter& ) = delete;
       UniformScanLineFilter& operator=( const UniformScanLineFilter& ) = delete;
+      // Complete the set of special functions
+      UniformScanLineFilter( UniformScanLineFilter&& ) = delete;
+      UniformScanLineFilter& operator=( UniformScanLineFilter&& ) = delete;
+      ~UniformScanLineFilter() override = default;
    private:
       Random& random_;
       std::vector< Random > randomArray_;
@@ -79,7 +88,7 @@ void UniformNoise( Image const& in, Image& out, Random& random, dfloat lowerBoun
 namespace {
 class GaussianScanLineFilter : public Framework::ScanLineFilter {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 150; }
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override { return 150; }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dfloat const* in = static_cast< dfloat const* >( params.inBuffer[ 0 ].buffer );
          dip::sint inStride = params.inBuffer[ 0 ].stride;
@@ -108,6 +117,10 @@ class GaussianScanLineFilter : public Framework::ScanLineFilter {
       // Make the class non copyable (generatorArray_ cannot be copied)
       GaussianScanLineFilter( const GaussianScanLineFilter& ) = delete;
       GaussianScanLineFilter& operator=( const GaussianScanLineFilter& ) = delete;
+      // Complete the set of special functions
+      GaussianScanLineFilter( GaussianScanLineFilter&& ) = delete;
+      GaussianScanLineFilter& operator=( GaussianScanLineFilter&& ) = delete;
+      ~GaussianScanLineFilter() override = default;
    private:
       Random& random_;
       std::vector< Random > randomArray_;
@@ -127,7 +140,7 @@ void GaussianNoise( Image const& in, Image& out, Random& random, dfloat variance
 namespace {
 class PoissonScanLineFilter : public Framework::ScanLineFilter {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 800; }
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override { return 800; }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dfloat const* in = static_cast< dfloat const* >( params.inBuffer[ 0 ].buffer );
          dip::sint inStride = params.inBuffer[ 0 ].stride;
@@ -156,6 +169,10 @@ class PoissonScanLineFilter : public Framework::ScanLineFilter {
       // Make the class non copyable (generatorArray_ cannot be copied)
       PoissonScanLineFilter( const PoissonScanLineFilter& ) = delete;
       PoissonScanLineFilter& operator=( const PoissonScanLineFilter& ) = delete;
+      // Complete the set of special functions
+      PoissonScanLineFilter( PoissonScanLineFilter&& ) = delete;
+      PoissonScanLineFilter& operator=( PoissonScanLineFilter&& ) = delete;
+      ~PoissonScanLineFilter() override = default;
    private:
       Random& random_;
       std::vector< Random > randomArray_;
@@ -175,7 +192,7 @@ void PoissonNoise( Image const& in, Image& out, Random& random, dfloat conversio
 namespace {
 class BinaryScanLineFilter : public Framework::ScanLineFilter {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 40; }
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override { return 40; }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          bin const* in = static_cast< bin const* >( params.inBuffer[ 0 ].buffer );
          dip::sint inStride = params.inBuffer[ 0 ].stride;
@@ -205,6 +222,10 @@ class BinaryScanLineFilter : public Framework::ScanLineFilter {
       // Make the class non copyable (generatorArray_ cannot be copied)
       BinaryScanLineFilter( const BinaryScanLineFilter& ) = delete;
       BinaryScanLineFilter& operator=( const BinaryScanLineFilter& ) = delete;
+      // Complete the set of special functions
+      BinaryScanLineFilter( BinaryScanLineFilter&& ) = delete;
+      BinaryScanLineFilter& operator=( BinaryScanLineFilter&& ) = delete;
+      ~BinaryScanLineFilter() override = default;
    private:
       Random& random_;
       std::vector< Random > randomArray_;
@@ -224,7 +245,7 @@ void BinaryNoise( Image const& in, Image& out, Random& random, dfloat p10, dfloa
 namespace {
 class SaltPepperScanLineFilter : public Framework::ScanLineFilter {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 40; }
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override { return 40; }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dfloat const* in = static_cast< dfloat const* >( params.inBuffer[ 0 ].buffer );
          dip::sint inStride = params.inBuffer[ 0 ].stride;
@@ -261,6 +282,10 @@ class SaltPepperScanLineFilter : public Framework::ScanLineFilter {
       // Make the class non copyable (generatorArray_ cannot be copied)
       SaltPepperScanLineFilter( const SaltPepperScanLineFilter& ) = delete;
       SaltPepperScanLineFilter& operator=( const SaltPepperScanLineFilter& ) = delete;
+      // Complete the set of special functions
+      SaltPepperScanLineFilter( SaltPepperScanLineFilter&& ) = delete;
+      SaltPepperScanLineFilter& operator=( SaltPepperScanLineFilter&& ) = delete;
+      ~SaltPepperScanLineFilter() override = default;
    private:
       Random& random_;
       std::vector< Random > randomArray_;

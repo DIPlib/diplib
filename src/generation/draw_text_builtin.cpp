@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/generation.h"
-#include "diplib/geometry.h"
+
+#include <cmath>
+
+#include "diplib.h"
 #include "diplib/chain_code.h"
+#include "diplib/geometry.h"
 
 namespace dip {
 
@@ -154,11 +157,13 @@ dip::uint GetGlyphIndex( char ch ) {
 }
 
 GlyphData GetGlyphData( char ch ) {
-   GlyphData glyphData;
    dip::uint index = GetGlyphIndex( ch );
-   glyphData.shift = glyphShift[ index ];
-   glyphData.baseline = glyphBaseline[ index ];
-   glyphData.advance = glyphAdvance[ index ];
+   GlyphData glyphData {
+      Image{},
+      glyphShift[ index ],
+      glyphBaseline[ index ],
+      glyphAdvance[ index ],
+   };
    if( index > 0 ) { // If index == 0, it's a space, for which we don't have pixel data; the image will be raw.
       glyphData.image = Image( glyphImage + glyphOrigin[ index ], { glyphWidth[ index ], glyphHeight[ index ] } );
    }

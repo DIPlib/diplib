@@ -15,13 +15,25 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/generation.h"
-#include "diplib/generic_iterators.h"
+
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <cstdlib>
+#include <memory>
+#include <utility>
+#include <vector>
+
+#include "diplib.h"
 #include "diplib/chain_code.h" // Polygon
 #include "diplib/framework.h"
+#include "diplib/generic_iterators.h"
+#include "diplib/iterators.h"
 #include "diplib/overload.h"
+#include "diplib/random.h"
 #include "diplib/saturated_arithmetic.h"
+
 #include "draw_support.h"
 
 namespace dip {
@@ -243,7 +255,7 @@ void FillLine(
    }
    start = std::max( start, dip::sint( 0 ));
    end = std::min( end, length - 1 );
-   out += static_cast< dip::sint >( start ) * stride;
+   out += start * stride;
    for( dip::sint jj = start; jj <= end; ++jj, out += stride ) {
       dip::sint offset = 0;
       for( dip::uint ii = 0; ii < value.size(); ++ii ) {
@@ -498,7 +510,7 @@ void DrawPolygon2D(
 
 namespace {
 
-enum class EllipsoidNorm{ L1, L2, Lmax };
+enum class EllipsoidNorm : uint8 { L1, L2, Lmax };
 
 template< typename TPI >
 class DrawEllipsoidLineFilter : public Framework::ScanLineFilter {
@@ -513,7 +525,7 @@ class DrawEllipsoidLineFilter : public Framework::ScanLineFilter {
          dip::sint tensorStride = params.outBuffer[ 0 ].tensorStride;
          dip::sint length = static_cast< dip::sint >( params.bufferLength );
          dip::uint dim = params.dimension;
-         dfloat width;
+         dfloat width{};
          switch( norm_ ) {
             case EllipsoidNorm::L1: {
                dfloat distance = 0;
@@ -636,7 +648,7 @@ void DrawBox(
 
 namespace {
 
-enum class GridType { RECTANGULAR, HEXAGONAL, BCC, FCC };
+enum class GridType : uint8 { RECTANGULAR, HEXAGONAL, BCC, FCC };
 
 GridType GetGridType( String const& type ) {
    if( type == S::RECTANGULAR ) {
@@ -808,7 +820,8 @@ void FillRandomGrid1D( Image& out, UniformRandomGenerator& uniform, dfloat dista
 
 class FillRandomGrid2DLineFilter : public Framework::ScanLineFilter {
    public:
-      FillRandomGrid2DLineFilter( std::array< dfloat, 4 > const& M, VertexFloat offset ) : M_( M ), offset_( offset ) {
+      FillRandomGrid2DLineFilter( std::array< dfloat, 4 > const& M, VertexFloat offset ) // NOLINT(*-pro-type-member-init)
+            : M_( M ), offset_( offset ) {
          Inverse( 2, M_.data(), inv_M_.data() );
       }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
@@ -841,7 +854,7 @@ class FillRandomGrid2DLineFilter : public Framework::ScanLineFilter {
 };
 
 void FillRandomGrid2D( Image& out, UniformRandomGenerator& uniform, dfloat distance, bool isRectangular, bool isRotated ) {
-   std::array< dfloat, 4 > M;
+   std::array< dfloat, 4 > M{};
    dfloat x = 1;
    dfloat y = 0;
    if( isRotated ) {
@@ -882,7 +895,7 @@ void FillRandomGrid(
    DIP_THROW_IF( !out.DataType().IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
    dip::uint nDims = out.Dimensionality();
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
-   GridType type;
+   GridType type{};
    DIP_STACK_TRACE_THIS( type = GetGridType( type_s ));
    DIP_THROW_IF(( type == GridType::HEXAGONAL ) && ( nDims != 2 ), "Hexagonal grid requires a 2D image" );
    DIP_THROW_IF((( type == GridType::FCC ) || ( type == GridType::BCC )) && ( nDims != 3 ), "FCC and BCC grids require a 3D image" );
