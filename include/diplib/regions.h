@@ -133,15 +133,19 @@ DIP_NODISCARD inline UnsignedArray GetObjectLabels(
       Image::View const& label,
       String const& background = S::EXCLUDE
 ) {
+#if defined(__GNUG__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations" // GCC warns that we're using a deprecated function here. Duh!
+#endif
    if( label.Offsets().empty() ) {
       // This code works if either the view is regular or has a mask.
       return GetObjectLabels( label.Reference(), label.Mask(), background );
    }
    // When the view uses indices, we copy the data over to a new image, it's not worth while writing separate code for this case.
    return GetObjectLabels( Image( label ), {}, background );
+#if defined(__GNUG__)
 #pragma GCC diagnostic pop
+#endif
 }
 
 /// \brief Re-assigns labels to objects in a labeled image, such that all labels are consecutive.

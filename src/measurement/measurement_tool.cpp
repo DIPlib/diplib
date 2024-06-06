@@ -17,6 +17,7 @@
 
 #include "diplib/measurement.h"
 
+#include <algorithm>
 #include <cmath>
 #include <vector>
 
@@ -307,7 +308,7 @@ Measurement MeasurementTool::Measure(
       if( labelList.empty() ) {
          auto const& ids = measurement.Objects();
          labelList.resize( ids.size() );
-         std::copy( ids.begin(), ids.end(), labelList.begin() );
+         std::transform( ids.begin(), ids.end(), labelList.begin(), []( dip::uint v ){ return CastLabelType( v ); } );
       }
       ChainCodeArray chainCodeArray = GetImageChainCodes( label, labelList, connectivity );
       auto itCC = chainCodeArray.begin();
