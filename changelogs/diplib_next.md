@@ -134,6 +134,11 @@ title: "Changes DIPlib 3.x.x"
 - `dip::FourierTransform()` threw an exception when the real-to-complex dimension had a size of 2.
   See [issue #158](https://github.com/DIPlib/diplib/issues/158).
 
+- The 2D parabola fitting function used in `dip::SubpixelLocation()`, `dip::SubpixelMaxima()` and
+  `dip::SubpixelMinima()`, with the `"parabolic"` and `"gaussian"` methods, was using wrong weights,
+  making the result not precise. The 3D case was not affected. The faster `"parabolic separable"` and
+  `"gaussian separable"` methods were also not affected.
+
 ### Updated dependencies
 
 - Updated included header-only library *robin-map* to version 1.3.0. Assorted minor improvements.

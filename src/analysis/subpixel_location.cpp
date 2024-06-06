@@ -1,5 +1,5 @@
 /*
- * (c)2017, Cris Luengo.
+ * (c)2017-2024, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,14 +15,18 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/analysis.h"
-#include "diplib/morphology.h" // Maxima, Minima
-#include "diplib/generation.h" // SetBorder
-#include "diplib/geometry.h" // ResampleAtUnchecked
-#include "diplib/measurement.h" // MeasurementTool
-#include "diplib/overload.h"
+
+#include <algorithm>
+#include <cmath>
+
+#include "diplib.h"
+#include "diplib/generation.h"
+#include "diplib/geometry.h"
 #include "diplib/iterators.h"
+#include "diplib/measurement.h"
+#include "diplib/morphology.h"
+#include "diplib/overload.h"
 
 namespace dip {
 
@@ -102,12 +106,12 @@ bool quadratic_fit_3x3(
       dfloat* val      // value at maximum
 ) {
    dfloat w[] = {
-         -2/3,  4/3, -2/3,  4/3, 10/3,  4/3, -2/3,  4/3, -2/3,
-         -1  ,  0  ,  1  , -1  ,  0  ,  1  , -1  ,  0  ,  1  ,
-         -1  , -1  , -1  ,  0  ,  0  ,  0  ,  1  ,  1  ,  1  ,
-          1  , -2  ,  1  ,  1  , -2  ,  1  ,  1  , -2  ,  1  ,
-          1  ,  1  ,  1  , -2  , -2  , -2  ,  1  ,  1  ,  1  ,
-          1.5,  0  , -1.5,  0  ,  0  ,  0  , -1.5,  0  ,  1.5
+         -2./3.,  4./3., -2./3.,  4./3., 10./3.,  4./3., -2./3.,  4./3., -2./3.,
+         -1.   ,  0.   ,  1.   , -1.   ,  0.   ,  1.   , -1.   ,  0.   ,  1.   ,
+         -1.   , -1.   , -1.   ,  0.   ,  0.   ,  0.   ,  1.   ,  1.   ,  1.   ,
+          1.   , -2.   ,  1.   ,  1.   , -2.   ,  1.   ,  1.   , -2.   ,  1.   ,
+          1.   ,  1.   ,  1.   , -2.   , -2.   , -2.   ,  1.   ,  1.   ,  1.   ,
+          3./2.,  0.   , -3./2.,  0.   ,  0.   ,  0.   , -3./2.,  0.   ,  3./2.
    };
 
    // Least squares solution of the 2D quadratic fit
@@ -118,7 +122,7 @@ bool quadratic_fit_3x3(
       for( dip::uint jj = 0; jj < 9; ++jj ) {
          a[ ii ] += w[ kk++ ] * t[ jj ];
       }
-      a[ ii ] = a[ ii ] / 6;
+      a[ ii ] = a[ ii ] / 6.;
    }
 
    // Solution of the maximum offsets
@@ -179,16 +183,16 @@ bool quadratic_fit_3x3x3(
       dfloat* val      // value at maximum
 ) {
    dfloat w[] = {
-         -4./3,  2./3, -4./3,  2./3,  8./3,  2./3, -4./3,  2./3, -4./3,  2./3,  8./3,  2./3,  8./3, 14./3,  8./3,  2./3,  8./3,  2./3, -4./3,  2./3, -4./3,  2./3,  8./3,  2./3, -4./3,  2./3, -4./3,
-         -1   ,  0   ,  1   , -1   ,  0   ,  1   , -1   ,  0   ,  1   , -1   ,  0   ,  1   , -1   ,  0   ,  1   , -1   ,  0   ,  1   , -1   ,  0   ,  1   , -1   ,  0   ,  1   , -1   ,  0   ,  1   ,
-         -1   , -1   , -1   ,  0   ,  0   ,  0   ,  1   ,  1   ,  1   , -1   , -1   , -1   ,  0   ,  0   ,  0   ,  1   ,  1   ,  1   , -1   , -1   , -1   ,  0   ,  0   ,  0   ,  1   ,  1   ,  1   ,
-         -1   , -1   , -1   , -1   , -1   , -1   , -1   , -1   , -1   ,  0   ,  0   ,  0   ,  0   ,  0   ,  0   ,  0   ,  0   ,  0   ,  1   ,  1   ,  1   ,  1   ,  1   ,  1   ,  1   ,  1   ,  1   ,
-          1   , -2   ,  1   ,  1   , -2   ,  1   ,  1   , -2   ,  1   ,  1   , -2   ,  1   ,  1   , -2   ,  1   ,  1   , -2   ,  1   ,  1   , -2   ,  1   ,  1   , -2   ,  1   ,  1   , -2   ,  1   ,
-          1   ,  1   ,  1   , -2   , -2   , -2   ,  1   ,  1   ,  1   ,  1   ,  1   ,  1   , -2   , -2   , -2   ,  1   ,  1   ,  1   ,  1   ,  1   ,  1   , -2   , -2   , -2   ,  1   ,  1   ,  1   ,
-          1   ,  1   ,  1   ,  1   ,  1   ,  1   ,  1   ,  1   ,  1   , -2   , -2   , -2   , -2   , -2   , -2   , -2   , -2   , -2   ,  1   ,  1   ,  1   ,  1   ,  1   ,  1   ,  1   ,  1   ,  1   ,
-          1.5 ,  1.5 ,  1.5 ,  0   ,  0   ,  0   , -1.5 , -1.5 , -1.5 ,  0   ,  0   ,  0   ,  0   ,  0   ,  0   ,  0   ,  0   ,  0   , -1.5 , -1.5 , -1.5 ,  0   ,  0   ,  0   ,  1.5 ,  1.5 ,  1.5 ,
-          1.5 ,  0   , -1.5 ,  1.5 ,  0   , -1.5 ,  1.5 ,  0   , -1.5 ,  0   ,  0   ,  0   ,  0   ,  0   ,  0   ,  0   ,  0   ,  0   , -1.5 ,  0   ,  1.5 , -1.5 ,  0   ,  1.5 , -1.5 ,  0   ,  1.5 ,
-          1.5 ,  0   , -1.5 ,  0   ,  0   ,  0   , -1.5 ,  0   ,  1.5 ,  1.5 ,  0   , -1.5 ,  0   ,  0   ,  0   , -1.5 ,  0   ,  1.5 ,  1.5 ,  0   , -1.5 ,  0   ,  0   ,  0   , -1.5 ,  0   ,  1.5
+         -4./3.,  2./3., -4./3.,  2./3.,  8./3.,  2./3., -4./3.,  2./3., -4./3.,  2./3.,  8./3.,  2./3.,  8./3., 14./3.,  8./3.,  2./3.,  8./3.,  2./3., -4./3.,  2./3., -4./3.,  2./3.,  8./3.,  2./3., -4./3.,  2./3., -4./3.,
+         -1.   ,  0.   ,  1.   , -1.   ,  0.   ,  1.   , -1.   ,  0.   ,  1.   , -1.   ,  0.   ,  1.   , -1.   ,  0.   ,  1.   , -1.   ,  0.   ,  1.   , -1.   ,  0.   ,  1.   , -1.   ,  0.   ,  1.   , -1.   ,  0.   ,  1.   ,
+         -1.   , -1.   , -1.   ,  0.   ,  0.   ,  0.   ,  1.   ,  1.   ,  1.   , -1.   , -1.   , -1.   ,  0.   ,  0.   ,  0.   ,  1.   ,  1.   ,  1.   , -1.   , -1.   , -1.   ,  0.   ,  0.   ,  0.   ,  1.   ,  1.   ,  1.   ,
+         -1.   , -1.   , -1.   , -1.   , -1.   , -1.   , -1.   , -1.   , -1.   ,  0.   ,  0.   ,  0.   ,  0.   ,  0.   ,  0.   ,  0.   ,  0.   ,  0.   ,  1.   ,  1.   ,  1.   ,  1.   ,  1.   ,  1.   ,  1.   ,  1.   ,  1.   ,
+          1.   , -2.   ,  1.   ,  1.   , -2.   ,  1.   ,  1.   , -2.   ,  1.   ,  1.   , -2.   ,  1.   ,  1.   , -2.   ,  1.   ,  1.   , -2.   ,  1.   ,  1.   , -2.   ,  1.   ,  1.   , -2.   ,  1.   ,  1.   , -2.   ,  1.   ,
+          1.   ,  1.   ,  1.   , -2.   , -2.   , -2.   ,  1.   ,  1.   ,  1.   ,  1.   ,  1.   ,  1.   , -2.   , -2.   , -2.   ,  1.   ,  1.   ,  1.   ,  1.   ,  1.   ,  1.   , -2.   , -2.   , -2.   ,  1.   ,  1.   ,  1.   ,
+          1.   ,  1.   ,  1.   ,  1.   ,  1.   ,  1.   ,  1.   ,  1.   ,  1.   , -2.   , -2.   , -2.   , -2.   , -2.   , -2.   , -2.   , -2.   , -2.   ,  1.   ,  1.   ,  1.   ,  1.   ,  1.   ,  1.   ,  1.   ,  1.   ,  1.   ,
+          3./2.,  3./2.,  3./2.,  0.   ,  0.   ,  0.   , -3./2., -3./2., -3./2.,  0.   ,  0.   ,  0.   ,  0.   ,  0.   ,  0.   ,  0.   ,  0.   ,  0.   , -3./2., -3./2., -3./2.,  0.   ,  0.   ,  0.   ,  3./2.,  3./2.,  3./2.,
+          3./2.,  0.   , -3./2.,  3./2.,  0.   , -3./2.,  3./2.,  0.   , -3./2.,  0.   ,  0.   ,  0.   ,  0.   ,  0.   ,  0.   ,  0.   ,  0.   ,  0.   , -3./2.,  0.   ,  3./2., -3./2.,  0.   ,  3./2., -3./2.,  0.   ,  3./2.,
+          3./2.,  0.   , -3./2.,  0.   ,  0.   ,  0.   , -3./2.,  0.   ,  3./2.,  3./2.,  0.   , -3./2.,  0.   ,  0.   ,  0.   , -3./2.,  0.   ,  3./2.,  3./2.,  0.   , -3./2.,  0.   ,  0.   ,  0.   , -3./2.,  0.   ,  1.5
    };
 
    // Least squares solution of the 3D quadratic fit
@@ -255,7 +259,7 @@ void log_transform(
    }
 }
 
-enum class SubpixelExtremumMethod {
+enum class SubpixelExtremumMethod : uint8 {
       LINEAR,
       PARABOLIC_SEPARABLE,
       GAUSSIAN_SEPARABLE,
@@ -265,7 +269,7 @@ enum class SubpixelExtremumMethod {
 };
 
 SubpixelExtremumMethod ParseMethod( String const& s_method, dip::uint nDims ) {
-   SubpixelExtremumMethod method;
+   SubpixelExtremumMethod method{};
    if( s_method == dip::S::LINEAR ) {
       method = SubpixelExtremumMethod::LINEAR;
    } else if( s_method == dip::S::PARABOLIC ) {
@@ -374,7 +378,7 @@ SubpixelLocationResult SubpixelLocationInternal(
       // Parabolic fit, non-separable
       case SubpixelExtremumMethod::PARABOLIC:
       case SubpixelExtremumMethod::GAUSSIAN: {
-         dfloat val;
+         dfloat val{};
          switch( nd ) {
             case 2: {
                dfloat t[ 9 ]; // 3x3 neighborhood around integer local maximum
@@ -386,12 +390,12 @@ SubpixelLocationResult SubpixelLocationInternal(
                }
                bool inverted = false;
                if( method == SubpixelExtremumMethod::GAUSSIAN ) {
-                  inverted = t[ 1 + 3 ] < 0;
-                  log_transform( t, 3 * 3, inverted );
+                  inverted = t[ 4 ] < 0;
+                  log_transform( t, 9, inverted );
                }
                out.coordinates[ 0 ] = static_cast< dfloat >( position[ 0 ] );
                out.coordinates[ 1 ] = static_cast< dfloat >( position[ 1 ] );
-               dfloat x, y;
+               dfloat x{}, y{};
                if( quadratic_fit_3x3( t, &x, &y, &val )) {
                   out.coordinates[ 0 ] += x;
                   out.coordinates[ 1 ] += y;
@@ -405,7 +409,7 @@ SubpixelLocationResult SubpixelLocationInternal(
                break;
             }
             case 3: {
-               dfloat t[ 28 ]; // 3x3x3 neighborhood around integer local maximum
+               dfloat t[ 27 ]; // 3x3x3 neighborhood around integer local maximum
                dip::uint count = 0;
                for( dip::sint kk = -1; kk <= 1; ++kk ) {
                   for( dip::sint jj = -1; jj <= 1; ++jj ) {
@@ -416,13 +420,13 @@ SubpixelLocationResult SubpixelLocationInternal(
                }
                bool inverted = false;
                if( method == SubpixelExtremumMethod::GAUSSIAN ) {
-                  inverted = t[ 1 + 3 + 3 * 3 ] < 0;
-                  log_transform( t, 3 * 3 * 3, inverted );
+                  inverted = t[ 13 ] < 0;
+                  log_transform( t, 27, inverted );
                }
                out.coordinates[ 0 ] = static_cast< dfloat >( position[ 0 ] );
                out.coordinates[ 1 ] = static_cast< dfloat >( position[ 1 ] );
                out.coordinates[ 2 ] = static_cast< dfloat >( position[ 2 ] );
-               dfloat x, y, z;
+               dfloat x{}, y{}, z{};
                if( quadratic_fit_3x3x3( t, &x, &y, &z, &val )) {
                   out.coordinates[ 0 ] += x;
                   out.coordinates[ 1 ] += y;
@@ -486,8 +490,8 @@ SubpixelLocationResult SubpixelLocation(
          return out;
       }
    }
-   bool invert;
-   SubpixelExtremumMethod method;
+   bool invert{};
+   SubpixelExtremumMethod method{};
    DIP_START_STACK_TRACE
       invert = BooleanFromString( polarity, S::MINIMUM, S::MAXIMUM );
       method = ParseMethod( s_method, nDims );
@@ -512,7 +516,7 @@ SubpixelLocationArray SubpixelExtrema(
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    dip::uint nDims = in.Dimensionality();
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
-   SubpixelExtremumMethod method;
+   SubpixelExtremumMethod method{};
    DIP_STACK_TRACE_THIS( method = ParseMethod( s_method, nDims ));
 
    // Find local extrema
@@ -605,16 +609,135 @@ FloatArray MeanShift(
    epsilon *= epsilon; // epsilon square
    auto interpFunc = PrepareResampleAtUnchecked( meanShiftVectorResult, S::CUBIC_ORDER_3 );
    auto pt = start;
-   dfloat distance;
-   std::cout << "pt = " << pt << ":\n";
+   dfloat distance{};
+   // std::cout << "pt = " << pt << ":\n";
    do {
       auto meanShift = static_cast< FloatArray >( ResampleAtUnchecked( meanShiftVectorResult, pt, interpFunc ));
-      std::cout << "     " << meanShift << '\n';
+      // std::cout << "     " << meanShift << '\n';
       pt += meanShift;
       distance = meanShift.norm_square();
    } while( distance > epsilon );
-   std::cout << '\n';
+   // std::cout << '\n';
    return pt;
 }
 
 } // namespace dip
+
+#ifdef DIP_CONFIG_ENABLE_DOCTEST
+#include "doctest.h"
+
+DOCTEST_TEST_CASE( "[DIPlib] testing the quadratic fit" ) {
+   // A 1D parabola:
+   auto p1 = []( double x ) { return x * x; };
+
+   DOCTEST_SUBCASE( "2D parabola" ) {
+      // A 2D parabola centered at (cx, cy), with height v:
+      double cx = 0.3715, cy = -0.0396, v = 4.0125;
+      auto p2 = [&]( double x, double y ) { return v - ( p1( x - cx ) + p1( y - cy )); };
+      double data[ 9 ] = { p2( -1, -1 ), p2( 0, -1 ), p2( 1, -1 ),
+                             p2( -1,  0 ), p2( 0,  0 ), p2( 1,  0 ),
+                             p2( -1,  1 ), p2( 0,  1 ), p2( 1,  1 ) };
+      double x{}, y{}, val{};
+      DOCTEST_CHECK( dip::quadratic_fit_3x3( data, &x, &y, &val ));
+      DOCTEST_CHECK( x == doctest::Approx( cx ));
+      DOCTEST_CHECK( y == doctest::Approx( cy ));
+      DOCTEST_CHECK( val == doctest::Approx( v ));
+
+      dip::Image img2d{ data, { 3, 3 }};
+      dip::SubpixelLocationResult res = dip::SubpixelLocationInternal< dip::dfloat >( img2d, { 1, 1 }, dip::SubpixelExtremumMethod::PARABOLIC, false );
+      DOCTEST_CHECK( res.coordinates[ 0 ] == doctest::Approx( 1. + cx ));
+      DOCTEST_CHECK( res.coordinates[ 1 ] == doctest::Approx( 1. + cy ));
+      DOCTEST_CHECK( res.value == doctest::Approx( v ));
+      res = dip::SubpixelLocationInternal< dip::dfloat >( img2d, { 1, 1 }, dip::SubpixelExtremumMethod::PARABOLIC_SEPARABLE, false );
+      DOCTEST_CHECK( res.coordinates[ 0 ] == doctest::Approx( 1. + cx ));
+      DOCTEST_CHECK( res.coordinates[ 1 ] == doctest::Approx( 1. + cy ));
+      DOCTEST_CHECK( std::abs( res.value - v ) < 0.003 );  // This measure is much more imprecise for the separable case
+   }
+
+   DOCTEST_SUBCASE( "3D parabola" ) {
+      // A 3D parabola centered at (cx, cy, cz), with height v:
+      double cx = -0.2953, cy = -0.0052, cz = 0.4823, v = 16.234;
+      auto p3 = [&]( double x, double y, double z ) { return v - ( p1( x - cx ) + p1( y - cy ) + p1( z - cz )); };
+      double data[ 27 ] = { p3( -1, -1, -1 ), p3( 0, -1, -1 ), p3( 1, -1, -1 ),
+                              p3( -1,  0, -1 ), p3( 0,  0, -1 ), p3( 1,  0, -1 ),
+                              p3( -1,  1, -1 ), p3( 0,  1, -1 ), p3( 1,  1, -1 ),
+
+                              p3( -1, -1,  0 ), p3( 0, -1,  0 ), p3( 1, -1,  0 ),
+                              p3( -1,  0,  0 ), p3( 0,  0,  0 ), p3( 1,  0,  0 ),
+                              p3( -1,  1,  0 ), p3( 0,  1,  0 ), p3( 1,  1,  0 ),
+
+                              p3( -1, -1,  1 ), p3( 0, -1,  1 ), p3( 1, -1,  1 ),
+                              p3( -1,  0,  1 ), p3( 0,  0,  1 ), p3( 1,  0,  1 ),
+                              p3( -1,  1,  1 ), p3( 0,  1,  1 ), p3( 1,  1,  1 ) };
+      double x{}, y{}, z{}, val{};
+      DOCTEST_CHECK( dip::quadratic_fit_3x3x3( data, &x, &y, &z, &val ));
+      DOCTEST_CHECK( x == doctest::Approx( cx ));
+      DOCTEST_CHECK( y == doctest::Approx( cy ));
+      DOCTEST_CHECK( z == doctest::Approx( cz ));
+      DOCTEST_CHECK( val == doctest::Approx( v ));
+
+      dip::Image img3d{ data, { 3, 3, 3 }};
+      dip::SubpixelLocationResult res = dip::SubpixelLocationInternal< dip::dfloat >( img3d, { 1, 1, 1 }, dip::SubpixelExtremumMethod::PARABOLIC, false );
+      DOCTEST_CHECK( res.coordinates[ 0 ] == doctest::Approx( 1. + cx ));
+      DOCTEST_CHECK( res.coordinates[ 1 ] == doctest::Approx( 1. + cy ));
+      DOCTEST_CHECK( res.coordinates[ 2 ] == doctest::Approx( 1. + cz ));
+      DOCTEST_CHECK( res.value == doctest::Approx( v ));
+      res = dip::SubpixelLocationInternal< dip::dfloat >( img3d, { 1, 1, 1 }, dip::SubpixelExtremumMethod::PARABOLIC_SEPARABLE, false );
+      DOCTEST_CHECK( res.coordinates[ 0 ] == doctest::Approx( 1. + cx ));
+      DOCTEST_CHECK( res.coordinates[ 1 ] == doctest::Approx( 1. + cy ));
+      DOCTEST_CHECK( res.coordinates[ 2 ] == doctest::Approx( 1. + cz ));
+      DOCTEST_CHECK( std::abs( res.value - v ) < 0.3 );  // This measure is much more imprecise for the separable case
+   }
+
+   auto g1 = []( double x ) { return std::exp( -0.5 * x * x ); };
+
+   DOCTEST_SUBCASE( "2D Gaussian" ) {
+      // A 2D Gaussian centered at (cx, cy), with height v:
+      double cx = 0.3715, cy = -0.0396, v = 4.0125;
+      auto p2 = [&]( double x, double y ) { return v * g1( x - cx ) * g1( y - cy ); };
+      double data[ 9 ] = { p2( -1, -1 ), p2( 0, -1 ), p2( 1, -1 ),
+                             p2( -1,  0 ), p2( 0,  0 ), p2( 1,  0 ),
+                             p2( -1,  1 ), p2( 0,  1 ), p2( 1,  1 ) };
+
+      dip::Image img2d{ data, { 3, 3 }};
+      dip::SubpixelLocationResult res = dip::SubpixelLocationInternal< dip::dfloat >( img2d, { 1, 1 }, dip::SubpixelExtremumMethod::GAUSSIAN, false );
+      DOCTEST_CHECK( res.coordinates[ 0 ] == doctest::Approx( 1. + cx ));
+      DOCTEST_CHECK( res.coordinates[ 1 ] == doctest::Approx( 1. + cy ));
+      DOCTEST_CHECK( res.value == doctest::Approx( v ));
+      res = dip::SubpixelLocationInternal< dip::dfloat >( img2d, { 1, 1 }, dip::SubpixelExtremumMethod::GAUSSIAN_SEPARABLE, false );
+      DOCTEST_CHECK( res.coordinates[ 0 ] == doctest::Approx( 1. + cx ));
+      DOCTEST_CHECK( res.coordinates[ 1 ] == doctest::Approx( 1. + cy ));
+      DOCTEST_CHECK( std::abs( res.value - v ) < 0.004 );  // This measure is much more imprecise for the separable case
+   }
+
+   DOCTEST_SUBCASE( "3D Gaussian" ) {
+      // A 3D Gaussian centered at (cx, cy, cz), with height v:
+      double cx = -0.2953, cy = -0.0052, cz = 0.4823, v = 16.234;
+      auto p3 = [&]( double x, double y, double z ) { return v * g1( x - cx ) * g1( y - cy ) * g1( z - cz ); };
+      double data[ 27 ] = { p3( -1, -1, -1 ), p3( 0, -1, -1 ), p3( 1, -1, -1 ),
+                              p3( -1,  0, -1 ), p3( 0,  0, -1 ), p3( 1,  0, -1 ),
+                              p3( -1,  1, -1 ), p3( 0,  1, -1 ), p3( 1,  1, -1 ),
+
+                              p3( -1, -1,  0 ), p3( 0, -1,  0 ), p3( 1, -1,  0 ),
+                              p3( -1,  0,  0 ), p3( 0,  0,  0 ), p3( 1,  0,  0 ),
+                              p3( -1,  1,  0 ), p3( 0,  1,  0 ), p3( 1,  1,  0 ),
+
+                              p3( -1, -1,  1 ), p3( 0, -1,  1 ), p3( 1, -1,  1 ),
+                              p3( -1,  0,  1 ), p3( 0,  0,  1 ), p3( 1,  0,  1 ),
+                              p3( -1,  1,  1 ), p3( 0,  1,  1 ), p3( 1,  1,  1 ) };
+
+      dip::Image img3d{ data, { 3, 3, 3 }};
+      dip::SubpixelLocationResult res = dip::SubpixelLocationInternal< dip::dfloat >( img3d, { 1, 1, 1 }, dip::SubpixelExtremumMethod::GAUSSIAN, false );
+      DOCTEST_CHECK( res.coordinates[ 0 ] == doctest::Approx( 1. + cx ));
+      DOCTEST_CHECK( res.coordinates[ 1 ] == doctest::Approx( 1. + cy ));
+      DOCTEST_CHECK( res.coordinates[ 2 ] == doctest::Approx( 1. + cz ));
+      DOCTEST_CHECK( res.value == doctest::Approx( v ));
+      res = dip::SubpixelLocationInternal< dip::dfloat >( img3d, { 1, 1, 1 }, dip::SubpixelExtremumMethod::GAUSSIAN_SEPARABLE, false );
+      DOCTEST_CHECK( res.coordinates[ 0 ] == doctest::Approx( 1. + cx ));
+      DOCTEST_CHECK( res.coordinates[ 1 ] == doctest::Approx( 1. + cy ));
+      DOCTEST_CHECK( res.coordinates[ 2 ] == doctest::Approx( 1. + cz ));
+      DOCTEST_CHECK( std::abs( res.value - v ) < 0.8 );  // This measure is much more imprecise for the separable case
+   }
+}
+
+#endif // DIP_CONFIG_ENABLE_DOCTEST
