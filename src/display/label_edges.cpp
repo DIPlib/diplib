@@ -15,10 +15,11 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/display.h"
-#include "diplib/morphology.h"
+
+#include "diplib.h"
 #include "diplib/geometry.h"
+#include "diplib/morphology.h"
 
 namespace dip {
 

@@ -15,17 +15,25 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/display.h"
+
+#include <algorithm>
+#include <cmath>
+#include <complex>
+#include <limits>
+#include <utility>
+
+#include "diplib.h"
+#include "diplib/accumulators.h"
 #include "diplib/math.h"
-#include "diplib/statistics.h"
 #include "diplib/overload.h"
+#include "diplib/statistics.h"
 
 namespace dip {
 
 // Don't call this function if mappingMode_ == MappingMode::MANUAL or mappingMode_ == MappingMode::MODULO!
 void ImageDisplay::ComputeLimits( bool set ) {
-   Limits* lims;
+   Limits* lims{};
    Image tmp;
    if( globalStretch_ ) {
       if( mappingMode_ == MappingMode::PERCENTILE ) {
@@ -105,7 +113,7 @@ void ImageDisplay::InvalidateSliceLimits() {
 }
 
 ImageDisplay::Limits ImageDisplay::GetLimits( bool compute ) {
-   Limits* lims;
+   Limits* lims{};
    if( globalStretch_ ) {
       lims = &( globalLimits_[ static_cast< unsigned >( complexMode_ ) ].maxMin );
    } else {
@@ -230,9 +238,9 @@ struct ScalingParams {
    bool logarithmic;
    bool useModulo;
 
-   ScalingParams( ImageDisplay::MappingMode mappingMode, ImageDisplay::Limits range ) {
-      logarithmic = mappingMode == ImageDisplay::MappingMode::LOGARITHMIC;
-      useModulo = mappingMode == ImageDisplay::MappingMode::MODULO;
+   ScalingParams( ImageDisplay::MappingMode mappingMode, ImageDisplay::Limits range )
+      : logarithmic( mappingMode == ImageDisplay::MappingMode::LOGARITHMIC ),
+        useModulo( mappingMode == ImageDisplay::MappingMode::MODULO ) {
       if( logarithmic ) {
          // For logarithmic scaling, we linearly map the input data to the range [1,1e3], then take the logarithm, and finally scale to [0,255].
          scale = ( logRange - 1.0 ) / ( range.upper - range.lower );
@@ -244,22 +252,22 @@ struct ScalingParams {
       }
    }
 
-   uint8 ScaleLinear( dfloat value ) {
-      return clamp_cast< uint8 >(value * scale + offset );
+   uint8 ScaleLinear( dfloat value ) const {
+      return clamp_cast< uint8 >( value * scale + offset );
    }
 
-   uint8 ScaleLogarithmic( dfloat value ) {
+   uint8 ScaleLogarithmic( dfloat value ) const {
       return clamp_cast< uint8 >( std::log( value * scale + offset ) * logScale );
    }
 
-   uint8 ScaleModulo( dfloat value ) {
+   uint8 ScaleModulo( dfloat value ) const {
       //dip::uint scaled = static_cast< dip::uint >( value * scale + offset );
       dip::uint scaled = static_cast< dip::uint >( value ); // Note that the modulo mode cannot be selected without range being set to [0,255].
       scaled = ( scaled == 0 ) ? ( 0 ) : (( scaled - 1 ) % maxUint8 + 1 );
       return static_cast< uint8 >( scaled );
    }
 
-   uint8 Scale( dfloat value ) {
+   uint8 Scale( dfloat value ) const {
       if( logarithmic ) {
          return ScaleLogarithmic( value );
       }
