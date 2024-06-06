@@ -15,23 +15,29 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/detection.h"
+
+#include <algorithm>
+#include <cmath>
+#include <utility>
+
+#include "diplib.h"
 #include "diplib/generation.h"
-#include "diplib/transform.h"
+#include "diplib/generic_iterators.h"
+#include "diplib/iterators.h"
 #include "diplib/mapping.h"
 #include "diplib/math.h"
-#include "diplib/morphology.h"
 #include "diplib/measurement.h"
-#include "diplib/generic_iterators.h"
+#include "diplib/morphology.h"
+#include "diplib/transform.h"
 
 namespace dip {
 
 namespace {
 
-enum class RadonTransformCirclesMode { full, projection, subpixelProjection };
+enum class RadonTransformCirclesMode : uint8 { full, projection, subpixelProjection };
 
-enum class RadonTransformCirclesOption { normalize, correct, hollow, filled, detectMaxima, saveParamSpace };
+enum class RadonTransformCirclesOption : uint8 { normalize, correct, hollow, filled, detectMaxima, saveParamSpace };
 DIP_DECLARE_OPTIONS( RadonTransformCirclesOption, RadonTransformCirclesOptions )
 
 void CreateSphere(
@@ -291,7 +297,7 @@ RadonCircleParametersArray RadonTransformCircles(
    DIP_THROW_IF( radii.step < 1, E::PARAMETER_OUT_OF_RANGE );
 
    // Modes
-   RadonTransformCirclesMode mode;
+   RadonTransformCirclesMode mode{};
    if( s_mode == S::FULL ) {
       mode = RadonTransformCirclesMode::full;
    } else if( s_mode == S::PROJECTION ) {

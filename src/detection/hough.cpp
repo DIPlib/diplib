@@ -14,12 +14,18 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/detection.h"
-#include "diplib/generation.h"
+
+#include <algorithm>
+#include <cmath>
+#include <utility>
+#include <vector>
+
+#include "diplib.h"
 #include "diplib/distribution.h"
-#include "diplib/morphology.h"
+#include "diplib/generation.h"
 #include "diplib/measurement.h"
+#include "diplib/morphology.h"
 
 namespace dip {
 
@@ -29,7 +35,7 @@ struct IntegerCoords{
    dip::sint x;
    dip::sint y;
 
-   operator UnsignedArray() {
+   operator UnsignedArray() const {
       return { static_cast< dip::uint >( x ), static_cast< dip::uint >( y ) };
    }
 };
@@ -49,9 +55,9 @@ IntegerCoords operator-( IntegerCoords lhs, IntegerCoords rhs ) {
 struct Candidate {
    UnsignedArray pos;
    dfloat val;
-   bool valid;
+   bool valid = true;
 
-   Candidate( UnsignedArray _pos = {}, dfloat _val = 0. ) : pos( std::move( _pos )), val( _val ), valid( true ) {}
+   Candidate( UnsignedArray _pos = {}, dfloat _val = 0. ) : pos( std::move( _pos )), val( _val ) {}
 
    bool operator>( Candidate const& other ) const {
       return val > other.val;
@@ -109,7 +115,7 @@ dfloat norm_square(
    dfloat n = 0;
    dip::uint sz = std::min( a.size(), b.size() );
    for( dip::uint ii = 0; ii != sz; ++ii ) {
-      n += pow( static_cast< dfloat >( a[ ii ] ) - static_cast< dfloat >( b[ ii ] ), 2 );
+      n += std::pow( static_cast< dfloat >( a[ ii ] ) - static_cast< dfloat >( b[ ii ] ), 2 );
    }
    return n;
 }
@@ -134,8 +140,8 @@ void HoughTransformCircleCenters(
 
    IntegerCoords sz{ static_cast< dip::sint >( in.Size( 0 ) - 1 ),
                      static_cast< dip::sint >( in.Size( 1 ) - 1 ) };
-   dfloat minsz;
-   dfloat maxsz;
+   dfloat minsz{};
+   dfloat maxsz{};
    if( range.empty() ) {
       minsz = 0;
       maxsz = std::hypot( sz.x, sz.y );
@@ -328,7 +334,7 @@ FloatCoordinateArray FindHoughCircles(
 #include "diplib/math.h"
 #include "diplib/statistics.h"
 
-DOCTEST_TEST_CASE("[DIPlib] testing the HoughTransformCircleCenters function") {
+DOCTEST_TEST_CASE( "[DIPlib] testing the HoughTransformCircleCenters function" ) {
    // Draw a circle
    auto a = dip::Image( { 512, 512 }, 1, dip::DT_SFLOAT );
    a.Fill( 0 );
@@ -347,7 +353,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the HoughTransformCircleCenters function") {
    DOCTEST_CHECK( m[1] == 256 );
 }
 
-DOCTEST_TEST_CASE("[DIPlib] testing the FindHoughCircles function") {
+DOCTEST_TEST_CASE( "[DIPlib] testing the FindHoughCircles function" ) {
    // Draw some circles
    auto a = dip::Image( {512, 512}, 1, dip::DT_SFLOAT );
    a.Fill( 0 );

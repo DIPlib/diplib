@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/detection.h"
+
+#include "diplib.h"
 #include "diplib/analysis.h"
 #include "diplib/linear.h"
-#include "diplib/math.h"
 #include "diplib/mapping.h"
+#include "diplib/math.h"
 
 namespace dip {
 

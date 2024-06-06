@@ -15,16 +15,21 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/detection.h"
-#include "diplib/analysis.h"
-#include "diplib/linear.h"
-#include "diplib/morphology.h"
-#include "diplib/math.h"
-#include "diplib/statistics.h"
-#include "diplib/mapping.h"
+
+#include <algorithm>
+#include <cmath>
+#include <utility>
+#include <vector>
+
+#include "diplib.h"
 #include "diplib/generation.h"
 #include "diplib/geometry.h"
+#include "diplib/linear.h"
+#include "diplib/mapping.h"
+#include "diplib/math.h"
+#include "diplib/morphology.h"
+#include "diplib/statistics.h"
 
 namespace dip {
 
@@ -58,7 +63,7 @@ void FrangiVesselness(
       default:
          DIP_THROW( E::DIMENSIONALITY_NOT_SUPPORTED );
    }
-   bool white_vessels;
+   bool white_vessels{};
    DIP_STACK_TRACE_THIS( white_vessels = BooleanFromString( polarity, S::WHITE, S::BLACK ));
    // Compute Hessian eigenvalues, they are sorted |lambdas[1]| >= |lambdas[2]| >= |lambdas[3]|
    Image lambdas;
@@ -134,10 +139,10 @@ void MatchedFiltersLineDetector2D(
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( in.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF(( sigma <= 0 ) || ( length <= 0 ), E::INVALID_PARAMETER );
-   bool white_vessels;
+   bool white_vessels{};
    DIP_STACK_TRACE_THIS( white_vessels = BooleanFromString( polarity, S::WHITE, S::BLACK ));
    // Preserve image in case &in==&out
-   Image c_in = in;
+   Image c_in = in; // NOLINT(*-unnecessary-copy-initialization)
    if( out.Aliases( c_in )) {
       out.Strip(); // Don't overwrite input data
    }
@@ -163,7 +168,7 @@ void DanielssonLineDetector(
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
-   bool white_vessels;
+   bool white_vessels{};
    DIP_STACK_TRACE_THIS( white_vessels = BooleanFromString( polarity, S::WHITE, S::BLACK ));
    // Compute Hessian
    Image H;
@@ -291,7 +296,7 @@ void RORPOLineDetector(
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    DataType dt = in.DataType();
    DIP_THROW_IF( !dt.IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
-   bool white_vessels;
+   bool white_vessels{};
    DIP_STACK_TRACE_THIS( white_vessels = BooleanFromString( polarity, S::WHITE, S::BLACK ));
    // Find the 4/7 orientations we'll use for the path openings
    dip::uint nDims = in.Dimensionality();
