@@ -248,7 +248,7 @@ class ProjectionRadialMinMax : public ProjectionRadialBase< TPI, TPI > {
 
       void Reduce() override {
          // Take limit of all images
-         //TODO: does it help to use Supremum() and Infimum() here?
+         // TODO: does it help to use Supremum() and Infimum() here?
          for( dip::uint iOut = 0; iOut < outPerThread_.size(); ++iOut ) {
             JointImageIterator< TPI, TPI > itOut( { out_, outPerThread_[ iOut ] } );
             do {

@@ -1254,8 +1254,6 @@ DIP_EXPORT dip::uint ObjectMinimum( Measurement::IteratorFeature const& featureV
 /// \relates Measurement::IteratorFeature
 DIP_EXPORT dip::uint ObjectMaximum( Measurement::IteratorFeature const& featureValues );
 
-// TODO: ObjectPercentile, ObjectMedian.
-
 /// \brief Selects objects where the first element of `featureValues` is equal to `value`.
 /// \relates Measurement::IteratorFeature
 DIP_EXPORT LabelMap operator==( Measurement::IteratorFeature const& featureValues, Measurement::ValueType value );

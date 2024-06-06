@@ -63,8 +63,6 @@ struct numeric_limits< dip::bin > {
 namespace dip {
 
 
-// TODO: Do we want to round the float values instead?
-
 namespace detail {
 
 // numeric_limits sometimes works with __uint128_t, and sometimes it doesn't.

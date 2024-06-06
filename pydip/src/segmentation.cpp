@@ -156,6 +156,7 @@ void init_segmentation( py::module& m ) {
           "binary"_a, py::kw_only(), "out"_a, "connectivity"_a = 0, "minSize"_a = 0, "maxSize"_a = 0, "boundaryCondition"_a = dip::StringArray{}, "mode"_a = dip::S::ALL );
    m.def( "ListObjectLabels", py::overload_cast< dip::Image const&, dip::Image const&, dip::String const&, dip::String const& >( &dip::ListObjectLabels ),
           "label"_a, "mask"_a = dip::Image{}, "background"_a = dip::S::EXCLUDE, "region"_a = "" );
+   // Deprecated function May 4, 2024 (after release 3.4.3) TODO: remove eventually.
    m.def( "GetObjectLabels", []( dip::Image const &label, dip::Image const &mask, dip::String const &background ) {
           PyErr_WarnEx( PyExc_DeprecationWarning, "`GetObjectLabels()` is deprecated, use `ListObjectLabels() instead`.", 1 );
           return dip::ListObjectLabels( label, mask, background );
@@ -180,6 +181,7 @@ void init_segmentation( py::module& m ) {
           "label"_a, "grey"_a, "mask"_a = dip::Image{}, "distance"_a = dip::infinity );
    m.def( "GrowRegionsWeighted", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const&, dip::Image&, dip::dfloat >( &dip::GrowRegionsWeighted ),
           "label"_a, "grey"_a, "mask"_a = dip::Image{}, py::kw_only(), "out"_a, "distance"_a = dip::infinity );
+   // Deprecated functions April 25, 2024 (after release 3.4.3) TODO: remove eventually.
    m.def( "GrowRegionsWeighted", []( dip::Image const& label, dip::Image const& grey, dip::Image const& mask, dip::Metric const& /*metric*/ ) {
           PyErr_WarnEx( PyExc_DeprecationWarning, "The `metric` argument is deprecated, and will be ignored.", 1 );
           return dip::GrowRegionsWeighted( label, grey, mask );

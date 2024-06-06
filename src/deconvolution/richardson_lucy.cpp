@@ -17,6 +17,12 @@
  * limitations under the License.
  */
 
+// TODO: Deconvolution algorithms use mirror padding. Instead use zero padding and use normalized
+//       convolutions. This is true for all of them, not just Richardson-Lucy. See:
+//       - /Users/cris/doc/Articles/deconvolution/Bertero2005.pdf
+//       - https://github.com/True-North-Intelligent-Algorithms/tnia-python/blob/9f24993fb965cd9e9fb7c15cfb3d4ff640245a9c/notebooks/Deconvolution/edges.ipynb
+//       - https://github.com/True-North-Intelligent-Algorithms/tnia-python/blob/aa18ed7d92ed842c3debfacd1498c5962dd3bb6c/tnia/deconvolution/richardson_lucy.py
+
 #include "diplib/deconvolution.h"
 
 #include <tuple>

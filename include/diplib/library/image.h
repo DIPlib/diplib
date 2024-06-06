@@ -136,7 +136,7 @@ class DIP_CLASS_EXPORT ExternalInterface {
 ///
 /// Note: Only the first pixel of the first image line is aligned at the given boundary.
 /// Subsequent pixels and subsequent lines are not.
-/// !!! todo
+/// !!! TODO
 ///     This allocator should make it so that each image line is aligned at such a boundary,
 ///     by adding some padding in between image lines. This would make this allocator useful
 ///     for compatibility with some libraries/UIs that expect that type of alignment.
