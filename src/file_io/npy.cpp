@@ -20,6 +20,8 @@
 // See https://github.com/rogersce/cnpy for cnpy
 // See https://github.com/llohse/libnpy for libnpy
 
+#include "diplib/file_io.h"
+
 #include <cstring>
 #include <fstream>
 #include <istream>
@@ -31,7 +33,6 @@
 #include <utility>
 
 #include "diplib.h"
-#include "diplib/file_io.h"
 #include "diplib/generic_iterators.h"
 
 namespace dip {

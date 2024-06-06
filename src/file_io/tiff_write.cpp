@@ -17,8 +17,13 @@
 
 #ifdef DIP_CONFIG_HAS_TIFF
 
-#include "diplib.h"
 #include "diplib/file_io.h"
+
+#include <cstring>
+#include <limits>
+#include <vector>
+
+#include "diplib.h"
 
 #include <tiffio.h>
 
@@ -65,17 +70,20 @@ class TiffFile {
 uint16 CompressionTranslate( String const& compression ) {
    if( compression.empty() || ( compression == "deflate" )) {
       return COMPRESSION_DEFLATE;
-   } else if( compression == "LZW" ) {
-      return COMPRESSION_LZW;
-   } else if( compression == "PackBits" ) {
-      return COMPRESSION_PACKBITS;
-   } else if( compression == "JPEG" ) {
-      return COMPRESSION_JPEG;
-   } else if( compression == "none" ) {
-      return COMPRESSION_NONE;
-   } else {
-      DIP_THROW_INVALID_FLAG( compression );
    }
+   if( compression == "LZW" ) {
+      return COMPRESSION_LZW;
+   }
+   if( compression == "PackBits" ) {
+      return COMPRESSION_PACKBITS;
+   }
+   if( compression == "JPEG" ) {
+      return COMPRESSION_JPEG;
+   }
+   if( compression == "none" ) {
+      return COMPRESSION_NONE;
+   }
+   DIP_THROW_INVALID_FLAG( compression );
 }
 
 void FillBuffer1(
@@ -141,7 +149,7 @@ void FillBufferN(
    for( dip::uint ii = 0; ii < height; ++ii ) {
       uint8 const* src_pixel = src;
       for( dip::uint jj = 0; jj < width; ++jj ) {
-         memcpy( dest, src_pixel, sizeOf );
+         std::memcpy( dest, src_pixel, sizeOf );
          dest += sizeOf;
          src_pixel += static_cast< dip::sint >( sizeOf ) * strides[ 0 ];
       }
@@ -191,7 +199,7 @@ void FillBufferMultiChannelN(
       for( dip::uint jj = 0; jj < width; ++jj ) {
          uint8 const* src_sample = src_pixel;
          for( dip::uint kk = 0; kk < tensorElements; ++kk ) {
-            memcpy( dest, src_sample, sizeOf );
+            std::memcpy( dest, src_sample, sizeOf );
             dest += sizeOf;
             src_sample += stride_sample;
          }

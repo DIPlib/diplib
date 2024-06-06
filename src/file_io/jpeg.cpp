@@ -17,32 +17,36 @@
 
 #ifdef DIP_CONFIG_HAS_JPEG
 
+#include "diplib/file_io.h"
+
 #include <cstdio>
 #include <cstring>
 #include <utility>
 #include <vector>
 
 #include "diplib.h"
-#include "diplib/file_io.h"
 
 #include "jpeglib.h"
 #include "jerror.h"
 #include <csetjmp>
 
 // JPEG error handling stuff - modified from example.c in libjpeg source
+namespace {
+
 extern "C" {
-   static void my_error_exit( j_common_ptr cinfo );
+   void my_error_exit( j_common_ptr cinfo ); // NOLINT(*-use-anonymous-namespace)
 }
 
+
 struct my_error_mgr {
-   struct jpeg_error_mgr pub;  // "public" fields
-   std::jmp_buf setjmp_buffer; // for return to caller
-   dip::String& message;        // error message
+   struct jpeg_error_mgr pub{};  // "public" fields
+   std::jmp_buf setjmp_buffer{}; // for return to caller
+   dip::String& message;         // error message
 
    my_error_mgr( dip::String& str ) : message( str ) {}
 };
 
-static void my_error_exit( j_common_ptr cinfo ) {
+void my_error_exit( j_common_ptr cinfo ) {
    // cinfo->err really points to a my_error_mgr struct, so coerce pointer
    auto* myerr = reinterpret_cast< my_error_mgr* >( cinfo->err );
    // Format error message and store, so that we can throw the proper message later
@@ -52,9 +56,10 @@ static void my_error_exit( j_common_ptr cinfo ) {
    std::longjmp( myerr->setjmp_buffer, 1 );
 }
 
-#define DIP__DECLARE_JPEG_EXIT( message ) \
-std::jmp_buf setjmp_buffer; dip::String error_msg; if( setjmp( setjmp_buffer )) { DIP_THROW_RUNTIME( message + error_msg ); }
+#define DIP_DECLARE_JPEG_EXIT( message ) \
+std::jmp_buf setjmp_buffer; dip::String error_msg; if( setjmp( setjmp_buffer )) { DIP_THROW_RUNTIME(( message ) + error_msg ); }
 
+} // namespace
 
 namespace dip {
 
@@ -65,8 +70,7 @@ constexpr char const* ERROR_READING_JPEG = "Error reading JPEG file: ";
 class JpegInput {
    public:
       JpegInput( String filename, std::jmp_buf const& setjmp_buffer, String& error_msg )
-            : filename_( std::move( filename )), jerr_( error_msg ) {
-         infile_ = std::fopen( filename_.c_str(), "rb" );
+            : filename_( std::move( filename )), infile_( std::fopen( filename_.c_str(), "rb" )), jerr_( error_msg ) {
          if( infile_ == nullptr ) {
             filename_ = FileAppendExtension( filename_, "jpg" ); // Try with "jpg" extension
             infile_ = std::fopen( filename_.c_str(), "rb" );
@@ -119,7 +123,7 @@ class JpegInput {
    private:
       String filename_;
       FILE* infile_ = nullptr;
-      jpeg_decompress_struct cinfo_;
+      jpeg_decompress_struct cinfo_{};
       my_error_mgr jerr_;
       bool initialized_ = false;
 };
@@ -274,7 +278,7 @@ class JpegOutput {
          std::memcpy( jerr_.setjmp_buffer, setjmp_buffer, sizeof( setjmp_buffer ));
          jpeg_create_compress( &cinfo_ );
          cinfo_.dest = nullptr;
-         initialized_ = true;
+         initialized_ = true; // NOLINT(*-prefer-member-initializer)
          InitMemoryDestination( &cinfo_, buffer );
       }
       JpegOutput( JpegOutput const& ) = delete;
@@ -298,7 +302,7 @@ class JpegOutput {
    private:
       FILE* outfile_ = nullptr;
       std::vector< dip::uint8 > buffer_;
-      jpeg_compress_struct cinfo_;
+      jpeg_compress_struct cinfo_{};
       my_error_mgr jerr_;
       bool initialized_ = false;
       bool mem_buffer_ = false;
@@ -351,7 +355,7 @@ void ImageWriteJPEG( Image const &image, JpegOutput &jpeg, dip::uint jpegLevel )
 } // namespace
 
 FileInformation ImageReadJPEG( Image &out, String const &filename ) {
-   DIP__DECLARE_JPEG_EXIT( ERROR_READING_JPEG );
+   DIP_DECLARE_JPEG_EXIT( ERROR_READING_JPEG );
    JpegInput jpeg( filename, setjmp_buffer, error_msg );
    FileInformation info = GetJPEGInfo( jpeg );
    ImageReadJPEG( out, jpeg, info );
@@ -359,7 +363,7 @@ FileInformation ImageReadJPEG( Image &out, String const &filename ) {
 }
 
 FileInformation ImageReadJPEGInfo( String const& filename ) {
-   DIP__DECLARE_JPEG_EXIT( ERROR_READING_JPEG );
+   DIP_DECLARE_JPEG_EXIT( ERROR_READING_JPEG );
    JpegInput jpeg( filename, setjmp_buffer, error_msg );
    FileInformation info = GetJPEGInfo( jpeg );
    return info;
@@ -367,7 +371,7 @@ FileInformation ImageReadJPEGInfo( String const& filename ) {
 
 bool ImageIsJPEG( String const& filename ) {
    try {
-      DIP__DECLARE_JPEG_EXIT( ERROR_READING_JPEG );
+      DIP_DECLARE_JPEG_EXIT( ERROR_READING_JPEG );
       JpegInput jpeg( filename, setjmp_buffer, error_msg );
    } catch( ... ) {
       return false;
@@ -376,7 +380,7 @@ bool ImageIsJPEG( String const& filename ) {
 }
 
 FileInformation ImageReadJPEG( Image& out, void const* buffer, dip::uint length ) {
-   DIP__DECLARE_JPEG_EXIT( ERROR_READING_JPEG );
+   DIP_DECLARE_JPEG_EXIT( ERROR_READING_JPEG );
    JpegInput jpeg( buffer, length, setjmp_buffer, error_msg );
    FileInformation info = GetJPEGInfo( jpeg );
    ImageReadJPEG( out, jpeg, info );
@@ -384,20 +388,20 @@ FileInformation ImageReadJPEG( Image& out, void const* buffer, dip::uint length 
 }
 
 FileInformation ImageReadJPEGInfo( void const* buffer, dip::uint length ) {
-   DIP__DECLARE_JPEG_EXIT( ERROR_READING_JPEG );
+   DIP_DECLARE_JPEG_EXIT( ERROR_READING_JPEG );
    JpegInput jpeg( buffer, length, setjmp_buffer, error_msg );
    FileInformation info = GetJPEGInfo( jpeg );
    return info;
 }
 
 void ImageWriteJPEG( Image const &image, String const &filename, dip::uint jpegLevel ) {
-   DIP__DECLARE_JPEG_EXIT( "Error writing JPEG file: " );
+   DIP_DECLARE_JPEG_EXIT( "Error writing JPEG file: " );
    JpegOutput jpeg( filename, setjmp_buffer, error_msg );
    ImageWriteJPEG( image, jpeg, jpegLevel );
 }
 
 void ImageWriteJPEG( Image const& image, OutputBuffer& buffer, dip::uint jpegLevel ) {
-   DIP__DECLARE_JPEG_EXIT( "Error writing JPEG file: " );
+   DIP_DECLARE_JPEG_EXIT( "Error writing JPEG file: " );
    JpegOutput jpeg( buffer, setjmp_buffer, error_msg );
    ImageWriteJPEG( image, jpeg, jpegLevel );
 }

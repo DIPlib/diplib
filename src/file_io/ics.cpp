@@ -17,6 +17,8 @@
 
 #ifdef DIP_CONFIG_HAS_ICS
 
+#include "diplib/file_io.h"
+
 #include <algorithm>
 #include <cctype>
 #include <cstdlib>
@@ -26,7 +28,6 @@
 #include <vector>
 
 #include "diplib.h"
-#include "diplib/file_io.h"
 #include "diplib/generic_iterators.h"
 #include "diplib/library/copy_buffer.h"
 
@@ -55,9 +56,9 @@ dip::uint FindTensorDimension(
 ) {
    dip::uint nDims = sizes.size();
    colorSpace = "";
-   dip::uint tensorDim;
-   for( tensorDim = 0; tensorDim < nDims; ++tensorDim ) {
-      char const* c_order;
+   dip::uint tensorDim = 0;
+   for( ; tensorDim < nDims; ++tensorDim ) {
+      char const* c_order{};
       CALL_ICS( IcsGetOrderF( ics, static_cast< int >( tensorDim ), &c_order, nullptr ), CANNOT_READ_ICS_FILE );
       String order = c_order;
       ToLowerCase( order );
@@ -163,7 +164,7 @@ UnsignedArray FindDimensionOrder( ICS* ics, dip::uint nDims, dip::uint tensorDim
          //std::cout << "dim " << ii << " is tensorDim\n";
          continue;
       }
-      char const* order;
+      char const* order{};
       CALL_ICS( IcsGetOrderF( ics, static_cast< int >( ii ), &order, nullptr ), CANNOT_READ_ICS_FILE );
       //std::cout << "dim " << ii << " is " << order << std::endl;
       if( StringCompareCaseInsensitive( order, "x" )) {
@@ -314,12 +315,12 @@ GetICSInfoData GetICSInfo( IcsFile& icsFile ) {
    data.fileInformation.numberOfImages = 1;
 
    // get layout of image data
-   Ics_DataType dt;
-   int ndims_;
+   Ics_DataType dt{};
+   int ndims_{};
    std::size_t icsSizes[ICS_MAXDIM];
    CALL_ICS( IcsGetLayout( icsFile, &dt, &ndims_, icsSizes ), CANNOT_READ_ICS_FILE );
    dip::uint nDims = static_cast< dip::uint >( ndims_ );
-   std::size_t significantBits;
+   std::size_t significantBits{};
    CALL_ICS( IcsGetSignificantBits( icsFile, &significantBits ), CANNOT_READ_ICS_FILE );
    data.fileInformation.significantBits = significantBits;
    // convert ICS data type to DIP data type
@@ -372,8 +373,8 @@ GetICSInfoData GetICSInfo( IcsFile& icsFile ) {
    PixelSize pixelSize;
    PhysicalQuantityArray origin( nDims );
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
-      double scale, offset;
-      char const* units;
+      double scale{}, offset{};
+      char const* units{};
       CALL_ICS( IcsGetPositionF( icsFile, static_cast< int >( ii ), &offset, &scale, &units ), CANNOT_READ_ICS_FILE );
       if( StringCompareCaseInsensitive( units, "undefined" )) {
          pixelSize.Set( ii, PhysicalQuantity::Pixel() );
@@ -414,13 +415,13 @@ GetICSInfoData GetICSInfo( IcsFile& icsFile ) {
    }
 
    // History tags
-   int history_lines;
+   int history_lines{};
    CALL_ICS( IcsGetNumHistoryStrings( icsFile, &history_lines ), CANNOT_READ_ICS_METADATA );
    data.fileInformation.history.resize( static_cast< dip::uint >( history_lines ));
    if( history_lines > 0 ) {
       Ics_HistoryIterator it;
       CALL_ICS( IcsNewHistoryIterator( icsFile, &it, nullptr ), CANNOT_READ_ICS_METADATA );
-      char const* hist;
+      char const* hist{};
       for( dip::uint ii = 0; ii < static_cast< dip::uint >( history_lines ); ++ii ) {
          CALL_ICS( IcsGetHistoryStringIF( icsFile, &it, &hist ), CANNOT_READ_ICS_METADATA );
          data.fileInformation.history[ ii ] = hist;
@@ -440,7 +441,7 @@ FileInformation ImageReadICS(
       Range const& channels,
       String const& mode
 ) {
-   bool fast;
+   bool fast{};
    DIP_STACK_TRACE_THIS( fast = BooleanFromString( mode, "fast", "" ));
 
    // open the ICS file
@@ -526,7 +527,7 @@ FileInformation ImageReadICS(
                      dip::uint columns = std::stoul( ptr );
                      try {
                         out.ReshapeTensor( Tensor{ shape, rows, columns } );
-                     } catch ( Error const& ) {
+                     } catch ( Error const& ) { // NOLINT(*-empty-catch)
                         // Let this error slip, we don't really care
                      }
                   }
@@ -556,7 +557,7 @@ FileInformation ImageReadICS(
    } else {
       // Reading using strides
       //std::cout << "[ImageReadICS] reading with strides\n";
-   
+
       // remove any singleton dimensions (in the input file, not the roi)
       // this should improve reading speed, especially if the first dimension is singleton
       for( dip::uint ii = nDims; ii > 0; ) { // loop backwards, so we don't skip a dimension when erasing
@@ -714,8 +715,8 @@ void ImageWriteICS(
    }
 
    // find info on image
-   Ics_DataType dt;
-   dip::uint maxSignificantBits;
+   Ics_DataType dt{};
+   dip::uint maxSignificantBits{};
    switch( c_image.DataType() ) {
       case DT_BIN:      dt = Ics_uint8;     maxSignificantBits = 1;  break;
       case DT_UINT8:    dt = Ics_uint8;     maxSignificantBits = 8;  break;

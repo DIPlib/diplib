@@ -16,6 +16,8 @@
 
 #ifdef DIP_CONFIG_HAS_PNG
 
+#include "diplib/file_io.h"
+
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
@@ -26,7 +28,6 @@
 #include <vector>
 
 #include "diplib.h"
-#include "diplib/file_io.h"
 
 #include "spng.h"
 #include "zlib.h"
@@ -40,8 +41,7 @@ namespace {
 
 class PngInput {
    public:
-      explicit PngInput( String filename ) : filename_( std::move( filename )) {
-         infile_ = std::fopen( filename_.c_str(), "rb" );
+      explicit PngInput( String filename ) : filename_( std::move( filename )), infile_(std::fopen( filename_.c_str(), "rb" )) {
          if( infile_ == nullptr ) {
             filename_ = FileAppendExtension( filename_, "png" ); // Try with "png" extension
             infile_ = std::fopen( filename_.c_str(), "rb" );
@@ -218,7 +218,7 @@ class PngOutput {
          if( outfile_ == nullptr ) {
             DIP_THROW_RUNTIME( "Could not open file for writing" );
          }
-         ctx_ = spng_ctx_new(SPNG_CTX_ENCODER);
+         ctx_ = spng_ctx_new( SPNG_CTX_ENCODER );
          if( !ctx_ ) {
             DIP_THROW_RUNTIME( "Could not create a PNG context" );
          }
@@ -226,8 +226,7 @@ class PngOutput {
             PNG_THROW_WRITE_ERROR;
          }
       }
-      explicit PngOutput() {
-         ctx_ = spng_ctx_new(SPNG_CTX_ENCODER);
+      explicit PngOutput() : ctx_(spng_ctx_new( SPNG_CTX_ENCODER )) {
          if( int ret = spng_set_option( ctx_, SPNG_ENCODE_TO_BUFFER, 1 )) {
             PNG_THROW_WRITE_ERROR;
          }
@@ -367,7 +366,7 @@ void ImageWritePNG(
    if( isBinary ) {
       // For binary data we need to put 8 pixels into each byte
       // Here we know for sure that we have a single channel.
-      if( int ret = spng_encode_image( png.Context(), 0, 0, fmt, SPNG_ENCODE_PROGRESSIVE | SPNG_ENCODE_FINALIZE )) {
+      if( int ret = spng_encode_image( png.Context(), nullptr, 0, fmt, SPNG_ENCODE_PROGRESSIVE | SPNG_ENCODE_FINALIZE )) {
          PNG_THROW_WRITE_ERROR;
       }
       dip::uint row_length = image_out.Size( 0 );
@@ -426,7 +425,7 @@ void ImageWritePNG(
       }
    } else {
       // For non-normal strides, we copy each image line to a buffer and write line by line
-      if( int ret = spng_encode_image( png.Context(), 0, 0, fmt, SPNG_ENCODE_PROGRESSIVE | SPNG_ENCODE_FINALIZE )) {
+      if( int ret = spng_encode_image( png.Context(), nullptr, 0, fmt, SPNG_ENCODE_PROGRESSIVE | SPNG_ENCODE_FINALIZE )) {
          PNG_THROW_WRITE_ERROR;
       }
       std::size_t image_size = 0;
