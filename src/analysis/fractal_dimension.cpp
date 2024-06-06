@@ -15,11 +15,16 @@
  * limitations under the License.
  */
 
+#include "diplib/analysis.h"
+
+#include <algorithm>
+#include <cmath>
+#include <vector>
+
 #include "diplib.h"
 #include "diplib/accumulators.h"
-#include "diplib/analysis.h"
-#include "diplib/statistics.h"
 #include "diplib/morphology.h"
+#include "diplib/statistics.h"
 
 namespace dip {
 

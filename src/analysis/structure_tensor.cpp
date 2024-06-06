@@ -15,12 +15,18 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/analysis.h"
+
+#include <algorithm>
+#include <cmath>
+#include <vector>
+
+#include "diplib.h"
+#include "diplib/distribution.h"
+#include "diplib/generic_iterators.h"
+#include "diplib/linear.h"
 #include "diplib/math.h"
 #include "diplib/statistics.h"
-#include "diplib/linear.h"
-#include "diplib/generic_iterators.h"
 
 namespace dip {
 
@@ -66,7 +72,7 @@ void StructureTensorAnalysis2D(
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( in.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( !in.Tensor().IsSymmetric() || ( in.TensorElements() != 3 ), "Input must be a 2x2 symmetric tensor image" );
-   Image ll;
+   Image eigenvalues;
    Image tempOrientation;
    if( orientation || curvature) {
       // Curvature needs orientation
@@ -74,37 +80,37 @@ void StructureTensorAnalysis2D(
          orientation = &tempOrientation;
       }
       // Compute eigenvectors also
-      Image vv;
-      EigenDecomposition( in, ll, vv );
-      Orientation( vv.TensorColumn( 0 ), *orientation );
+      Image eigenvectors;
+      EigenDecomposition( in, eigenvalues, eigenvectors );
+      Orientation( eigenvectors.TensorColumn( 0 ), *orientation );
    } else {
       // We only need eigenvalues
-      Eigenvalues( in, ll );
+      Eigenvalues( in, eigenvalues );
    }
    if( l1 ) {
-      *l1 = ll[ 0 ];
+      *l1 = eigenvalues[ 0 ];
    }
    if( l2 ) {
-      *l2 = ll[ 1 ];
+      *l2 = eigenvalues[ 1 ];
    }
    if( energy ) {
-      Add( ll[ 0 ], ll[ 1 ], *energy );
+      Add( eigenvalues[ 0 ], eigenvalues[ 1 ], *energy );
    }
    if( anisotropy1 ) {
       Image tmpval;
       if( energy ) {
          tmpval = energy->QuickCopy();
       } else {
-         tmpval = ll[ 0 ] + ll[ 1 ];
+         tmpval = eigenvalues[ 0 ] + eigenvalues[ 1 ];
       }
-      Subtract( ll[ 0 ], ll[ 1 ], *anisotropy1 );
+      Subtract( eigenvalues[ 0 ], eigenvalues[ 1 ], *anisotropy1 );
       SafeDivide( *anisotropy1, tmpval, *anisotropy1 );
    }
    if( anisotropy2 ) {
-      Divide( ll[ 1 ], ll[ 0 ], *anisotropy2 );
+      Divide( eigenvalues[ 1 ], eigenvalues[ 0 ], *anisotropy2 );
       Subtract( 1, *anisotropy2, *anisotropy2, anisotropy2->DataType() );
-      // *anisotropy2 = ( ll[0] == 0 ) ? 0 : *anisotropy2;
-      Select( ll[ 0 ], Image{ 0.0 }, Image( 0.0, anisotropy2->DataType() ), *anisotropy2, *anisotropy2, "==" );
+      // *anisotropy2 = ( eigenvalues[0] == 0 ) ? 0 : *anisotropy2;
+      Select( eigenvalues[ 0 ], Image{ 0.0 }, Image( 0.0, anisotropy2->DataType() ), *anisotropy2, *anisotropy2, "==" );
    }
    if( curvature ) {
       // phidx = ( cos( 2 * phi ) * dx( sin( 2 * phi ), 1 ) - sin( 2 * phi ) * dx( cos( 2 * phi ), 1 ))
@@ -163,52 +169,52 @@ void StructureTensorAnalysis3D(
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( in.Dimensionality() != 3, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( !in.Tensor().IsSymmetric() || ( in.TensorElements() != 6 ), "Input must be a 3x3 symmetric tensor image" );
-   Image ll;
+   Image eigenvalues;
    if( phi1 || theta1 || phi2 || theta2 || phi3 || theta3 ) {
       // Compute eigenvectors also
-      Image vv;
-      EigenDecomposition( in, ll, vv );
+      Image eigenvectors;
+      EigenDecomposition( in, eigenvalues, eigenvectors );
       Image tmp;
       if( phi1 || theta1 ) {
-         Orientation( vv.TensorColumn( 0 ), tmp );
+         Orientation( eigenvectors.TensorColumn( 0 ), tmp );
          if( phi1   ) { *phi1   = tmp[ 0 ]; }
          if( theta1 ) { *theta1 = tmp[ 1 ]; }
       }
       if( phi2 || theta2 ) {
-         Orientation( vv.TensorColumn( 1 ), tmp );
+         Orientation( eigenvectors.TensorColumn( 1 ), tmp );
          if( phi2   ) { *phi2   = tmp[ 0 ]; }
          if( theta2 ) { *theta2 = tmp[ 1 ]; }
       }
       if( phi3 || theta3 ) {
-         Orientation( vv.TensorColumn( 2 ), tmp );
+         Orientation( eigenvectors.TensorColumn( 2 ), tmp );
          if( phi3   ) { *phi3   = tmp[ 0 ]; }
          if( theta3 ) { *theta3 = tmp[ 1 ]; }
       }
    } else {
       // We only need eigenvalues
-      Eigenvalues( in, ll );
+      Eigenvalues( in, eigenvalues );
    }
    if( l1 ) {
-      *l1 = ll[ 0 ];
+      *l1 = eigenvalues[ 0 ];
    }
    if( l2 ) {
-      *l2 = ll[ 1 ];
+      *l2 = eigenvalues[ 1 ];
    }
    if( l3 ) {
-      *l3 = ll[ 3 ];
+      *l3 = eigenvalues[ 3 ];
    }
    if( energy ) {
-      Add( ll[ 0 ], ll[ 1 ], *energy );
-      Add( *energy, ll[ 2 ], *energy );
+      Add( eigenvalues[ 0 ], eigenvalues[ 1 ], *energy );
+      Add( *energy, eigenvalues[ 2 ], *energy );
    }
    if( cylindrical ) {
       Image tmpval;
       if( energy ) {
          tmpval = energy->QuickCopy();
       } else {
-         tmpval = ll[ 1 ] + ll[ 2 ];
+         tmpval = eigenvalues[ 1 ] + eigenvalues[ 2 ];
       }
-      Subtract( ll[ 1 ], ll[ 2 ], *cylindrical );
+      Subtract( eigenvalues[ 1 ], eigenvalues[ 2 ], *cylindrical );
       SafeDivide( *cylindrical, tmpval, *cylindrical );
    }
    if( planar ) {
@@ -216,9 +222,9 @@ void StructureTensorAnalysis3D(
       if( energy ) {
          tmpval = energy->QuickCopy();
       } else {
-         tmpval = ll[ 0 ] + ll[ 1 ];
+         tmpval = eigenvalues[ 0 ] + eigenvalues[ 1 ];
       }
-      Subtract( ll[ 0 ], ll[ 1 ], *planar );
+      Subtract( eigenvalues[ 0 ], eigenvalues[ 1 ], *planar );
       SafeDivide( *planar, tmpval, *planar );
    }
 }

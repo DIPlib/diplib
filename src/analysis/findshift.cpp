@@ -15,13 +15,21 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/analysis.h"
-#include "diplib/transform.h"
+
+#include <algorithm>
+#include <cmath>
+#include <complex>
+#include <cstdlib>
+#include <limits>
+#include <utility>
+
+#include "diplib.h"
+#include "diplib/geometry.h"
+#include "diplib/linear.h"
 #include "diplib/math.h"
 #include "diplib/statistics.h"
-#include "diplib/linear.h"
-#include "diplib/geometry.h"
+#include "diplib/transform.h"
 
 namespace dip {
 
@@ -38,11 +46,11 @@ void CrossCorrelationFT(
    DIP_THROW_IF( !in1.IsScalar() || !in2.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( in1.DataType().IsBinary() || in2.DataType().IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( in1.Sizes() != in2.Sizes(), E::SIZES_DONT_MATCH );
-   bool in1Spatial;
+   bool in1Spatial{};
    DIP_STACK_TRACE_THIS( in1Spatial = BooleanFromString( in1Representation, S::SPATIAL, S::FREQUENCY ));
-   bool in2Spatial;
+   bool in2Spatial{};
    DIP_STACK_TRACE_THIS( in2Spatial = BooleanFromString( in2Representation, S::SPATIAL, S::FREQUENCY ));
-   bool outSpatial;
+   bool outSpatial{};
    DIP_STACK_TRACE_THIS( outSpatial = BooleanFromString( outRepresentation, S::SPATIAL, S::FREQUENCY ));
    Image in1FT;
    if( in1Spatial ) {
@@ -96,7 +104,7 @@ void AutoCorrelationFT(
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( in.DataType().IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
-   bool inSpatial;
+   bool inSpatial{};
    DIP_STACK_TRACE_THIS( inSpatial = BooleanFromString( inRepresentation, S::SPATIAL, S::FREQUENCY ));
    Image inFT;
    if( inSpatial ) {
@@ -193,8 +201,8 @@ FloatArray FindShift_MTS( Image const& in1, Image const& in2, dip::uint iteratio
    M.ExpandTensor(); // Multiply yields a symmetric tensor, here we force the storage to be normal
 
    // iterative Taylor with early break if accuracy is achieved
-   dip::uint ii;
-   for( ii = 0; ii < iterations; ii++ ) {
+   dip::uint ii = 0;
+   for( ; ii < iterations; ii++ ) {
       Image tmp;
       FloatArray invShift = out;
       for( auto& s: invShift ) {
@@ -316,7 +324,7 @@ FloatArray FindShift_CC(
       shift = FloatArray{ maxPixel };
    }
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
-      dfloat centerpixel = static_cast< dfloat >( sizes[ ii ] / 2 );
+      dfloat centerpixel = static_cast< dfloat >( sizes[ ii ] / 2 ); // NOLINT(*-integer-division)
       shift[ ii ] = centerpixel - shift[ ii ]; // Reverse sign of shift
    }
    return shift;
@@ -426,7 +434,7 @@ FloatArray FindShift(
 #include "doctest.h"
 #include "diplib/generation.h"
 
-DOCTEST_TEST_CASE("[DIPlib] testing the FindShift function") {
+DOCTEST_TEST_CASE( "[DIPlib] testing the FindShift function" ) {
    // Something to shift
    dip::Image in1( { 250, 261 }, 1, dip::DT_SFLOAT );
    dip::FillRadiusCoordinate( in1 );

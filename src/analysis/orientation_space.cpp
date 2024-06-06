@@ -15,13 +15,18 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/analysis.h"
-#include "diplib/transform.h"
-#include "diplib/math.h"
+
+#include <cmath>
+#include <utility>
+#include <vector>
+
+#include "diplib.h"
+#include "diplib/framework.h"
 #include "diplib/generation.h"
 #include "diplib/generic_iterators.h"
-#include "diplib/framework.h"
+#include "diplib/math.h"
+#include "diplib/transform.h"
 
 namespace dip {
 
@@ -99,7 +104,7 @@ class GaussianMixtureModelLineFilter : public Framework::SeparableLineFilter {
       void SetNumberOfThreads( dip::uint threads ) override {
          buffer_.resize( threads );
       }
-      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override {
          return lineLength * numberOfGaussians_ * maxIter_ * 100; // the 100 is a totally wild guess...
       }
       void Filter( Framework::SeparableLineFilterParameters const& params ) override {

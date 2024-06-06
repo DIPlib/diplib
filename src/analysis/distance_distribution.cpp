@@ -15,8 +15,12 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/analysis.h"
+
+#include <algorithm>
+#include <utility>
+
+#include "diplib.h"
 #include "diplib/distance.h"
 #include "diplib/histogram.h"
 #include "diplib/mapping.h"

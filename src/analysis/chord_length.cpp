@@ -15,12 +15,13 @@
  * limitations under the License.
  */
 
+#include "diplib/analysis.h"
+
 #include <algorithm>
 #include <cmath>
 #include <vector>
 
 #include "diplib.h"
-#include "diplib/analysis.h"
 #include "diplib/distribution.h"
 #include "diplib/generic_iterators.h"
 #include "diplib/geometry.h"
@@ -68,7 +69,7 @@ void RandomPixelPairSampler(
       PhaseLookupTable const& phaseLookupTable,
       dip::uint nProbes
 ) {
-   UIntPixelValueReaderFunction GetUIntPixelValue;
+   UIntPixelValueReaderFunction GetUIntPixelValue{};
    DIP_OVL_ASSIGN_UINT( GetUIntPixelValue, UIntPixelValueReader, object.DataType() );
    bool hasMask = mask.IsForged();
    dip::uint nDims = object.Dimensionality();
@@ -133,7 +134,7 @@ void RandomPixelPairSampler(
          } else if( nDims > 3 ) {
             // Pick a normally distributed point and normalize
             GaussianRandomGenerator& normalRandomGenerator = normalRandomGeneratorArray[ thread ];
-            dfloat norm;
+            dfloat norm{};
             do {
                norm = 0;
                for( dip::uint ii = 0; ii < nDims; ++ii ) {
@@ -228,7 +229,7 @@ void GridPixelPairSampler(
       PhaseLookupTable const& phaseLookupTable,
       dip::uint nProbes
 ) {
-   UIntPixelValueReaderFunction GetUIntPixelValue;
+   UIntPixelValueReaderFunction GetUIntPixelValue{};
    DIP_OVL_ASSIGN_UINT( GetUIntPixelValue, UIntPixelValueReader, object.DataType() );
    bool hasMask = mask.IsForged();
    dip::uint nDims = object.Dimensionality();
@@ -314,7 +315,7 @@ Distribution ChordLength(
    }
 
    // Parse options
-   bool useRandom;
+   bool useRandom{};
    DIP_STACK_TRACE_THIS( useRandom = BooleanFromString( sampling, S::RANDOM, S::GRID ));
 
    // Create output

@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/analysis.h"
+
+#include "diplib.h"
 #include "diplib/linear.h"
-#include "diplib/transform.h"
-#include "diplib/math.h"
-#include "diplib/statistics.h"
 #include "diplib/mapping.h"
+#include "diplib/math.h"
+#include "diplib/transform.h"
 
 namespace dip {
 
@@ -39,14 +39,14 @@ void MonogenicSignal(
    DIP_THROW_IF( nFrequencyScales < 1, E::ARRAY_PARAMETER_EMPTY );
    DIP_THROW_IF( bandwidth <= 0, E::INVALID_PARAMETER );
    dip::uint nDims = c_in.Dimensionality();
-   bool spatialDomainInput;
+   bool spatialDomainInput{};
    DIP_STACK_TRACE_THIS( spatialDomainInput = BooleanFromString( inRepresentation, S::SPATIAL, S::FREQUENCY ));
-   bool spatialDomainOutput;
+   bool spatialDomainOutput{};
    DIP_STACK_TRACE_THIS( spatialDomainOutput = BooleanFromString( outRepresentation, S::SPATIAL, S::FREQUENCY ));
    bool inputIsReal = spatialDomainInput && !c_in.DataType().IsComplex();
    bool outputIsReal = inputIsReal && spatialDomainOutput;
    DataType dt = outputIsReal ? DT_SFLOAT : DT_SCOMPLEX;
-   Image in = c_in;
+   Image in = c_in; // NOLINT(*-unnecessary-copy-initialization)
    if( out.Aliases( in )) {
       out.Strip(); // we can't work in-place
    }

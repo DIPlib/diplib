@@ -15,14 +15,20 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/analysis.h"
-#include "diplib/statistics.h"
-#include "diplib/morphology.h"
+
+#include <algorithm>
+#include <cmath>
+#include <vector>
+
+#include "diplib.h"
+#include "diplib/distribution.h"
 #include "diplib/generation.h"
 #include "diplib/geometry.h"
 #include "diplib/mapping.h"
 #include "diplib/math.h"
+#include "diplib/morphology.h"
+#include "diplib/statistics.h"
 
 namespace dip {
 
@@ -44,10 +50,10 @@ Distribution Granulometry(
    std::sort( scales.begin(), scales.end() );
    DIP_THROW_IF( scales[ 0 ] <= 1.0, E::PARAMETER_OUT_OF_RANGE ); // all scales must be larger than 1
    // Type
-   bool isotropic;
+   bool isotropic{};
    DIP_STACK_TRACE_THIS( isotropic = BooleanFromString( type, S::ISOTROPIC, S::LENGTH ));
    // Polarity
-   bool opening;
+   bool opening{};
    DIP_STACK_TRACE_THIS( opening = BooleanFromString( polarity, S::OPENING, S::CLOSING ));
    // Options
    bool reconstruction = false;

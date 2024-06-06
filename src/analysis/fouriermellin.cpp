@@ -15,13 +15,16 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/analysis.h"
-#include "diplib/transform.h"
-#include "diplib/math.h"
-#include "diplib/statistics.h"
+
+#include <cmath>
+
+#include "diplib.h"
 #include "diplib/generation.h"
 #include "diplib/geometry.h"
+#include "diplib/math.h"
+#include "diplib/statistics.h"
+#include "diplib/transform.h"
 
 namespace dip {
 
@@ -85,8 +88,8 @@ FloatArray FourierMellinMatch2D(
 
    // Compute a transformed in2 for scale and rotation
    FloatArray matrix( 6, 0 );
-   matrix[ 0 ] = zoom * cos( theta );
-   matrix[ 1 ] = -zoom * sin( theta );
+   matrix[ 0 ] = zoom * std::cos( theta );
+   matrix[ 1 ] = -zoom * std::sin( theta );
    matrix[ 2 ] = -matrix[ 1 ];
    matrix[ 3 ] = matrix[ 0 ];
    Image in2a = AffineTransform( in2, matrix, interpolationMethod );

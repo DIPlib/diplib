@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+#include "diplib/analysis.h"
+
 #include <algorithm>
 #include <cmath>
 #include <tuple>
@@ -22,7 +24,6 @@
 #include <vector>
 
 #include "diplib.h"
-#include "diplib/analysis.h"
 #include "diplib/distribution.h"
 #include "diplib/generic_iterators.h"
 #include "diplib/geometry.h"
@@ -102,7 +103,7 @@ void RandomPixelPairSampler(
             topLeft[ ii ] = coords1[ ii ] > maxLength ? coords1[ ii ] - maxLength : 0u;
             botRight[ ii ] = std::min( coords1[ ii ] + maxLength + 1, sizes[ ii ] );
          }
-         dip::uint distance;
+         dip::uint distance{};
          do {
             distance = 0;
             for( dip::uint ii = 0; ii < nDims; ++ii ) {
@@ -366,10 +367,10 @@ Distribution PairCorrelation(
    }
 
    // Parse options
-   bool useRandom;
+   bool useRandom{};
    DIP_STACK_TRACE_THIS( useRandom = BooleanFromString( sampling, S::RANDOM, S::GRID ));
-   bool covariance;
-   PairCorrelationNormalization normalization;
+   bool covariance{};
+   PairCorrelationNormalization normalization{};
    DIP_STACK_TRACE_THIS( std::tie( covariance, normalization ) = ParsePairCorrelationOptions( options ));
 
    // Create output
@@ -487,10 +488,10 @@ Distribution ProbabilisticPairCorrelation(
    DIP_THROW_IF( phases.Dimensionality() < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
 
    // Parse options
-   bool useRandom;
+   bool useRandom{};
    DIP_STACK_TRACE_THIS( useRandom = BooleanFromString( sampling, S::RANDOM, S::GRID ));
-   bool covariance;
-   PairCorrelationNormalization normalization;
+   bool covariance{};
+   PairCorrelationNormalization normalization{};
    DIP_STACK_TRACE_THIS( std::tie( covariance, normalization ) = ParsePairCorrelationOptions( options ));
 
    // Create output
@@ -584,7 +585,7 @@ Distribution Semivariogram(
    DIP_THROW_IF( in.Dimensionality() < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
 
    // Parse options
-   bool useRandom;
+   bool useRandom{};
    DIP_STACK_TRACE_THIS( useRandom = BooleanFromString( sampling, S::RANDOM, S::GRID ));
 
    // Create output
