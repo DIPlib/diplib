@@ -17,10 +17,15 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/deconvolution.h"
+
+#include <cmath>
+#include <tuple>
+
+#include "diplib.h"
 #include "diplib/mapping.h"
 #include "diplib/math.h"
+#include "diplib/statistics.h"
 #include "diplib/transform.h"
 
 #include "common_deconv_utility.h"
@@ -61,7 +66,7 @@ void FastIterativeShrinkageThresholding(
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( regularization <= 0, E::PARAMETER_OUT_OF_RANGE );
    DIP_THROW_IF( nScales < 1, E::PARAMETER_OUT_OF_RANGE );
-   bool isOtf, pad;
+   bool isOtf{}, pad{};
    DIP_STACK_TRACE_THIS( std::tie( isOtf, pad ) = ParseFISTAOptions( options ));
 
    dfloat maxVal = MaximumAbs( in ).As< dfloat >();

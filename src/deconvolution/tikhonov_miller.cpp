@@ -17,8 +17,11 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/deconvolution.h"
+
+#include <tuple>
+
+#include "diplib.h"
 #include "diplib/generation.h"
 #include "diplib/math.h"
 #include "diplib/statistics.h"
@@ -88,7 +91,7 @@ void TikhonovMiller(
    DIP_THROW_IF( !in.IsScalar() || !psf.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( regularization <= 0, E::PARAMETER_OUT_OF_RANGE );
-   bool isOtf, pad;
+   bool isOtf{}, pad{};
    DIP_STACK_TRACE_THIS( std::tie( isOtf, pad ) = ParseTikhonovMillerOptions( options ));
 
    // Fourier transform of inputs
@@ -127,7 +130,7 @@ void IterativeConstrainedTikhonovMiller(
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( regularization <= 0, E::PARAMETER_OUT_OF_RANGE );
    DIP_THROW_IF( stepSize < 0, E::PARAMETER_OUT_OF_RANGE );
-   bool isOtf, pad;
+   bool isOtf{}, pad{};
    DIP_STACK_TRACE_THIS( std::tie( isOtf, pad ) = ParseTikhonovMillerOptions( options ));
    bool steepest_descent = stepSize != 0;
 

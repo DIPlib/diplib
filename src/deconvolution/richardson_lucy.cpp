@@ -17,8 +17,12 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/deconvolution.h"
+
+#include <tuple>
+
+#include "diplib.h"
+#include "diplib/boundary.h"
 #include "diplib/linear.h"
 #include "diplib/math.h"
 #include "diplib/transform.h"
@@ -59,7 +63,7 @@ void RichardsonLucy(
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( regularization < 0, E::PARAMETER_OUT_OF_RANGE );
    DIP_THROW_IF( nIterations < 1, E::INVALID_PARAMETER );
-   bool isOtf, pad;
+   bool isOtf{}, pad{};
    DIP_STACK_TRACE_THIS( std::tie( isOtf, pad ) = ParseRichardsonLucyOptions( options ));
    DIP_THROW_IF( pad && isOtf, E::ILLEGAL_FLAG_COMBINATION );
 

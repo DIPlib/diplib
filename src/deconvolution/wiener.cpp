@@ -16,8 +16,11 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/deconvolution.h"
+
+#include <tuple>
+
+#include "diplib.h"
 #include "diplib/math.h"
 #include "diplib/statistics.h"
 #include "diplib/transform.h"
@@ -56,7 +59,7 @@ void WienerDeconvolution(
    DIP_THROW_IF( !in.IsForged() || !psf.IsForged() || !noisePower.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar() || !psf.IsScalar() || !noisePower.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !in.DataType().IsReal() || !noisePower.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
-   bool isOtf, pad;
+   bool isOtf{}, pad{};
    DIP_STACK_TRACE_THIS( std::tie( isOtf, pad ) = ParseWienerOptions( options ));
 
    // Fourier transforms etc.
@@ -108,7 +111,7 @@ void WienerDeconvolution(
    DIP_THROW_IF( !in.IsScalar() || !psf.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( regularization <= 0, E::PARAMETER_OUT_OF_RANGE );
-   bool isOtf, pad;
+   bool isOtf{}, pad{};
    DIP_STACK_TRACE_THIS( std::tie( isOtf, pad ) = ParseWienerOptions( options ));
 
    // Fourier transforms etc.
