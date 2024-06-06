@@ -16,16 +16,17 @@
  * limitations under the License.
  */
 
+#include "diplib/color.h"
+
 #include <algorithm>
 #include <array>
-#include <limits>
 #include <functional>
+#include <limits>
 #include <memory>
 #include <queue>
 #include <vector>
 
 #include "diplib.h"
-#include "diplib/color.h"
 #include "diplib/framework.h"
 #include "diplib/iterators.h"
 
@@ -438,7 +439,7 @@ void ColorSpaceManager::SetWhitePoint( dip::XYZ whitePoint ) {
 #include "doctest.h"
 #include <cmath>
 
-DOCTEST_TEST_CASE("[DIPlib] testing the ColorSpaceManager class") {
+DOCTEST_TEST_CASE( "[DIPlib] testing the ColorSpaceManager class" ) {
    dip::ColorSpaceManager csm;
    DOCTEST_CHECK( csm.NumberOfChannels( "rgb" ) == 3 );
    DOCTEST_CHECK( csm.NumberOfChannels( "CMYK" ) == 4 );
