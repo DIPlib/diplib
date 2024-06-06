@@ -14,15 +14,22 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/binary.h"
-#include "diplib/math.h"
-#include "diplib/statistics.h"
-#include "diplib/morphology.h"
+
+#include <algorithm>
+#include <limits>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "diplib.h"
 #include "diplib/boundary.h"
 #include "diplib/framework.h"
 #include "diplib/iterators.h"
+#include "diplib/math.h"
+#include "diplib/morphology.h"
 #include "diplib/pixel_table.h"
+#include "diplib/statistics.h"
 
 namespace dip {
 
@@ -146,7 +153,7 @@ Image RotateBy45Degrees( Image const& input ) {
 
 IntervalArray Interval::GenerateRotatedVersions(
       dip::uint rotationAngle,
-      String rotationDirection
+      String const& rotationDirection
 ) const {
    DIP_THROW_IF( image_.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
    dip::uint step = 1;
@@ -287,7 +294,7 @@ void ExpandInputImage(
    }
 }
 
-enum class PolarityMode {
+enum class PolarityMode : uint8 {
    SupGenerating,
    InfGenerating
 };
@@ -296,10 +303,10 @@ class SupInfGeneratingLineFilter : public Framework::FullLineFilter {
    public:
       SupInfGeneratingLineFilter( PolarityMode mode )
             : supGenerating_( mode != PolarityMode::InfGenerating ) {}
-      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint nKernelPixels, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint /**/, dip::uint nKernelPixels, dip::uint /**/ ) override {
          return lineLength * nKernelPixels;
       }
-      void SetNumberOfThreads( dip::uint, PixelTableOffsets const& pixelTable ) override {
+      void SetNumberOfThreads( dip::uint /**/, PixelTableOffsets const& pixelTable ) override {
          // Fill in `offsets_` and `hitmiss_` using `pixelTable`.
          // The pixel table has been prepared such that pixels with a positive weight are hit, and a negative
          // weight are miss. "Don't care" pixels are not in the table.
@@ -433,7 +440,7 @@ void IntersectionInfGenerating(
 
 namespace {
 
-enum class DirectionMode {
+enum class DirectionMode : uint8 {
    Thickening,
    Thinning
 };
@@ -442,10 +449,10 @@ class ThickeningThinningLineFilter : public Framework::FullLineFilter {
    public:
       ThickeningThinningLineFilter( DirectionMode mode, Image const& mask, bool& change )
             : mode_( mode ), changed_( change ), mask_( mask ) {}
-      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint nKernelPixels, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint /**/, dip::uint nKernelPixels, dip::uint /**/ ) override {
          return lineLength * nKernelPixels;
       }
-      void SetNumberOfThreads( dip::uint, PixelTableOffsets const& pixelTable ) override {
+      void SetNumberOfThreads( dip::uint /**/, PixelTableOffsets const& pixelTable ) override {
          // Fill in `offsets_` and `hitmiss_` using `pixelTable`.
          // The pixel table has been prepared such that pixels with a positive weight are hit, and a negative
          // weight are miss. "Don't care" pixels are not in the table.
@@ -654,7 +661,7 @@ Interval SinglePixelInterval( dip::uint nDims ) {
    in.Fill( 0 );
    sizes.fill( 1 ); // reuse `sizes` for the index to the center pixel
    in.At( sizes ) = 1;
-   return Interval( in );
+   return { in };
 }
 
 IntervalArray BranchPixelInterval2D() {
@@ -679,7 +686,7 @@ Interval BoundaryPixelInterval2D() {
                                X, 1, 0,
                                X, X, X };
    Image in( data, { 3, 3 } );
-   return Interval( in.Copy() );
+   return { in.Copy() };
 }
 
 IntervalArray ConvexHullInterval2D() {
@@ -696,7 +703,7 @@ IntervalArray ConvexHullInterval2D() {
 #include "doctest.h"
 #include "diplib/testing.h"
 
-DOCTEST_TEST_CASE("[DIPlib] testing private function RotateBy45Degrees") {
+DOCTEST_TEST_CASE( "[DIPlib] testing private function RotateBy45Degrees" ) {
    dip::Image in( { 7, 7 }, 1, dip::DT_SFLOAT );
    in = 0;
    in.At( 0, 1 ) = 1;

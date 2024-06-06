@@ -15,11 +15,15 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/binary.h"
-#include "diplib/neighborlist.h"
-#include "diplib/iterators.h"
+
+#include <deque>
+#include <limits>
+
+#include "diplib.h"
 #include "diplib/border.h"
+#include "diplib/iterators.h"
+
 #include "binary_support.h"
 
 namespace dip {
@@ -141,15 +145,14 @@ Uint8FifoQueue EnqueueEdges2D(
    do {
       uint8* ptr = reinterpret_cast< uint8* >( itImage.Pointer() );
       if( *ptr == expectedValue ) {
-         if( TestAnyBit( *( ptr - strideY ), dataBitmask ) != findObjectPixels ) { goto yes; }
-         if( TestAnyBit( *( ptr - strideX ), dataBitmask ) != findObjectPixels ) { goto yes; }
-         if( TestAnyBit( *( ptr + strideX ), dataBitmask ) != findObjectPixels ) { goto yes; }
-         if( TestAnyBit( *( ptr + strideY ), dataBitmask ) != findObjectPixels ) { goto yes; }
-         continue;
-         // Add the edge pixel to the queue
-         yes:
-         edgePixels.push_back( ptr );
-         SetBits( *ptr, enqueuedBitmask );
+         if(( TestAnyBit( *( ptr - strideY ), dataBitmask ) != findObjectPixels ) ||
+            ( TestAnyBit( *( ptr - strideX ), dataBitmask ) != findObjectPixels ) ||
+            ( TestAnyBit( *( ptr + strideX ), dataBitmask ) != findObjectPixels ) ||
+            ( TestAnyBit( *( ptr + strideY ), dataBitmask ) != findObjectPixels )) {
+            // Add the edge pixel to the queue
+            edgePixels.push_back( ptr );
+            SetBits( *ptr, enqueuedBitmask );
+         }
       }
    } while( ++itImage );
    return edgePixels;
@@ -177,9 +180,9 @@ void ConditionalThickeningThinning2D(
    if( iterations == 0 ) {
       iterations = std::numeric_limits< dip::uint >::max();
    }
-   bool endPixelCondition;
+   bool endPixelCondition{};
    DIP_STACK_TRACE_THIS( endPixelCondition = BooleanFromString( s_endPixelCondition, S::KEEP, S::LOSE ));
-   bool edgeCondition;
+   bool edgeCondition{};
    DIP_STACK_TRACE_THIS( edgeCondition = BooleanFromString( s_edgeCondition, S::OBJECT, S::BACKGROUND ));
 
    // Make out equal to in

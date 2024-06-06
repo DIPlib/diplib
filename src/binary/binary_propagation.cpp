@@ -16,13 +16,17 @@
  * limitations under the License.
  */
 
+#include "diplib/binary.h"
+
+#include <algorithm>
 #include <stack>
+#include <utility>
 
 #include "diplib.h"
-#include "diplib/binary.h"
 #include "diplib/generation.h"
 #include "diplib/iterators.h"
 #include "diplib/neighborlist.h"
+
 #include "binary_support.h"
 
 namespace dip {
@@ -324,7 +328,7 @@ void BinaryPropagation(
    DIP_THROW_IF( connectivity > static_cast< dip::sint >( nDims ), E::ILLEGAL_CONNECTIVITY );
 
    // Edge condition: true means object, false means background
-   bool outsideImageIsObject;
+   bool outsideImageIsObject{};
    DIP_STACK_TRACE_THIS( outsideImageIsObject = BooleanFromString( s_edgeCondition, S::OBJECT, S::BACKGROUND ));
 
    // Make out equal to inSeed

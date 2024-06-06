@@ -15,8 +15,12 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/binary.h"
+
+#include <vector>
+
+#include "diplib.h"
+
 #include "bucket.h"
 #include "hilditch_condition_lut.h"
 
@@ -328,17 +332,16 @@ void Eusk2DRemoveInnerEdge(
       dip::sint strideX,
       dip::sint strideY
 ) {
-   uint8* pim;
-   dip::sint ii;
-
-   for( pim = pimb + 3 * strideX + strideY, ii = sizex - 6; ii >= 0; --ii, pim += strideX ) {
+   uint8* pim = pimb + 3 * strideX + strideY;
+   for( dip::sint ii = sizex - 6; ii >= 0; --ii, pim += strideX ) {
       if( !( *( pim + strideY ) & mo )) { *pim &= ~mo; }
    }
-   for( pim = pimb + 3 * strideX + ( sizey - 2 ) * strideY, ii = sizex - 6; ii >= 0; --ii, pim += strideX ) {
+   pim = pimb + 3 * strideX + ( sizey - 2 ) * strideY;
+   for( dip::sint ii = sizex - 6; ii >= 0; --ii, pim += strideX ) {
       if( !( *( pim - strideY ) & mo )) { *pim &= ~mo; }
    }
-   for( ii = 3; ii < ( sizey - 3 ); ++ii ) {
-      pim = pimb + ii * strideY + strideX;
+   for( dip::sint ii = 3; ii < ( sizey - 3 ); ++ii ) {
+      uint8* pim = pimb + ii * strideY + strideX;
       if( !( *( pim + strideX ) & mo )) { *pim &= ~mo; }
       pim += ( sizex - 3 ) * strideX;
       if( !( *( pim - strideX ) & mo )) { *pim &= ~mo; }
@@ -413,7 +416,7 @@ void Eusk2DRemoveEndPixels(
          ppr = ppq.begin();
       }
       // test coordinates
-      dip::sint x, y;
+      dip::sint x{}, y{};
       if( strideY > strideX ) {
          x = ( pim - pimb ) % strideY;
          y = ( pim - pimb ) / strideY;
@@ -565,7 +568,7 @@ void Eusk2D(
    dip::sint strideY2 = strideY * 2;
 
    // endpixel condition
-   uint8 const* luthile; // pointer to end pixel table
+   uint8 const* luthile{}; // pointer to end pixel table
    switch( end ) {
       case 1:
          luthile = luthil[ 1 ];
@@ -593,8 +596,8 @@ void Eusk2D(
    Eusk2DNeighborhood( strideX, strideY, neig4, neig8, neigk, neigb );
 
    // calculate required number of buckets
-   dip::uint nbuckets;
-   for( nbuckets = 2; nbuckets <= static_cast< dip::uint >( dk ); nbuckets *= 2 ) {}
+   dip::uint nbuckets = 2;
+   for( ; nbuckets <= static_cast< dip::uint >( dk ); nbuckets *= 2 ) {}
 
    // create bucket structure buckets (-1 means not enough memory)
    Bucket b( nbuckets, QUEUE_SIZE_2D );
@@ -612,8 +615,8 @@ void Eusk2D(
 
       b.startwrite( dist );
       b.startread( dist - d4 );
-      uint8* pim;         // image pointer
-      uint8 dirc;         // direction of central pixel
+      uint8* pim{};         // image pointer
+      uint8 dirc{};         // direction of central pixel
       if( dist == d4 ) {
          while( b.go ) {
             b.RCLP( pim );
@@ -883,7 +886,7 @@ void PutInLocal(
       dip::sint oldlocal[ 27 ],
       dip::sint newlocal[ 27 ]
 ) {
-   uint8 l;                  // value of neighbouring pixel
+   uint8 l{};                  // value of neighbouring pixel
    dip::sint* loco = &oldlocal[ 0 ]; // old neighbourhood
    dip::sint* locn = &newlocal[ 0 ]; // new = recursive neighbourhood
 
@@ -937,12 +940,10 @@ void Eusk3DFillTables(
       dip::uint8 n9[ 98 ][ 2 ]
 ) {
    dip::sint* e = &endpix[ 0 ][ 0 ];
-   dip::sint* a;
-   dip::uint8* n;
 
    // DIST1 = 1000
-   a = &a1[ 0 ][ 0 ];
-   n = &n1[ 0 ][ 0 ];
+   dip::sint* a = &a1[ 0 ][ 0 ];
+   dip::uint8* n = &n1[ 0 ][ 0 ];
 
    /*  0  2  2  1 */   *a++ = 0; *n++ = 99; *a++ = 0; *n++ = 99;
    /*  1  2  2 -1 */   *a++ = 0; *n++ = 99; *a++ = 0; *n++ = 99;
@@ -3739,7 +3740,7 @@ bool EndOk(
       if( *local++ ) { index++; }
       if( *local ) { index++; }
       return index < 12;
-   } else {
+   } /* else */ {
       if( local[ 10 ] ) { index |= 32; }
       if( local[ 16 ] ) { index |= 16; }
       if( local[ 14 ] ) { index |= 8; }
@@ -3753,7 +3754,7 @@ bool EndOk(
       if( *table == NOENDPIXEL ) {
          return false;
       }
-      if( !local[ *table++ ] || !local[ *table++ ] || !local[ *table++ ] ) {
+      if( !local[ *table++ ] || !local[ *table++ ] || !local[ *table++ ] ) { // NOLINT(*-inc-dec-in-conditions)
          return true;
       }
       if( *table != NOENTRY && !local[ *table ] ) {
@@ -3763,7 +3764,7 @@ bool EndOk(
    }
 }
 
-int ToriwakiOk( dip::sint* local ) {
+int ToriwakiOk( dip::sint const* local ) {
    dip::sint index = 0;
    if( local[ 1 ] ) { index |= 16384; }
    if( local[ 3 ] ) { index |= 8192; }
@@ -3789,7 +3790,7 @@ int ToriwakiOk( dip::sint* local ) {
 }
 
 
-bool EulerOk( dip::sint* local ) {
+bool EulerOk( dip::sint const* local ) {
    dip::sint index = 0;
    if( local[ 0 ] ) { index |= 128; }
    if( local[ 3 ] ) { index |= 64; }
@@ -3943,9 +3944,9 @@ void Eusk3D(
 
       b.startwrite( dist );
       b.startread( dist - d1 );
-      uint8* pim;    // image pointer
-      uint8* pn;     // image pointer
-      uint8 dirc;    // direction of central pixel
+      uint8* pim{};    // image pointer
+      uint8* pn{};     // image pointer
+      uint8 dirc{};    // direction of central pixel
       if( dist == d1 ) {
          while( b.go ) {
             b.RCLP( pim );
@@ -4672,7 +4673,7 @@ void EuclideanSkeleton(
    DIP_THROW_IF(( ndims != 2 ) && ( ndims != 3), E::DIMENSIONALITY_NOT_SUPPORTED );
 
    // End pixel condition
-   int endPixelCondition;
+   int endPixelCondition{};
    if( s_endPixelCondition == S::LOOSE_ENDS_AWAY ) {
       endPixelCondition = -1;
    } else if( s_endPixelCondition == S::NATURAL ) {
@@ -4688,11 +4689,11 @@ void EuclideanSkeleton(
    }
 
    // Edge condition
-   bool edgeCondition;
+   bool edgeCondition{};
    DIP_STACK_TRACE_THIS( edgeCondition = BooleanFromString( s_edgeCondition, S::OBJECT, S::BACKGROUND ));
 
    // Copy input plane to output plane. Operation takes place directly in the output plane.
-   Image c_in = in; // temporary copy of image header, so we can strip out
+   Image c_in = in; // temporary copy of image header, so we can strip out. NOLINT(*-unnecessary-copy-initialization)
    out.ReForge( in.Sizes(), 1, DT_BIN ); // reforging first in case `out` is the right size but a different data type
    out.Copy( c_in );
 

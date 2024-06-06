@@ -15,11 +15,13 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/binary.h"
-#include "diplib/regions.h"
-#include "diplib/neighborlist.h"
+
+#include "diplib.h"
 #include "diplib/distance.h"
+#include "diplib/neighborlist.h"
+#include "diplib/regions.h"
+
 #include "binary_support.h"
 
 namespace dip {
@@ -46,11 +48,11 @@ void BinaryDilationErosion(
    DIP_THROW_IF( connectivity > static_cast< dip::sint >( nDims ), E::ILLEGAL_CONNECTIVITY );
 
    // Edge condition: true means object, false means background
-   bool outsideImageIsObject;
+   bool outsideImageIsObject{};
    DIP_STACK_TRACE_THIS( outsideImageIsObject = BooleanFromString( s_edgeCondition, S::OBJECT, S::BACKGROUND ));
 
    // Copy input plane to output plane. Operation takes place directly in the output plane.
-   Image c_in = in; // temporary copy of image header, so we can strip out
+   Image c_in = in; // temporary copy of image header, so we can strip out. NOLINT(*-unnecessary-copy-initialization)
    out.ReForge( in.Sizes(), 1, DT_BIN ); // reforging first in case `out` is the right size but a different data type
    out.Copy( c_in );
 
@@ -249,7 +251,7 @@ void BinaryAreaOpening(
 #include "doctest.h"
 #include "diplib/statistics.h"
 
-DOCTEST_TEST_CASE("[DIPlib] testing the binary morphological filters") {
+DOCTEST_TEST_CASE( "[DIPlib] testing the binary morphological filters" ) {
    dip::Image in( { 64, 41 }, 1, dip::DT_BIN );
    in = 0;
    in.At( 32, 20 ) = 1;

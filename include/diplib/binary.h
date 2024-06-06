@@ -768,7 +768,7 @@ class DIP_NO_EXPORT Interval {
       /// - `"counter-clockwise"` is the same, but goes around the other way.
       DIP_NODISCARD DIP_EXPORT IntervalArray GenerateRotatedVersions(
             dip::uint rotationAngle = 45,
-            String rotationDirection = S::INTERLEAVED_CLOCKWISE
+            String const& rotationDirection = S::INTERLEAVED_CLOCKWISE
       ) const;
 
    private:

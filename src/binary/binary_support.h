@@ -19,6 +19,7 @@
 #define BINARY_SUPPORT_H_INCLUDED
 
 #include <deque>
+
 #include "diplib.h"
 #include "diplib/neighborlist.h"
 

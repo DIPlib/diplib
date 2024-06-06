@@ -16,8 +16,11 @@
  */
 
 #include "binary_support.h"
-#include "diplib/iterators.h"
+
+#include "diplib.h"
 #include "diplib/border.h"
+#include "diplib/iterators.h"
+#include "diplib/neighborlist.h"
 
 namespace dip {
 

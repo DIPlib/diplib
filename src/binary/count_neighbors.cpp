@@ -15,10 +15,11 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/binary.h"
-#include "diplib/neighborlist.h"
+
+#include "diplib.h"
 #include "diplib/framework.h"
+#include "diplib/neighborlist.h"
 
 namespace dip {
 
@@ -27,7 +28,7 @@ namespace {
 template< bool MAJORITY = false >
 class CountNeighborsLineFilter : public Framework::ScanLineFilter {
    public:
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override {
          return 2 * neighbors_.Size(); // number of neighbors we test. We don't count the cost of testing for image boundaries.
       }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
