@@ -15,14 +15,20 @@
  * limitations under the License.
  */
 
+#include "diplib/distance.h"
+
+#include <algorithm>
+#include <cmath>
 #include <queue>
+#include <utility>
+#include <vector>
 
 #include "diplib.h"
-#include "diplib/distance.h"
-#include "diplib/statistics.h"
 #include "diplib/generation.h"
 #include "diplib/iterators.h"
+#include "diplib/neighborlist.h"
 #include "diplib/overload.h"
+#include "diplib/statistics.h"
 
 namespace dip {
 
@@ -329,7 +335,7 @@ void GreyWeightedDistanceTransform(
       DIP_THROW_IF( c_bin.Sizes() != c_grey.Sizes(), E::SIZES_DONT_MATCH );
 
       // We can only support non-negative weights --
-      dfloat min;
+      dfloat min{};
       DIP_STACK_TRACE_THIS( min = Minimum( c_grey ).As< dfloat >() );
       DIP_THROW_IF( min < 0.0, "All input values must be non-negative" );
    }
@@ -345,7 +351,7 @@ void GreyWeightedDistanceTransform(
    }
 
    // What will we output?
-   bool fastMarching; // true if fast marching algorithm, false if chamfer algorithm.
+   bool fastMarching{}; // true if fast marching algorithm, false if chamfer algorithm.
    bool outputDistance = false;
    if( mode == S::FASTMARCHING ) {
       fastMarching = true;

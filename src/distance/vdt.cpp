@@ -1,5 +1,5 @@
 /*
- * (c)2017, Cris Luengo.
+ * (c)2017-2024, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,23 +15,19 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/distance.h"
+
+#include <algorithm>
+#include <cmath>
+#include <vector>
+
+#include "diplib.h"
+
+#include "find_neighbors.h"
 
 namespace dip {
 
 namespace {
-
-struct XYPosition {
-   dip::sint x;
-   dip::sint y;
-};
-
-struct XYZPosition {
-   dip::sint x;
-   dip::sint y;
-   dip::sint z;
-};
 
 void VDTFast2D(
       sfloat* ox,
@@ -58,7 +54,7 @@ void VDTFast2D(
       sfloat d = static_cast< sfloat >( ii ) - static_cast< sfloat >( nx );
       fsdx[ ii ] = d * d * dxx;
    }
-   sfloat* fsdy = 0;
+   sfloat* fsdy = nullptr;
    std::vector< sfloat> secondBuffer;
    if(( dx == dy ) && ( nx == ny )) {
       fsdy = fsdx;
@@ -85,24 +81,19 @@ void VDTFast2D(
    XYPosition dy1 = { 0, 1 };
    XYPosition bp = border ? infd : zero;
 
-   dip::sint ii, xx, yy, px, py;
-   sfloat fdb, fdc;
-   XYPosition* dcl, * dbl;
-   XYPosition* c, * b;
-
    // Forward scan
-   dbl = &d1[ 1 ];
-   for( ii = 0; ii < nx; ii++ ) {
+   XYPosition* dbl = &d1[ 1 ];
+   for( dip::sint ii = 0; ii < nx; ii++ ) {
       dbl[ ii ] = bp;
    }
 
-   for( yy = 0, py = 0; yy < ny; yy++, py += sy ) {
+   for( dip::sint yy = 0, py = 0; yy < ny; yy++, py += sy ) {
       // We split d into buffers that are swapped to read or write from
-      dcl = ( yy & 1 ? d1 : d2 );
-      dbl = ( yy & 1 ? d2 + 1 : d1 + 1 );
+      XYPosition* dcl = ( yy & 1 ? d1 : d2 );
+      XYPosition* dbl = ( yy & 1 ? d2 + 1 : d1 + 1 );
 
       *dcl++ = bp;
-      for( xx = 0, px = py; xx < nx; xx++, dcl++, dbl++, px += sx ) {
+      for( dip::sint xx = 0, px = py; xx < nx; xx++, dcl++, dbl++, px += sx ) {
          if( ox[ px ] != 0.0 ) {
             if(( dbl->x == zero.x ) && ( dbl->y == zero.y )) {
                *dcl = x0y_1;
@@ -119,8 +110,8 @@ void VDTFast2D(
                *dcl = x_1y0;
             } else {
                if((( dcl - 1 )->x != infd.x ) || (( dcl - 1 )->y != infd.y )) {
-                  c = dcl;
-                  b = ( dcl - 1 );
+                  XYPosition* c = dcl;
+                  XYPosition* b = ( dcl - 1 );
                   if(( fsdx[ c->x ] + fsdy[ c->y ] ) <
                      ( fsdx[ b->x - 1 ] + fsdy[ b->y ] )) {
                      continue;
@@ -135,22 +126,22 @@ void VDTFast2D(
       }
 
       *dcl-- = bp;
-      for( xx = 0, px = py + nx1sx; xx < nx; xx++, dcl--, px -= sx ) {
+      for( dip::sint xx = 0, px = py + nx1sx; xx < nx; xx++, dcl--, px -= sx ) {
          if(( dcl->x != zero.x ) || ( dcl->y != zero.y )) {
             if((( dcl + 1 )->x == infd.x ) && (( dcl + 1 )->y == infd.y )) {
                if(( dcl->x == infd.x ) && ( dcl->y == infd.y )) {
                   ox[ px ] = 0;
                   oy[ px ] = 0;
                } else {
-                  c = dcl;
+                  XYPosition* c = dcl;
                   ox[ px ] = static_cast< sfloat >( c->x );
                   oy[ px ] = static_cast< sfloat >( c->y );
                }
             } else {
-               c = dcl;
-               b = ( dcl + 1 );
-               fdc = fsdx[ c->x ] + fsdy[ c->y ];
-               fdb = fsdx[ b->x + 1 ] + fsdy[ b->y ];
+               XYPosition* c = dcl;
+               XYPosition* b = ( dcl + 1 );
+               sfloat fdc = fsdx[ c->x ] + fsdy[ c->y ];
+               sfloat fdb = fsdx[ b->x + 1 ] + fsdy[ b->y ];
                if( fdc > fdb ) {
                   dcl->x = ( dcl + 1 )->x + dx1.x;
                   dcl->y = ( dcl + 1 )->y + dx1.y;
@@ -172,16 +163,16 @@ void VDTFast2D(
 
    // Backward scan
    dbl = d1 + 1;
-   for( ii = 0; ii < nx; ii++ ) {
+   for( dip::sint ii = 0; ii < nx; ii++ ) {
       dbl[ ii ] = bp;
    }
 
-   for( ii = 0, py = ny1sy; ii < ny; ii++, py -= sy ) {
-      dcl = ( ii & 1 ? d1 + nx + 1 : d2 + nx + 1 );
-      dbl = ( ii & 1 ? d2 + nx : d1 + nx );
+   for( dip::sint ii = 0, py = ny1sy; ii < ny; ii++, py -= sy ) {
+      XYPosition* dcl = ( ii & 1 ? d1 + nx + 1 : d2 + nx + 1 );
+      XYPosition* dbl = ( ii & 1 ? d2 + nx : d1 + nx );
       *dcl-- = bp;
 
-      for( xx = 0, px = py + nx1sx; xx < nx; xx++, dcl--, dbl--, px -= sx ) {
+      for( dip::sint xx = 0, px = py + nx1sx; xx < nx; xx++, dcl--, dbl--, px -= sx ) {
          if( fsdx[ static_cast< dip::sint >( ox[ px ] ) ] + fsdy[ static_cast< dip::sint >( oy[ px ] ) ] != 0.0 ) {
             if( dbl->x == zero.x && dbl->y == zero.y ) {
                *dcl = x0y1;
@@ -195,8 +186,8 @@ void VDTFast2D(
             }
 
             if(( dcl + 1 )->x != infd.x || ( dcl + 1 )->y != infd.y ) {
-               c = dcl;
-               b = ( dcl + 1 );
+               XYPosition* c = dcl;
+               XYPosition* b = ( dcl + 1 );
                if(( fsdx[ c->x ] + fsdy[ c->y ] ) < ( fsdx[ b->x + 1 ] + fsdy[ b->y ] )) {
                   continue;
                }
@@ -209,22 +200,22 @@ void VDTFast2D(
       }
 
       *dcl++ = bp;
-      for( xx = 0, px = py; xx < nx; xx++, dcl++, px += sx ) {
+      for( dip::sint xx = 0, px = py; xx < nx; xx++, dcl++, px += sx ) {
          if( dcl->x != zero.x || dcl->y != zero.y ) {
             if(( dcl - 1 )->x == infd.x && ( dcl - 1 )->y == infd.y ) {
                if( dcl->x != infd.x || dcl->y != infd.y ) {
-                  c = dcl;
-                  fdc = fsdx[ c->x ] + fsdy[ c->y ];
+                  XYPosition* c = dcl;
+                  sfloat fdc = fsdx[ c->x ] + fsdy[ c->y ];
                   if( fsdx[ static_cast< dip::sint >( ox[ px ] ) ] + fsdy[ static_cast< dip::sint >( oy[ px ] ) ] > fdc ) {
                      ox[ px ] = static_cast< sfloat >( c->x );
                      oy[ px ] = static_cast< sfloat >( c->y );
                   }
                }
             } else {
-               c = dcl;
-               b = ( dcl - 1 );
-               fdc = fsdx[ c->x ] + fsdy[ c->y ];
-               fdb = fsdx[ b->x - 1 ] + fsdy[ b->y ];
+               XYPosition* c = dcl;
+               XYPosition* b = ( dcl - 1 );
+               sfloat fdc = fsdx[ c->x ] + fsdy[ c->y ];
+               sfloat fdb = fsdx[ b->x - 1 ] + fsdy[ b->y ];
                if( fdc > fdb ) {
                   dcl->x = ( dcl - 1 )->x - dx1.x;
                   dcl->y = ( dcl - 1 )->y - dx1.y;
@@ -243,8 +234,8 @@ void VDTFast2D(
       }
    }
 
-   for( yy = 0, py = 0; yy < ny; yy++, py += sy ) {
-      for( xx = 0, px = py; xx < nx; xx++, px += sx ) {
+   for( dip::sint yy = 0, py = 0; yy < ny; yy++, py += sy ) {
+      for( dip::sint xx = 0, px = py; xx < nx; xx++, px += sx ) {
          ox[ px ] = ( ox[ px ] - static_cast< sfloat >( nx )) * dx;
          oy[ px ] = ( oy[ px ] - static_cast< sfloat >( ny )) * dy;
       }
@@ -281,7 +272,7 @@ void VDTFast3D(
       sfloat d = static_cast< sfloat >( ii ) - static_cast< sfloat >( nx );
       fsdx[ ii ] = d * d * dxx;
    }
-   sfloat* fsdy = 0;
+   sfloat* fsdy = nullptr;
    std::vector< sfloat> secondBuffer;
    if(( dx == dy ) && ( nx == ny )) {
       fsdy = fsdx;
@@ -294,7 +285,7 @@ void VDTFast3D(
          fsdy[ ii ] = d * d * dyy;
       }
    }
-   sfloat* fsdz = 0;
+   sfloat* fsdz = nullptr;
    std::vector< sfloat> thirdBuffer;
    if(( dx == dz ) && ( nx == nz )) {
       fsdz = fsdx;
@@ -305,7 +296,7 @@ void VDTFast3D(
          thirdBuffer.resize( static_cast< dip::uint >( 2 * nz + 1 ));
          fsdz = thirdBuffer.data();
          sfloat dzz = dz * dz;
-         for( dip::uint ii = 0; ii < secondBuffer.size(); ii++ ) {
+         for( dip::uint ii = 0; ii < thirdBuffer.size(); ii++ ) {
             sfloat d = static_cast< sfloat >( ii ) - static_cast< sfloat >( nz );
             fsdz[ ii ] = d * d * dzz;
          }
@@ -320,28 +311,24 @@ void VDTFast3D(
    XYZPosition zero = { nx, ny, nz };
    XYZPosition bp = border ? infd : zero;
 
-   dip::sint ii, xx, yy, zz, px, pz, py;
-   XYZPosition* dcl, * dbl, * dbt;
-   sfloat fdb, fdc;
-
-   dbl = d1;
-   for( ii = ( nx + 2 ) * ( ny + 2 ); --ii >= 0; ) {
+   XYZPosition* dbl = d1;
+   for( dip::sint ii = ( nx + 2 ) * ( ny + 2 ); --ii >= 0; ) {
       *dbl++ = bp;
    }
 
-   for( zz = 0, pz = 0; zz < nz; zz++, pz += sz ) {
+   for( dip::sint zz = 0, pz = 0; zz < nz; zz++, pz += sz ) {
 
-      dcl = ( zz & 1 ? d1 : d2 );
-      dbl = ( zz & 1 ? d2 + nx + 3 : d1 + nx + 3 );
+      XYZPosition* dcl = ( zz & 1 ? d1 : d2 );
+      XYZPosition* dbl = ( zz & 1 ? d2 + nx + 3 : d1 + nx + 3 );
 
-      for( ii = nx + 2; --ii >= 0; ) {
+      for( dip::sint ii = nx + 2; --ii >= 0; ) {
          *dcl++ = bp;
       }
 
-      for( yy = 0, py = 0; yy < ny; yy++, dcl += 2 + nx, dbl += 2, py += sy ) {
+      for( dip::sint yy = 0, py = 0; yy < ny; yy++, dcl += 2 + nx, dbl += 2, py += sy ) {
          *dcl++ = bp;
 
-         for( xx = 0, px = py + pz; xx < nx; xx++, dcl++, dbl++, px += sx ) {
+         for( dip::sint xx = 0, px = py + pz; xx < nx; xx++, dcl++, dbl++, px += sx ) {
             if( ox[ px ] != 0.0 ) {
                if( dbl->x == zero.x && dbl->y == zero.y && dbl->z == zero.z ) {
                   dcl->x = nx;
@@ -357,7 +344,7 @@ void VDTFast3D(
                   }
                }
 
-               dbt = dcl - ( nx + 2 );
+               XYZPosition* dbt = dcl - ( nx + 2 );
 
                if( dbt->x != infd.x || dbt->y != infd.y || dbt->z != infd.z ) {
                   if(( fsdx[ dcl->x ] + fsdy[ dcl->y ] + fsdz[ dcl->z ] ) >
@@ -384,9 +371,9 @@ void VDTFast3D(
          }
 
          *dcl-- = bp;
-         for( xx = nx; --xx >= 0; dcl-- ) {
+         for( dip::sint xx = nx; --xx >= 0; dcl-- ) {
             if( dcl->x != zero.x || dcl->y != zero.y || dcl->z != zero.z ) {
-               dbt = dcl + 1;
+               XYZPosition* dbt = dcl + 1;
 
                if( dbt->x != infd.x || dbt->y != infd.y || dbt->z != infd.z ) {
                   if(( fsdx[ dcl->x ] + fsdy[ dcl->y ] + fsdz[ dcl->z ] ) >
@@ -400,15 +387,15 @@ void VDTFast3D(
          }
       }
 
-      for( ii = nx + 2; --ii >= 0; ) {
+      for( dip::sint ii = nx + 2; --ii >= 0; ) {
          *dcl++ = bp;
       }
 
       dcl -= nx + 4;
-      for( yy = 0, py = ny1sy; yy < ny; yy++, dcl -= 2, py -= sy ) {
-         for( xx = nx, px = pz + py + nx1sx; --xx >= 0; dcl--, px -= sx ) {
+      for( dip::sint yy = 0, py = ny1sy; yy < ny; yy++, dcl -= 2, py -= sy ) {
+         for( dip::sint xx = nx, px = pz + py + nx1sx; --xx >= 0; dcl--, px -= sx ) {
             if( dcl->x != zero.x || dcl->y != zero.y || dcl->z != zero.z ) {
-               dbt = dcl + ( nx + 2 );
+               XYZPosition* dbt = dcl + ( nx + 2 );
 
                if( dbt->x == infd.x && dbt->y == infd.y && dbt->z == infd.z ) {
                   if( dcl->x == infd.x && dcl->y == infd.y && dcl->z == infd.z ) {
@@ -421,8 +408,8 @@ void VDTFast3D(
                      oz[ px ] = static_cast< sfloat >( dcl->z );
                   }
                } else {
-                  fdc = fsdx[ dcl->x ] + fsdy[ dcl->y ] + fsdz[ dcl->z ];
-                  fdb = fsdx[ dbt->x ] + fsdy[ dbt->y + 1 ] + fsdz[ dbt->z ];
+                  sfloat fdc = fsdx[ dcl->x ] + fsdy[ dcl->y ] + fsdz[ dcl->z ];
+                  sfloat fdb = fsdx[ dbt->x ] + fsdy[ dbt->y + 1 ] + fsdz[ dbt->z ];
                   if( fdc > fdb ) {
                      ox[ px ] = static_cast< sfloat >( dcl->x = dbt->x );
                      oy[ px ] = static_cast< sfloat >( dcl->y = dbt->y + 1 );
@@ -443,22 +430,22 @@ void VDTFast3D(
    }
 
    dbl = d1;
-   for( ii = ( nx + 2 ) * ( ny + 2 ); --ii >= 0; ) {
+   for( dip::sint ii = ( nx + 2 ) * ( ny + 2 ); --ii >= 0; ) {
       *dbl++ = bp;
    }
 
-   for( zz = 0, pz = nz1sz; zz < nz; zz++, pz -= sz ) {
-      dcl = ( zz & 1 ? ( d1 + ( nx + 2 ) * ( ny + 2 ) - 1 ) : ( d2 + ( nx + 2 ) * ( ny + 2 ) - 1 ));
-      dbl = ( zz & 1 ? ( d2 + ( nx + 2 ) * ( ny + 1 ) - 2 ) : ( d1 + ( nx + 2 ) * ( ny + 1 ) - 2 ));
+   for( dip::sint zz = 0, pz = nz1sz; zz < nz; zz++, pz -= sz ) {
+      XYZPosition* dcl = ( zz & 1 ? ( d1 + ( nx + 2 ) * ( ny + 2 ) - 1 ) : ( d2 + ( nx + 2 ) * ( ny + 2 ) - 1 ));
+      XYZPosition* dbl = ( zz & 1 ? ( d2 + ( nx + 2 ) * ( ny + 1 ) - 2 ) : ( d1 + ( nx + 2 ) * ( ny + 1 ) - 2 ));
 
-      for( ii = nx + 2; --ii >= 0; ) {
+      for( dip::sint ii = nx + 2; --ii >= 0; ) {
          *dcl-- = bp;
       }
 
-      for( yy = 0, py = ny1sy; yy < ny; yy++, dcl -= 2 + nx, dbl -= 2, py -= sy ) {
+      for( dip::sint yy = 0, py = ny1sy; yy < ny; yy++, dcl -= 2 + nx, dbl -= 2, py -= sy ) {
          *dcl-- = bp;
 
-         for( xx = 0, px = py + pz + nx1sx; xx < nx; xx++, dcl--, dbl--, px -= sx ) {
+         for( dip::sint xx = 0, px = py + pz + nx1sx; xx < nx; xx++, dcl--, dbl--, px -= sx ) {
             if( ox[ px ] != static_cast< dfloat >( nx ) ||
                 oy[ px ] != static_cast< dfloat >( ny ) ||
                 oz[ px ] != static_cast< dfloat >( nz )) {
@@ -478,7 +465,7 @@ void VDTFast3D(
                   }
                }
 
-               dbt = dcl + ( nx + 2 );
+               XYZPosition* dbt = dcl + ( nx + 2 );
 
                if( dbt->x != infd.x || dbt->y != infd.y || dbt->z != infd.z ) {
                   if(( fsdx[ dcl->x ] + fsdy[ dcl->y ] + fsdz[ dcl->z ] ) >
@@ -505,9 +492,9 @@ void VDTFast3D(
          }
 
          *dcl++ = bp;
-         for( xx = nx; --xx >= 0; dcl++ ) {
+         for( dip::sint xx = nx; --xx >= 0; dcl++ ) {
             if( dcl->x != zero.x || dcl->y != zero.y || dcl->z != zero.z ) {
-               dbt = dcl - 1;
+               XYZPosition* dbt = dcl - 1;
 
                if( dbt->x != infd.x || dbt->y != infd.y || dbt->z != infd.z ) {
                   if(( fsdx[ dcl->x ] + fsdy[ dcl->y ] + fsdz[ dcl->z ] ) >
@@ -521,19 +508,19 @@ void VDTFast3D(
          }
       }
 
-      for( ii = nx + 2; --ii >= 0; ) {
+      for( dip::sint ii = nx + 2; --ii >= 0; ) {
          *dcl-- = bp;
       }
 
       dcl += nx + 4;
-      for( yy = 0, py = 0; yy < ny; yy++, dcl += 2, py += sy ) {
-         for( xx = nx, px = pz + py; --xx >= 0; dcl++, px += sx ) {
+      for( dip::sint yy = 0, py = 0; yy < ny; yy++, dcl += 2, py += sy ) {
+         for( dip::sint xx = nx, px = pz + py; --xx >= 0; dcl++, px += sx ) {
             if( dcl->x != zero.x || dcl->y != zero.y || dcl->z != zero.z ) {
-               dbt = dcl - ( nx + 2 );
+               XYZPosition* dbt = dcl - ( nx + 2 );
 
                if( dbt->x == infd.x && dbt->y == infd.y && dbt->z == infd.z ) {
                   if( dcl->x != infd.x || dcl->y != infd.y || dcl->z != infd.z ) {
-                     fdc = fsdx[ dcl->x ] + fsdy[ dcl->y ] + fsdz[ dcl->z ];
+                     sfloat fdc = fsdx[ dcl->x ] + fsdy[ dcl->y ] + fsdz[ dcl->z ];
                      if( fsdx[ static_cast< dip::sint >( ox[ px ] ) ] +
                          fsdy[ static_cast< dip::sint >( oy[ px ] ) ] +
                          fsdz[ static_cast< dip::sint >( oz[ px ] ) ] > fdc ) {
@@ -543,8 +530,8 @@ void VDTFast3D(
                      }
                   }
                } else {
-                  fdc = fsdx[ dcl->x ] + fsdy[ dcl->y ] + fsdz[ dcl->z ];
-                  fdb = fsdx[ dbt->x ] + fsdy[ dbt->y - 1 ] + fsdz[ dbt->z ];
+                  sfloat fdc = fsdx[ dcl->x ] + fsdy[ dcl->y ] + fsdz[ dcl->z ];
+                  sfloat fdb = fsdx[ dbt->x ] + fsdy[ dbt->y - 1 ] + fsdz[ dbt->z ];
                   if( fdc > fdb ) {
                      dcl->x = dbt->x;
                      dcl->y = dbt->y - 1;
@@ -571,85 +558,15 @@ void VDTFast3D(
       }
    }
 
-   for( zz = 0, pz = 0; zz < nz; zz++, pz += sz ) {
-      for( yy = 0, py = 0; yy < ny; yy++, py += sy ) {
-         for( xx = 0, px = pz + py; xx < nx; xx++, px += sx ) {
+   for( dip::sint zz = 0, pz = 0; zz < nz; zz++, pz += sz ) {
+      for( dip::sint yy = 0, py = 0; yy < ny; yy++, py += sy ) {
+         for( dip::sint xx = 0, px = pz + py; xx < nx; xx++, px += sx ) {
             ox[ px ] = ( ox[ px ] - static_cast< sfloat >( nx )) * dx;
             oy[ px ] = ( oy[ px ] - static_cast< sfloat >( ny )) * dy;
             oz[ px ] = ( oz[ px ] - static_cast< sfloat >( nz )) * dz;
          }
       }
    }
-}
-
-dip::sint FindNeighbors2D(
-      XYPosition* p,
-      sfloat* mindist,
-      dip::sint* minpos,
-      dip::sint n,
-      dip::sint nx,
-      dip::sint ny,
-      sfloat* fdnb,
-      sfloat* fsdx,
-      sfloat* fsdy,
-      bool useTrue
-) {
-   dip::sint i, j, k, pos;
-   sfloat* dnbp, min;
-   XYPosition* pnbp;
-
-   for( i = n, dnbp = fdnb, pnbp = p; --i >= 0; pnbp++ ) {
-      *dnbp++ = fsdx[ pnbp->x + nx ] + fsdy[ pnbp->y + ny ];
-   }
-
-   dnbp = fdnb;
-   min = *dnbp++;
-   pos = 0;
-   for( i = 1; i < n; i++, dnbp++ ) {
-      if( *dnbp < min ) {
-         min = *dnbp;
-         pos = i;
-      }
-   }
-   *mindist = min;
-   *minpos = pos;
-
-   if( useTrue ) {
-      min = std::sqrt( min ) + 0.8f;
-      min *= min;
-   }
-
-   dnbp = fdnb;
-   for( i = 0, j = 0; i < n; i++ ) {
-      if( useTrue ) {
-         if( min >= *dnbp++ ) {
-            if( i != j ) {
-               p[ j ] = p[ i ];
-            }
-            j++;
-         }
-      } else {
-         if( min == *dnbp++ ) {
-            if( i != j ) {
-               p[ j ] = p[ i ];
-            }
-            j++;
-         }
-      }
-   }
-
-   for( k = 0; k < j - 1; k++ ) {
-      for( i = k + 1; i < j; i++ ) {
-         if( p[ i ].x == p[ k ].x && p[ i ].y == p[ k ].y ) {
-            if( i != --j ) {
-               p[ i ] = p[ j ];
-            }
-            i--;
-         }
-      }
-   }
-
-   return j;
 }
 
 void VDTTies2D(
@@ -668,6 +585,7 @@ void VDTTies2D(
    dip::sint sy = stride[ 1 ];
    sfloat dx = static_cast< sfloat >( distance[ 0 ] );
    sfloat dy = static_cast< sfloat >( distance[ 1 ] );
+   sfloat delta = 0.8f * std::min( dx, dy ); // This could still go wrong if there's a large difference between dx and dy.
    dip::sint nx1sx = ( nx - 1 ) * sx;
    dip::sint ny1sy = ( ny - 1 ) * sy;
    dip::sint guess = ( dim * 2 - 1 );
@@ -683,7 +601,7 @@ void VDTTies2D(
       sfloat d = static_cast< sfloat >( ii ) - static_cast< sfloat >( nx );
       fsdx[ ii ] = d * d * dxx;
    }
-   sfloat* fsdy = 0;
+   sfloat* fsdy = nullptr;
    std::vector< sfloat> secondBuffer;
    if(( dx == dy ) && ( nx == ny )) {
       fsdy = fsdx;
@@ -709,56 +627,47 @@ void VDTTies2D(
    dip::sint** d1 = d.data();
    dip::sint** d2 = d1 + ( nx + 2 );
    dip::sint zero = 0;
-   dip::sint* bp = ( border ? &zero : NULL );
+   dip::sint* bp = ( border ? &zero : nullptr );
 
-   dip::sint py, px;
-   dip::sint xx, yy, ii, jj, kk;
-   dip::sint** dcl, ** dbl;
-   dip::sint* nbp, * tnbp;
-   dip::sint minpos;
-   sfloat mindist;
-   XYPosition* nbs;
-   XYPosition* pnbp;
-
-   dbl = d1 + 1;
-   for( ii = nx; --ii >= 0; ) {
+   dip::sint** dbl = d1 + 1;
+   for( dip::sint ii = nx; --ii >= 0; ) {
       *dbl++ = bp;
    }
 
-   for( yy = 0, py = 0; yy < ny; yy++, py += sy ) {
+   for( dip::sint yy = 0, py = 0; yy < ny; yy++, py += sy ) {
 
-      nbp = ( yy & 1 ? nb1 : nb0 );
-      dcl = ( yy & 1 ? d1 : d2 );
-      dbl = ( yy & 1 ? d2 + 1 : d1 + 1 );
+      dip::sint* nbp = ( yy & 1 ? nb1 : nb0 );
+      dip::sint** dcl = ( yy & 1 ? d1 : d2 );
+      dip::sint** dbl = ( yy & 1 ? d2 + 1 : d1 + 1 );
 
       *dcl++ = bp;
-      for( xx = 0, px = py; xx < nx; xx++, dcl++, dbl++, px += sx ) {
+      for( dip::sint xx = 0, px = py; xx < nx; xx++, dcl++, dbl++, px += sx ) {
          if( ox[ px ] != 0.0 ) {
             *dcl = nbp;
-            kk = 0;
-            pnbp = pnb;
-            tnbp = *dbl;
-            if( tnbp == NULL ) {
+            dip::sint kk = 0;
+            XYPosition* pnbp = pnb;
+            dip::sint* tnbp = *dbl;
+            if( tnbp == nullptr ) {
                pnbp->x = 0;
                pnbp->y = -1;
                kk++;
                pnbp++;
             } else {
-               nbs = reinterpret_cast< XYPosition* >( tnbp + 1 );
-               for( jj = *tnbp; --jj >= 0; pnbp++, nbs++ ) {
+               XYPosition* nbs = reinterpret_cast< XYPosition* >( tnbp + 1 );
+               for( dip::sint jj = *tnbp; --jj >= 0; pnbp++, nbs++ ) {
                   pnbp->x = nbs->x;
                   pnbp->y = nbs->y - 1;
                   kk++;
                }
             }
             tnbp = *( dcl - 1 );
-            if( tnbp == NULL ) {
+            if( tnbp == nullptr ) {
                pnbp->x = -1;
                pnbp->y = 0;
                kk++;
             } else {
-               nbs = reinterpret_cast< XYPosition* >( tnbp + 1 );
-               for( jj = *tnbp; --jj >= 0; pnbp++, nbs++ ) {
+               XYPosition* nbs = reinterpret_cast< XYPosition* >( tnbp + 1 );
+               for( dip::sint jj = *tnbp; --jj >= 0; pnbp++, nbs++ ) {
                   pnbp->x = nbs->x - 1;
                   pnbp->y = nbs->y;
                   kk++;
@@ -767,37 +676,39 @@ void VDTTies2D(
             if( kk == 0 ) {
                *nbp++ = 0;
             } else {
-               kk = FindNeighbors2D( pnb, &mindist, &minpos, kk, nx, ny, fdnb, fsdx, fsdy, useTrue );
+               sfloat mindist{};
+               dip::sint minpos{};
+               kk = FindNeighbors2D( pnb, &mindist, &minpos, kk, nx, ny, fdnb, fsdx, fsdy, useTrue, delta );
                *nbp++ = kk;
-               nbs = reinterpret_cast< XYPosition* >( nbp );
+               XYPosition* nbs = reinterpret_cast< XYPosition* >( nbp );
                pnbp = pnb;
-               for( jj = kk; --jj >= 0; nbs++, pnbp++ ) {
+               for( dip::sint jj = kk; --jj >= 0; nbs++, pnbp++ ) {
                   *nbs = *pnbp;
                }
                nbp += kk * dim;
             }
          } else {
-            *dcl = NULL;
+            *dcl = nullptr;
          }
       }
 
       *dcl-- = bp;
-      for( ii = 0, px = py + nx1sx; ii < nx; ii++, dcl--, px -= sx ) {
-         if( *dcl != NULL ) {
-            kk = **dcl;
-            nbs = reinterpret_cast< XYPosition* >( *dcl + 1 );
-            pnbp = pnb;
-            for( jj = 0; jj < kk; jj++, nbs++, pnbp++ ) {
+      for( dip::sint ii = 0, px = py + nx1sx; ii < nx; ii++, dcl--, px -= sx ) {
+         if( *dcl != nullptr ) {
+            dip::sint kk = **dcl;
+            XYPosition* nbs = reinterpret_cast< XYPosition* >( *dcl + 1 );
+            XYPosition* pnbp = pnb;
+            for( dip::sint jj = 0; jj < kk; jj++, nbs++, pnbp++ ) {
                *pnbp = *nbs;
             }
-            tnbp = *( dcl + 1 );
-            if( tnbp == NULL ) {
+            dip::sint* tnbp = *( dcl + 1 );
+            if( tnbp == nullptr ) {
                pnbp->x = 1;
                pnbp->y = 0;
                kk++;
             } else {
-               nbs = reinterpret_cast< XYPosition* >( tnbp + 1 );
-               for( jj = *tnbp; --jj >= 0; pnbp++, nbs++ ) {
+               XYPosition* nbs = reinterpret_cast< XYPosition* >( tnbp + 1 );
+               for( dip::sint jj = *tnbp; --jj >= 0; pnbp++, nbs++ ) {
                   pnbp->x = nbs->x + 1;
                   pnbp->y = nbs->y;
                   kk++;
@@ -809,11 +720,13 @@ void VDTTies2D(
                ox[ px ] = static_cast< sfloat >( -nx );
                oy[ px ] = static_cast< sfloat >( -ny );
             } else {
-               kk = FindNeighbors2D( pnb, &mindist, &minpos, kk, nx, ny, fdnb, fsdx, fsdy, useTrue );
+               sfloat mindist{};
+               dip::sint minpos{};
+               kk = FindNeighbors2D( pnb, &mindist, &minpos, kk, nx, ny, fdnb, fsdx, fsdy, useTrue, delta );
                *nbp++ = kk;
-               nbs = reinterpret_cast< XYPosition* >( nbp );
+               XYPosition* nbs = reinterpret_cast< XYPosition* >( nbp );
                pnbp = pnb;
-               for( jj = kk; --jj >= 0; nbs++, pnbp++ ) {
+               for( dip::sint jj = kk; --jj >= 0; nbs++, pnbp++ ) {
                   *nbs = *pnbp;
                }
                ox[ px ] = static_cast< sfloat >( pnb[ minpos ].x );
@@ -828,44 +741,44 @@ void VDTTies2D(
    }
 
    dbl = d1 + 1;
-   for( ii = nx; --ii >= 0; ) {
+   for( dip::sint ii = nx; --ii >= 0; ) {
       *dbl++ = bp;
    }
 
-   for( yy = 0, py = ny1sy; yy < ny; yy++, py -= sy ) {
-      nbp = ( yy & 1 ? nb1 : nb0 );
-      dcl = ( yy & 1 ? d1 + nx + 1 : d2 + nx + 1 );
-      dbl = ( yy & 1 ? d2 + nx : d1 + nx );
+   for( dip::sint yy = 0, py = ny1sy; yy < ny; yy++, py -= sy ) {
+      dip::sint* nbp = ( yy & 1 ? nb1 : nb0 );
+      dip::sint** dcl = ( yy & 1 ? d1 + nx + 1 : d2 + nx + 1 );
+      dip::sint** dbl = ( yy & 1 ? d2 + nx : d1 + nx );
 
       *dcl-- = bp;
-      for( xx = 0, px = py + nx1sx; xx < nx; xx++, dcl--, dbl--, px -= sx ) {
+      for( dip::sint xx = 0, px = py + nx1sx; xx < nx; xx++, dcl--, dbl--, px -= sx ) {
          if( ox[ px ] != static_cast< dfloat >( nx ) &&
              oy[ px ] != static_cast< dfloat >( ny )) {
             *dcl = nbp;
-            kk = 0;
-            pnbp = pnb;
-            tnbp = *dbl;
-            if( tnbp == NULL ) {
+            dip::sint kk = 0;
+            XYPosition* pnbp = pnb;
+            dip::sint* tnbp = *dbl;
+            if( tnbp == nullptr ) {
                pnbp->x = 0;
                pnbp->y = 1;
                kk++;
                pnbp++;
             } else {
-               nbs = reinterpret_cast< XYPosition* >( tnbp + 1 );
-               for( jj = *tnbp; --jj >= 0; pnbp++, nbs++ ) {
+               XYPosition* nbs = reinterpret_cast< XYPosition* >( tnbp + 1 );
+               for( dip::sint jj = *tnbp; --jj >= 0; pnbp++, nbs++ ) {
                   pnbp->x = nbs->x;
                   pnbp->y = nbs->y + 1;
                   kk++;
                }
             }
             tnbp = *( dcl + 1 );
-            if( tnbp == NULL ) {
+            if( tnbp == nullptr ) {
                pnbp->x = 1;
                pnbp->y = 0;
                kk++;
             } else {
-               nbs = reinterpret_cast< XYPosition* >( tnbp + 1 );
-               for( jj = *tnbp; --jj >= 0; pnbp++, nbs++ ) {
+               XYPosition* nbs = reinterpret_cast< XYPosition* >( tnbp + 1 );
+               for( dip::sint jj = *tnbp; --jj >= 0; pnbp++, nbs++ ) {
                   pnbp->x = nbs->x + 1;
                   pnbp->y = nbs->y;
                   kk++;
@@ -874,37 +787,39 @@ void VDTTies2D(
             if( kk == 0 ) {
                *nbp++ = 0;
             } else {
-               kk = FindNeighbors2D( pnb, &mindist, &minpos, kk, nx, ny, fdnb, fsdx, fsdy, useTrue );
+               sfloat mindist{};
+               dip::sint minpos{};
+               kk = FindNeighbors2D( pnb, &mindist, &minpos, kk, nx, ny, fdnb, fsdx, fsdy, useTrue, delta );
                *nbp++ = kk;
-               nbs = reinterpret_cast< XYPosition* >( nbp );
+               XYPosition* nbs = reinterpret_cast< XYPosition* >( nbp );
                pnbp = pnb;
-               for( jj = kk; --jj >= 0; nbs++, pnbp++ ) {
+               for( dip::sint jj = kk; --jj >= 0; nbs++, pnbp++ ) {
                   *nbs = *pnbp;
                }
                nbp += kk * dim;
             }
          } else {
-            *dcl = NULL;
+            *dcl = nullptr;
          }
       }
 
       *dcl++ = bp;
-      for( xx = 0, px = py; xx < nx; xx++, dcl++, px += sx ) {
-         if( *dcl != NULL ) {
-            kk = **dcl;
-            nbs = reinterpret_cast< XYPosition* >( *dcl + 1 );
-            pnbp = pnb;
-            for( jj = 0; jj < kk; jj++, nbs++, pnbp++ ) {
+      for( dip::sint xx = 0, px = py; xx < nx; xx++, dcl++, px += sx ) {
+         if( *dcl != nullptr ) {
+            dip::sint kk = **dcl;
+            XYPosition* nbs = reinterpret_cast< XYPosition* >( *dcl + 1 );
+            XYPosition* pnbp = pnb;
+            for( dip::sint jj = 0; jj < kk; jj++, nbs++, pnbp++ ) {
                *pnbp = *nbs;
             }
-            tnbp = *( dcl - 1 );
-            if( tnbp == NULL ) {
+            dip::sint* tnbp = *( dcl - 1 );
+            if( tnbp == nullptr ) {
                pnbp->x = -1;
                pnbp->y = 0;
                kk++;
             } else {
-               nbs = reinterpret_cast< XYPosition* >( tnbp + 1 );
-               for( jj = *tnbp; --jj >= 0; pnbp++, nbs++ ) {
+               XYPosition* nbs = reinterpret_cast< XYPosition* >( tnbp + 1 );
+               for( dip::sint jj = *tnbp; --jj >= 0; pnbp++, nbs++ ) {
                   pnbp->x = nbs->x - 1;
                   pnbp->y = nbs->y;
                   kk++;
@@ -916,10 +831,13 @@ void VDTTies2D(
                ox[ px ] *= dx;
                oy[ px ] *= dy;
             } else {
-               kk = FindNeighbors2D( pnb, &mindist, &minpos, kk, nx, ny, fdnb, fsdx, fsdy, useTrue );
+               sfloat mindist{};
+               dip::sint minpos{};
+               kk = FindNeighbors2D( pnb, &mindist, &minpos, kk, nx, ny, fdnb, fsdx, fsdy, useTrue, delta );
                *nbp++ = kk;
-               nbs = reinterpret_cast< XYPosition* >( nbp );
-               for( jj = kk, pnbp = pnb; --jj >= 0; nbs++, pnbp++ ) {
+               XYPosition* nbs = reinterpret_cast< XYPosition* >( nbp );
+               pnbp = pnb;
+               for( dip::sint jj = kk; --jj >= 0; nbs++, pnbp++ ) {
                   *nbs = *pnbp;
                }
                if( mindist < ( fsdx[ static_cast< dip::sint >( ox[ px ] ) + nx ] + fsdy[ static_cast< dip::sint >( oy[ px ] ) + ny ] )) {
@@ -937,78 +855,6 @@ void VDTTies2D(
          }
       }
    }
-}
-
-dip::sint FindNeighbors3D(
-      XYZPosition* p,
-      sfloat* mindist,
-      dip::sint* minpos,
-      dip::sint n,
-      dip::sint nx,
-      dip::sint ny,
-      dip::sint nz,
-      sfloat* fdnb,
-      sfloat* fsdx,
-      sfloat* fsdy,
-      sfloat* fsdz,
-      bool useTrue
-) {
-   dip::sint i, j, k, pos;
-   sfloat* dnbp, min;
-   XYZPosition* pnbp;
-
-   for( i = n, dnbp = fdnb, pnbp = p; --i >= 0; pnbp++ ) {
-      *dnbp++ = fsdx[ pnbp->x + nx ] + fsdy[ pnbp->y + ny ] + fsdz[ pnbp->z + nz ];
-   }
-
-   dnbp = fdnb;
-   min = *dnbp++;
-   pos = 0;
-   for( i = 1; i < n; i++, dnbp++ ) {
-      if( *dnbp < min ) {
-         min = *dnbp;
-         pos = i;
-      }
-   }
-   *mindist = min;
-   *minpos = pos;
-
-   if( useTrue ) {
-      min = std::sqrt( min ) + 1.4f;
-      min *= min;
-   }
-
-   dnbp = fdnb;
-   for( i = 0, j = 0; i < n; i++ ) {
-      if( useTrue ) {
-         if( min >= *dnbp++ ) {
-            if( i != j ) {
-               p[ j ] = p[ i ];
-            }
-            j++;
-         }
-      } else {
-         if( min == *dnbp++ ) {
-            if( i != j ) {
-               p[ j ] = p[ i ];
-            }
-            j++;
-         }
-      }
-   }
-
-   for( k = 0; k < j - 1; k++ ) {
-      for( i = k + 1; i < j; i++ ) {
-         if( p[ i ].x == p[ k ].x && p[ i ].y == p[ k ].y && p[ i ].z == p[ k ].z ) {
-            if( i != --j ) {
-               p[ i ] = p[ j ];
-            }
-            i--;
-         }
-      }
-   }
-
-   return j;
 }
 
 void VDTTies3D(
@@ -1031,6 +877,7 @@ void VDTTies3D(
    sfloat dx = static_cast< sfloat >( distance[ 0 ] );
    sfloat dy = static_cast< sfloat >( distance[ 1 ] );
    sfloat dz = static_cast< sfloat >( distance[ 2 ] );
+   sfloat delta = 1.4f * std::min( dx, std::min( dy, dz )); // This could still go wrong if there's a large difference between dx and dy.
    dip::sint nx1sx = ( nx - 1 ) * sx;
    dip::sint ny1sy = ( ny - 1 ) * sy;
    dip::sint nz1sz = ( nz - 1 ) * sz;
@@ -1047,7 +894,7 @@ void VDTTies3D(
       sfloat d = static_cast< sfloat >( ii ) - static_cast< sfloat >( nx );
       fsdx[ ii ] = d * d * dxx;
    }
-   sfloat* fsdy = 0;
+   sfloat* fsdy = nullptr;
    std::vector< sfloat> secondBuffer;
    if(( dx == dy ) && ( nx == ny )) {
       fsdy = fsdx;
@@ -1060,7 +907,7 @@ void VDTTies3D(
          fsdy[ ii ] = d * d * dyy;
       }
    }
-   sfloat* fsdz = 0;
+   sfloat* fsdz = nullptr;
    std::vector< sfloat> thirdBuffer;
    if(( dx == dz ) && ( nx == nz )) {
       fsdz = fsdx;
@@ -1071,7 +918,7 @@ void VDTTies3D(
          thirdBuffer.resize( static_cast< dip::uint >( 2 * nz + 1 ));
          fsdz = thirdBuffer.data();
          sfloat dzz = dz * dz;
-         for( dip::uint ii = 0; ii < secondBuffer.size(); ii++ ) {
+         for( dip::uint ii = 0; ii < thirdBuffer.size(); ii++ ) {
             sfloat d = static_cast< sfloat >( ii ) - static_cast< sfloat >( nz );
             fsdz[ ii ] = d * d * dzz;
          }
@@ -1090,48 +937,39 @@ void VDTTies3D(
    dip::sint** d1 = d.data();
    dip::sint** d2 = d1 + ( nx + 2 ) * ( ny + 2 );
    dip::sint zero = 0;
-   dip::sint* bp = ( border ? &zero : NULL );
+   dip::sint* bp = ( border ? &zero : nullptr );
 
-   dip::sint px, pz, py;
-   dip::sint xx, yy, zz, ii, jj, kk;
-   dip::sint minpos;
-   dip::sint** dcp, ** dbp;
-   dip::sint* nbp, * tnbp;
-   XYZPosition* nbs;
-   XYZPosition* pnbp;
-   sfloat mindist, dist;
-
-   dbp = d1;
-   for( ii = ( nx + 2 ) * ( ny + 2 ); --ii >= 0; ) {
+   dip::sint** dbp = d1;
+   for( dip::sint ii = ( nx + 2 ) * ( ny + 2 ); --ii >= 0; ) {
       *dbp++ = bp;
    }
 
-   for( zz = 0, pz = 0; zz < nz; zz++, pz += sz ) {
-      nbp = ( zz & 1 ? nb1 : nb0 );
-      dcp = ( zz & 1 ? d1 : d2 );
-      dbp = ( zz & 1 ? d2 + nx + 3 : d1 + nx + 3 );
+   for( dip::sint zz = 0, pz = 0; zz < nz; zz++, pz += sz ) {
+      dip::sint* nbp = ( zz & 1 ? nb1 : nb0 );
+      dip::sint** dcp = ( zz & 1 ? d1 : d2 );
+      dip::sint** dbp = ( zz & 1 ? d2 + nx + 3 : d1 + nx + 3 );
 
-      for( ii = nx + 2; --ii >= 0; ) {
+      for( dip::sint ii = nx + 2; --ii >= 0; ) {
          *dcp++ = bp;
       }
 
-      for( yy = 0, py = 0; yy < ny; yy++, dcp += 2 + nx, dbp += 2, py += sy ) {
+      for( dip::sint yy = 0, py = 0; yy < ny; yy++, dcp += 2 + nx, dbp += 2, py += sy ) {
          *dcp++ = bp;
-         for( xx = 0, px = pz + py; xx < nx; xx++, dcp++, dbp++, px += sx ) {
+         for( dip::sint xx = 0, px = pz + py; xx < nx; xx++, dcp++, dbp++, px += sx ) {
             if( ox[ px ] != 0.0 ) {
                *dcp = nbp;
-               kk = 0;
-               pnbp = pnb;
-               tnbp = *dbp;
-               if( tnbp == NULL ) {
+               dip::sint kk = 0;
+               XYZPosition* pnbp = pnb;
+               dip::sint* tnbp = *dbp;
+               if( tnbp == nullptr ) {
                   pnbp->x = 0;
                   pnbp->y = 0;
                   pnbp->z = -1;
                   kk++;
                   pnbp++;
                } else {
-                  nbs = reinterpret_cast< XYZPosition* >( tnbp + 1 );
-                  for( jj = *tnbp; --jj >= 0; pnbp++, nbs++ ) {
+                  XYZPosition* nbs = reinterpret_cast< XYZPosition* >( tnbp + 1 );
+                  for( dip::sint jj = *tnbp; --jj >= 0; pnbp++, nbs++ ) {
                      pnbp->x = nbs->x;
                      pnbp->y = nbs->y;
                      pnbp->z = nbs->z - 1;
@@ -1139,15 +977,15 @@ void VDTTies3D(
                   }
                }
                tnbp = *( dcp - nx - 2 );
-               if( tnbp == NULL ) {
+               if( tnbp == nullptr ) {
                   pnbp->x = 0;
                   pnbp->y = -1;
                   pnbp->z = 0;
                   kk++;
                   pnbp++;
                } else {
-                  nbs = reinterpret_cast< XYZPosition* >( tnbp + 1 );
-                  for( jj = *tnbp; --jj >= 0; pnbp++, nbs++ ) {
+                  XYZPosition* nbs = reinterpret_cast< XYZPosition* >( tnbp + 1 );
+                  for( dip::sint jj = *tnbp; --jj >= 0; pnbp++, nbs++ ) {
                      pnbp->x = nbs->x;
                      pnbp->y = nbs->y - 1;
                      pnbp->z = nbs->z;
@@ -1155,15 +993,15 @@ void VDTTies3D(
                   }
                }
                tnbp = *( dcp - 1 );
-               if( tnbp == NULL ) {
+               if( tnbp == nullptr ) {
                   pnbp->x = -1;
                   pnbp->y = 0;
                   pnbp->z = 0;
                   kk++;
                   pnbp++;
                } else {
-                  nbs = reinterpret_cast< XYZPosition* >( tnbp + 1 );
-                  for( jj = *tnbp; --jj >= 0; pnbp++, nbs++ ) {
+                  XYZPosition* nbs = reinterpret_cast< XYZPosition* >( tnbp + 1 );
+                  for( dip::sint jj = *tnbp; --jj >= 0; pnbp++, nbs++ ) {
                      pnbp->x = nbs->x - 1;
                      pnbp->y = nbs->y;
                      pnbp->z = nbs->z;
@@ -1173,40 +1011,43 @@ void VDTTies3D(
                if( kk == 0 ) {
                   *nbp++ = 0;
                } else {
-                  kk = FindNeighbors3D( pnb, &mindist, &minpos, kk, nx, ny, nz, fdnb, fsdx, fsdy, fsdz, useTrue );
+                  sfloat mindist{};
+                  dip::sint minpos{};
+                  kk = FindNeighbors3D( pnb, &mindist, &minpos, kk, nx, ny, nz, fdnb, fsdx, fsdy, fsdz, useTrue, delta );
                   *nbp++ = kk;
-                  nbs = reinterpret_cast< XYZPosition* >( nbp );
-                  for( jj = kk, pnbp = pnb; --jj >= 0; nbs++, pnbp++ ) {
+                  XYZPosition* nbs = reinterpret_cast< XYZPosition* >( nbp );
+                  pnbp = pnb;
+                  for( dip::sint jj = kk; --jj >= 0; nbs++, pnbp++ ) {
                      *nbs = *pnbp;
                   }
                   nbp += kk * dim;
                }
             } else {
-               *dcp = NULL;
+               *dcp = nullptr;
             }
          }
 
          *dcp-- = bp;
-         for( xx = 0; xx < nx; xx++, dcp-- ) {
-            if( *dcp != NULL ) {
-               kk = **dcp;
-               nbs = reinterpret_cast< XYZPosition* >( *dcp + 1 );
-               pnbp = pnb;
-               for( jj = 0; jj < kk; jj++, nbs++, pnbp++ ) {
+         for( dip::sint xx = 0; xx < nx; xx++, dcp-- ) {
+            if( *dcp != nullptr ) {
+               dip::sint kk = **dcp;
+               XYZPosition* nbs = reinterpret_cast< XYZPosition* >( *dcp + 1 );
+               XYZPosition* pnbp = pnb;
+               for( dip::sint jj = 0; jj < kk; jj++, nbs++, pnbp++ ) {
                   pnbp->x = nbs->x;
                   pnbp->y = nbs->y;
                   pnbp->z = nbs->z;
                }
-               tnbp = *( dcp + 1 );
-               if( tnbp == NULL ) {
+               dip::sint* tnbp = *( dcp + 1 );
+               if( tnbp == nullptr ) {
                   pnbp->x = 1;
                   pnbp->y = 0;
                   pnbp->z = 0;
                   kk++;
                   pnbp++;
                } else {
-                  nbs = reinterpret_cast< XYZPosition* >( tnbp + 1 );
-                  for( jj = *tnbp; --jj >= 0; pnbp++, nbs++ ) {
+                  XYZPosition* nbs = reinterpret_cast< XYZPosition* >( tnbp + 1 );
+                  for( dip::sint jj = *tnbp; --jj >= 0; pnbp++, nbs++ ) {
                      pnbp->x = nbs->x + 1;
                      pnbp->y = nbs->y;
                      pnbp->z = nbs->z;
@@ -1217,10 +1058,13 @@ void VDTTies3D(
                if( kk == 0 ) {
                   *nbp++ = 0;
                } else {
-                  kk = FindNeighbors3D( pnb, &mindist, &minpos, kk, nx, ny, nz, fdnb, fsdx, fsdy, fsdz, useTrue );
+                  sfloat mindist{};
+                  dip::sint minpos{};
+                  kk = FindNeighbors3D( pnb, &mindist, &minpos, kk, nx, ny, nz, fdnb, fsdx, fsdy, fsdz, useTrue, delta );
                   *nbp++ = kk;
-                  nbs = reinterpret_cast< XYZPosition* >( nbp );
-                  for( jj = kk, pnbp = pnb; --jj >= 0; nbs++, pnbp++ ) {
+                  XYZPosition* nbs = reinterpret_cast< XYZPosition* >( nbp );
+                  pnbp = pnb;
+                  for( dip::sint jj = kk; --jj >= 0; nbs++, pnbp++ ) {
                      *nbs = *pnbp;
                   }
                   nbp += kk * dim;
@@ -1229,32 +1073,32 @@ void VDTTies3D(
          }
       }
 
-      for( ii = nx + 2; --ii >= 0; ) {
+      for( dip::sint ii = nx + 2; --ii >= 0; ) {
          *dcp++ = bp;
       }
       dcp -= nx + 4;
 
-      for( yy = 0, py = ny1sy; yy < ny; yy++, dcp -= 2, py -= sy ) {
-         for( xx = 0, px = pz + py + nx1sx; xx < nx; xx++, dcp--, px -= sx ) {
-            if( *dcp != NULL ) {
-               kk = **dcp;
-               nbs = reinterpret_cast< XYZPosition* >( *dcp + 1 );
-               pnbp = pnb;
-               for( jj = 0; jj < kk; jj++, nbs++, pnbp++ ) {
+      for( dip::sint yy = 0, py = ny1sy; yy < ny; yy++, dcp -= 2, py -= sy ) {
+         for( dip::sint xx = 0, px = pz + py + nx1sx; xx < nx; xx++, dcp--, px -= sx ) {
+            if( *dcp != nullptr ) {
+               dip::sint kk = **dcp;
+               XYZPosition* nbs = reinterpret_cast< XYZPosition* >( *dcp + 1 );
+               XYZPosition* pnbp = pnb;
+               for( dip::sint jj = 0; jj < kk; jj++, nbs++, pnbp++ ) {
                   pnbp->x = nbs->x;
                   pnbp->y = nbs->y;
                   pnbp->z = nbs->z;
                }
-               tnbp = *( dcp + nx + 2 );
-               if( tnbp == NULL ) {
+               dip::sint* tnbp = *( dcp + nx + 2 );
+               if( tnbp == nullptr ) {
                   pnbp->x = 0;
                   pnbp->y = 1;
                   pnbp->z = 0;
                   kk++;
                   pnbp++;
                } else {
-                  nbs = reinterpret_cast< XYZPosition* >( tnbp + 1 );
-                  for( jj = *tnbp; --jj >= 0; pnbp++, nbs++ ) {
+                  XYZPosition* nbs = reinterpret_cast< XYZPosition* >( tnbp + 1 );
+                  for( dip::sint jj = *tnbp; --jj >= 0; pnbp++, nbs++ ) {
                      pnbp->x = nbs->x;
                      pnbp->y = nbs->y + 1;
                      pnbp->z = nbs->z;
@@ -1268,10 +1112,13 @@ void VDTTies3D(
                   oz[ px ] = static_cast< sfloat >( -nz );
                   *nbp++ = 0;
                } else {
-                  kk = FindNeighbors3D( pnb, &mindist, &minpos, kk, nx, ny, nz, fdnb, fsdx, fsdy, fsdz, useTrue );
+                  sfloat mindist{};
+                  dip::sint minpos{};
+                  kk = FindNeighbors3D( pnb, &mindist, &minpos, kk, nx, ny, nz, fdnb, fsdx, fsdy, fsdz, useTrue, delta );
                   *nbp++ = kk;
-                  nbs = reinterpret_cast< XYZPosition* >( nbp );
-                  for( jj = kk, pnbp = pnb; --jj >= 0; nbs++, pnbp++ ) {
+                  XYZPosition* nbs = reinterpret_cast< XYZPosition* >( nbp );
+                  pnbp = pnb;
+                  for( dip::sint jj = kk; --jj >= 0; nbs++, pnbp++ ) {
                      nbs->x = pnbp->x;
                      nbs->y = pnbp->y;
                      nbs->z = pnbp->z;
@@ -1291,38 +1138,38 @@ void VDTTies3D(
    }
 
    dbp = d1;
-   for( ii = ( nx + 2 ) * ( ny + 2 ); --ii >= 0; ) {
+   for( dip::sint ii = ( nx + 2 ) * ( ny + 2 ); --ii >= 0; ) {
       *dbp++ = bp;
    }
 
-   for( zz = 0, pz = nz1sz; zz < nz; zz++, pz -= sz ) {
-      nbp = ( zz & 1 ? nb1 : nb0 );
-      dcp = ( zz & 1 ? d1 + ( nx + 2 ) * ( ny + 2 ) - 1 : d2 + ( nx + 2 ) * ( ny + 2 ) - 1 );
-      dbp = ( zz & 1 ? d2 + ( nx + 2 ) * ( ny + 1 ) - 2 : d1 + ( nx + 2 ) * ( ny + 1 ) - 2 );
+   for( dip::sint zz = 0, pz = nz1sz; zz < nz; zz++, pz -= sz ) {
+      dip::sint* nbp = ( zz & 1 ? nb1 : nb0 );
+      dip::sint** dcp = ( zz & 1 ? d1 + ( nx + 2 ) * ( ny + 2 ) - 1 : d2 + ( nx + 2 ) * ( ny + 2 ) - 1 );
+      dip::sint** dbp = ( zz & 1 ? d2 + ( nx + 2 ) * ( ny + 1 ) - 2 : d1 + ( nx + 2 ) * ( ny + 1 ) - 2 );
 
-      for( ii = nx + 2; --ii >= 0; ) {
+      for( dip::sint ii = nx + 2; --ii >= 0; ) {
          *dcp-- = bp;
       }
 
-      for( yy = 0, py = ny1sy; yy < ny; yy++, dcp -= 2 + nx, dbp -= 2, py -= sy ) {
+      for( dip::sint yy = 0, py = ny1sy; yy < ny; yy++, dcp -= 2 + nx, dbp -= 2, py -= sy ) {
          *dcp-- = bp;
-         for( xx = 0, px = pz + py + nx1sx; xx < nx; xx++, dcp--, dbp--, px -= sx ) {
+         for( dip::sint xx = 0, px = pz + py + nx1sx; xx < nx; xx++, dcp--, dbp--, px -= sx ) {
             if( ox[ px ] != static_cast< dfloat >( nx ) &&
                 oy[ px ] != static_cast< dfloat >( ny ) &&
                 oz[ px ] != static_cast< dfloat >( nz )) {
                *dcp = nbp;
-               kk = 0;
-               pnbp = pnb;
-               tnbp = *dbp;
-               if( tnbp == NULL ) {
+               dip::sint kk = 0;
+               XYZPosition* pnbp = pnb;
+               dip::sint* tnbp = *dbp;
+               if( tnbp == nullptr ) {
                   pnbp->x = 0;
                   pnbp->y = 0;
                   pnbp->z = 1;
                   kk++;
                   pnbp++;
                } else {
-                  nbs = reinterpret_cast< XYZPosition* >( tnbp + 1 );
-                  for( jj = *tnbp; --jj >= 0; pnbp++, nbs++ ) {
+                  XYZPosition* nbs = reinterpret_cast< XYZPosition* >( tnbp + 1 );
+                  for( dip::sint jj = *tnbp; --jj >= 0; pnbp++, nbs++ ) {
                      pnbp->x = nbs->x;
                      pnbp->y = nbs->y;
                      pnbp->z = nbs->z + 1;
@@ -1330,15 +1177,15 @@ void VDTTies3D(
                   }
                }
                tnbp = *( dcp + nx + 2 );
-               if( tnbp == NULL ) {
+               if( tnbp == nullptr ) {
                   pnbp->x = 0;
                   pnbp->y = 1;
                   pnbp->z = 0;
                   kk++;
                   pnbp++;
                } else {
-                  nbs = reinterpret_cast< XYZPosition* >( tnbp + 1 );
-                  for( jj = *tnbp; --jj >= 0; pnbp++, nbs++ ) {
+                  XYZPosition* nbs = reinterpret_cast< XYZPosition* >( tnbp + 1 );
+                  for( dip::sint jj = *tnbp; --jj >= 0; pnbp++, nbs++ ) {
                      pnbp->x = nbs->x;
                      pnbp->y = nbs->y + 1;
                      pnbp->z = nbs->z;
@@ -1346,15 +1193,15 @@ void VDTTies3D(
                   }
                }
                tnbp = *( dcp + 1 );
-               if( tnbp == NULL ) {
+               if( tnbp == nullptr ) {
                   pnbp->x = 1;
                   pnbp->y = 0;
                   pnbp->z = 0;
                   kk++;
                   pnbp++;
                } else {
-                  nbs = reinterpret_cast< XYZPosition* >( tnbp + 1 );
-                  for( jj = *tnbp; --jj >= 0; pnbp++, nbs++ ) {
+                  XYZPosition* nbs = reinterpret_cast< XYZPosition* >( tnbp + 1 );
+                  for( dip::sint jj = *tnbp; --jj >= 0; pnbp++, nbs++ ) {
                      pnbp->x = nbs->x + 1;
                      pnbp->y = nbs->y;
                      pnbp->z = nbs->z;
@@ -1364,38 +1211,41 @@ void VDTTies3D(
                if( kk == 0 ) {
                   *nbp++ = 0;
                } else {
-                  kk = FindNeighbors3D( pnb, &mindist, &minpos, kk, nx, ny, nz, fdnb, fsdx, fsdy, fsdz, useTrue );
+                  sfloat mindist{};
+                  dip::sint minpos{};
+                  kk = FindNeighbors3D( pnb, &mindist, &minpos, kk, nx, ny, nz, fdnb, fsdx, fsdy, fsdz, useTrue, delta );
                   *nbp++ = kk;
-                  nbs = reinterpret_cast< XYZPosition* >( nbp );
-                  for( jj = kk, pnbp = pnb; --jj >= 0; nbs++, pnbp++ ) {
+                  XYZPosition* nbs = reinterpret_cast< XYZPosition* >( nbp );
+                  pnbp = pnb;
+                  for( dip::sint jj = kk; --jj >= 0; nbs++, pnbp++ ) {
                      *nbs = *pnbp;
                   }
                   nbp += kk * dim;
                }
             } else {
-               *dcp = NULL;
+               *dcp = nullptr;
             }
          }
 
          *dcp++ = bp;
-         for( xx = 0; xx < nx; xx++, dcp++ ) {
-            if( *dcp != NULL ) {
-               kk = **dcp;
-               nbs = reinterpret_cast< XYZPosition* >( *dcp + 1 );
-               pnbp = pnb;
-               for( jj = 0; jj < kk; jj++, nbs++, pnbp++ ) {
+         for( dip::sint xx = 0; xx < nx; xx++, dcp++ ) {
+            if( *dcp != nullptr ) {
+               dip::sint kk = **dcp;
+               XYZPosition* nbs = reinterpret_cast< XYZPosition* >( *dcp + 1 );
+               XYZPosition* pnbp = pnb;
+               for( dip::sint jj = 0; jj < kk; jj++, nbs++, pnbp++ ) {
                   *pnbp = *nbs;
                }
-               tnbp = *( dcp - 1 );
-               if( tnbp == NULL ) {
+               dip::sint* tnbp = *( dcp - 1 );
+               if( tnbp == nullptr ) {
                   pnbp->x = -1;
                   pnbp->y = 0;
                   pnbp->z = 0;
                   kk++;
                   pnbp++;
                } else {
-                  nbs = reinterpret_cast< XYZPosition* >( tnbp + 1 );
-                  for( jj = *tnbp; --jj >= 0; pnbp++, nbs++ ) {
+                  XYZPosition* nbs = reinterpret_cast< XYZPosition* >( tnbp + 1 );
+                  for( dip::sint jj = *tnbp; --jj >= 0; pnbp++, nbs++ ) {
                      pnbp->x = nbs->x - 1;
                      pnbp->y = nbs->y;
                      pnbp->z = nbs->z;
@@ -1406,10 +1256,13 @@ void VDTTies3D(
                if( kk == 0 ) {
                   *nbp++ = 0;
                } else {
-                  kk = FindNeighbors3D( pnb, &mindist, &minpos, kk, nx, ny, nz, fdnb, fsdx, fsdy, fsdz, useTrue );
+                  sfloat mindist{};
+                  dip::sint minpos{};
+                  kk = FindNeighbors3D( pnb, &mindist, &minpos, kk, nx, ny, nz, fdnb, fsdx, fsdy, fsdz, useTrue, delta );
                   *nbp++ = kk;
-                  nbs = reinterpret_cast< XYZPosition* >( nbp );
-                  for( jj = kk, pnbp = pnb; --jj >= 0; nbs++, pnbp++ ) {
+                  XYZPosition* nbs = reinterpret_cast< XYZPosition* >( nbp );
+                  pnbp = pnb;
+                  for( dip::sint jj = kk; --jj >= 0; nbs++, pnbp++ ) {
                      *nbs = *pnbp;
                   }
                   nbp += kk * dim;
@@ -1417,30 +1270,30 @@ void VDTTies3D(
             }
          }
       }
-      for( ii = nx + 2; --ii >= 0; ) {
+      for( dip::sint ii = nx + 2; --ii >= 0; ) {
          *dcp-- = bp;
       }
       dcp += nx + 4;
 
-      for( yy = 0, py = 0; yy < ny; yy++, dcp += 2, py += sy ) {
-         for( xx = 0, px = pz + py; xx < nx; xx++, dcp++, px += sx ) {
-            if( *dcp != NULL ) {
-               kk = **dcp;
-               nbs = reinterpret_cast< XYZPosition* >( *dcp + 1 );
-               pnbp = pnb;
-               for( jj = 0; jj < kk; jj++, nbs++, pnbp++ ) {
+      for( dip::sint yy = 0, py = 0; yy < ny; yy++, dcp += 2, py += sy ) {
+         for( dip::sint xx = 0, px = pz + py; xx < nx; xx++, dcp++, px += sx ) {
+            if( *dcp != nullptr ) {
+               dip::sint kk = **dcp;
+               XYZPosition* nbs = reinterpret_cast< XYZPosition* >( *dcp + 1 );
+               XYZPosition* pnbp = pnb;
+               for( dip::sint jj = 0; jj < kk; jj++, nbs++, pnbp++ ) {
                   *pnbp = *nbs;
                }
-               tnbp = *( dcp - nx - 2 );
-               if( tnbp == NULL ) {
+               dip::sint* tnbp = *( dcp - nx - 2 );
+               if( tnbp == nullptr ) {
                   pnbp->x = 0;
                   pnbp->y = -1;
                   pnbp->z = 0;
                   kk++;
                   pnbp++;
                } else {
-                  nbs = reinterpret_cast< XYZPosition* >( tnbp + 1 );
-                  for( jj = *tnbp; --jj >= 0; pnbp++, nbs++ ) {
+                  XYZPosition* nbs = reinterpret_cast< XYZPosition* >( tnbp + 1 );
+                  for( dip::sint jj = *tnbp; --jj >= 0; pnbp++, nbs++ ) {
                      pnbp->x = nbs->x;
                      pnbp->y = nbs->y - 1;
                      pnbp->z = nbs->z;
@@ -1454,14 +1307,17 @@ void VDTTies3D(
                   oy[ px ] *= dy;
                   oz[ px ] *= dz;
                } else {
-                  kk = FindNeighbors3D( pnb, &mindist, &minpos, kk, nx, ny, nz, fdnb, fsdx, fsdy, fsdz, useTrue );
+                  sfloat mindist{};
+                  dip::sint minpos{};
+                  kk = FindNeighbors3D( pnb, &mindist, &minpos, kk, nx, ny, nz, fdnb, fsdx, fsdy, fsdz, useTrue, delta );
                   *nbp++ = kk;
-                  nbs = reinterpret_cast< XYZPosition* >( nbp );
-                  for( jj = kk, pnbp = pnb; --jj >= 0; nbs++, pnbp++ ) {
+                  XYZPosition* nbs = reinterpret_cast< XYZPosition* >( nbp );
+                  pnbp = pnb;
+                  for( dip::sint jj = kk; --jj >= 0; nbs++, pnbp++ ) {
                      *nbs = *pnbp;
                   }
                   nbp += kk * dim;
-                  dist = fsdx[ static_cast< dip::sint >( ox[ px ] ) + nx ] +
+                  sfloat dist = fsdx[ static_cast< dip::sint >( ox[ px ] ) + nx ] +
                          fsdy[ static_cast< dip::sint >( oy[ px ] ) + ny ] +
                          fsdz[ static_cast< dip::sint >( oz[ px ] ) + nz ];
                   if( mindist < dist ) {
@@ -1508,7 +1364,7 @@ void VDTBruteForce2D(
       sfloat d = static_cast< sfloat >( ii ) - static_cast< sfloat >( nx );
       fsdx[ ii ] = d * d * dxx;
    }
-   sfloat* fsdy = 0;
+   sfloat* fsdy = nullptr;
    std::vector< sfloat> secondBuffer;
    if(( dx == dy ) && ( nx == ny )) {
       fsdy = fsdx;
@@ -1593,7 +1449,7 @@ void VDTBruteForce3D(
       sfloat d = static_cast< sfloat >( ii ) - static_cast< sfloat >( nx );
       fsdx[ ii ] = d * d * dxx;
    }
-   sfloat* fsdy = 0;
+   sfloat* fsdy = nullptr;
    std::vector< sfloat> secondBuffer;
    if(( dx == dy ) && ( nx == ny )) {
       fsdy = fsdx;
@@ -1606,7 +1462,7 @@ void VDTBruteForce3D(
          fsdy[ ii ] = d * d * dyy;
       }
    }
-   sfloat* fsdz = 0;
+   sfloat* fsdz = nullptr;
    std::vector< sfloat> thirdBuffer;
    if(( dx == dz ) && ( nx == nz )) {
       fsdz = fsdx;
@@ -1617,7 +1473,7 @@ void VDTBruteForce3D(
          thirdBuffer.resize( static_cast< dip::uint >( 2 * nz + 1 ));
          fsdz = thirdBuffer.data();
          sfloat dzz = dz * dz;
-         for( dip::uint ii = 0; ii < secondBuffer.size(); ii++ ) {
+         for( dip::uint ii = 0; ii < thirdBuffer.size(); ii++ ) {
             sfloat d = static_cast< sfloat >( ii ) - static_cast< sfloat >( nz );
             fsdz[ ii ] = d * d * dzz;
          }
@@ -1691,9 +1547,8 @@ void VectorDistanceTransform(
    DIP_THROW_IF( !in.DataType().IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
    dip::uint dim = in.Dimensionality();
    DIP_THROW_IF(( dim > 3 ) || ( dim < 2 ), E::DIMENSIONALITY_NOT_SUPPORTED );
-   UnsignedArray sizes = in.Sizes();
 
-   bool objectBorder;
+   bool objectBorder{};
    DIP_STACK_TRACE_THIS( objectBorder = BooleanFromString( border, S::OBJECT, S::BACKGROUND ));
 
    // Distances to neighboring pixels
@@ -1708,36 +1563,31 @@ void VectorDistanceTransform(
    Image tmpIn = in.QuickCopy(); // preserve the input data, in case &in == &out
    out.ReForge( in.Sizes(), dim, DT_SFLOAT );
    out.Fill( 0 );
-   out[ 0 ].Copy( in );
-   IntegerArray stride = out.Strides();
+   out[ 0 ].Copy( tmpIn );
+   UnsignedArray const& sizes = out.Sizes();
+   IntegerArray const& stride = out.Strides();
    dip::sint tensorStride = out.TensorStride();
    sfloat* data = static_cast< sfloat* >( out.Origin() );
 
    // Call the real guts function
    if( method == S::FAST ) {
       if( dim == 2 ) {
-         VDTFast2D( data, data + tensorStride,
-                    sizes, stride, dist, objectBorder );
+         VDTFast2D( data, data + tensorStride, sizes, stride, dist, objectBorder );
       } else {
-         VDTFast3D( data, data + tensorStride, data + tensorStride + tensorStride,
-                    sizes, stride, dist, objectBorder );
+         VDTFast3D( data, data + tensorStride, data + tensorStride + tensorStride, sizes, stride, dist, objectBorder );
       }
    } else if(( method == S::TIES ) || ( method == S::TRUE )) {
       bool useTrue = method == S::TRUE;
       if( dim == 2 ) {
-         VDTTies2D( data, data + tensorStride,
-                    sizes, stride, dist, objectBorder, useTrue );
+         VDTTies2D( data, data + tensorStride, sizes, stride, dist, objectBorder, useTrue );
       } else {
-         VDTTies3D( data, data + tensorStride, data + tensorStride + tensorStride,
-                    sizes, stride, dist, objectBorder, useTrue );
+         VDTTies3D( data, data + tensorStride, data + tensorStride + tensorStride, sizes, stride, dist, objectBorder, useTrue );
       }
    } else if( method == S::BRUTE_FORCE ) {
       if( dim == 2 ) {
-         VDTBruteForce2D( data, data + tensorStride,
-                          sizes, stride, dist, objectBorder );
+         VDTBruteForce2D( data, data + tensorStride, sizes, stride, dist, objectBorder );
       } else {
-         VDTBruteForce3D( data, data + tensorStride, data + tensorStride + tensorStride,
-                          sizes, stride, dist, objectBorder );
+         VDTBruteForce3D( data, data + tensorStride, data + tensorStride + tensorStride, sizes, stride, dist, objectBorder );
       }
    } else {
       DIP_THROW_INVALID_FLAG( method );

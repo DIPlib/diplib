@@ -111,6 +111,7 @@ display/colormap.cpp
 display/image_display.cpp
 display/label_edges.cpp
 distance/edt.cpp
+distance/find_neighbors.h
 distance/gdt.cpp
 distance/separable_dt.cpp
 distance/separable_dt.h

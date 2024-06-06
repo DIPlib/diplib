@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
 #include "diplib/distance.h"
+
+#include <vector>
+
+#include "diplib.h"
+#include "diplib/boundary.h"
 #include "diplib/framework.h"
 
 #include "separable_dt.h"
@@ -34,7 +38,7 @@ class DistanceTransformLineFilter : public Framework::SeparableLineFilter {
             buffers_.resize( threads ); // We don't need buffers for 1D thing.
          }
       }
-      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint procDim ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint /**/, dip::uint /**/, dip::uint procDim ) override {
          return lineLength * ( procDim == 0 ? 6 : 20 ); // TODO: how to estimate this one? It's not exactly linear...
       }
       void Filter( Framework::SeparableLineFilterParameters const& params ) override {
@@ -218,9 +222,8 @@ void SeparableDistanceTransform(
 #include "diplib/statistics.h"
 #include "diplib/generation.h"
 
-DOCTEST_TEST_CASE("[DIPlib] testing the distance transform") {
-   // 1D case
-   {
+DOCTEST_TEST_CASE( "[DIPlib] testing the distance transforms" ) {
+   DOCTEST_SUBCASE( "1D case" ) {
       dip::Image gt{ dip::UnsignedArray{ 51 }, 1, dip::DT_SFLOAT };
       dip::FillRadiusCoordinate( gt );
       dip::Image in = gt != 0;
@@ -234,15 +237,14 @@ DOCTEST_TEST_CASE("[DIPlib] testing the distance transform") {
       dip::Sqrt( out, out );
       DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, out ) == doctest::Approx( 0.0 ));
       // border = "background"
-      dip::Infimum( gt, static_cast< dip::dfloat >( gt.Size( 0 ) / 2 + 1 ) * 0.1 - gt, gt );
+      dip::Infimum( gt, static_cast< dip::dfloat >( gt.Size( 0 ) / 2 + 1 ) * 0.1 - gt, gt ); // NOLINT(*-integer-division)
       dip::EuclideanDistanceTransform( in, out, dip::S::BACKGROUND, dip::S::SEPARABLE );
       DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, out ) == doctest::Approx( 0.0 ));
       dip::EuclideanDistanceTransform( in, out, dip::S::BACKGROUND, dip::S::SQUARE );
       dip::Sqrt( out, out );
       DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, out ) == doctest::Approx( 0.0 ));
    }
-   // 2D case
-   {
+   DOCTEST_SUBCASE( "2D case" ) {
       dip::Image gt{ dip::UnsignedArray{ 31, 41 }, 1, dip::DT_SFLOAT };
       dip::FillRadiusCoordinate( gt );
       dip::Image in = gt != 0;
@@ -261,6 +263,16 @@ DOCTEST_TEST_CASE("[DIPlib] testing the distance transform") {
       DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, out ) == doctest::Approx( 0.0 ));
       dip::EuclideanDistanceTransform( in, out, dip::S::OBJECT, dip::S::FAST );
       DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, out ) == doctest::Approx( 0.0 ));
+      dip::EuclideanDistanceTransform( in, out, dip::S::OBJECT, dip::S::BRUTE_FORCE );
+      DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, out ) == doctest::Approx( 0.0 ));
+      dip::VectorDistanceTransform( in, out, dip::S::OBJECT, dip::S::TRUE );
+      DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, dip::Norm( out )) == doctest::Approx( 0.0 ));
+      dip::VectorDistanceTransform( in, out, dip::S::OBJECT, dip::S::TIES );
+      DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, dip::Norm( out )) == doctest::Approx( 0.0 ));
+      dip::VectorDistanceTransform( in, out, dip::S::OBJECT, dip::S::FAST );
+      DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, dip::Norm( out )) == doctest::Approx( 0.0 ));
+      dip::VectorDistanceTransform( in, out, dip::S::OBJECT, dip::S::BRUTE_FORCE );
+      DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, dip::Norm( out )) == doctest::Approx( 0.0 ));
       // border = "background"
       dip::Infimum( gt, (( gt.Size( 0 ) / 2 + 1 ) - dip::Abs( dip::CreateXCoordinate( gt.Sizes() ))) * 0.1, gt );
       dip::Infimum( gt, (( gt.Size( 1 ) / 2 + 1 ) - dip::Abs( dip::CreateYCoordinate( gt.Sizes() ))) * 0.1, gt );
@@ -275,10 +287,15 @@ DOCTEST_TEST_CASE("[DIPlib] testing the distance transform") {
       DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, out ) == doctest::Approx( 0.0 ));
       dip::EuclideanDistanceTransform( in, out, dip::S::BACKGROUND, dip::S::FAST );
       DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, out ) == doctest::Approx( 0.0 ));
-      // We could be checking against the "brute force" method too, but it doesn't do the "background"
+      // The "brute force" method doesn't do "background"
+      dip::VectorDistanceTransform( in, out, dip::S::BACKGROUND, dip::S::TRUE );
+      DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, dip::Norm( out )) == doctest::Approx( 0.0 ));
+      dip::VectorDistanceTransform( in, out, dip::S::BACKGROUND, dip::S::TIES );
+      DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, dip::Norm( out )) == doctest::Approx( 0.0 ));
+      dip::VectorDistanceTransform( in, out, dip::S::BACKGROUND, dip::S::FAST );
+      DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, dip::Norm( out )) == doctest::Approx( 0.0 ));
    }
-   // 3D case
-   {
+   DOCTEST_SUBCASE( "3D case" ) {
       dip::Image gt{ dip::UnsignedArray{ 31, 21, 11 }, 1, dip::DT_SFLOAT };
       dip::FillRadiusCoordinate( gt );
       dip::Image in = gt != 0;
@@ -297,6 +314,16 @@ DOCTEST_TEST_CASE("[DIPlib] testing the distance transform") {
       DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, out ) == doctest::Approx( 0.0 ));
       dip::EuclideanDistanceTransform( in, out, dip::S::OBJECT, dip::S::FAST );
       DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, out ) == doctest::Approx( 0.0 ));
+      dip::EuclideanDistanceTransform( in, out, dip::S::OBJECT, dip::S::BRUTE_FORCE );
+      DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, out ) == doctest::Approx( 0.0 ));
+      dip::VectorDistanceTransform( in, out, dip::S::OBJECT, dip::S::TRUE );
+      DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, dip::Norm( out )) == doctest::Approx( 0.0 ));
+      dip::VectorDistanceTransform( in, out, dip::S::OBJECT, dip::S::TIES );
+      DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, dip::Norm( out )) == doctest::Approx( 0.0 ));
+      dip::VectorDistanceTransform( in, out, dip::S::OBJECT, dip::S::FAST );
+      DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, dip::Norm( out )) == doctest::Approx( 0.0 ));
+      dip::VectorDistanceTransform( in, out, dip::S::OBJECT, dip::S::BRUTE_FORCE );
+      DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, dip::Norm( out )) == doctest::Approx( 0.0 ));
       // border = "background"
       dip::Infimum( gt, (( gt.Size( 0 ) / 2 + 1 ) - dip::Abs( dip::CreateXCoordinate( gt.Sizes() ))) * 0.1, gt );
       dip::Infimum( gt, (( gt.Size( 1 ) / 2 + 1 ) - dip::Abs( dip::CreateYCoordinate( gt.Sizes() ))) * 0.1, gt );
@@ -312,6 +339,13 @@ DOCTEST_TEST_CASE("[DIPlib] testing the distance transform") {
       DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, out ) == doctest::Approx( 0.0 ));
       dip::EuclideanDistanceTransform( in, out, dip::S::BACKGROUND, dip::S::FAST );
       DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, out ) == doctest::Approx( 0.0 ));
+      // The "brute force" method doesn't do "background"
+      dip::VectorDistanceTransform( in, out, dip::S::BACKGROUND, dip::S::TRUE );
+      DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, dip::Norm( out )) == doctest::Approx( 0.0 ));
+      dip::VectorDistanceTransform( in, out, dip::S::BACKGROUND, dip::S::TIES );
+      DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, dip::Norm( out )) == doctest::Approx( 0.0 ));
+      dip::VectorDistanceTransform( in, out, dip::S::BACKGROUND, dip::S::FAST );
+      DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, dip::Norm( out )) == doctest::Approx( 0.0 ));
    }
 }
 
