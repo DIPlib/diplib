@@ -15,7 +15,10 @@
  * limitations under the License.
  */
 
+#include <algorithm>
 #include <sstream>
+#include <utility>
+#include <vector>
 
 #include "pydip.h"
 #include "diplib/linear.h"
@@ -25,19 +28,32 @@
 
 namespace {
 
-dip::String KernelRepr( dip::Kernel const& s ) {
+dip::String KernelRepr( dip::Kernel const& kernel ) {
    std::ostringstream os;
-   os << '<' << s.ShapeString() << " Kernel";
-   if( !s.IsCustom() ) {
-      os << " with parameters " << s.Params();
+   os << '<' << kernel.ShapeString() << " Kernel";
+   if( !kernel.IsCustom() ) {
+      os << " with parameters " << kernel.Params();
    }
-   if( s.HasWeights() ) {
+   if( kernel.HasWeights() ) {
       os << ", with weights";
    }
-   if( s.IsMirrored() ) {
+   if( kernel.IsMirrored() ) {
       os << ", mirrored";
    }
    os << '>';
+   return os.str();
+}
+
+dip::String OneDFilterRepr( dip::OneDimensionalFilter const& filter ) {
+   std::ostringstream os;
+   os << "<OneDimensionalFilter with ";
+   if( filter.isComplex ) {
+      os << filter.filter.size() / 2 << " complex weights";
+   } else {
+      os << filter.filter.size() << " weights";
+   }
+   os << ", origin = " << filter.origin;
+   os << ", symmetry = \"" << filter.symmetry << "\">";
    return os.str();
 }
 
@@ -61,8 +77,32 @@ void init_filtering( py::module& m ) {
    py::implicitly_convertible< dip::Image, dip::Kernel >();
    py::implicitly_convertible< py::buffer, dip::Kernel >();
 
+   auto odf = py::class_< dip::OneDimensionalFilter >( m, "OneDimensionalFilter", "Describes a 1D filter." );
+   odf.def( py::init( []( std::vector< dip::dfloat > filter ) {
+          dip::OneDimensionalFilter out;
+          out.filter = std::move( filter );
+          return out;
+   } ), "filter"_a, "Create a OneDimensionalFilter object representing a general filter." );
+   odf.def( py::init( []( std::vector< dip::dcomplex > const& filter ) {
+          dip::OneDimensionalFilter out;
+          dip::uint size = filter.size() * 2;
+          out.filter.resize( size );
+          std::copy_n( reinterpret_cast< dip::dfloat const* >( filter.data() ), size, out.filter.data() );
+          out.isComplex = true;
+          return out;
+   } ), "filter"_a, "Create a OneDimensionalFilter object representing a general complex filter." );
+   odf.def_readonly( "filter", &dip::OneDimensionalFilter::filter, "The filter weights." );
+   odf.def_readwrite( "origin", &dip::OneDimensionalFilter::origin, "Origin of the filter if non-negative." );
+   odf.def_readwrite( "symmetry", &dip::OneDimensionalFilter::symmetry, "Filter shape, can be '' (or 'general'), 'even', 'odd', 'conj', 'd-even', 'd-odd' or 'd-conj'." );
+   odf.def_readonly( "isComplex", &dip::OneDimensionalFilter::isComplex, "If true, `filter` contains complex data." );
+   odf.def( "__repr__", &OneDFilterRepr );
+
    // diplib/linear.h
-   // TODO: SeparableConvolution, SeparateFilter
+   m.def( "SeparateFilter", &dip::SeparateFilter, "filter"_a );
+   m.def( "SeparableConvolution", py::overload_cast< dip::Image const&, dip::OneDimensionalFilterArray const&, dip::StringArray const&, dip::BooleanArray >( &dip::SeparableConvolution ),
+          "in"_a, "filter"_a, "boundaryCondition"_a = dip::StringArray{}, "process"_a = dip::BooleanArray{} );
+   m.def( "SeparableConvolution", py::overload_cast< dip::Image const&, dip::Image&, dip::OneDimensionalFilterArray const&, dip::StringArray const&, dip::BooleanArray >( &dip::SeparableConvolution ),
+          "in"_a, py::kw_only(), "out"_a, "filter"_a, "boundaryCondition"_a = dip::StringArray{}, "process"_a = dip::BooleanArray{} );
    m.def( "ConvolveFT", py::overload_cast< dip::Image const&, dip::Image const&, dip::String const&, dip::String const&, dip::String const&, dip::StringArray const& >( &dip::ConvolveFT ),
           "in"_a, "filter"_a, "inRepresentation"_a = dip::S::SPATIAL, "filterRepresentation"_a = dip::S::SPATIAL, "outRepresentation"_a = dip::S::SPATIAL, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "ConvolveFT", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image&, dip::String const&, dip::String const&, dip::String const&, dip::StringArray const& >( &dip::ConvolveFT ),

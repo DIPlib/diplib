@@ -198,6 +198,9 @@ None, but see bugfixes to *DIPlib*.
 - Added bindings for `dip.ColorSpaceManager.SetWhitePoint()`, as well as `dip.ColorSpaceManager.IlluminantA`,
   `IlluminantD50`, `IlluminantD55`, `IlluminantD65` and `IlluminantE`.
 
+- Added bindings for `dip.SeparableConvolution()`, `dip.SeparateFilter()` and the `dip.OneDimensionalFilter`
+  struct.
+
 ### Changed functionality
 
 - The *DIPlib* exception classes are now properly bound. This changes the type of the exceptions raised by
