@@ -1,6 +1,6 @@
 /*
  * (c)2017-2021, Flagship Biosciences, Inc., written by Cris Luengo.
- * (c)2022, Cris Luengo.
+ * (c)2022-2024, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,7 +100,13 @@ void init_assorted( py::module& m ) {
              "colorSpaceName"_a = "RGB" );
    mcol.def( "CanonicalName", []( dip::String const& colorSpaceName ) { return colorSpaceManager().CanonicalName( colorSpaceName ); },
              "colorSpaceName"_a = "RGB" );
-   // TODO: WhitePoint stuff
+   mcol.def( "SetWhitePoint", []( dip::XYZ whitePoint ) { colorSpaceManager().SetWhitePoint( whitePoint ); }, "whitePoint"_a );
+   mcol.def( "SetWhitePoint", []( dip::xy whitePoint ) { colorSpaceManager().SetWhitePoint( whitePoint ); }, "whitePoint"_a );
+   mcol.attr( "IlluminantA" ) = dip::ColorSpaceManager::IlluminantA;
+   mcol.attr( "IlluminantD50" ) = dip::ColorSpaceManager::IlluminantD50;
+   mcol.attr( "IlluminantD55" ) = dip::ColorSpaceManager::IlluminantD55;
+   mcol.attr( "IlluminantD65" ) = dip::ColorSpaceManager::IlluminantD65;
+   mcol.attr( "IlluminantE" ) = dip::ColorSpaceManager::IlluminantE;
 
    // diplib/display.h
    m.def( "ImageDisplay", []( dip::Image const& input,

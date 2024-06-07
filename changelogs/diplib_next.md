@@ -195,6 +195,9 @@ None, but see bugfixes to *DIPlib*.
 - Added `dip.Measurement.MeasurementFeature.Subset()` (binding for `dip::Measurement::IteratorFeature::Subset()`)
   and `dip.Measurement.FeatureValuesView()`.
 
+- Added bindings for `dip.ColorSpaceManager.SetWhitePoint()`, as well as `dip.ColorSpaceManager.IlluminantA`,
+  `IlluminantD50`, `IlluminantD55`, `IlluminantD65` and `IlluminantE`.
+
 ### Changed functionality
 
 - The *DIPlib* exception classes are now properly bound. This changes the type of the exceptions raised by
