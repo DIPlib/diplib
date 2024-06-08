@@ -268,6 +268,9 @@ None, but see bugfixes to *DIPlib*.
 - Trying to display an image with wrong color space information would throw an exception. The image is now seen
   as a generic tensor image.
 
+- Continuous scrolling devices were way too sensitive when using GLFW, it was really hard to zoom in and out
+  of an image. (The fix works at least on macOS, let us know if this produces issues on other platforms.)
+
 
 
 

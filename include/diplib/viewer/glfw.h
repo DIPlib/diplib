@@ -138,17 +138,22 @@ class DIPVIEWER_CLASS_EXPORT GLFWManager : public Manager {
       }
 
       static void scroll( GLFWwindow* window, double /*xoffset*/, double yoffset ) {
-         WindowPtr wdw = instance_->getWindow( window );
-         if( wdw ) {
-            int x, y;
-            instance_->makeCurrent( wdw.get() );
-            instance_->getCursorPos( wdw.get(), &x, &y );
-
-            int button = 3 + ( yoffset < 0 );
-            if( yoffset != 0 ) {
+         // Continuous scroll devices produce lots of callbacks, each one with a tiny offset.
+         // Here we accumulate the offset, and when it's large enough, we take it as a "click"
+         // of the mouse wheel.
+         static double total_offset = 0;
+         total_offset += yoffset;
+         if( std::abs( total_offset ) > 1 ) {
+            WindowPtr wdw = instance_->getWindow( window );
+            if( wdw ) {
+               int x, y;
+               instance_->makeCurrent( wdw.get() );
+               instance_->getCursorPos( wdw.get(), &x, &y );
+               int button = 3 + ( total_offset < 0 );
                wdw->click( button, 1, x, y, 0 );
                wdw->click( button, 0, x, y, 0 );
             }
+            total_offset = 0;
          }
       }
 
