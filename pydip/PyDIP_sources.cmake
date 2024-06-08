@@ -19,4 +19,5 @@ src/pydip.cpp
 src/pydip.h
 src/segmentation.cpp
 src/statistics.cpp
+src/viewer.py
 )

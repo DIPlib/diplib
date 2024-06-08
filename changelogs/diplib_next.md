@@ -216,6 +216,9 @@ None, but see bugfixes to *DIPlib*.
     ```
     `dip.ImageRead()` still automatically loads *PyDIPjavaio* on first use.
 
+- `diplib.viewer` is no longer an alias, but a true submodule, like we did for `diplib.javaio`. This should
+  not change anything for the user, other than some IDEs having less trouble identifying the name.
+
 - `dip.ImageRead()` and `dip.javaio.ImageReadJavaIO()` now also have a version that takes the output image
   as a keyword-only argument `out`.
 

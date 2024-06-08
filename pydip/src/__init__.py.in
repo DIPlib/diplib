@@ -22,7 +22,6 @@ See the User Manual online: https://diplib.org/diplib-docs/pydip_user_manual.htm
 import functools
 import os
 import sys
-import time
 
 
 # (WINDOWS ONLY) First, we make sure that the DIP.dll file is on the PATH
@@ -55,106 +54,10 @@ Measurement.ToDataFrame = MeasurementToDataFrame
 
 
 # Here we import PyDIPviewer if it exists
-hasDIPviewer = False
-import importlib.util
-if importlib.util.find_spec('.PyDIPviewer', __name__) is not None:
-    try:
-        from . import PyDIPviewer as viewer
-        hasDIPviewer = True
-    except:
-        # If that fails, maybe the user has no OpenGL?
-        pass
-
+from . import viewer
+hasDIPviewer = viewer.hasDIPviewer
 if hasDIPviewer:
-    def _ShowModal(*args, **kwargs):
-        """Show an image in a new SliceViewer window, blocking until it is closed.
-
-           See diplib.viewer.Show for help on parameters."""
-        viewer.Show(*args, **kwargs)
-        viewer.Spin()
-    viewer.ShowModal = _ShowModal
-
-    _ShowViewer = viewer.Show
-    def _ShowSlice(*args, **kwargs):
-        """Show an image in a new SliceViewer window.
-
-        Parameters
-        ----------
-        in : dip.Image
-            Image to show.
-        title : str, optional
-            Window title.
-        link : diplib.viewer.SliceViewer, optional
-            Window to link to.
-        position : tuple of int, optional
-            Window position (x and y).
-        size : tuple of int, optional
-            Window size (width and height).
-        dims : tuple of int, optional
-            Visualized dimensions: main X, main Y, left X, top Y.
-        operating_point : tuple of float, optional
-            Selected point.
-        element : int, optional
-            Selected tensor element.
-        zoom : tuple of float, optional
-            Zoom factor.
-        origin : tuple of int, optional
-            Pixel displayed at top left of window.
-        mapping_range : tuple of float, optional
-            Black and white levels.
-        mapping : {"unit", "angle", "8bit", "lin", "base", "log"}, optional
-            Automatic mapping range setting.
-        lut : {"original", "ternary", "grey", "sequential", "divergent", "periodic", "labels"}, optional
-            Color lookup table setting.
-
-        Returns
-        -------
-        diplib.viewer.SliceViewer
-            SliceViewer object for further interaction.
-        """
-        showargs = dict(filter(lambda elem: elem[0] == 'in' or elem[0] == 'title', kwargs.items()))
-        v = _ShowViewer(*args, **showargs)
-
-        for elem in kwargs.items():
-            if elem[0] == 'in' or elem[0] == 'title':
-                continue
-            elif elem[0] == 'position':
-                v.SetPosition(elem[1][0], elem[1][1])
-            elif elem[0] == 'size':
-                v.SetSize(elem[1][0], elem[1][1])
-            elif elem[0] == 'link':
-                v.Link(elem[1])
-            else:
-                setattr(v, elem[0], elem[1])
-
-        return v
-
-    viewer.Show = _ShowSlice
-    Image.ShowSlice = _ShowSlice
-
-    # Allow IPython users to write `%gui dip` to enable interaction
-    if 'IPython' in sys.modules:
-        from IPython import terminal
-
-        def _inputhook(context):
-            while not context.input_is_ready():
-                viewer.Draw()
-                time.sleep(0.001)
-
-        terminal.pt_inputhooks.register('dip', _inputhook)
-
-    # Same for IPython kernels
-    if 'ipykernel' in sys.modules:
-        from ipykernel.eventloops import register_integration
-
-        @register_integration('dip')
-        def _loop_dip(kernel):
-            """Start a kernel with the dipviewer event loop."""
-            while not kernel.shell.exit_now:
-                if kernel.shell_stream.flush(limit=1):
-                    return
-                viewer.Draw()
-                time.sleep(0.001)
+   Image.ShowSlice = viewer.Show
 
 
 # LRU cache really means that this function is only ever called once and the return value reused afterwards.
@@ -205,7 +108,7 @@ def ImageRead(*args, **kwargs):
 
 
 # Here we display library information
-if hasattr(sys,'ps1'):
+if hasattr(sys, 'ps1'):
     print(libraryInformation.name + " -- " + libraryInformation.description)
     print("Version " + libraryInformation.version + " (" + libraryInformation.date + ")")
     print("For more information see " + libraryInformation.URL)
