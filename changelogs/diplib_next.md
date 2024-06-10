@@ -119,7 +119,8 @@ title: "Changes DIPlib 3.x.x"
 
 - `dip::EdgeObjectsRemove()` also works for labeled images.
 
-- Minimum required version of *CMake* is now 3.12.
+- `dip::Image::View::Copy()` with an image as input now allows a 1-pixel input to be used. This behaves like
+  `dip::Image::View::Fill()` with a `dip::Image::Pixel` as input.
 
 ### Bug fixes
 
@@ -151,19 +152,16 @@ title: "Changes DIPlib 3.x.x"
 - Updated bundled library *PocketFFT* to the current master branch (last updated 2024-03-22).
   This fixes a potential compilation problem on macOS.
 
+### Build changes
+
+- Minimum required version of *CMake* is now 3.12.
+
 
 
 
 ## Changes to *DIPimage*
 
 ### New functionality
-
-- Added the function `download_bioformats`, which does the same thing as `python -m diplib download_bioformats` in
-  *PyDIP*. This significantly simplifies the installation instructions for *Bio-Formats*.
-
-- Added the *CMake* option `DIP_JAVA_VERSION`, which can be important when building *DIPimage* for older versions
-  of MATLAB. The Java version must be equal or older than the version used by MATLAB. Running `version -java`
-  in MATLAB will tell you what version of Java it is using.
 
 ### Changed functionality
 
@@ -175,6 +173,15 @@ title: "Changes DIPlib 3.x.x"
 
 None, but see bugfixes to *DIPlib*.
 (See also bugfixes to *DIPlib*.)
+
+### Build and installation changes
+
+- Added the *CMake* option `DIP_JAVA_VERSION`, which can be important when building *DIPimage* for older versions
+  of MATLAB. The Java version must be equal or older than the version used by MATLAB. Running `version -java`
+  in MATLAB will tell you what version of Java it is using.
+
+- Added the function `download_bioformats`, which does the same thing as `python -m diplib download_bioformats` in
+  *PyDIP*. This significantly simplifies the installation instructions for *Bio-Formats*.
 
 
 
@@ -231,17 +238,6 @@ None, but see bugfixes to *DIPlib*.
   `dip.MeasurementTool.MeasurementObject` to `dip.Measurement.MeasurementObject`.
   They are the bindings to `dip::Measurement::IteratorFeature` and `dip::Measurement::IteratorObject` respectively.
 
-- The *CMake* option `PYTHON_EXECUTABLE` is no longer used, set `Python_EXECUTABLE` instead. The build script
-  will, for the time being, copy the value of the former to the latter if the former is set but the latter isn't.
-
-- The *CMake* option `PYBIND11_PYTHON_VERSION` is no longer used. It was mentioned in the documentation, but
-  probably never really worked.
-
-- Significantly improved the command to download *Bio-Formats*: `python -m diplib download_bioformats` now
-  has an optional argument `-u` to force an update of the existing library, and another one to specify
-  which verison to download. By default, it downloads whatever the latest version is, we no longer hard-code
-  a specific version number.
-
 (See also changes to *DIPlib*.)
 
 ### Bug fixes
@@ -253,6 +249,19 @@ None, but see bugfixes to *DIPlib*.
 ### Updated dependencies
 
 - Updated bundled *pybind11* to version 2.12.0.
+
+### Build and installation changes
+
+- The *CMake* option `PYTHON_EXECUTABLE` is no longer used, set `Python_EXECUTABLE` instead. The build script
+  will, for the time being, copy the value of the former to the latter if the former is set but the latter isn't.
+
+- The *CMake* option `PYBIND11_PYTHON_VERSION` is no longer used. It was mentioned in the documentation, but
+  probably never really worked.
+
+- Significantly improved the command to download *Bio-Formats*: `python -m diplib download_bioformats` now
+  has an optional argument `-u` to force an update of the existing library, and another one to specify
+  which verison to download. By default, it downloads whatever the latest version is, we no longer hard-code
+  a specific version number.
 
 
 

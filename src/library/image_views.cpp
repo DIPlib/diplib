@@ -138,7 +138,9 @@ Image::View::View( Image reference, CoordinateArray const& coordinates ) : refer
 void Image::View::Copy( Image const& source ) {
    DIP_THROW_IF( !source.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( reference_.TensorElements() != source.TensorElements(), E::NTENSORELEM_DONT_MATCH );
-   if( mask_.IsForged() ) {
+   if( source.NumberOfPixels() == 1 ) {
+      DIP_STACK_TRACE_THIS( Fill( source.At( 0 )));
+   } else if( mask_.IsForged() ) {
       DIP_STACK_TRACE_THIS( CopyTo( source, reference_, mask_ ));
    } else if( !offsets_.empty() ) {
       DIP_STACK_TRACE_THIS( CopyTo( source, reference_, offsets_ ));
