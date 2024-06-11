@@ -248,45 +248,27 @@ FloatArray GaussianMixtureModelThreshold(
       dip::uint nThresholds
 ) {
    DIP_THROW_IF( in.Dimensionality() != 1, E::DIMENSIONALITY_NOT_SUPPORTED );
-   Image const& hist = in.GetImage();
-   DIP_ASSERT( hist.IsForged() );
-   DIP_ASSERT( hist.DataType() == DT_COUNT );
-   DIP_ASSERT( hist.Stride( 0 ) == 1 );
-   dip::uint nBins = hist.Size( 0 );
-   auto pData = static_cast< Histogram::CountType const* >( hist.Origin() );
-   // Copy data and apply mixture model
-   dip::uint nGaussians = nThresholds + 1;
-   std::vector< dfloat > data( nBins );
-   for( dip::uint ii = 0; ii < nBins; ++ii ) {
-      data[ ii ] = static_cast< dfloat >( pData[ ii ] );
-   }
-   std::vector< dfloat > weights( nBins * nGaussians, 1.0 );
-   std::vector< GaussianParameters > params = GaussianMixtureModel( data.data(), weights.data(), nBins, nGaussians );
+   // Apply model to histogram
+   std::vector< GaussianParameters > params = GaussianMixtureModel( in, nThresholds + 1 );
    // Sort Gaussians by position
    std::sort( params.begin(), params.end(), []( GaussianParameters const& a, GaussianParameters const& b ) { return a.position < b.position; } );
    // Find thresholds
-   dfloat scale = in.BinSize();
-   dfloat offset = in.LowerBound() + scale / 2; // bin[ii] = offset + ii * scale;
+   dfloat tolerance = 1e6 * in.BinSize();
    FloatArray thresholds( nThresholds );
-   //for( auto const& param : params ) {
-   //   std::cout << "Gaussian: position = " << param.position
-   //             << ", amplitude = " << param.amplitude
-   //             << ", sigma = " << param.sigma << '\n';
-   //}
    for( dip::uint ii = 0; ii < nThresholds; ++ii ) {
-      dfloat x1 = params[ ii     ].position * scale + offset;
-      dfloat x2 = params[ ii + 1 ].position * scale + offset;
+      dfloat x1 = params[ ii     ].position;
+      dfloat x2 = params[ ii + 1 ].position;
       dfloat d = x2 - x1;
       DIP_ASSERT( d >= 0.0 ); // ensures they're sorted
-      if( d < 1e6 * scale ) { // too small to bother
+      if( d < tolerance ) { // too small to bother
          thresholds[ ii ] = x1;
          continue;
       }
       dfloat a1 = params[ ii     ].amplitude;
       dfloat a2 = params[ ii + 1 ].amplitude;
-      dfloat s1 = params[ ii     ].sigma * scale;
-      dfloat s2 = params[ ii + 1 ].sigma * scale;
-      if( std::abs( s1 - s2 ) < 1e-6 * scale ) { // too small to bother
+      dfloat s1 = params[ ii     ].sigma;
+      dfloat s2 = params[ ii + 1 ].sigma;
+      if( std::abs( s1 - s2 ) < tolerance ) { // too small to bother
          // assume s1 == s2
          thresholds[ ii ] = 0.5 * d + s1 * s1 / d * std::log( a1 / a2 );
          continue;

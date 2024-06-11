@@ -240,6 +240,8 @@ void init_histogram( py::module& m ) {
    m.def( "Regression", py::overload_cast< dip::Histogram const& >( &dip::Regression ), "in"_a );
    m.def( "MutualInformation", py::overload_cast< dip::Histogram const& >( &dip::MutualInformation ), "in"_a );
    m.def( "Entropy", py::overload_cast< dip::Histogram const& >( &dip::Entropy ), "in"_a );
+   m.def( "GaussianMixtureModel", py::overload_cast< dip::Histogram const&, dip::uint, dip::uint >( &dip::GaussianMixtureModel ),
+          "in"_a, "numberOfGaussians"_a, "maxIter"_a = 20 );
 
    m.def( "IsodataThreshold", py::overload_cast< dip::Histogram const&, dip::uint >( &dip::IsodataThreshold ),
           "in"_a, "nThresholds"_a = 1 );
@@ -273,6 +275,20 @@ void init_histogram( py::module& m ) {
    } );
    regParams.def_readonly( "intercept", &dip::RegressionParameters::intercept );
    regParams.def_readonly( "slope", &dip::RegressionParameters::slope );
+
+   auto gaussParams = py::class_< dip::GaussianParameters >( m, "GaussianParameters", "Parameters of a Gaussian." );
+   gaussParams.def( "__repr__", []( dip::GaussianParameters const& s ) {
+      std::ostringstream os;
+      os << "<GaussianParameters: "
+         << "position=" << s.position
+         << ", amplitude=" << s.amplitude
+         << ", sigma=" << s.sigma
+         << '>';
+      return os.str();
+   } );
+   gaussParams.def_readonly( "position", &dip::GaussianParameters::position );
+   gaussParams.def_readonly( "amplitude", &dip::GaussianParameters::amplitude );
+   gaussParams.def_readonly( "sigma", &dip::GaussianParameters::sigma );
 
    // These next two functions are the old implementation of `dip.Histogram`, which we keep
    // here for backwards compatibility. Setting `dip.Histogram = dip.Histogram_old` in Python

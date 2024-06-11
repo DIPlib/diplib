@@ -174,6 +174,8 @@ DIP_NODISCARD inline FloatCoordinateArray MeanShift(
 /// - `"periodic"` specifies that the image is periodic along `dimension`.
 /// - `"pixel size"` scales the parameters written to the output image with the pixel size along `dimension`.
 ///   By default these parameters are in pixels.
+///
+/// \see dip::GaussianMixtureModel(dip::ConstSampleIterator, dip::SampleIterator, dip::uint, dip::uint, dip::uint, dip::Option::Periodicity)
 DIP_EXPORT void GaussianMixtureModel(
       Image const& in,
       Image& out,

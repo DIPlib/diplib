@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+#include <algorithm>
 #include "diplib/histogram.h"
 
 #include "diplib.h"
@@ -211,6 +212,33 @@ dfloat Entropy( Histogram const& hist ) {
       ++hPtr;
    }
    return -out;
+}
+
+std::vector< GaussianParameters > GaussianMixtureModel(
+      Histogram const& in,
+      dip::uint numberOfGaussians,
+      dip::uint maxIter
+) {
+   DIP_THROW_IF( in.Dimensionality() != 1, E::DIMENSIONALITY_NOT_SUPPORTED );
+   Image const& hist = in.GetImage();
+   DIP_ASSERT( hist.IsForged() );
+   DIP_ASSERT( hist.DataType() == DT_COUNT );
+   DIP_ASSERT( hist.Stride( 0 ) == 1 );
+   dip::uint nBins = hist.Size( 0 );
+   auto pData = static_cast< Histogram::CountType const* >( hist.Origin() );
+   // Copy data and apply mixture model
+   std::vector< dfloat > data( nBins );
+   std::transform( pData, pData + nBins, data.data(), []( Histogram::CountType v ){ return static_cast< dfloat >( v ); } );
+   std::vector< GaussianParameters > params = GaussianMixtureModel( data.data(), nullptr, nBins, numberOfGaussians, maxIter );
+   // Scale data
+   dfloat scale = in.BinSize();
+   dfloat offset = in.LowerBound() + scale / 2; // bin[ii] = offset + ii * scale;
+   std::cout << "scale = " << scale << ", offset = " << offset << '\n';
+   for( auto& p : params ) {
+      p.position = p.position * scale + offset;
+      p.sigma *= scale;
+   }
+   return params;
 }
 
 } // namespace dip

@@ -37,6 +37,8 @@ title: "Changes DIPlib 3.x.x"
 
 - Added `dip::IsOnEdge()`.
 
+- Added an overload to `dip::GaussianMixtureModel()` that takes a 1D histogram as input.
+
 ### Changed functionality
 
 - The `compressionLevel` argument to `dip::ImageWritePNG()` changed from `dip::uint` to `dip::sint`, allowing for
