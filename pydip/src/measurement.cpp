@@ -248,8 +248,8 @@ void init_measurement( py::module& m ) {
    fInfo.def( "__repr__", []( dip::Measurement::FeatureInformation const& self ) {
       std::ostringstream os;
       os << "<FeatureInformation: name=" << self.name
-            << ", startColumn=" << self.startColumn
-            << ", numberValues=" << self.numberValues << '>';
+         << ", startColumn=" << self.startColumn
+         << ", numberValues=" << self.numberValues << '>';
       return os.str();
    } );
    fInfo.def_readonly( "name", &dip::Measurement::FeatureInformation::name );
@@ -503,12 +503,12 @@ void init_measurement( py::module& m ) {
    auto ellipseParams = py::class_< dip::CovarianceMatrix::EllipseParameters >( m, "EllipseParameters", "Parameters of the best fit ellipse." );
    ellipseParams.def( "__repr__", []( dip::CovarianceMatrix::EllipseParameters const& s ) {
       std::ostringstream os;
-      os << "<EllipseParameters: ";
-      os << "majorAxis=" << s.majorAxis;
-      os << ", minorAxis=" << s.minorAxis;
-      os << ", orientation=" << s.orientation;
-      os << ", eccentricity=" << s.eccentricity;
-      os << '>';
+      os << "<EllipseParameters: "
+         << "majorAxis=" << s.majorAxis
+         << ", minorAxis=" << s.minorAxis
+         << ", orientation=" << s.orientation
+         << ", eccentricity=" << s.eccentricity
+         << '>';
       return os.str();
    } );
    ellipseParams.def_readonly( "majorAxis", &dip::CovarianceMatrix::EllipseParameters::majorAxis );
@@ -520,13 +520,13 @@ void init_measurement( py::module& m ) {
    auto feretVals = py::class_< dip::FeretValues >( m, "FeretValues", "Values of the various Feret diameters." );
    feretVals.def( "__repr__", []( dip::FeretValues const& s ) {
       std::ostringstream os;
-      os << "<FeretValues: ";
-      os << "maxDiameter=" << s.maxDiameter;
-      os << ", minDiameter=" << s.minDiameter;
-      os << ", maxPerpendicular=" << s.maxPerpendicular;
-      os << ", maxAngle=" << s.maxAngle;
-      os << ", minAngle=" << s.minAngle;
-      os << '>';
+      os << "<FeretValues: "
+         << "maxDiameter=" << s.maxDiameter
+         << ", minDiameter=" << s.minDiameter
+         << ", maxPerpendicular=" << s.maxPerpendicular
+         << ", maxAngle=" << s.maxAngle
+         << ", minAngle=" << s.minAngle
+         << '>';
       return os.str();
    } );
    feretVals.def_readonly( "maxDiameter", &dip::FeretValues::maxDiameter );
@@ -539,13 +539,13 @@ void init_measurement( py::module& m ) {
    auto radiusVals = py::class_< dip::RadiusValues >( m, "RadiusValues", "Statistics on the radii of an object." );
    radiusVals.def( "__repr__", []( dip::RadiusValues const& s ) {
       std::ostringstream os;
-      os << "<RadiusValues: ";
-      os << "mean=" << s.Mean();
-      os << ", standardDev=" << s.StandardDeviation();
-      os << ", maximum=" << s.Maximum();
-      os << ", minimum=" << s.Minimum();
-      os << ", circularity=" << s.Circularity();
-      os << '>';
+      os << "<RadiusValues: "
+         << "mean=" << s.Mean()
+         << ", standardDev=" << s.StandardDeviation()
+         << ", maximum=" << s.Maximum()
+         << ", minimum=" << s.Minimum()
+         << ", circularity=" << s.Circularity()
+         << '>';
       return os.str();
    } );
    radiusVals.def_property_readonly( "mean", &dip::RadiusValues::Mean );

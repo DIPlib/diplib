@@ -34,13 +34,13 @@ namespace {
 
 dip::String InfoString( dip::LibraryInformation const& info ) {
    std::ostringstream os;
-   os << "name: " << info.name << '\n';
-   os << "description: " << info.description << '\n';
-   os << "copyright: " << info.copyright << '\n';
-   os << "URL: " << info.URL << '\n';
-   os << "version: " << info.version << '\n';
-   os << "date: " << info.date << '\n';
-   os << "type: " << info.type << '\n';
+   os << "name: " << info.name << '\n'
+      << "description: " << info.description << '\n'
+      << "copyright: " << info.copyright << '\n'
+      << "URL: " << info.URL << '\n'
+      << "version: " << info.version << '\n'
+      << "date: " << info.date << '\n'
+      << "type: " << info.type << '\n';
    return os.str();
 }
 

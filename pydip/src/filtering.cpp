@@ -52,8 +52,7 @@ dip::String OneDFilterRepr( dip::OneDimensionalFilter const& filter ) {
    } else {
       os << filter.filter.size() << " weights";
    }
-   os << ", origin = " << filter.origin;
-   os << ", symmetry = \"" << filter.symmetry << "\">";
+   os << ", origin = " << filter.origin << ", symmetry = \"" << filter.symmetry << "\">";
    return os.str();
 }
 
