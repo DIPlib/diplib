@@ -58,10 +58,9 @@ install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/diplib/javaio" DESTINATION incl
 
 ### Java part
 
-if (BIOFORMATS_JAR)
-   set(DIP_JAVAIO_JAVA ${DIP_JAVAIO_JAVA} ${DIP_JAVAIO_BIOFORMATS_JAVA})
-   set(DIP_JAVAIO_CLASSPATH ${DIP_JAVAIO_CLASSPATH} ${BIOFORMATS_JAR})
-endif()
+# Bio-Formats interface
+set(DIP_JAVAIO_JAVA ${DIP_JAVAIO_JAVA} ${DIP_JAVAIO_BIOFORMATS_JAVA})
+set(DIP_JAVAIO_CLASSPATH ${DIP_JAVAIO_CLASSPATH} "${CMAKE_CURRENT_LIST_DIR}/java/bioformats/bio-formats-stripped.jar")
 
 configure_file("${CMAKE_CURRENT_LIST_DIR}/Manifest.txt.in" "${CMAKE_CURRENT_BINARY_DIR}/Manifest.txt" @ONLY)
 

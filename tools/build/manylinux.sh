@@ -2,7 +2,7 @@
 # Run this in a manylinux2014 docker container with /io mounted to some local directory
 
 # Setup
-yum -y install wget freeglut-devel java-1.8.0-openjdk-devel.x86_64
+yum -y install freeglut-devel java-1.8.0-openjdk-devel.x86_64
 /opt/python/cp39-cp39/bin/python -m pip install cmake auditwheel
 CMAKE=/opt/python/cp39-cp39/lib/python3.9/site-packages/cmake/data/bin/cmake
 BUILD_THREADS=4
@@ -14,10 +14,9 @@ git clone https://github.com/diplib/diplib
 cd diplib
 mkdir build
 cd build
-wget -nv https://downloads.openmicroscopy.org/bio-formats/7.0.0/artifacts/bioformats_package.jar
 
 # Basic configuration
-$CMAKE .. -DDIP_PYDIP_WHEEL_INCLUDE_LIBS=On -DBIOFORMATS_JAR=`pwd`/bioformats_package.jar
+$CMAKE .. -DDIP_PYDIP_WHEEL_INCLUDE_LIBS=On
 
 # Build wheels
 for v in ${PYTHON_VERSIONS[@]}; do

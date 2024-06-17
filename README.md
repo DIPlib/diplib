@@ -172,6 +172,13 @@ limitations under the License.
   see [`dipimage/private/bf*.m`](dipimage/private/bfGetReader.m)  
   (the full *Bio-Formats* library needs to be installed for these to be useful)
 
+- A few Java files from *OME Bio-Formats* (used only to resolve references during the build
+  process of *DIPjavaio*, not used otherwise)  
+  Copyright (C) 2005 - 2017 Open Microscopy Environment  
+  2-Clause BSD License  
+  see [`javaio/java/bioformats/readme.md`](javaio/java/bioformats/readme.md)  
+  (the full *Bio-Formats* library needs to be installed to use *DIPjavaio*)
+
 - Modified CSS files from *dox++*, which originally came from *m.css* (for documentation)  
   Copyright 2017, 2018, 2019 Vladimír Vondruš  
   MIT License

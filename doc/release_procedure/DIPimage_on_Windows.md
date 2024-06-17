@@ -81,7 +81,6 @@ Also the following dependencies have been downloaded:
 - FFTW, version 3.3.10 <https://fftw.org/download.html>. Download the source as we will build our own static library (see [FFTW static library](#fftw-static-library))
 - GLFW, version 3.3.6 <https://www.glfw.org/download.html>. Download the 64-bit Windows binaries as they contain a prebuild static library
 - Freetype, version 2.11.1 <https://github.com/ubawurinna/freetype-windows-binaries/releases>. Download the `Source code (zip)` as is it contains a prebuild static library
-- Bio-Formats package, version 7.0.0 <https://www.openmicroscopy.org/bio-formats/downloads/>. Download `bioformats_package.jar`
 
 For testing the *DIPlib* images are used:
 
@@ -147,9 +146,9 @@ FFTW comes with the GNU General Public License, Version 2 which is not compatibl
    - `Matlab_ROOT_DIR` `C:/Program Files/MATLAB/R2021b`
 1. press the <kbd>Generate</kbd> button
 1. continue setting the variables:
-   - `BIOFORMATS_JAR` `C:/diplib/bioformats_package.jar`
    - `DIP_ENABLE_FFTW` set
    - `DIP_ENABLE_FREETYPE` set
+   - `DIP_BUILD_JAVAIO` unset
 1. press the <kbd>Generate</kbd> button
 1. press the <kbd>Open Project</kbd> button
 1. in Visual Studio check if Solution Configuration is set to `Release`

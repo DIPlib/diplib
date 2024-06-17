@@ -13,7 +13,6 @@ mkdir build
 cd build
 mkdir wheelhouse
 
-python -m wget https://downloads.openmicroscopy.org/bio-formats/7.0.0/artifacts/bioformats_package.jar
 python -m wget https://sourceforge.net/projects/freeglut/files/freeglut/3.0.0/freeglut-3.0.0.tar.gz/download
 python -c "import tarfile; tar = tarfile.open('download'); tar.extractall()"
 cd freeglut-3.0.0
@@ -25,7 +24,7 @@ cd ..
 cd ..
 
 REM Basic configuration
-cmake .. -A x64 -DBIOFORMATS_JAR=%CD%\bioformats_package.jar -DFREEGLUT_INCLUDE_DIR=%CD%\freeglut-3.0.0\include -DFREEGLUT_LIBRARY=%CD%\freeglut-3.0.0\build\lib\Release\freeglut_static.lib -DFREEGLUT_STATIC=On -DDIP_BUILD_DIPIMAGE=Off -DDIP_PYDIP_WHEEL_INCLUDE_LIBS=On -DDIP_ENABLE_UNICODE=Off
+cmake .. -A x64 -DFREEGLUT_INCLUDE_DIR=%CD%\freeglut-3.0.0\include -DFREEGLUT_LIBRARY=%CD%\freeglut-3.0.0\build\lib\Release\freeglut_static.lib -DFREEGLUT_STATIC=On -DDIP_BUILD_DIPIMAGE=Off -DDIP_PYDIP_WHEEL_INCLUDE_LIBS=On -DDIP_ENABLE_UNICODE=Off
 
 REM Python 3.8
 C:\hostedtoolcache\windows\Python\%PYTHON38%\x64\python.exe -m pip install setuptools wheel build

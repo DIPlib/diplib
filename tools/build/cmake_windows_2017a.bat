@@ -11,7 +11,6 @@ cmake ^
 -DJava_JAVAC_EXECUTABLE:FILEPATH=D:/local/jdk-12.0.2/bin/javac.exe ^
 -DJava_JAVADOC_EXECUTABLE:FILEPATH=D:/local/jdk-12.0.2/bin/javadoc.exe ^
 -DJava_JAVA_EXECUTABLE:FILEPATH=D:/local/jdk-12.0.2/bin/java.exe ^
--DBIOFORMATS_JAR:FILEPATH=D:/local/bioformats_package.jar ^
 -DMatlab_ROOT_DIR:PATH="C:/Program Files/MATLAB/R2017a" ^
 -DDIP_PYDIP_RELATIVE_LOCATION:BOOL=ON ^
 -DPYDIP_INSTALL_PATH:PATH=D:/local/DIPlib_2017a/lib ^
