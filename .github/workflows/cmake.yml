@@ -43,7 +43,7 @@ jobs:
             wheel_location: pydip/staging/dist
           - os: macos-latest
             n_cores: 3
-            dip_cmake_opts: -DCMAKE_CXX_FLAGS="-I/usr/local/opt/libomp/include -L/usr/local/opt/libomp/lib"
+            dip_cmake_opts: -DCMAKE_CXX_FLAGS="-I/opt/homebrew/opt/libomp/include -L/opt/homebrew/opt/libomp/lib"
             wheel_location: pydip/staging/dist
           - os: windows-latest
             n_cores: 4
