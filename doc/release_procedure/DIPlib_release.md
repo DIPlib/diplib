@@ -6,7 +6,7 @@
 2. Update `CMakeLists.txt`
 3. Test
 4. Tag master branch
-5. Run the deploy action on GitHub
+5. Run the "deploy" action on GitHub
 6. Build the documentation
 7. Update the website
 8. Create release on GitHub
@@ -16,7 +16,7 @@
 
 We try to keep `./changelogs/diplib_next.md` updated as we make changes to the master branch.
 When making a release, rename this file to `./changelogs/diplib_<version_number>.md`, and create
-a new, clear `diplib_next.md` file by removing all the bulleted items.
+a new, clear `diplib_next.md` file from `template.md`.
 
 Change the "title" line at the top of the file to include the version number. Remove subsections
 without anything in them, and write "None" in empty sections. Please look at any of the older
@@ -56,12 +56,12 @@ git push
 git push --tags
 ```
 
-### 5. Run the deploy action on GitHub
+### 5. Run the "deploy" action on GitHub
 
 On GitHub, there is an "Actions" tab ([link](https://github.com/DIPlib/diplib/actions)). On the left of this
 page there is a list of workflows. Select "deploy". On the right of the page there is a button "Run workflow ▾".
-Press the button, and select the newly defined tag, then run the workflow. This will build the project (except
-DIPimage) for the supported platforms and upload the new Python packages to PyPI.
+Press the button, and select the newly defined tag, then run the workflow. This will build the Python packages
+and upload them to PyPI.
 
 ### 6. Build the documentation
 

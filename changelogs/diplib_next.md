@@ -11,7 +11,7 @@ title: "Changes DIPlib 3.x.x"
   as specific instances. These are used to handle a buffer that a JPEG or PNG file can be written into by
   `dip::ImageWriteJPEG()` and `dip::ImageWritePNG()`.
 
-- Added `dip::Framework::Projection()` as a public function. Previously it was hidden in the library for internal
+- Added `dip::Framework::Projection()` as a public function. Previously it was a private library function for internal
   use only. This framework function simplifies the creation of projection operations, and forms the basis of
   functions such as `dip::Mean()` and `dip::Maximum()`.
 
@@ -130,15 +130,17 @@ title: "Changes DIPlib 3.x.x"
   did not properly compute step sizes for `"grid"` sampling, effectively ignoring the value of `probes`
   and using all pixels (as if `probes` were set to 0).
 
-- Tensor indexing did not remove color space information as expected, since the fix to the move constructor in 3.4.3.
+- Tensor indexing did not remove color space information as expected (bug introduced with the fix to the move
+  constructor in 3.4.3).
 
 - `dip::Image::CheckIsMask()` didn't properly check for singleton-expandable masks, accepting masks of any size.
 
 - `dip::FourierTransform()` threw an exception when the real-to-complex dimension had a size of 2.
   See [issue #158](https://github.com/DIPlib/diplib/issues/158).
 
-- A wrong asseertion in internal code for `dip::FourierTransform()` made it impossible to inverse transform
-  a real-valued image under certain conditions, when *DIPlib* was built with assertions enabled.
+- A wrong assertion in internal code for `dip::FourierTransform()` made it impossible to inverse transform
+  a real-valued image under certain conditions, when *DIPlib* was built with assertions enabled (bug introduced
+  with the refactoring of the Fourier code in 3.4.0).
 
 - The 2D parabola fitting function used in `dip::SubpixelLocation()`, `dip::SubpixelMaxima()` and
   `dip::SubpixelMinima()`, with the `"parabolic"` and `"gaussian"` methods, was using wrong weights,
@@ -195,14 +197,14 @@ None, but see bugfixes to *DIPlib*.
 
 ### New functionality
 
-- Added bindings to `dip::GaussFIR()`, to complement `GaussIIR()` and `GaussFT()`. Though it is expected people will
+- Added bindings to `dip::GaussFIR()`, to complement `GaussIIR()` and `GaussFT()`. Though it is expected users will
   keep using `dip.Gauss()` to access these various algorithms.
 
 - Added bindings for `dip.Units.HasSameDimensions`, `dip.Units.IsDimensionless`, `dip.Units.IsPhysical`,
   `dip.Units.AdjustThousands`, `dip.Units.Thousands`.
 
 - Added `dip.Measurement.ToDataFrame()`, which converts the measurement results into a Pandas DataFrame.
-  This function will import NumPy and Pandas, they need to be installed.
+  This function will import NumPy and Pandas when used, these packages need to be installed.
 
 - Added `dip.Measurement.MeasurementFeature.Subset()` (binding for `dip::Measurement::IteratorFeature::Subset()`)
   and `dip.Measurement.FeatureValuesView()`.

@@ -5,8 +5,8 @@ build*/
 .vs/
 .vscode/
 *.geany
-dipimage/private/*.jar
 *~
 *.orig
 examples/python/.ipynb_checkpoints
 *.code-workspace
+.DS_Store
