@@ -88,7 +88,7 @@ if(JAVA_FOUND)
       include(UseJava)
       list(APPEND DIP_JAVAIO_INTERFACES "Bio-Formats")
    endif()
-   set(DIP_JAVA_VERSION "1.8" CACHE BOOL "Java version to target when building DIPviewer Java bindings and DIPjavaio.")
+   set(DIP_JAVA_VERSION "1.8" CACHE STRING "Java version to target when building DIPviewer Java bindings and DIPjavaio.")
    # MATLAB R2013b--R2017a use Java SDK 1.7, R2017b-- use SDK 1.8.
    set(CMAKE_JAVA_COMPILE_FLAGS -target ${DIP_JAVA_VERSION} -source ${DIP_JAVA_VERSION})
 endif()
