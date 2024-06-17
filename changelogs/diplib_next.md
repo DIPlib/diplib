@@ -137,6 +137,9 @@ title: "Changes DIPlib 3.x.x"
 - `dip::FourierTransform()` threw an exception when the real-to-complex dimension had a size of 2.
   See [issue #158](https://github.com/DIPlib/diplib/issues/158).
 
+- A wrong asseertion in internal code for `dip::FourierTransform()` made it impossible to inverse transform
+  a real-valued image under certain conditions, when *DIPlib* was built with assertions enabled.
+
 - The 2D parabola fitting function used in `dip::SubpixelLocation()`, `dip::SubpixelMaxima()` and
   `dip::SubpixelMinima()`, with the `"parabolic"` and `"gaussian"` methods, was using wrong weights,
   making the result not precise. The 3D case was not affected. The faster `"parabolic separable"` and

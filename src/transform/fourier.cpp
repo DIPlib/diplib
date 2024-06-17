@@ -333,7 +333,6 @@ void DFT_C2C_compute(
 ) {
    DIP_ASSERT( in.IsForged() );
    DIP_ASSERT( out.IsForged() );
-   DIP_ASSERT( in.DataType().IsComplex() );
    DIP_ASSERT( out.DataType().IsComplex() );
    DataType dtype = out.DataType();
    DIP_START_STACK_TRACE
@@ -714,6 +713,11 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FourierTransform function (2D image, 2D 
    //std::cout << "max = " << maxabs << '\n';
    DOCTEST_CHECK( maxabs < 1e-9 );
 
+   // Real-to-real inverse transform  (even-sized axis)
+   dip::FourierTransform( output, output, { "inverse", "real" } );
+   DOCTEST_CHECK( output.DataType() == dip::DT_SFLOAT );
+   DOCTEST_CHECK( output.Sizes() == sz );
+
    // === Repeat with different R2C and C2R dimension ===
    sz = { 64, 105 };
    input = dip::Image{ sz, 1, dip::DT_SFLOAT };
@@ -743,6 +747,11 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FourierTransform function (2D image, 2D 
    maxabs = dip::MaximumAbs( output - input ).As< double >();
    //std::cout << "max = " << maxabs << '\n';
    DOCTEST_CHECK( maxabs < 1e-9 );
+
+   // Real-to-real inverse transform  (odd-sized axis)
+   dip::FourierTransform( output, output, { "inverse", "real" } );
+   DOCTEST_CHECK( output.DataType() == dip::DT_SFLOAT );
+   DOCTEST_CHECK( output.Sizes() == sz );
 }
 
 DOCTEST_TEST_CASE("[DIPlib] testing the FourierTransform function (fast option)") {
