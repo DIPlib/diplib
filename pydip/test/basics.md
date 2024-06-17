@@ -84,7 +84,7 @@ The data type is preserved.
     <Scalar image, SFLOAT, sizes {20, 10}>
     >>> dip.Image(np.zeros((10, 20), dtype=float))
     <Scalar image, DFLOAT, sizes {20, 10}>
-    >>> dip.Image(np.zeros((10, 20), dtype=np.singlecomplex))
+    >>> dip.Image(np.zeros((10, 20), dtype=np.complex64))
     <Scalar image, SCOMPLEX, sizes {20, 10}>
     >>> dip.Image(np.zeros((10, 20), dtype=complex))
     <Scalar image, DCOMPLEX, sizes {20, 10}>
@@ -337,12 +337,12 @@ Implicit conversions
     >>> dip.Mean(a, None)
     <Scalar image, SFLOAT, sizes {1, 1}>
 
-Images can be implicitly converted to and from Python buffers (e.g. ``numpy`` arrays)
+Images can be implicitly converted to and from Python buffers (e.g. NumPy arrays)
 
     >>> dip.Gauss(np.zeros((10, 20)))
     <Scalar image, DFLOAT, sizes {20, 10}>
     >>> a = dip.CreateRamp((10, 20), 0)
-    >>> np.amax(a)
+    >>> float(np.amax(a))  # explicit cast because NumPy 2.0 returns np.float32(4.0), older versions return 4.0.
     4.0
 
 Scalars can be implicitly converted to ``DimensionArray``s

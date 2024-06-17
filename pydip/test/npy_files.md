@@ -21,12 +21,9 @@ Load using DIPlib and compare
     >>> dip.ImageIsNPY(fname)
     True
     >>> img = dip.ImageReadNPY(fname)
-    >>> img.DataType() == img0.DataType()
-    True
-    >>> img.Sizes() == img0.Sizes()
-    True
-    >>> dip.All(img == img0)[0][0]
-    True
+    >>> assert(img.DataType() == img0.DataType())
+    >>> assert(img.Sizes() == img0.Sizes())
+    >>> assert(dip.All(img == img0)[0][0])
 
 A test matrix, 3D (16-bit unsigned int), write using NumPy
 
@@ -38,12 +35,9 @@ A test matrix, 3D (16-bit unsigned int), write using NumPy
 Load using DIPlib and compare
 
     >>> img = dip.ImageReadNPY(fname)
-    >>> img.DataType() == img0.DataType()
-    True
-    >>> img.Sizes() == img0.Sizes()
-    True
-    >>> dip.All(img == img0)[0][0]
-    True
+    >>> assert(img.DataType() == img0.DataType())
+    >>> assert(img.Sizes() == img0.Sizes())
+    >>> assert(dip.All(img == img0)[0][0])
 
 A test matrix, 1D (single complex), write using NumPy
 
@@ -56,12 +50,9 @@ A test matrix, 1D (single complex), write using NumPy
 Load using DIPlib and compare
 
     >>> img = dip.ImageReadNPY(fname)
-    >>> img.DataType() == img0.DataType()
-    True
-    >>> img.Sizes() == img0.Sizes()
-    True
-    >>> dip.All(img == img0)[0][0]
-    True
+    >>> assert(img.DataType() == img0.DataType())
+    >>> assert(img.Sizes() == img0.Sizes())
+    >>> assert(dip.All(img == img0)[0][0])
 
 Write some images with DIPlib, then read in as NumPy arrays and as DIPlib images
 ---
@@ -76,24 +67,17 @@ A test image, 2D (single float), write using DIPlib
 Load using NumPy and compare
 
     >>> data = np.load(fname)
-    >>> data.dtype == data0.dtype
-    True
-    >>> data.shape == data0.shape
-    True
-    >>> np.all(data == data0)
-    True
-    >>> np.isfortran(data)
-    False
+    >>> assert(data.dtype == data0.dtype)
+    >>> assert(data.shape == data0.shape)
+    >>> assert(np.all(data == data0))
+    >>> assert(not np.isfortran(data))
 
 Load using DIPlib and compare
 
     >>> img = dip.ImageReadNPY(fname)
-    >>> img.DataType() == img0.DataType()
-    True
-    >>> img.Sizes() == img0.Sizes()
-    True
-    >>> dip.All(img == img0)[0][0]
-    True
+    >>> assert(img.DataType() == img0.DataType())
+    >>> assert(img.Sizes() == img0.Sizes())
+    >>> assert(dip.All(img == img0)[0][0])
 
 Permute the image, so that its strides are reversed and saved in fortran order by DIPlib
 
@@ -108,24 +92,17 @@ Permute the image, so that its strides are reversed and saved in fortran order b
 Load using NumPy and compare
 
     >>> data = np.load(fname)
-    >>> data.dtype == data0.dtype
-    True
-    >>> data.shape == data0.shape
-    True
-    >>> np.all(data == data0)
-    True
-    >>> np.isfortran(data)
-    True
+    >>> assert(data.dtype == data0.dtype)
+    >>> assert(data.shape == data0.shape)
+    >>> assert(np.all(data == data0))
+    >>> assert(np.isfortran(data))
 
 Load using DIPlib and compare
 
     >>> img = dip.ImageReadNPY(fname)
-    >>> img.DataType() == img0.DataType()
-    True
-    >>> img.Sizes() == img0.Sizes()
-    True
-    >>> dip.All(img == img0)[0][0]
-    True
+    >>> assert(img.DataType() == img0.DataType())
+    >>> assert(img.Sizes() == img0.Sizes())
+    >>> assert(dip.All(img == img0)[0][0])
     >>> img.Strides()
     [28, 1]
 
@@ -139,24 +116,17 @@ A test image, 3D (32-bit signed int), write using DIPlib
 Load using NumPy and compare
 
     >>> data = np.load(fname)
-    >>> data.dtype == data0.dtype
-    True
-    >>> data.shape == data0.shape
-    True
-    >>> np.all(data == data0)
-    True
-    >>> np.isfortran(data)
-    False
+    >>> assert(data.dtype == data0.dtype)
+    >>> assert(data.shape == data0.shape)
+    >>> assert(np.all(data == data0))
+    >>> assert(not np.isfortran(data))
 
 Load using DIPlib and compare
 
     >>> img = dip.ImageReadNPY(fname)
-    >>> img.DataType() == img0.DataType()
-    True
-    >>> img.Sizes() == img0.Sizes()
-    True
-    >>> dip.All(img == img0)[0][0]
-    True
+    >>> assert(img.DataType() == img0.DataType())
+    >>> assert(img.Sizes() == img0.Sizes())
+    >>> assert(dip.All(img == img0)[0][0])
 
 3D with arbitrary dimension order, write using DIPlib
 
@@ -171,24 +141,17 @@ Load using DIPlib and compare
 Load using NumPy and compare
 
     >>> data = np.load(fname)
-    >>> data.dtype == data0.dtype
-    True
-    >>> data.shape == data0.shape
-    True
-    >>> np.all(data == data0)
-    True
-    >>> np.isfortran(data)
-    False
+    >>> assert(data.dtype == data0.dtype)
+    >>> assert(data.shape == data0.shape)
+    >>> assert(np.all(data == data0))
+    >>> assert(not np.isfortran(data))
 
 Load using DIPlib and compare
 
     >>> img = dip.ImageReadNPY(fname)
-    >>> img.DataType() == img0.DataType()
-    True
-    >>> img.Sizes() == img0.Sizes()
-    True
-    >>> dip.All(img == img0)[0][0]
-    True
+    >>> assert(img.DataType() == img0.DataType())
+    >>> assert(img.Sizes() == img0.Sizes())
+    >>> assert(dip.All(img == img0)[0][0])
 
 A test matrix, 1D (double complex), write using DIPlib
 
@@ -201,21 +164,15 @@ A test matrix, 1D (double complex), write using DIPlib
 Load using NumPy and compare
 
     >>> data = np.load(fname)
-    >>> data.dtype == data0.dtype
-    True
-    >>> data.shape == data0.shape
-    True
-    >>> np.all(data == data0)
-    True
+    >>> assert(data.dtype == data0.dtype)
+    >>> assert(data.shape == data0.shape)
+    >>> assert(np.all(data == data0))
 
 Load using DIPlib and compare
 
     >>> img = dip.ImageReadNPY(fname)
-    >>> img.DataType() == img0.DataType()
-    True
-    >>> img.Sizes() == img0.Sizes()
-    True
-    >>> dip.All(img == img0)[0][0]
-    True
+    >>> assert(img.DataType() == img0.DataType())
+    >>> assert(img.Sizes() == img0.Sizes())
+    >>> assert(dip.All(img == img0)[0][0])
 
 TODO: how to test the endianness?
