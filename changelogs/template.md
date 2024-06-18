@@ -13,6 +13,8 @@ title: "Changes DIPlib 3.x.x"
 
 ### Updated dependencies
 
+### Build changes
+
 
 
 
@@ -28,6 +30,8 @@ title: "Changes DIPlib 3.x.x"
 
 None, but see bugfixes to *DIPlib*.
 (See also bugfixes to *DIPlib*.)
+
+### Build and installation changes
 
 
 
@@ -45,6 +49,8 @@ None, but see bugfixes to *DIPlib*.
 None, but see bugfixes to *DIPlib*.
 (See also bugfixes to *DIPlib*.)
 
+### Build and installation changes
+
 
 
 
@@ -56,6 +62,8 @@ None, but see bugfixes to *DIPlib*.
 
 ### Bug fixes
 
+### Build changes
+
 
 
 
@@ -66,3 +74,5 @@ None, but see bugfixes to *DIPlib*.
 ### Changed functionality
 
 ### Bug fixes
+
+### Build changes
