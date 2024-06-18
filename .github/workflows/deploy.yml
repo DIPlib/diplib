@@ -63,20 +63,3 @@ jobs:
           HOMEBREW_DIR: /opt/homebrew
           BUILD_THREADS: 3
           MACOSX_DEPLOYMENT_TARGET: 14.0
-
-  deploy_windows:
-    runs-on: windows-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install
-        # Install libraries and Python packages we need
-        run: |
-          choco install openjdk8 --no-progress --yes
-          python -m pip install wheel build twine wget
-
-      - name: Deploy
-        run: tools/build/deploy_windows.bat
-        env:
-          PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
