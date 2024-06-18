@@ -110,7 +110,7 @@ if(NOT CMAKE_VERSION VERSION_LESS "3.27")
   cmake_policy(SET CMP0148 OLD)
   unset(_pybind11_cmp0148)
 endif()
-
+message(STATUS "Finding PythonInterp")
 find_package(PythonInterp ${PythonLibsNew_FIND_VERSION} ${_pythonlibs_required}
              ${_pythonlibs_quiet})
 

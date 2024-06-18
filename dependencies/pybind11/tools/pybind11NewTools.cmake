@@ -48,6 +48,7 @@ if(NOT Python_FOUND AND NOT Python3_FOUND)
     endif()
   endif()
 
+  message(STATUS "Finding Python component: ${_pybind11_dev_component}")
   find_package(Python 3.6 REQUIRED COMPONENTS Interpreter ${_pybind11_dev_component}
                                               ${_pybind11_quiet} ${_pybind11_global_keyword})
 

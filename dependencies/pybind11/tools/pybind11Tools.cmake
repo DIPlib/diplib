@@ -47,6 +47,7 @@ set(Python_ADDITIONAL_VERSIONS
     CACHE INTERNAL "")
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
+message(STATUS "Finding PythonLibsNew")
 find_package(PythonLibsNew ${PYBIND11_PYTHON_VERSION} MODULE REQUIRED ${_pybind11_quiet})
 list(REMOVE_AT CMAKE_MODULE_PATH -1)
 

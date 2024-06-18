@@ -184,11 +184,13 @@ elseif(
       ))
 
   # New mode
+  message(STATUS "Pybind11 using New Mode")
   include("${CMAKE_CURRENT_LIST_DIR}/pybind11NewTools.cmake")
 
 else()
 
   # Classic mode
+  message(STATUS "Pybind11 using Classic Mode")
   include("${CMAKE_CURRENT_LIST_DIR}/pybind11Tools.cmake")
 
 endif()
