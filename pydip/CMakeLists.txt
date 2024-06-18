@@ -37,7 +37,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/../tools/update_deps_file.cmake)
 find_package(Python 3.6 REQUIRED COMPONENTS Interpreter Development.Module)
 
 # Pybind11
-set(PYBIND11_FINDPYTHON On)
+set(PYBIND11_FINDPYTHON Off)
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../dependencies/pybind11" "${PROJECT_BINARY_DIR}/pybind11" EXCLUDE_FROM_ALL)
 
 # DIPlib
