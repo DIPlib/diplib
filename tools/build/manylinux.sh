@@ -9,9 +9,8 @@ BUILD_THREADS=4
 PYTHON_VERSIONS=(3.9 3.10 3.11 3.12)
 EXCLUDES=(libjvm.so libOpenGL.so.0 libGLX.so.0 libGLdispatch.so.0)
 
-# Clone diplib repository
-git clone https://github.com/diplib/diplib
-cd diplib
+# Current directory is diplib repo
+pwd
 mkdir build
 cd build
 
