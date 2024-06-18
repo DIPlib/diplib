@@ -86,7 +86,7 @@ title: "Changes DIPlib 3.5.0"
   See [issue #161](https://github.com/DIPlib/diplib/issues/161).
   To reproduce the previous behavior, compute a histogram with default configuration (`dip::Histogram(image)`),
   and pass this histogram to the equivalent threshold estimation function. This function will return a threshold
-  value that can be applied to the image using the comparison operator (`image > threshold`).
+  value that can be applied to the image using the comparison operator (`image >= threshold`).
 
 - `dip::EstimateNoiseVariance()` uses a potentially more precise threshold internally to exclude edges.
 
