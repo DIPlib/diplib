@@ -34,7 +34,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/../tools/compiler_flags.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/../tools/update_deps_file.cmake)
 
 # Python
-find_package(Python 3.6 REQUIRED COMPONENTS Interpreter Development)
+find_package(Python 3.6 REQUIRED COMPONENTS Interpreter Development.Module)
 
 # Pybind11
 set(PYBIND11_FINDPYTHON On)
