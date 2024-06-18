@@ -9,8 +9,8 @@ BUILD_THREADS=4
 PYTHON_VERSIONS=(3.9 3.10 3.11 3.12)
 EXCLUDES=(libjvm.so libOpenGL.so.0 libGLX.so.0 libGLdispatch.so.0)
 
-# Current directory is diplib repo
-pwd
+# /io is diplib repo
+cd /io
 mkdir build
 cd build
 
