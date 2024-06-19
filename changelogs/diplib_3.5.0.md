@@ -290,3 +290,9 @@ None, but see bugfixes to *DIPlib*.
 - `dip::javaio::ImageReadJavaIO()` has an additional parameter `imageNumber` to select which image in a multi-image
   file to read. The `dip::FileInformation` structure returned now correctly indicates how many images are in the file
   in the `numberOfImages` element.
+
+### Build changes
+
+- It is no longer necessary to have Bio-Formats present. The repository now includes a (non-functional) stub
+  of Bio-Formats that is used during the compilation process. It is still necessary to separately download the
+  Bio-Formats JAR file to use *DIPjavaio*.
