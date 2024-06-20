@@ -1,6 +1,7 @@
 ---
 layout: post
 title: "Changes DIPlib 3.x.x"
+date: 2020-00-00
 ---
 
 ## Changes to *DIPlib*

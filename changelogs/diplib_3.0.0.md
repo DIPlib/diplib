@@ -1,6 +1,7 @@
 ---
 layout: post
 title: "Changes DIPlib 3.0.0"
+date: 2021-02-22
 ---
 
 *DIPlib 3* is a complete rewrite in C++ of the *DIPlib 2* infrastructure, which was written

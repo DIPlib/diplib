@@ -18,7 +18,8 @@ We try to keep `./changelogs/diplib_next.md` updated as we make changes to the m
 When making a release, rename this file to `./changelogs/diplib_<version_number>.md`, and create
 a new, clear `diplib_next.md` file from `template.md`.
 
-Change the "title" line at the top of the file to include the version number. Remove subsections
+Change the "title" line at the top of the file to include the version number, and the "date" line
+to the current date (should match the date for the commit tagged in step #4). Remove subsections
 without anything in them, and write "None" in empty sections. Please look at any of the older
 files for an example of what it should look like. It's nice to have these files be consistent.
 

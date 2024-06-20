@@ -1,6 +1,7 @@
 ---
 layout: post
 title: "Changes DIPlib 3.1.0"
+date: 2021-09-24
 ---
 
 ## Changes to *DIPlib*
