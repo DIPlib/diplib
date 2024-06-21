@@ -527,25 +527,47 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::div_{floor|ceil|round} functions") 
 
 DOCTEST_TEST_CASE("[DIPlib] testing the dip::{floor|ceil|round}_cast functions") {
    DOCTEST_CHECK( dip::floor_cast( 11.0 ) == 11 );
+   DOCTEST_CHECK( dip::floor_cast( 11.000000001 ) == 11 );
    DOCTEST_CHECK( dip::floor_cast( 11.4 ) == 11 );
-   DOCTEST_CHECK( dip::floor_cast( 11.99 ) == 11 );
+   DOCTEST_CHECK( dip::floor_cast( 11.5 ) == 11 );
+   DOCTEST_CHECK( dip::floor_cast( 11.9 ) == 11 );
+   DOCTEST_CHECK( dip::floor_cast( 11.999999999 ) == 11 );
    DOCTEST_CHECK( dip::floor_cast( -11.0 ) == -11 );
+   DOCTEST_CHECK( dip::floor_cast( -11.000000001 ) == -12 );
    DOCTEST_CHECK( dip::floor_cast( -11.4 ) == -12 );
-   DOCTEST_CHECK( dip::floor_cast( -11.99 ) == -12 );
+   DOCTEST_CHECK( dip::floor_cast( -11.5 ) == -12 );
+   DOCTEST_CHECK( dip::floor_cast( -11.9 ) == -12 );
+   DOCTEST_CHECK( dip::floor_cast( -11.999999999 ) == -12 );
 
    DOCTEST_CHECK( dip::ceil_cast( 11.0 ) == 11 );
+   DOCTEST_CHECK( dip::ceil_cast( 11.000000001 ) == 12 );
    DOCTEST_CHECK( dip::ceil_cast( 11.4 ) == 12 );
-   DOCTEST_CHECK( dip::ceil_cast( 11.99 ) == 12 );
+   DOCTEST_CHECK( dip::ceil_cast( 11.5 ) == 12 );
+   DOCTEST_CHECK( dip::ceil_cast( 11.9 ) == 12 );
+   DOCTEST_CHECK( dip::ceil_cast( 11.999999999 ) == 12 );
    DOCTEST_CHECK( dip::ceil_cast( -11.0 ) == -11 );
+   DOCTEST_CHECK( dip::ceil_cast( -11.000000001 ) == -11 );
    DOCTEST_CHECK( dip::ceil_cast( -11.4 ) == -11 );
-   DOCTEST_CHECK( dip::ceil_cast( -11.99 ) == -11 );
+   DOCTEST_CHECK( dip::ceil_cast( -11.5 ) == -11 );
+   DOCTEST_CHECK( dip::ceil_cast( -11.9 ) == -11 );
+   DOCTEST_CHECK( dip::ceil_cast( -11.999999999 ) == -11 );
 
    DOCTEST_CHECK( dip::round_cast( 11.0 ) == 11 );
+   DOCTEST_CHECK( dip::round_cast( 11.000000001 ) == 11 );
    DOCTEST_CHECK( dip::round_cast( 11.4 ) == 11 );
-   DOCTEST_CHECK( dip::round_cast( 11.99 ) == 12 );
+   DOCTEST_CHECK( dip::round_cast( 11.499999999 ) == 11 );
+   DOCTEST_CHECK( dip::round_cast( 11.5 ) == 12 );
+   DOCTEST_CHECK( dip::round_cast( 11.500000001 ) == 12 );
+   DOCTEST_CHECK( dip::round_cast( 11.9 ) == 12 );
+   DOCTEST_CHECK( dip::round_cast( 11.999999999 ) == 12 );
    DOCTEST_CHECK( dip::round_cast( -11.0 ) == -11 );
+   DOCTEST_CHECK( dip::round_cast( -11.000000001 ) == -11 );
    DOCTEST_CHECK( dip::round_cast( -11.4 ) == -11 );
-   DOCTEST_CHECK( dip::round_cast( -11.99 ) == -12 );
+   DOCTEST_CHECK( dip::round_cast( -11.499999999 ) == -11 );
+   DOCTEST_CHECK( dip::round_cast( -11.5 ) == -11 );
+   DOCTEST_CHECK( dip::round_cast( -11.500000001 ) == -12 );
+   DOCTEST_CHECK( dip::round_cast( -11.9 ) == -12 );
+   DOCTEST_CHECK( dip::round_cast( -11.999999999 ) == -12 );
 }
 
 DOCTEST_TEST_CASE("[DIPlib] testing the dip::pow10 function") {

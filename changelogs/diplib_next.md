@@ -16,6 +16,9 @@ date: 2020-00-00
 
 - Improved `dip::PhysicalQuantity::Normalize()` to avoid floating-point rounding errors.
 
+- `dip::DrawEllipsoid()` and `dip::DrawDiamond()` could produce wonky shapes for even diameters,
+  due to a floating-point rounding error.
+
 ### Updated dependencies
 
 ### Build changes

@@ -569,6 +569,12 @@ class DrawEllipsoidLineFilter : public Framework::ScanLineFilter {
                break;
             }
          }
+         // Prevent rounding errors
+         dfloat rounded_width = std::round( width );
+         if( std::abs( width - rounded_width ) < 1e-7 ) {
+            width = rounded_width;
+         }
+         // Draw the line
          dip::sint start = ceil_cast( origin_[ dim ] - width );
          dip::sint end = floor_cast( origin_[ dim ] + width );
          FillLine( out, start, end, length, stride, value_, tensorStride );
