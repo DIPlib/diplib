@@ -63,31 +63,30 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions {
    enum class Diff : uint8 { None, Draw, Place, Mapping, Projection, Complex };
 
    // Projection
-   dip::IntegerArray dims_; ///< Dimensions to visualize (MainX, MainY, LeftX, TopY).
-   dip::UnsignedArray operating_point_; ///< Value of non-visualized, non-projected dimensions.
+   dip::IntegerArray dims_; ///< Dimensions to visualize (MainX, MainY, LeftX, TopY). Use -1 to not map to any image dimension.
+   dip::UnsignedArray operating_point_; ///< Coordinates of selected point, which also determines which slice is shown.
    ComplexToReal complex_; ///< What to do with complex numbers.
    Projection projection_; ///< Type of projection.
    dip::UnsignedArray roi_origin_; ///< Origin of projection ROI.
    dip::UnsignedArray roi_sizes_; ///< Sizes of projection ROI.
-   dip::String labels_; ///< Labels to use for axes.
+   dip::String labels_; ///< Labels to use for axes, one character per axis.
 
    // Mapping
    FloatRange range_; ///< value range across image (histogram limits).
    FloatRangeArray tensor_range_; ///< value range per tensor.
    FloatRange mapping_range_; ///< mapped value range (colorbar limits).
-   Mapping mapping_; ///< from input to [0, 1], modifies mapping_range_.
+   Mapping mapping_; ///< Grey-value mapping options, sets mapping_range_.
 
    // Color
    dip::uint element_; ///< Tensor element to visualize.
-   LookupTable lut_; ///< from [0, 1] to [0, 0, 0]-[255, 255, 255].
+   LookupTable lut_; ///< Grey-value to color mapping options.
    dip::IntegerArray color_elements_; ///< Which tensor element is R, G, and B.
 
    // Placement
    dip::IntegerArray split_; ///< Split point between projections (pixels).
 
    // Display
-   dip::FloatArray zoom_; ///< \brief Zoom factor per dimension (from physical dimensions + user).
-                                       ///< Also determines relative viewport sizes.
+   dip::FloatArray zoom_; ///< \brief Zoom factor per dimension (from physical dimensions + user). Also determines relative viewport sizes.
    dip::FloatArray origin_; ///< Display origin for moving the image around.
 
    // Status

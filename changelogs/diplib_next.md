@@ -61,6 +61,9 @@ None, but see bugfixes to *DIPlib*.
 
 ### Changed functionality
 
+- The `dip.viewer.SliceViewer` object now also maps the `complex` and `projection` properties
+  (matching the third and fourth columns of the "control panel").
+
 ### Bug fixes
 
 ### Build changes

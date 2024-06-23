@@ -61,11 +61,11 @@ def Show(img, range=(), complexMode='abs', projectionMode='mean', coordinates=()
         real values for display. One of `'abs'` or `'magnitude'`,
         `'phase'`, `'real'`, `'imag'`. The default is `'abs'`.
     projectionMode -- a string indicating how to extract a 2D slice from a
-        multi-dimensional image for display. One of `'slice'`, `'max'`,
+        multidimensional image for display. One of `'slice'`, `'max'`,
         `'mean'`. The default is `'mean'`.
     coordinates -- Coordinates of a pixel to be shown, as a tuple with as
         many elements as image dimensions. Determines which slice is shown
-        out of a multi-dimensional image.
+        out of a multidimensional image.
     dim1 -- Image dimension to be shown along x-axis of display.
     dim2 -- Image dimension to be shown along y-axis of display.
     colormap -- Name of a color map to use for display. If it is one of
@@ -113,15 +113,11 @@ def Show(img, range=(), complexMode='abs', projectionMode='mean', coordinates=()
                     pip3 install matplotlib
                 or under Windows:
                     python3 -m pip install matplotlib
-                Alternatively, use `diplib.viewer.ShowModal()`, or `diplib.Image.ShowSlice()` and
-                `diplib.viewer.Spin()`.
+                Alternatively, use `diplib.viewer.ShowModal()`, or `diplib.viewer.Show()`,
+                `diplib.Image.ShowSlice()` and `diplib.viewer.Spin()`.
                 """, RuntimeWarning)
             _reportedPlotLib = True
         return
-
-    if dim1 == dim2:
-        # Note that we could handle this case, but we choose not to, it complicates things a bit
-        raise RuntimeError("dim1 and dim2 should be distinct")
 
     import matplotlib
     import matplotlib.pyplot as pp
@@ -159,9 +155,19 @@ def Show(img, range=(), complexMode='abs', projectionMode='mean', coordinates=()
         axes.set_xlim((x[0], x[-1]))
         axes.set_ylim((np.amin(data), np.amax(data)))
     else:
+        if dim1 == dim2:
+            # Note that we could handle this case, but we choose not to, it complicates things a bit
+            raise RuntimeError("dim1 and dim2 should be distinct")
         out = ImageDisplay(img, range, complexMode=complexMode, projectionMode=projectionMode,
                            coordinates=coordinates, dim1=dim1, dim2=dim2)
         out = np.asarray(out)
+        colormap_aliases = {
+            'divergent': 'diverging',
+            'periodic': 'cyclic',
+            'gray': 'grey',
+            'labels': 'label',
+            'sequential': 'linear'
+        }
         if colormap == '':
             if range == 'base' or range == 'based':
                 colormap = 'diverging'
@@ -171,6 +177,8 @@ def Show(img, range=(), complexMode='abs', projectionMode='mean', coordinates=()
                 colormap = 'cyclic'
             else:
                 colormap = 'grey'
+        elif colormap in colormap_aliases:
+            colormap = colormap_aliases[colormap]
         if colormap in {'grey', 'saturation', 'linear', 'diverging', 'cyclic', 'label'}:
             cmap = np.asarray(ApplyColorMap(np.arange(256), colormap)) / 255
             cmap = matplotlib.colors.ListedColormap(cmap)
