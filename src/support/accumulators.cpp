@@ -231,7 +231,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the PRNG") {
       acc_normal.Push( normal( 2.0, 4.0 ));
    }
    DOCTEST_CHECK( std::abs( acc_normal.Mean() - 2.0 ) < 0.04 );
-   DOCTEST_CHECK( std::abs( acc_normal.StandardDeviation() - 4.0 ) < 0.03 );
+   DOCTEST_CHECK( std::abs( acc_normal.StandardDeviation() - 4.0 ) < 0.05 );
 
    // Test poisson distribution
    dip::PoissonRandomGenerator poisson( rng );

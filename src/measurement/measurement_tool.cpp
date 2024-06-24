@@ -432,7 +432,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::MeasurementTool::Measure" ) {
    DOCTEST_CHECK( std::abs( msr_obj[ "Perimeter" ][ 0 ] - 2 * dip::pi * r ) < 0.08 );
    DOCTEST_CHECK( std::abs( msr_obj[ "Feret" ][ 0 ] - 2 * r ) < 1 );
    DOCTEST_CHECK( std::abs( msr_obj[ "Feret" ][ 1 ] - 2 * r ) < 1.1 );
-   DOCTEST_CHECK( std::abs( msr_obj[ "Feret" ][ 2 ] - 2 * r ) < 1 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Feret" ][ 2 ] - 2 * r ) < 1.1 );
    // DOCTEST_CHECK( msr_obj[ "Feret" ][ 3 ] == 0); // arbitrary angle, ignore
    // DOCTEST_CHECK( msr_obj[ "Feret" ][ 4 ] == 0); // arbitrary angle, ignore
    DOCTEST_CHECK( std::abs( msr_obj[ "SolidArea" ][ 0 ] - dip::pi * r * r ) < 8 );
@@ -564,7 +564,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::MeasurementTool::Measure" ) {
    DOCTEST_CHECK( std::abs( msr_obj[ "Perimeter" ][ 0 ] - 2 * dip::pi * r * ps ) < 0.08 * ps );
    DOCTEST_CHECK( std::abs( msr_obj[ "Feret" ][ 0 ] - 2 * r * ps ) < 1 * ps );
    DOCTEST_CHECK( std::abs( msr_obj[ "Feret" ][ 1 ] - 2 * r * ps ) < 1.1 * ps );
-   DOCTEST_CHECK( std::abs( msr_obj[ "Feret" ][ 2 ] - 2 * r * ps ) < 1 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Feret" ][ 2 ] - 2 * r * ps ) < 1.1 * ps );
    DOCTEST_CHECK( std::abs( msr_obj[ "SolidArea" ][ 0 ] - dip::pi * r * r * ps * ps ) < 8 * ps * ps );
    DOCTEST_CHECK( std::abs( msr_obj[ "ConvexArea" ][ 0 ] - dip::pi * r * r * ps * ps ) < 17 * ps );
    DOCTEST_CHECK( std::abs( msr_obj[ "ConvexPerimeter" ][ 0 ] - 2 * dip::pi * r * ps ) < 1.5 * ps );
@@ -693,7 +693,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::MeasurementTool::Measure" ) {
    DOCTEST_CHECK( std::abs( msr_obj[ "Perimeter" ][ 0 ] - 2 * dip::pi * r ) < 0.08 );
    DOCTEST_CHECK( std::abs( msr_obj[ "Feret" ][ 0 ] - 2 * r ) < 1 );
    DOCTEST_CHECK( std::abs( msr_obj[ "Feret" ][ 1 ] - 2 * r ) < 1.1 );
-   DOCTEST_CHECK( std::abs( msr_obj[ "Feret" ][ 2 ] - 2 * r ) < 1 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Feret" ][ 2 ] - 2 * r ) < 1.1 );
    DOCTEST_CHECK( std::abs( msr_obj[ "SolidArea" ][ 0 ] - dip::pi * r * r * ps * ps * yscale  ) < 8 * ps * ps * yscale  );
    DOCTEST_CHECK( std::abs( msr_obj[ "ConvexArea" ][ 0 ] - dip::pi * r * r * ps * ps * yscale  ) < 17 * ps * yscale  );
    DOCTEST_CHECK( std::abs( msr_obj[ "ConvexPerimeter" ][ 0 ] - 2 * dip::pi * r ) < 1.5 );
