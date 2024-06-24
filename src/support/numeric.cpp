@@ -379,16 +379,16 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::saturatedXXX functions") {
    DOCTEST_CHECK( dip::saturated_mul( dip::sint32( 70000 ), dip::sint32( -70000 )) == std::numeric_limits< dip::sint32 >::lowest() );
 
    DOCTEST_CHECK( dip::saturated_mul( dip::uint64( 5 ), dip::uint64( 5 )) == dip::uint64( 25 ));
-   DOCTEST_CHECK( dip::saturated_mul( dip::uint64( 5000000000 ), dip::uint64( 5000000000 )) == std::numeric_limits< dip::uint64 >::max() );
+   DOCTEST_CHECK( dip::saturated_mul( dip::uint64( 5000000000ll ), dip::uint64( 5000000000ll )) == std::numeric_limits< dip::uint64 >::max() );
 
    DOCTEST_CHECK( dip::saturated_mul( dip::sint64( 5 ), dip::sint64( 5 )) == dip::sint64( 25 ));
    DOCTEST_CHECK( dip::saturated_mul( dip::sint64( -5 ), dip::sint64( 5 )) == dip::sint64( -25 ));
    DOCTEST_CHECK( dip::saturated_mul( dip::sint64( 5 ), dip::sint64( -5 )) == dip::sint64( -25 ));
    DOCTEST_CHECK( dip::saturated_mul( dip::sint64( -5 ), dip::sint64( -5 )) == dip::sint64( 25 ));
-   DOCTEST_CHECK( dip::saturated_mul( dip::sint64( 5000000000 ), dip::sint64( 5000000000 )) == std::numeric_limits< dip::sint64 >::max() );
-   DOCTEST_CHECK( dip::saturated_mul( dip::sint64( -5000000000 ), dip::sint64( 5000000000 )) == std::numeric_limits< dip::sint64 >::lowest() );
-   DOCTEST_CHECK( dip::saturated_mul( dip::sint64( 5000000000 ), dip::sint64( -5000000000 )) == std::numeric_limits< dip::sint64 >::lowest() );
-   DOCTEST_CHECK( dip::saturated_mul( dip::sint64( -5000000000 ), dip::sint64( -5000000000 )) == std::numeric_limits< dip::sint64 >::max() );
+   DOCTEST_CHECK( dip::saturated_mul( dip::sint64( 5000000000ll ), dip::sint64( 5000000000ll )) == std::numeric_limits< dip::sint64 >::max() );
+   DOCTEST_CHECK( dip::saturated_mul( dip::sint64( -5000000000ll ), dip::sint64( 5000000000ll )) == std::numeric_limits< dip::sint64 >::lowest() );
+   DOCTEST_CHECK( dip::saturated_mul( dip::sint64( 5000000000ll ), dip::sint64( -5000000000ll )) == std::numeric_limits< dip::sint64 >::lowest() );
+   DOCTEST_CHECK( dip::saturated_mul( dip::sint64( -5000000000ll ), dip::sint64( -5000000000ll )) == std::numeric_limits< dip::sint64 >::max() );
 
    DOCTEST_CHECK( dip::saturated_mul( 5.0, 3.0 ) == 15.0 );
 

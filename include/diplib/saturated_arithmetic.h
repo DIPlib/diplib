@@ -91,7 +91,7 @@ constexpr inline T saturated_add( T lhs, T rhs ) {
                          + static_cast< typename detail::LargerType< T >::type >( rhs ));
 }
 #ifndef __SIZEOF_INT128__
-// If we don't have a 128-bit integer type, we need to do this the hard way
+// If we don't have a 128-bit integer type, we need to do this the hard (and slow) way
 constexpr inline sint64 saturated_add( sint64 lhs, sint64 rhs ) {
    if(( rhs > 0 ) && ( std::numeric_limits< sint64 >::max() - rhs <= lhs )) {
       return std::numeric_limits< sint64 >::max();
@@ -136,7 +136,7 @@ constexpr inline T saturated_sub( T lhs, T rhs ) {
                          - static_cast< typename detail::LargerType< T >::type >( rhs ));
 }
 #ifndef __SIZEOF_INT128__
-// If we don't have a 128-bit integer type, we need to do this the hard way
+// If we don't have a 128-bit integer type, we need to do this the hard (and slow) way
 constexpr inline sint64 saturated_sub( sint64 lhs, sint64 rhs ) {
    if(( rhs < 0 ) && ( std::numeric_limits< sint64 >::max() + rhs <= lhs )) {
       return std::numeric_limits< sint64 >::max();
@@ -173,7 +173,7 @@ constexpr inline T saturated_mul( T lhs, T rhs ) {
                          * static_cast< typename detail::LargerType< T >::type >( rhs ));
 }
 #ifndef __SIZEOF_INT128__
-// However, if we don't have a 128-bit integer type, we need to do this the hard way
+// However, if we don't have a 128-bit integer type, we need to do this the hard (and slow) way
 constexpr inline uint64 saturated_mul( uint64 lhs, uint64 rhs ) {
    uint64 result = lhs * rhs;
    if(( lhs != 0 ) && ( result / lhs != rhs )) {
@@ -183,11 +183,16 @@ constexpr inline uint64 saturated_mul( uint64 lhs, uint64 rhs ) {
 }
 
 constexpr inline sint64 saturated_mul( sint64 lhs, sint64 rhs ) {
-   sint64 result = lhs * rhs;
-   if(( lhs != 0 ) && ( result / lhs != rhs )) {
-      return (( lhs < 0 ) ^ ( rhs < 0 )) ? std::numeric_limits< sint64 >::lowest() : std::numeric_limits< sint64 >::max();
+   // Note that we can't do the same thing here as we did for the unsigned case, because signed integer arithmetic overflowing
+   // is UB. The optimizer makees use of that and breaks the code logic.
+   bool negative = ( lhs < 0 ) ^ ( rhs < 0 );
+   if(( lhs > 0 ) && ( std::numeric_limits< sint64 >::max() / lhs < std::abs( rhs ))) {
+      return negative ? std::numeric_limits< sint64 >::lowest() : std::numeric_limits< sint64 >::max();
    }
-   return result;
+   if(( lhs < 0 ) && ( std::numeric_limits< sint64 >::max() / -lhs < std::abs( rhs ))) {
+      return negative ? std::numeric_limits< sint64 >::lowest() : std::numeric_limits< sint64 >::max();
+   }
+   return lhs * rhs;
 }
 #endif // __SIZEOF_INT128__
 
