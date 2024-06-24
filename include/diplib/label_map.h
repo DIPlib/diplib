@@ -59,6 +59,8 @@ class DIP_NO_EXPORT LabelMap {
       };
 
       /// \brief Construct a map that maps `objectIDs` to themselves.
+      // Overload enabled only if dip::uint is not the same as LabelType (they are the same on 32-bit systems)
+      template< typename std::enable_if_t< !std::is_same< dip::uint, LabelType >::value, int > = 0 >
       explicit LabelMap( std::vector< dip::uint > const& labels ) {
          map_.reserve( labels.size() * 2 );  // Most efficient when load factor is < 0.5
          for( dip::uint lab : labels ) {

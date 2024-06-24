@@ -317,6 +317,16 @@ DOCTEST_TEST_CASE("[DIPlib] testing dip::LabelMap::Apply for images") {
    DOCTEST_CHECK( modified.DataType() == dip::DT_LABEL );
    labels -= 1;  // Note that 0 maps to 0 here
    DOCTEST_CHECK( dip::testing::CompareImages( modified, labels ));
+
+   // Idem, but `list2` is a vector of dip::uint instead of LabelType
+   auto list2 = std::vector< dip::uint >{ 1, 2, 3, 4, 5, 6, 7, 8 };
+   dip::LabelMap map2( list2 );
+   map2[ 1 ] = 0;
+   map2.Relabel();
+   dip::Image modified2 = map2.Apply( labels );
+   DOCTEST_CHECK( modified2.DataType() == dip::DT_LABEL );
+   labels -= 1;  // Note that 0 maps to 0 here
+   DOCTEST_CHECK( dip::testing::CompareImages( modified2, labels ));
 }
 
 #endif // DIP_CONFIG_ENABLE_DOCTEST

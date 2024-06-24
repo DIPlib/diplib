@@ -121,6 +121,7 @@ using scomplex = std::complex< sfloat >;
 using dcomplex = std::complex< dfloat >;
 
 /// Type currently used for all labeled images, see \ref dip::DT_LABEL.
+// NOTE: Keep in sync with dip::DT_LABEL in diplib/library/datatype.h
 using LabelType = uint32;
 
 /// Casting any unsigned integer type to \ref LabelType. Throws if `value` is too large.
