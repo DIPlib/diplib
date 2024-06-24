@@ -12,10 +12,15 @@ date: 2020-00-00
 
 ### Bug fixes
 
+- `dip::saturated_mul()` for `dip::sint64` inputs was broken on systems that don't have 128-bit arithmetic.
+
+- Improved `dip::PhysicalQuantity::Normalize()` to avoid floating-point rounding errors.
+
 ### Updated dependencies
 
 ### Build changes
 
+- Fixed some assorted issues introduced in 3.5.0 for 32-bit builds.
 
 
 

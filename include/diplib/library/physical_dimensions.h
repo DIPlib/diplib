@@ -515,8 +515,8 @@ struct DIP_NO_EXPORT PhysicalQuantity {
    constexpr PhysicalQuantity& Normalize() {
       dip::sint oldThousands = units.Thousands();
       dip::sint zeros = 0;
-      if (magnitude != 0) {
-         zeros = floor_cast( std::log10( std::abs( magnitude ))) + 1; // the +1 gives a nicer range of magnitudes
+      if( magnitude != 0 ) {
+         zeros = floor_cast( std::log10( std::abs( magnitude )) + 1e-6  ) + 1; // the +1 gives a nicer range of magnitudes -- the +1e-6 avoids rounding errors.
       }
       // dip::sint newThousands = dip::sint( std::round(( zeros + 3 * oldThousands ) / 3 - 0.1 )); // this gives values [0.1,100) for ^1 and [0.01,10000) for ^2.
       dip::sint newThousands = div_floor< dip::sint >(( zeros + 3 * oldThousands ), 3 ) - oldThousands;
