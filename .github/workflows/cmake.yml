@@ -41,11 +41,11 @@ jobs:
             n_cores: 4
             wheel_location: pydip/staging/dist
           - os: ubuntu-latest # cross-compile 32-bit
+            cross_compile: true
             n_cores: 4
-            wheel_location: pydip/staging/dist
             dip_cmake_opts: -DCMAKE_C_FLAGS="-m32" -DCMAKE_CXX_FLAGS="-m32" -DDIP_BUILD_DIPVIEWER=Off -DDIP_BUILD_JAVAIO=Off -DDIP_BUILD_PYDIP=Off
             # currently only building DIPlib, as we can't install 32-bit Python, GLUT, etc.
-            cross_compile: true
+            wheel_location: pydip/staging/dist
           - os: macos-latest
             n_cores: 3
             dip_cmake_opts: -DCMAKE_CXX_FLAGS="-I/opt/homebrew/opt/libomp/include -L/opt/homebrew/opt/libomp/lib"
