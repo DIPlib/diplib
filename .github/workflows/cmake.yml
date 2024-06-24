@@ -36,11 +36,16 @@ jobs:
     runs-on: ${{matrix.os}}
     strategy:
       matrix:
-        os: [ ubuntu-latest, macos-latest, windows-latest ]
         include:
           - os: ubuntu-latest
             n_cores: 4
             wheel_location: pydip/staging/dist
+          - os: ubuntu-latest # cross-compile 32-bit
+            n_cores: 4
+            wheel_location: pydip/staging/dist
+            dip_cmake_opts: -DCMAKE_C_FLAGS="-m32" -DCMAKE_CXX_FLAGS="-m32" -DDIP_BUILD_DIPVIEWER=Off -DDIP_BUILD_JAVAIO=Off -DDIP_BUILD_PYDIP=Off
+            # currently only building DIPlib, as we can't install 32-bit Python, GLUT, etc.
+            cross_compile: true
           - os: macos-latest
             n_cores: 3
             dip_cmake_opts: -DCMAKE_CXX_FLAGS="-I/opt/homebrew/opt/libomp/include -L/opt/homebrew/opt/libomp/lib"
@@ -73,6 +78,11 @@ jobs:
           fi
         shell: bash
 
+      - name: Install cross-compiler
+        if: matrix.cross_compile
+        run: |
+          sudo apt-get install gcc-multilib g++-multilib
+
       - name: Configure
         run: |
           if [ "$RUNNER_OS" == "Windows" ]; then
@@ -91,10 +101,12 @@ jobs:
 
       - name: Package
         # Create the Python distribution wheel
+        if: ! matrix.cross_compile
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --target bdist_wheel
 
       - name: Archive
         # Store the Python distribution wheel
+        if: ! matrix.cross_compile
         uses: actions/upload-artifact@v4
         with:
           name: Python-wheel-${{matrix.os}}
