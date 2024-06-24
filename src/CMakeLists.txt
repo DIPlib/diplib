@@ -219,7 +219,7 @@ if(DIP_ENABLE_DOCTEST)
       include("${PROJECT_SOURCE_DIR}/dependencies/doctest/doctest_force_link_static_lib_in_target.cmake")
       doctest_force_link_static_lib_in_target(unit_tests DIP) # This pulls in all object files from the static DIP library
    endif()
-   add_custom_target(DIP_check COMMAND unit_tests --force-colors=true DEPENDS unit_tests)
+   add_custom_target(DIP_check COMMAND unit_tests --force-colors=true --duration=true DEPENDS unit_tests)
    add_custom_target(check DEPENDS DIP_check)
    add_custom_target(check_memory COMMAND valgrind ./unit_tests DEPENDS unit_tests)
 endif()
