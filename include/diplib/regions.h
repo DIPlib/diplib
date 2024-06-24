@@ -365,10 +365,6 @@ DIP_NODISCARD inline Image MakeRegionsConvex2D( Image const& label, String const
 /// To obtain the bounding box of all labels at once, use \ref dip::MeasurementTool::Measure with the
 /// features \ref size_features_Minimum and \ref size_features_Maximum.
 RangeArray DIP_EXPORT GetLabelBoundingBox( Image const& label, LabelType objectID );
-[[ deprecated( "objectID as dip::uint is deprecated, it must be LabelType." ) ]]
-inline RangeArray GetLabelBoundingBox( Image const& label, dip::uint objectID ) {
-   return GetLabelBoundingBox( label, CastLabelType( objectID ));
-}
 
 /// \brief Construct a graph for the given labeled image.
 ///
