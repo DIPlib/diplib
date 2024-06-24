@@ -51,23 +51,15 @@ class DIP_NO_EXPORT LabelMap {
       // We relay on default copy and move constructor and assignment, it's all good.
 
       /// \brief Construct a map that maps `objectIDs` to themselves.
-      explicit LabelMap( std::vector< LabelType > const& labels ) {
+      template< typename UnsignedIntegerType, std::enable_if_t< std::numeric_limits< UnsignedIntegerType >::is_integer &&
+                                                                !std::numeric_limits< UnsignedIntegerType >::is_signed, int > = 0 >
+      explicit LabelMap( std::vector< UnsignedIntegerType > const& labels ) {
          map_.reserve( static_cast< dip::uint >( labels.size() ) * 2 );  // Most efficient when load factor is < 0.5
-         for( LabelType lab : labels ) {
-            map_.insert( { lab, lab } );
-         }
-      };
-
-      /// \brief Construct a map that maps `objectIDs` to themselves.
-      // Overload enabled only if dip::uint is not the same as LabelType (they are the same on 32-bit systems)
-      template< typename std::enable_if_t< !std::is_same< dip::uint, LabelType >::value, int > = 0 >
-      explicit LabelMap( std::vector< dip::uint > const& labels ) {
-         map_.reserve( labels.size() * 2 );  // Most efficient when load factor is < 0.5
-         for( dip::uint lab : labels ) {
+         for( UnsignedIntegerType lab : labels ) {
             LabelType l = CastLabelType( lab );
             map_.insert( { l, l } );
          }
-      };
+      }
 
       /// \brief Construct a map that maps `objectIDs` to themselves.
       explicit LabelMap( UnsignedArray const& labels ) {
@@ -76,7 +68,7 @@ class DIP_NO_EXPORT LabelMap {
             LabelType l = CastLabelType( lab );
             map_.insert( { l, l } );
          }
-      };
+      }
 
       /// \brief Construct a map from the Union-Find data structure. Must call `labels.Relabel()`
       /// before converting to a `LabelMap`.
