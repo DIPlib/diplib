@@ -567,7 +567,6 @@ DOCTEST_TEST_CASE("[DIPlib] testing the EigenDecomposition functions") {
 }
 
 DOCTEST_TEST_CASE("[DIPlib] testing the SingularValueDecomposition and related functions") {
-   std::cout << "SingularValueDecomposition 2x2\n";
    dip::dfloat matrix22[] = { 4, 0, 0, 8 };
    dip::dfloat S[ 2 ];
    dip::dfloat U[ 4 ];
@@ -584,7 +583,6 @@ DOCTEST_TEST_CASE("[DIPlib] testing the SingularValueDecomposition and related f
    DOCTEST_CHECK( V[ 2 ] == 1 );
    DOCTEST_CHECK( V[ 3 ] == 0 );
 
-   std::cout << "SingularValueDecomposition 2x3\n";
    dip::dfloat matrix23[] = { 3, 2, 2, 3, 2, -2 };
    dip::SingularValueDecomposition( 2, 3, matrix23, S, U, V );
    DOCTEST_CHECK( S[ 0 ] == doctest::Approx( 5.0 ));
@@ -600,10 +598,8 @@ DOCTEST_TEST_CASE("[DIPlib] testing the SingularValueDecomposition and related f
    DOCTEST_CHECK( V[ 4 ] == doctest::Approx( -1.0 / std::sqrt( 18 )));
    DOCTEST_CHECK( V[ 5 ] == doctest::Approx( 4.0 / std::sqrt( 18 )));
 
-   std::cout << "Rank\n";
    DOCTEST_CHECK( dip::Rank( 2, 3, matrix23 ) == 2 );
 
-   std::cout << "PseudoInverse\n";
    dip::dfloat matrix32[ 6 ];
    dip::PseudoInverse( 2, 3, matrix23, matrix32 );
    DOCTEST_CHECK( matrix32[ 0 ] == doctest::Approx( 28.0 / 180.0 ));
@@ -613,14 +609,11 @@ DOCTEST_TEST_CASE("[DIPlib] testing the SingularValueDecomposition and related f
    DOCTEST_CHECK( matrix32[ 4 ] == doctest::Approx( 28.0 / 180.0 ));
    DOCTEST_CHECK( matrix32[ 5 ] == doctest::Approx(-40.0 / 180.0 ));
 
-   std::cout << "Solve\n";
    dip::dfloat b[ 3 ] = { 44.0 / 180.0, 64.0 / 180.0, -40.0 / 180.0 };
    dip::dfloat x[ 2 ];
    dip::Solve( 3, 2, matrix32, b, x );
    DOCTEST_CHECK( x[ 0 ] == doctest::Approx( 1.0 ));
    DOCTEST_CHECK( x[ 1 ] == doctest::Approx( 2.0 ));
-
-   std::cout << "done!\n";
 }
 
 #endif // DIP_CONFIG_ENABLE_DOCTEST

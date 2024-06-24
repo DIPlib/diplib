@@ -37,24 +37,24 @@ jobs:
     strategy:
       matrix:
         include:
-          # - os: ubuntu-latest
-          #   n_cores: 4
-          #   wheel_location: pydip/staging/dist
+          - os: ubuntu-latest
+            n_cores: 4
+            wheel_location: pydip/staging/dist
           - os: ubuntu-latest # cross-compile 32-bit
             cross_compile: true
             n_cores: 4
             dip_cmake_opts: -DCMAKE_C_FLAGS="-m32" -DCMAKE_CXX_FLAGS="-m32" -DDIP_BUILD_DIPVIEWER=Off -DDIP_BUILD_JAVAIO=Off -DDIP_BUILD_PYDIP=Off
             # currently only building DIPlib, as we can't install 32-bit Python, GLUT, etc.
             wheel_location: pydip/staging/dist
-          # - os: macos-latest
-          #   n_cores: 3
-          #   dip_cmake_opts: -DCMAKE_CXX_FLAGS="-I/opt/homebrew/opt/libomp/include -L/opt/homebrew/opt/libomp/lib"
-          #   wheel_location: pydip/staging/dist
-          # - os: windows-latest
-          #   n_cores: 4
-          #   dip_cmake_opts: -A x64 -DDIP_ENABLE_UNICODE=Off -DGLFW_INCLUDE_DIR="glfw-3.3.5.bin.WIN64/include" -DGLFW_LIBRARY="glfw-3.3.5.bin.WIN64/lib-vc2019/glfw3.lib" -DDIP_FIND_FREEGLUT=Off
-          #   # Windows build must be 64-bit. We're also disabling Unicode because otherwise some tests fail.
-          #   wheel_location: pydip/Release/staging/dist
+          - os: macos-latest
+            n_cores: 3
+            dip_cmake_opts: -DCMAKE_CXX_FLAGS="-I/opt/homebrew/opt/libomp/include -L/opt/homebrew/opt/libomp/lib"
+            wheel_location: pydip/staging/dist
+          - os: windows-latest
+            n_cores: 4
+            dip_cmake_opts: -A x64 -DDIP_ENABLE_UNICODE=Off -DGLFW_INCLUDE_DIR="glfw-3.3.5.bin.WIN64/include" -DGLFW_LIBRARY="glfw-3.3.5.bin.WIN64/lib-vc2019/glfw3.lib" -DDIP_FIND_FREEGLUT=Off
+            # Windows build must be 64-bit. We're also disabling Unicode because otherwise some tests fail.
+            wheel_location: pydip/Release/staging/dist
       fail-fast: true
 
     steps:
@@ -97,6 +97,7 @@ jobs:
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --parallel ${{matrix.n_cores}}
 
       - name: Test
+        if: ${{ ! matrix.cross_compile }}
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --target check
 
       - name: Package
