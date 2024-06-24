@@ -183,9 +183,9 @@ template<> struct IsIndexingType< dip::sint > { static constexpr bool value = tr
 /// you'll need to use the following form:
 ///
 /// ```cpp
-/// template< typename T, typename std::enable_if_t< dip::IsSampleType< T >::value, int > = 0 >
+/// template< typename T, std::enable_if_t< dip::IsSampleType< T >::value, int > = 0 >
 /// void MyFunction( T value ) { ... }
-/// template< typename T, typename std::enable_if_t< !dip::IsSampleType< T >::value, int > = 0 >
+/// template< typename T, std::enable_if_t< !dip::IsSampleType< T >::value, int > = 0 >
 /// void MyFunction( T value ) { ... }
 /// ```
 template< typename T > struct IsSampleType : public detail::IsSampleType< std::remove_cv_t< std::remove_reference_t< T >>> {};

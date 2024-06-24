@@ -60,7 +60,7 @@ namespace testing {
 namespace detail {
 
 // For integral types -- dip::sint can hold the value of any integer-valued pixel.
-template< typename T, typename std::enable_if_t< std::is_integral< T >::value, int > = 0 >
+template< typename T, std::enable_if_t< std::is_integral< T >::value, int > = 0 >
 dip::sint Round( T v, int /*digits*/ ) {
    return v;
 }
@@ -71,7 +71,7 @@ inline dip::sint Round( bin v, int /*digits*/ ) {
 }
 
 // For floating-point types
-template< typename T, typename std::enable_if_t< !std::is_integral< T >::value, int > = 0 >
+template< typename T, std::enable_if_t< !std::is_integral< T >::value, int > = 0 >
 T Round( T v, int digits ) {
    if( !std::isfinite( v )) {
       return v;

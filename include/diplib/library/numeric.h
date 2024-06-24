@@ -81,7 +81,7 @@ constexpr inline dip::uint gcd( dip::uint a, dip::uint b ) {
 }
 
 /// \brief Integer division, unsigned, return ceil.
-template< typename T, typename std::enable_if_t< std::is_integral< T >::value && !std::is_signed< T >::value, int > = 0 >
+template< typename T, std::enable_if_t< std::is_integral< T >::value && !std::is_signed< T >::value, int > = 0 >
 constexpr T div_ceil( T lhs, T rhs ) {
    if(( lhs == 0 ) || ( rhs == 0 )) {
       return 0;
@@ -90,7 +90,7 @@ constexpr T div_ceil( T lhs, T rhs ) {
 }
 
 /// \brief Integer division, signed, return ceil. If signs differ, adding or subtracting one from `lhs` should not overflow.
-template< typename T, typename std::enable_if_t< std::is_integral< T >::value && std::is_signed< T >::value, int > = 0 >
+template< typename T, std::enable_if_t< std::is_integral< T >::value && std::is_signed< T >::value, int > = 0 >
 constexpr T div_ceil( T lhs, T rhs ) {
    if(( lhs == 0 ) || ( rhs == 0 )) {
       return 0;
@@ -105,7 +105,7 @@ constexpr T div_ceil( T lhs, T rhs ) {
 }
 
 /// \brief Integer division, unsigned, return floor.
-template< typename T, typename std::enable_if_t< std::is_integral< T >::value && !std::is_signed< T >::value, int > = 0 >
+template< typename T, std::enable_if_t< std::is_integral< T >::value && !std::is_signed< T >::value, int > = 0 >
 constexpr T div_floor( T lhs, T rhs ) {
    if(( lhs == 0 ) || ( rhs == 0 )) {
       return 0;
@@ -114,7 +114,7 @@ constexpr T div_floor( T lhs, T rhs ) {
 }
 
 /// \brief Integer division, signed, return floor. If signs differ, adding or subtracting one from `lhs` should not overflow.
-template< typename T, typename std::enable_if_t< std::is_integral< T >::value && std::is_signed< T >::value, int > = 0 >
+template< typename T, std::enable_if_t< std::is_integral< T >::value && std::is_signed< T >::value, int > = 0 >
 constexpr T div_floor( T lhs, T rhs ) {
    if(( lhs == 0 ) || ( rhs == 0 )) {
       return 0;

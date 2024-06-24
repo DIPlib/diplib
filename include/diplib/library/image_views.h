@@ -339,7 +339,7 @@ class Image::Pixel {
 
       /// \brief A `Pixel` can be constructed from an initializer list, yielding a pixel with the same data
       /// type and number of tensor elements as the initializer list. The pixel will be a column vector.
-      template< typename T, typename std::enable_if_t< IsNumericType< T >::value, int > = 0 >
+      template< typename T, std::enable_if_t< IsNumericType< T >::value, int > = 0 >
       Pixel( std::initializer_list< T > values ) { // NOLINT(*-pro-type-member-init)
          dip::uint N = values.size();
          tensor_.SetVector( N );

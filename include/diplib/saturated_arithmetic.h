@@ -70,22 +70,22 @@ template<> struct LargerType< sint64 > { using type = __int128_t; };
 
 /// \brief Adds two values using saturated arithmetic.
 // Floats and complex don't overflow
-template< typename T, typename std::enable_if_t< detail::is_floating_point< T >::value
-                                              || detail::is_complex< T >::value, int > = 0 >
+template< typename T, std::enable_if_t< detail::is_floating_point< T >::value
+                                     || detail::is_complex< T >::value, int > = 0 >
 constexpr inline T saturated_add( T lhs, T rhs ) {
    return lhs + rhs;
 }
 
 // Unsigned integers overflow by giving a result that is smaller than either operand.
 // This code is supposed to be branchless, the compiler optimizes using a conditional move.
-template< typename T, typename std::enable_if_t< detail::is_unsigned_integer< T >::value, int > = 0 >
+template< typename T, std::enable_if_t< detail::is_unsigned_integer< T >::value, int > = 0 >
 constexpr inline T saturated_add( T lhs, T rhs ) {
    T res = static_cast< T >( lhs + rhs ); // There's an implicit conversion to unsigned/int for smaller types
    return res < lhs ? std::numeric_limits< T >::max() : res;
 }
 
 // Signed integers are more complex, we simply use a larger integer type to do the operation.
-template< typename T, typename std::enable_if_t< detail::is_signed_integer< T >::value, int > = 0 >
+template< typename T, std::enable_if_t< detail::is_signed_integer< T >::value, int > = 0 >
 constexpr inline T saturated_add( T lhs, T rhs ) {
    return clamp_cast< T >( static_cast< typename detail::LargerType< T >::type >( lhs )
                          + static_cast< typename detail::LargerType< T >::type >( rhs ));
@@ -115,22 +115,22 @@ constexpr inline bin saturated_add( bin lhs, bin rhs ) {
 
 /// \brief Subtracts two values using saturated arithmetic.
 // Floats and complex don't overflow
-template< typename T, typename std::enable_if_t< detail::is_floating_point< T >::value
-                                              || detail::is_complex< T >::value, int > = 0 >
+template< typename T, std::enable_if_t< detail::is_floating_point< T >::value
+                                     || detail::is_complex< T >::value, int > = 0 >
 constexpr inline T saturated_sub( T lhs, T rhs ) {
    return lhs - rhs;
 }
 
 // Unsigned integers underflow by giving a result that is larger than either operand.
 // This code is supposed to be branchless, the compiler optimizes using a conditional move.
-template< typename T, typename std::enable_if_t< detail::is_unsigned_integer< T >::value, int > = 0 >
+template< typename T, std::enable_if_t< detail::is_unsigned_integer< T >::value, int > = 0 >
 constexpr inline T saturated_sub( T lhs, T rhs ) {
    T res = static_cast< T >( lhs - rhs ); // There's an implicit conversion to unsigned/int for smaller types
    return res > lhs ? T( 0 ) : res;
 }
 
 // Signed integers are more complex, we simply use a larger integer type to do the operation.
-template< typename T, typename std::enable_if_t< detail::is_signed_integer< T >::value, int > = 0 >
+template< typename T, std::enable_if_t< detail::is_signed_integer< T >::value, int > = 0 >
 constexpr inline T saturated_sub( T lhs, T rhs ) {
    return clamp_cast< T >( static_cast< typename detail::LargerType< T >::type >( lhs )
                          - static_cast< typename detail::LargerType< T >::type >( rhs ));
@@ -160,14 +160,14 @@ constexpr inline bin saturated_sub( bin lhs, bin rhs ) {
 
 /// \brief Multiplies two values using saturated arithmetic.
 // Floats and complex don't overflow
-template< typename T, typename std::enable_if_t< detail::is_floating_point< T >::value
-                                              || detail::is_complex< T >::value, int > = 0 >
+template< typename T, std::enable_if_t< detail::is_floating_point< T >::value
+                                     || detail::is_complex< T >::value, int > = 0 >
 constexpr inline T saturated_mul( T lhs, T rhs ) {
    return lhs * rhs;
 }
 
 // For signed and unsigned integers we simply use a larger integer type to do the operation.
-template< typename T, typename std::enable_if_t< detail::is_integer< T >::value, int > = 0 >
+template< typename T, std::enable_if_t< detail::is_integer< T >::value, int > = 0 >
 constexpr inline T saturated_mul( T lhs, T rhs ) {
    return clamp_cast< T >( static_cast< typename detail::LargerType< T >::type >( lhs )
                          * static_cast< typename detail::LargerType< T >::type >( rhs ));
@@ -203,15 +203,15 @@ constexpr inline bin saturated_mul( bin lhs, bin rhs ) {
 
 /// \brief Divides two values using saturated arithmetic.
 // Floats, complex and unsigned integers don't overflow
-template< typename T, typename std::enable_if_t< detail::is_floating_point< T >::value
-                                              || detail::is_complex< T >::value
-                                              || detail::is_unsigned_integer< T >::value, int > = 0 >
+template< typename T, std::enable_if_t< detail::is_floating_point< T >::value
+                                     || detail::is_complex< T >::value
+                                     || detail::is_unsigned_integer< T >::value, int > = 0 >
 constexpr inline T saturated_div( T lhs, T rhs ) {
    return static_cast< T >( lhs / rhs ); // There's an implicit conversion to unsigned/int for smaller types
 }
 
 // Signed integer division can overflow if we divide INT_MIN by -1
-template< typename T, typename std::enable_if_t< detail::is_signed_integer< T >::value, int > = 0 >
+template< typename T, std::enable_if_t< detail::is_signed_integer< T >::value, int > = 0 >
 constexpr inline T saturated_div( T lhs, T rhs ) {
    return (( lhs == std::numeric_limits< T >::lowest()) && ( rhs == -1 ))
           ? std::numeric_limits< T >::max() : static_cast< T >( lhs / rhs ); // There's an implicit conversion to unsigned/int for smaller types
@@ -241,20 +241,20 @@ constexpr inline bin saturated_safediv( bin lhs, bin rhs ) {
 
 /// \brief Inverts a value using saturated arithmetic. This is the same as negation, but not for unsigned values.
 // Floats and complex are straight-forward
-template< typename T, typename std::enable_if_t< detail::is_floating_point< T >::value
-                                                 || detail::is_complex< T >::value, int > = 0 >
+template< typename T, std::enable_if_t< detail::is_floating_point< T >::value
+                                     || detail::is_complex< T >::value, int > = 0 >
 constexpr inline T saturated_inv( T v ) {
    return -v;
 }
 
 // Unsigned integers invert by subtracting from max value.
-template< typename T, typename std::enable_if_t< detail::is_unsigned_integer< T >::value, int > = 0 >
+template< typename T, std::enable_if_t< detail::is_unsigned_integer< T >::value, int > = 0 >
 constexpr inline T saturated_inv( T v ) {
    return static_cast< T >( std::numeric_limits< T >::max() - v ); // There's an implicit conversion to unsigned/int for smaller types
 }
 
 // Signed integers seem simple but overflow can happen if the value is equal to lowest possible value
-template< typename T, typename std::enable_if_t< detail::is_signed_integer< T >::value, int > = 0 >
+template< typename T, std::enable_if_t< detail::is_signed_integer< T >::value, int > = 0 >
 constexpr inline T saturated_inv( T v ) {
    return v == std::numeric_limits< T >::lowest() ? std::numeric_limits< T >::max() : static_cast< T >( -v ); // There's an implicit conversion to unsigned/int for smaller types
 }

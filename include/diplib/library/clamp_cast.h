@@ -168,12 +168,12 @@ struct NeedsLowerClamping {
             );
 };
 
-template< typename ValueType, typename LimitType, typename std::enable_if_t< NeedsLowerClamping< ValueType, LimitType >::value, int > = 0 >
+template< typename ValueType, typename LimitType, std::enable_if_t< NeedsLowerClamping< ValueType, LimitType >::value, int > = 0 >
 constexpr inline ValueType clamp_lower( ValueType value, LimitType limit ) {
    // `value` is a float or a signed integer with more digits than limit. Casting `limit` to the type of `value` is not a problem.
    return std::max( value, static_cast< ValueType >( limit ));
 }
-template< typename ValueType, typename LimitType, typename std::enable_if_t< !NeedsLowerClamping< ValueType, LimitType >::value, int > = 0 >
+template< typename ValueType, typename LimitType, std::enable_if_t< !NeedsLowerClamping< ValueType, LimitType >::value, int > = 0 >
 constexpr inline ValueType clamp_lower( ValueType value, LimitType /*limit*/ ) {
    // `value` is a signed integer with same or fewer digits than `limit`
    return value;
@@ -193,11 +193,11 @@ struct NeedsUpperClamping {
          || ( detail::numeric_limits< ValueType >::digits > detail::numeric_limits< LimitType >::digits );
 };
 
-template< typename ValueType, typename LimitType, typename std::enable_if_t< NeedsUpperClamping< ValueType, LimitType >::value, int > = 0 >
+template< typename ValueType, typename LimitType, std::enable_if_t< NeedsUpperClamping< ValueType, LimitType >::value, int > = 0 >
 constexpr inline ValueType clamp_upper( ValueType value, LimitType limit ) {
    return std::min( value, static_cast< ValueType >( limit ));
 }
-template< typename ValueType, typename LimitType, typename std::enable_if_t< !NeedsUpperClamping< ValueType, LimitType >::value, int > = 0 >
+template< typename ValueType, typename LimitType, std::enable_if_t< !NeedsUpperClamping< ValueType, LimitType >::value, int > = 0 >
 constexpr inline ValueType clamp_upper( ValueType value, LimitType /*limit*/ ) {
    return value;
 }
@@ -208,21 +208,21 @@ constexpr inline ValueType clamp_upper( ValueType value, LimitType /*limit*/ ) {
 /// \ingroup pixeltypes
 // Cast non-complex value to float
 template< typename TargetType, typename SourceType,
-          typename std::enable_if_t< detail::is_floating_point< TargetType >::value, int > = 0 >
+          std::enable_if_t< detail::is_floating_point< TargetType >::value, int > = 0 >
 constexpr inline TargetType clamp_cast( SourceType v ) {
    return static_cast< TargetType >( v );
 }
 
 // Cast non-complex value to complex
 template< typename TargetType, typename SourceType,
-          typename std::enable_if_t< detail::is_complex< TargetType >::value, int > = 0 >
+          std::enable_if_t< detail::is_complex< TargetType >::value, int > = 0 >
 constexpr inline TargetType clamp_cast( SourceType v ) {
    return static_cast< TargetType >( static_cast< typename TargetType::value_type >( v ));
 }
 
 // Cast non-complex value to integer
 template< typename TargetType, typename SourceType,
-          typename std::enable_if_t< detail::is_integer< TargetType >::value, int > = 0 >
+          std::enable_if_t< detail::is_integer< TargetType >::value, int > = 0 >
 constexpr inline TargetType clamp_cast( SourceType v ) {
    static_assert( detail::numeric_limits< TargetType >::is_specialized, "It looks like detail::numeric_limits is not specialized for the target type." );
    static_assert( detail::numeric_limits< SourceType >::is_specialized, "It looks like detail::numeric_limits is not specialized for the source type." );
@@ -236,28 +236,28 @@ constexpr inline TargetType clamp_cast( SourceType v ) {
 
 // Cast non-complex value to bin
 template< typename TargetType, typename SourceType,
-          typename std::enable_if_t< detail::is_binary< TargetType >::value, int > = 0 >
+          std::enable_if_t< detail::is_binary< TargetType >::value, int > = 0 >
 constexpr inline TargetType clamp_cast( SourceType v ) {
    return static_cast< TargetType >( v ); // The logic is built into the `dip::bin` class
 }
 
 // Cast bin value to anything (except to complex, that's handled below)
 template< typename TargetType,
-          typename std::enable_if_t< !detail::is_complex< TargetType >::value, int > = 0 >
+          std::enable_if_t< !detail::is_complex< TargetType >::value, int > = 0 >
 constexpr inline TargetType clamp_cast( dip::bin v ) {
    return static_cast< TargetType >( v );
 }
 
 // Casting from complex to non-complex, we take the absolute value and cast as if from a float
 template< typename TargetType, typename SourceType,
-          typename std::enable_if_t< !detail::is_complex< TargetType >::value, int > = 0 >
+          std::enable_if_t< !detail::is_complex< TargetType >::value, int > = 0 >
 constexpr inline TargetType clamp_cast( std::complex< SourceType > v ) {
    return clamp_cast< TargetType >( std::abs( v ));
 }
 
 // Casting from complex to complex
 template< typename TargetType, typename SourceType,
-          typename std::enable_if_t< detail::is_complex< TargetType >::value, int > = 0 >
+          std::enable_if_t< detail::is_complex< TargetType >::value, int > = 0 >
 constexpr inline TargetType clamp_cast( std::complex< SourceType > v ) {
    return { static_cast< typename TargetType::value_type >( v.real() ), static_cast< typename TargetType::value_type >( v.imag() ) };
 }

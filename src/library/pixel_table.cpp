@@ -440,7 +440,7 @@ void PixelTable::AsImage( Image& out ) const {
 
 namespace {
 
-template< typename TPI, typename std::enable_if_t< !(std::is_same< TPI, scomplex >::value || std::is_same< TPI, dcomplex >::value), int > = 0 >
+template< typename TPI, std::enable_if_t< !(std::is_same< TPI, scomplex >::value || std::is_same< TPI, dcomplex >::value), int > = 0 >
 void AddWeightsInternal(
       Image const& image,
       dip::sint stride,
@@ -459,7 +459,7 @@ void AddWeightsInternal(
    }
 }
 
-template< typename TPI, typename std::enable_if_t< std::is_same< TPI, scomplex >::value || std::is_same< TPI, dcomplex >::value, int > = 0 >
+template< typename TPI, std::enable_if_t< std::is_same< TPI, scomplex >::value || std::is_same< TPI, dcomplex >::value, int > = 0 >
 void AddWeightsInternal(
       Image const& image,
       dip::sint stride,

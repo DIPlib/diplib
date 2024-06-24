@@ -80,12 +80,12 @@ For the volume opening, we do the same thing but track the volume of the peak in
 */
 
 // Add value and changed, but if TPI is an integer type, round change towards zero first.
-template< typename TPI, typename std::enable_if_t< std::numeric_limits< TPI >::is_integer, int > = 0  >
+template< typename TPI, std::enable_if_t< std::numeric_limits< TPI >::is_integer, int > = 0  >
 TPI AddSigned( TPI value, dfloat change ) {
    return clamp_cast< TPI >( static_cast< dip::sint >( value ) + static_cast< dip::sint >( std::trunc( change )));
    // Note we'd get some overflow here if TPI is a dip::uint64 and the value doesn't fit in a dip::sint64. Oh. well.
 }
-template< typename TPI, typename std::enable_if_t< !std::numeric_limits< TPI >::is_integer, int > = 0  >
+template< typename TPI, std::enable_if_t< !std::numeric_limits< TPI >::is_integer, int > = 0  >
 TPI AddSigned( TPI value, dfloat change ) {
    return clamp_cast< TPI >( static_cast< dfloat >( value ) + change );
 }
