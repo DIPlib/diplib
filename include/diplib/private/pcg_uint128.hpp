@@ -105,20 +105,20 @@ namespace pcg_extras {
 
 inline bitcount_t flog2(uint32_t v)
 {
-    return 31 - __builtin_clz(v);
+    return static_cast<bitcount_t>(31 - __builtin_clz(v));
 }
 
 inline bitcount_t trailingzeros(uint32_t v)
 {
-    return __builtin_ctz(v);
+    return static_cast<bitcount_t>(__builtin_ctz(v));
 }
 
 inline bitcount_t flog2(uint64_t v)
 {
 #if UINT64_MAX == ULONG_MAX
-    return 63 - __builtin_clzl(v);
+    return static_cast<bitcount_t>(63 - __builtin_clzl(v));
 #elif UINT64_MAX == ULLONG_MAX
-    return 63 - __builtin_clzll(v);
+    return static_cast<bitcount_t>(63 - __builtin_clzll(v));
 #else
     #error Cannot find a function for uint64_t
 #endif
@@ -127,9 +127,9 @@ inline bitcount_t flog2(uint64_t v)
 inline bitcount_t trailingzeros(uint64_t v)
 {
 #if UINT64_MAX == ULONG_MAX
-    return __builtin_ctzl(v);
+    return static_cast<bitcount_t>(__builtin_ctzl(v));
 #elif UINT64_MAX == ULLONG_MAX
-    return __builtin_ctzll(v);
+    return static_cast<bitcount_t>(__builtin_ctzll(v));
 #else
     #error Cannot find a function for uint64_t
 #endif
@@ -686,7 +686,7 @@ uint_x4<UInt,UIntX2> operator*(const uint_x4<UInt,UIntX2>& a,
     return r;
 }
 
- 
+
 template <typename UInt, typename UIntX2>
 uint_x4<UInt,UIntX2> operator*(const uint_x4<UInt,UIntX2>& a,
                                UIntX2 b01)
@@ -975,11 +975,11 @@ uint_x4<UInt32,uint64_t> operator<<(const uint_x4<UInt32,uint64_t>& v,
 				    const bitcount_t shift)
 {
     constexpr bitcount_t bits2   = uint_x4<UInt32,uint64_t>::UINT_BITS * 2;
-    
+
     if (shift >= bits2) {
         return {v.d.v01 << (shift-bits2), uint64_t(0u)};
     } else {
-        return {shift ? (v.d.v23 << shift) | (v.d.v01 >> (bits2-shift)) 
+        return {shift ? (v.d.v23 << shift) | (v.d.v01 >> (bits2-shift))
                       : v.d.v23,
                 v.d.v01 << shift};
     }
@@ -990,7 +990,7 @@ uint_x4<UInt32,uint64_t> operator>>(const uint_x4<UInt32,uint64_t>& v,
 				    const bitcount_t shift)
 {
     constexpr bitcount_t bits2   = uint_x4<UInt32,uint64_t>::UINT_BITS * 2;
-    
+
     if (shift >= bits2) {
         return {uint64_t(0u), v.d.v23 >> (shift-bits2)};
     } else {
