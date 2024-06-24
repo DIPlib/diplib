@@ -197,7 +197,7 @@ void ImageReadPNG(
             ret = spng_decode_row( png.Context(), row_buffer.Origin(), row_buffer_size );
             if( ret == 0 || ret == SPNG_EOI ) {
                // I don't know how efficient this is, but it handles all possible memory organizations for us.
-               out.At( Range(), Range( row_info.row_num ) ) = row_buffer;
+               out.At( Range(), Range( static_cast< dip::sint >( row_info.row_num ))) = row_buffer;
             }
          }
       }
