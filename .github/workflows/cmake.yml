@@ -101,12 +101,12 @@ jobs:
 
       - name: Package
         # Create the Python distribution wheel
-        if: ! matrix.cross_compile
+        if: ${{ ! matrix.cross_compile }}
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --target bdist_wheel
 
       - name: Archive
         # Store the Python distribution wheel
-        if: ! matrix.cross_compile
+        if: ${{ ! matrix.cross_compile }}
         uses: actions/upload-artifact@v4
         with:
           name: Python-wheel-${{matrix.os}}
