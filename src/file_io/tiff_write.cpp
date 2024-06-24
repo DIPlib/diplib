@@ -239,7 +239,7 @@ void WriteTIFFStrips(
       uint8* data = static_cast< uint8* >( image.Origin() );
       for( uint32 row = 0; row < imageLength; row += rowsPerStrip ) {
          uint32 nrow = row + rowsPerStrip > imageLength ? imageLength - row : rowsPerStrip;
-         if( TIFFWriteEncodedStrip( tiff, strip, data, nrow * scanline ) < 0 ) {
+         if( TIFFWriteEncodedStrip( tiff, strip, data, static_cast< tmsize_t >( nrow ) * scanline ) < 0 ) {
             DIP_THROW_RUNTIME( TIFF_WRITE_DATA );
          }
          data += static_cast< dip::sint >( nrow * sizeOf ) * image.Stride( 1 );
@@ -267,7 +267,7 @@ void WriteTIFFStrips(
                FillBufferMultiChannelN( buf.data(), data, tensorElements, imageWidth, nrow, tensorStride, strides, sizeOf );
             }
          }
-         if( TIFFWriteEncodedStrip( tiff, strip, buf.data(), nrow * scanline ) < 0 ) {
+         if( TIFFWriteEncodedStrip( tiff, strip, buf.data(), static_cast< tmsize_t >( nrow ) * scanline ) < 0 ) {
             DIP_THROW_RUNTIME( TIFF_WRITE_DATA );
          }
          data += static_cast< dip::sint >( nrow * sizeOf ) * image.Stride( 1 );

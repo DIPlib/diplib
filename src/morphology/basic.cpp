@@ -935,7 +935,7 @@ void DiamondMorphology(
          default:
             // TODO: For fully correct operation, we should do boundary expansion first, then these two operations, then crop.
             Elemental2DDiamondMorphology( in, out, procDim, dim2, operation, 1 );
-            if( !( static_cast< dip::sint >( lineLength ) & 1u )) {
+            if( !( static_cast< dip::uint >( lineLength ) & 1u )) {
                // For even-sized lines, we need an additional one-pixel shift
                FloatArray shift( in.Dimensionality(), 0 );
                shift[ procDim ] = -1;

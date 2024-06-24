@@ -397,7 +397,7 @@ ObjectContours GetObjectContours( Image const& label ) {
             while( ++lit && *lit == lab ) {
                stop = lit.Coordinate();
             }
-            auto& contour = out[ lab ];
+            auto& contour = out[ static_cast< dip::uint >( lab ) ];
             auto minMax = contour.find( row );
             if( minMax == contour.end() ) {
                contour[ row ] = MinMax{ start, stop };
