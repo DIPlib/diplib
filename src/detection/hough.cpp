@@ -20,10 +20,11 @@
 #include <cmath>
 #include <utility>
 #include <vector>
+#include <sys/stat.h>
 
 #include "diplib.h"
 #include "diplib/distribution.h"
-#include "diplib/generation.h"
+#include "diplib/generic_iterators.h"
 #include "diplib/measurement.h"
 #include "diplib/morphology.h"
 
@@ -31,7 +32,7 @@ namespace dip {
 
 namespace {
 
-struct IntegerCoords{
+struct IntegerCoords {
    dip::sint x;
    dip::sint y;
 
@@ -89,7 +90,7 @@ bool clip( IntegerCoords& A, IntegerCoords& B, IntegerCoords Pmax ) {
       if( B.y > Pmax.y ) { C2 += 8; }
 
       if(( C1 == C2 ) && ( C1 == 0 )) { return true; }
-      if(( C1 & C2 ) != 0) { return false; }
+      if(( C1 & C2 ) != 0 ) { return false; }
       if( C1 == 0 ) { std::swap( A, B ); }
 
       if(( C1 & 1 ) != 0 ) {
@@ -108,16 +109,24 @@ bool clip( IntegerCoords& A, IntegerCoords& B, IntegerCoords Pmax ) {
    }
 }
 
-dfloat norm_square(
-      UnsignedArray const& a,
-      UnsignedArray const& b
-) {
+dfloat norm_square( UnsignedArray const& a, UnsignedArray const& b ) {
    dfloat n = 0;
    dip::uint sz = std::min( a.size(), b.size() );
    for( dip::uint ii = 0; ii != sz; ++ii ) {
-      n += std::pow( static_cast< dfloat >( a[ ii ] ) - static_cast< dfloat >( b[ ii ] ), 2 );
+      dfloat dist = static_cast< dfloat >( a[ ii ] ) - static_cast< dfloat >( b[ ii ] );
+      n += dist * dist;
    }
    return n;
+}
+
+void DrawLine( Image& out, UnsignedArray const& start, UnsignedArray const& end, sfloat value ) {
+   // A simplified version of dip::DrawLine without all the testing, and specific for scaler sfloat images.
+   DIP_ASSERT( out.DataType() == DT_SFLOAT );
+   sfloat* ptr = static_cast< sfloat* >( out.Origin() );
+   BresenhamLineIterator it( out.Strides(), start, end );
+   do {
+      ptr[ *it ] += value;
+   } while( ++it );
 }
 
 } // namespace
@@ -163,31 +172,34 @@ void HoughTransformCircleCenters(
       auto coord = coordComp( it.Offset() );
       IntegerCoords c{ static_cast< dip::sint >( coord[ 0 ] ),
                        static_cast< dip::sint >( coord[ 1 ] ) };
-      dfloat angle = std::atan2( static_cast< dfloat >( it[ 1 ] ), static_cast< dfloat >( it[ 0 ] ));
+      dfloat dx = it[ 0 ].As< dfloat >();
+      dfloat dy = it[ 1 ].As< dfloat >();
+      dfloat angle = std::atan2( dy, dx );
+      sfloat magnitude = static_cast< sfloat >( std::hypot( dx, dy ));
       // TODO: option to select inside or outside
-      IntegerCoords max = { static_cast< dip::sint >( std::round( std::cos( angle ) * maxsz )),
-                            static_cast< dip::sint >( std::round( std::sin( angle ) * maxsz )) };
+      IntegerCoords max = { round_cast( std::cos( angle ) * maxsz ),
+                            round_cast( std::sin( angle ) * maxsz ) };
       if( minsz == 0 ) {
          // Draw single line
          IntegerCoords start = c - max;
          IntegerCoords end = c + max;
          if( clip( start, end, sz )) {
             // Note that after clipping we can be sure that all coordinates are positive
-            DrawLine( out, start, end, { 1 }, S::ADD );
+            DrawLine( out, start, end, magnitude );
          }
       } else {
          // Draw two line segments
-         IntegerCoords min = { static_cast< dip::sint >( std::round( std::cos( angle ) * minsz )),
-                               static_cast< dip::sint >( std::round( std::sin( angle ) * minsz )) };
+         IntegerCoords min = { round_cast( std::cos( angle ) * minsz ),
+                               round_cast( std::sin( angle ) * minsz ) };
          IntegerCoords start = c - min;
          IntegerCoords end = c - max;
          if( clip( start, end, sz )) {
-            DrawLine( out, start, end, { 1 }, S::ADD );
+            DrawLine( out, start, end, magnitude );
          }
          start = c + min;
          end = c + max;
          if( clip( start, end, sz )) {
-            DrawLine( out, start, end, { 1 }, S::ADD );
+            DrawLine( out, start, end, magnitude );
          }
       }
    }
@@ -217,7 +229,7 @@ CoordinateArray FindHoughMaxima(
    auto it = measurement.FirstObject();
    for( dip::uint ii = 0; ii < candidates.size(); ++ii, ++it ) {
       auto c = it[ "Center" ];
-      std::transform(c.begin(), c.end(), candidates[ii].pos.begin(), []( dfloat &x ) { return static_cast< dip::uint >( x + 0.5 ); } ); // +0.5 to round to nearest integer location
+      std::transform( c.begin(), c.end(), candidates[ ii ].pos.begin(), []( dfloat& x ) { return static_cast< dip::uint >( x + 0.5 ); } ); // +0.5 to round to nearest integer location
       candidates[ ii ].val = *it[ "Mean" ];
    }
 
@@ -225,7 +237,7 @@ CoordinateArray FindHoughMaxima(
    std::sort( candidates.begin(), candidates.end(), std::greater<>() );
 
    // Filter by value
-   dfloat threshold = candidates[0].val * fraction;
+   dfloat threshold = candidates[ 0 ].val * fraction;
    for( dip::uint ii = 0; ii < candidates.size(); ++ii ) {
       if( candidates[ ii ].val < threshold ) {
          candidates[ ii ].valid = false;
@@ -329,9 +341,10 @@ FloatCoordinateArray FindHoughCircles(
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
+#include "diplib/generation.h"
 #include "diplib/linear.h"
-#include "diplib/segmentation.h"
 #include "diplib/math.h"
+#include "diplib/segmentation.h"
 #include "diplib/statistics.h"
 
 DOCTEST_TEST_CASE( "[DIPlib] testing the HoughTransformCircleCenters function" ) {
@@ -341,12 +354,11 @@ DOCTEST_TEST_CASE( "[DIPlib] testing the HoughTransformCircleCenters function" )
    dip::DrawEllipsoid( a, { 200, 200 }, { 256, 256 } );
 
    // Try to find it
-   auto gv  = dip::Gradient( a );
-   auto gm  = dip::Norm( gv );
-   auto bin = dip::IsodataThreshold( gm, {} );
-   auto h   = dip::HoughTransformCircleCenters( bin, gv );
-   auto f   = dip::Gauss( h, { 5 } );
-   auto m   = dip::MaximumPixel( f );
+   auto gv = dip::Gradient( a );
+   auto bin = dip::IsodataThreshold( dip::Norm( gv ), {} );
+   auto h = dip::HoughTransformCircleCenters( bin, gv );
+   auto f = dip::Gauss( h, { 5 } );
+   auto m = dip::MaximumPixel( f );
 
    // Check result
    DOCTEST_CHECK( m[0] == 256 );
@@ -355,21 +367,20 @@ DOCTEST_TEST_CASE( "[DIPlib] testing the HoughTransformCircleCenters function" )
 
 DOCTEST_TEST_CASE( "[DIPlib] testing the FindHoughCircles function" ) {
    // Draw some circles
-   auto a = dip::Image( {512, 512}, 1, dip::DT_SFLOAT );
+   auto a = dip::Image( { 512, 512 }, 1, dip::DT_SFLOAT );
    a.Fill( 0 );
-   dip::DrawEllipsoid( a, {200, 200}, {256, 256} );
-   dip::DrawEllipsoid( a, {50, 50}, {350, 350} );
+   dip::DrawBandlimitedBall( a, 200, { 256, 256 } );
+   dip::DrawBandlimitedBall( a, 50, { 350, 350 } );
 
    // Try to find them
-   auto gv  = dip::Gradient( a );
-   auto gm  = dip::Norm( gv );
-   auto bin = dip::IsodataThreshold( gm, { } );
-   auto cir = dip::FindHoughCircles( bin, gv, { }, 10.0, 0.5 );
+   auto gv = dip::Gradient( a );
+   auto bin = dip::IsodataThreshold( dip::Norm( gv ), {} );
+   auto cir = dip::FindHoughCircles( bin, gv, {}, 30.0, 0.1 );
 
    // Check result
    DOCTEST_REQUIRE( cir.size() == 2 );
-   DOCTEST_CHECK( cir[0] == dip::FloatArray{256, 256, 100} );
-   DOCTEST_CHECK( cir[1] == dip::FloatArray{350, 350, 25} );
+   DOCTEST_CHECK( cir[ 0 ] == dip::FloatArray{ 256, 256, 100 } );
+   DOCTEST_CHECK( cir[ 1 ] == dip::FloatArray{ 350, 350, 25 } );
 }
 
 #endif // DIP_CONFIG_ENABLE_DOCTEST

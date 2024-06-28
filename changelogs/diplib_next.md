@@ -10,6 +10,10 @@ date: 2020-00-00
 
 ### Changed functionality
 
+- `dip::HoughTransformCircleCenters()` now draws lines in the parameter space with an intensity proportional to the
+  magnitude of the input gradient. Low gradients are likely less precise in orientation, so down-weighing them
+  improves precision.
+
 ### Bug fixes
 
 - `dip::saturated_mul()` for `dip::sint64` inputs was broken on systems that don't have 128-bit arithmetic.
