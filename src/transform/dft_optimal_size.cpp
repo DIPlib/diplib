@@ -54,21 +54,26 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace dip {
 namespace {
 
+// An unsigned integer type that is larger than dip::uint, so we can do arithmetic without overflow
+#ifdef __SIZEOF_INT128__
+using ulint = __uint128_t;
+static_assert( sizeof( dip::uint ) <= 8, "Unexpected size for dip::uint, is this a 128-bit machine?" );
+#else
+using ulint = std::uint64_t;
+static_assert( sizeof( dip::uint ) <= 4, "This is a 64-bit machine, but there's no 128-bit integer to work with." );
+#endif
+
 template< dip::uint maxFactor >
 dip::uint NextOptimalSize( dip::uint n ) {
    // maxFactor should be 5, 7 or 11
    if( n <= maxFactor + 1 ) {
       return n;
    }
-   dip::uint best = 2 * n;
-   if( best < n ) {
-      // Handle overflow
-      best = std::numeric_limits< dip::uint >::max();
-   }
-   for( dip::uint f11 = 1; f11 < ( maxFactor >= 11 ? best : 2 ); f11 *= 11 ) {
-      for( dip::uint f117 = f11; f117 < ( maxFactor >= 7 ? best : 2 ); f117 *= 7 ) {
-         for( dip::uint f1175 = f117; f1175 < best; f1175 *= 5 ) {
-            dip::uint x = f1175;
+   ulint best = std::min< ulint >( ulint(2) * n, std::numeric_limits< dip::uint >::max() );
+   for( ulint f11 = 1; f11 < ( maxFactor >= 11 ? best : 2 ); f11 *= 11 ) {
+      for( ulint f117 = f11; f117 < ( maxFactor >= 7 ? best : 2 ); f117 *= 7 ) {
+         for( ulint f1175 = f117; f1175 < best; f1175 *= 5 ) {
+            ulint x = f1175;
             while( x < n ) {
                x *= 2;
             }
@@ -88,12 +93,11 @@ dip::uint NextOptimalSize( dip::uint n ) {
          }
       }
    }
-   if( best == std::numeric_limits< dip::uint >::max() ) {
-      // We had overflow earlier, and we haven't found a better value.
+   if( best >= std::numeric_limits< dip::uint >::max() ) {
       // This means there's no value larger than `n` that is good for FFT.
       return 0;
    }
-   return best;
+   return static_cast< dip::uint >( best );
 }
 
 template< dip::uint maxFactor >
@@ -102,11 +106,11 @@ dip::uint PreviousOptimalSize( dip::uint n ) {
    if( n <= maxFactor + 1 ) {
       return n;
    }
-   dip::uint best = 1;
-   for( dip::uint f11 = 1; f11 <= ( maxFactor >= 11 ? n : 1 ); f11 *= 11 ) {
-      for( dip::uint f117 = f11; f117 <= ( maxFactor >= 7 ? n : 1 ); f117 *= 7 ) {
-         for( dip::uint f1175 = f117; f1175 <= n; f1175 *= 5 ) {
-            dip::uint x = f1175;
+   ulint best = 1;
+   for( ulint f11 = 1; f11 <= ( maxFactor >= 11 ? n : 1 ); f11 *= 11 ) {
+      for( ulint f117 = f11; f117 <= ( maxFactor >= 7 ? n : 1 ); f117 *= 7 ) {
+         for( ulint f1175 = f117; f1175 <= n; f1175 *= 5 ) {
+            ulint x = f1175;
             while( x * 2 <= n ) {
                x *= 2;
             }
@@ -126,7 +130,7 @@ dip::uint PreviousOptimalSize( dip::uint n ) {
          }
       }
    }
-   return best;
+   return static_cast< dip::uint >( best );
 }
 
 } // namespace

@@ -19,6 +19,11 @@ date: 2020-00-00
 - `dip::DrawEllipsoid()` and `dip::DrawDiamond()` could produce wonky shapes for even diameters,
   due to a floating-point rounding error.
 
+- JPEG encoding and decoding had a small memory leak.
+
+- `dip::GetOptimalDFTSize()` could loop indefinitely for inputs close to the maximum `dip::uint` value, because
+  of an integer overflow in arithmetic.
+
 ### Updated dependencies
 
 ### Build changes
