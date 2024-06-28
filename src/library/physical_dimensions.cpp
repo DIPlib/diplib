@@ -731,14 +731,21 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::PhysicalQuantity class") {
       DOCTEST_CHECK( !a.IsDimensionless() );
       static_assert( a.IsPhysical(), "A bug in dip::PhysicalQuantity!" );
       DOCTEST_CHECK( a.IsPhysical() );
-      constexpr dip::PhysicalQuantity g1 = 100.0 * dip::Units::Nanometer();
+      constexpr dip::PhysicalQuantity g1 = 10.0 * dip::Units::Nanometer();
       constexpr dip::PhysicalQuantity g2 = 0.1 * dip::Units::Micrometer();
       static_assert( g1 != g2, "A bug in dip::PhysicalQuantity!" );
       DOCTEST_CHECK( g1 != g2 );
+      constexpr dip::PhysicalQuantity g3 = g1 * dip::Units::Second();
+      static_assert( g1 != g3, "A bug in dip::PhysicalQuantity!" );
+      DOCTEST_CHECK( g1 != g3 );
       constexpr dip::PhysicalQuantity h1 = ( 100.0 * dip::Units::Nanometer() ).RemovePrefix();
       constexpr dip::PhysicalQuantity h2 = ( 0.1 * dip::Units::Micrometer() ).RemovePrefix();
       static_assert( h1.ApproximatelyEquals( h2 ), "A bug in dip::PhysicalQuantity!" );
       DOCTEST_CHECK( h1.ApproximatelyEquals( h2 ));
+      constexpr dip::PhysicalQuantity k1 = 100.0 * dip::Units::Nanometer();
+      constexpr dip::PhysicalQuantity k2 = 0.1 * dip::Units::Micrometer();
+      static_assert( k1.ApproximatelyEquals( k2 ), "A bug in dip::PhysicalQuantity!" );
+      DOCTEST_CHECK( k1.ApproximatelyEquals( k2 ));
    }
    DOCTEST_SUBCASE("Arithmetic") {
       dip::PhysicalQuantity a = 50 * dip::Units::Nanometer();
