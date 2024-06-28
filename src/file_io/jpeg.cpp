@@ -248,6 +248,7 @@ void InitMemoryDestination( j_compress_ptr cinfo, OutputBuffer& buffer ) {
 void CleanupMemoryDestination( j_compress_ptr cinfo ) {
    if( cinfo->dest ) {
       delete reinterpret_cast< MemoryDestinationManager* >( cinfo->dest );
+      cinfo->dest = nullptr;
    }
 }
 
@@ -280,6 +281,7 @@ class JpegOutput {
          cinfo_.dest = nullptr;
          initialized_ = true; // NOLINT(*-prefer-member-initializer)
          InitMemoryDestination( &cinfo_, buffer );
+         mem_buffer_ = true;
       }
       JpegOutput( JpegOutput const& ) = delete;
       JpegOutput( JpegOutput&& ) = delete;
