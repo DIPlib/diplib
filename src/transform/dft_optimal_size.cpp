@@ -54,14 +54,34 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace dip {
 namespace {
 
-// An unsigned integer type that is larger than dip::uint, so we can do arithmetic without overflow
-#ifdef __SIZEOF_INT128__
-using ulint = __uint128_t;
-static_assert( sizeof( dip::uint ) <= 8, "Unexpected size for dip::uint, is this a 128-bit machine?" );
-#else
-using ulint = std::uint64_t;
-static_assert( sizeof( dip::uint ) <= 4, "This is a 64-bit machine, but there's no 128-bit integer to work with." );
-#endif
+// The saturated multiplication code below is modified from include/diplib/saturated_arithmetic.h
+
+template< typename T >
+constexpr dip::uint saturated_mul_simple( T lhs, T rhs ) {
+   T result = lhs * rhs;
+   result = std::min< T >( result, std::numeric_limits< dip::uint >::max() );
+   return static_cast< dip::uint >( result );
+}
+
+constexpr dip::uint saturated_mul( dip::uint lhs, dip::uint rhs ) {
+   static_assert(( sizeof( dip::uint ) == 8 ) || ( sizeof( dip::uint ) == 4 ), "This function expects either a 32-bit system or a 64-bit system." );
+   // Note that the sizeof() choice should be elided by an optimizing compiler, only leaving one of the two branches.
+   if( sizeof( dip::uint ) == 4 ) {
+      // 32-bit system
+      return saturated_mul_simple< uint64 >( lhs, rhs );
+   }
+   #ifdef __SIZEOF_INT128__
+      // 64-bit system, using 128-bit arithmetic
+      return saturated_mul_simple< __uint128_t >( lhs, rhs );
+   #else
+      // 64-bit system, the hard (and expensive) way
+      dip::uint result = lhs * rhs;
+      if(( lhs != 0 ) && ( result / lhs != rhs )) {
+         return std::numeric_limits< dip::uint >::max();
+      }
+      return result;
+   #endif
+}
 
 template< dip::uint maxFactor >
 dip::uint NextOptimalSize( dip::uint n ) {
@@ -69,17 +89,22 @@ dip::uint NextOptimalSize( dip::uint n ) {
    if( n <= maxFactor + 1 ) {
       return n;
    }
-   ulint best = std::min< ulint >( ulint(2) * n, std::numeric_limits< dip::uint >::max() );
-   for( ulint f11 = 1; f11 < ( maxFactor >= 11 ? best : 2 ); f11 *= 11 ) {
-      for( ulint f117 = f11; f117 < ( maxFactor >= 7 ? best : 2 ); f117 *= 7 ) {
-         for( ulint f1175 = f117; f1175 < best; f1175 *= 5 ) {
-            ulint x = f1175;
+   if( n == std::numeric_limits< dip::uint >::max() ) {
+      // The algorithm below doesn't work for this value.
+      // No matter how many bits n has, there is no fast number >= n.
+      return 0;
+   }
+   dip::uint best = saturated_mul( n, 2 );
+   for( dip::uint f11 = 1; f11 < ( maxFactor >= 11 ? best : 2 ); f11 = saturated_mul( f11, 11 )) {
+      for( dip::uint f117 = f11; f117 < ( maxFactor >= 7 ? best : 2 ); f117 = saturated_mul( f117, 7 )) {
+         for( dip::uint f1175 = f117; f1175 < best; f1175 = saturated_mul( f1175, 5 )) {
+            dip::uint x = f1175;
             while( x < n ) {
-               x *= 2;
+               x = saturated_mul( x, 2 );
             }
             while( true ) {
                if( x < n ) {
-                  x *= 3;
+                  x = saturated_mul( x, 3 );
                } else if( x > n ) {
                   best = std::min( x, best );
                   if( x & 1 ) {
@@ -93,11 +118,11 @@ dip::uint NextOptimalSize( dip::uint n ) {
          }
       }
    }
-   if( best >= std::numeric_limits< dip::uint >::max() ) {
+   if( best == std::numeric_limits< dip::uint >::max() ) {
       // This means there's no value larger than `n` that is good for FFT.
       return 0;
    }
-   return static_cast< dip::uint >( best );
+   return best;
 }
 
 template< dip::uint maxFactor >
@@ -106,20 +131,28 @@ dip::uint PreviousOptimalSize( dip::uint n ) {
    if( n <= maxFactor + 1 ) {
       return n;
    }
-   ulint best = 1;
-   for( ulint f11 = 1; f11 <= ( maxFactor >= 11 ? n : 1 ); f11 *= 11 ) {
-      for( ulint f117 = f11; f117 <= ( maxFactor >= 7 ? n : 1 ); f117 *= 7 ) {
-         for( ulint f1175 = f117; f1175 <= n; f1175 *= 5 ) {
-            ulint x = f1175;
-            while( x * 2 <= n ) {
-               x *= 2;
+   if( n == std::numeric_limits< dip::uint >::max() ) {
+      // The algorithm below is an infinite loop for this value.
+      // No matter how many bits n has, this number cannot be nice, so we search for a fast number <= n-1.
+      n -= 1;
+   }
+   dip::uint best = 1;
+   for( dip::uint f11 = 1; f11 <= ( maxFactor >= 11 ? n : 1 ); f11 = saturated_mul( f11, 11 )) {
+      for( dip::uint f117 = f11; f117 <= ( maxFactor >= 7 ? n : 1 ); f117 = saturated_mul( f117, 7 )) {
+         for( dip::uint f1175 = f117; f1175 <= n; f1175 = saturated_mul( f1175, 5 )) {
+            dip::uint x = f1175;
+            dip::uint x2 = saturated_mul( x, 2 );
+            while( x2 <= n ) {
+               x = x2;
+               x2 = saturated_mul( x, 2 );
             }
             best = std::max( x, best );
             while( true ) {
-               if( x * 3 <= n ) {
-                  x *= 3;
+               dip::uint x3 = saturated_mul( x, 3 );
+               if( x3 <= n ) {
+                  x = x3;
                }
-               else if( x % 2 == 0 ) {
+               else if(( x & 1 ) == 0 ) {
                   x /= 2;
                }
                else {
@@ -130,7 +163,7 @@ dip::uint PreviousOptimalSize( dip::uint n ) {
          }
       }
    }
-   return static_cast< dip::uint >( best );
+   return best;
 }
 
 } // namespace
@@ -171,42 +204,49 @@ dip::uint MaxFactor( bool complex ) {
 
 DOCTEST_TEST_CASE("[DIPlib] testing GetOptimalDFTSize") {
    // larger, 5
-   DOCTEST_CHECK( dip::GetOptimalDFTSize( 10, true, 5 ) == 10 );
-   DOCTEST_CHECK( dip::GetOptimalDFTSize( 11, true, 5 ) == 12 );
-   DOCTEST_CHECK( dip::GetOptimalDFTSize( 13, true, 5 ) == 15 );
-   DOCTEST_CHECK( dip::GetOptimalDFTSize( 101, true, 5 ) == 108 );
-   DOCTEST_CHECK( dip::GetOptimalDFTSize( 2109375001, true, 5 ) == 2123366400 );
+   DOCTEST_CHECK( dip::NextOptimalSize< 5 >( 10 ) == 10 );
+   DOCTEST_CHECK( dip::NextOptimalSize< 5 >( 11 ) == 12 );
+   DOCTEST_CHECK( dip::NextOptimalSize< 5 >( 13 ) == 15 );
+   DOCTEST_CHECK( dip::NextOptimalSize< 5 >( 101 ) == 108 );
+   DOCTEST_CHECK( dip::NextOptimalSize< 5 >( 2109375001 ) == 2123366400 );
    // larger, 7
-   DOCTEST_CHECK( dip::GetOptimalDFTSize( 10, true, 7 ) == 10 );
-   DOCTEST_CHECK( dip::GetOptimalDFTSize( 11, true, 7 ) == 12 );
-   DOCTEST_CHECK( dip::GetOptimalDFTSize( 13, true, 7 ) == 14 );
-   DOCTEST_CHECK( dip::GetOptimalDFTSize( 101, true, 7 ) == 105 );
-   DOCTEST_CHECK( dip::GetOptimalDFTSize( 2109375001, true, 7 ) == 2113929216 );
+   DOCTEST_CHECK( dip::NextOptimalSize< 7 >( 10 ) == 10 );
+   DOCTEST_CHECK( dip::NextOptimalSize< 7 >( 11 ) == 12 );
+   DOCTEST_CHECK( dip::NextOptimalSize< 7 >( 13 ) == 14 );
+   DOCTEST_CHECK( dip::NextOptimalSize< 7 >( 101 ) == 105 );
+   DOCTEST_CHECK( dip::NextOptimalSize< 7 >( 2109375001 ) == 2113929216 );
    // larger, 11
-   DOCTEST_CHECK( dip::GetOptimalDFTSize( 10, true, 11 ) == 10 );
-   DOCTEST_CHECK( dip::GetOptimalDFTSize( 11, true, 11 ) == 11 );
-   DOCTEST_CHECK( dip::GetOptimalDFTSize( 13, true, 11 ) == 14 );
-   DOCTEST_CHECK( dip::GetOptimalDFTSize( 101, true, 11 ) == 105 );
-   DOCTEST_CHECK( dip::GetOptimalDFTSize( 2109375001, true, 11 ) == 2112000000 );
+   DOCTEST_CHECK( dip::NextOptimalSize< 11 >( 10 ) == 10 );
+   DOCTEST_CHECK( dip::NextOptimalSize< 11 >( 11 ) == 11 );
+   DOCTEST_CHECK( dip::NextOptimalSize< 11 >( 13 ) == 14 );
+   DOCTEST_CHECK( dip::NextOptimalSize< 11 >( 101 ) == 105 );
+   DOCTEST_CHECK( dip::NextOptimalSize< 11 >( 2109375001 ) == 2112000000 );
+   DOCTEST_CHECK( dip::NextOptimalSize< 11 >( std::numeric_limits< dip::uint >::max() ) == 0 );
+   DOCTEST_CHECK( dip::NextOptimalSize< 11 >( std::numeric_limits< dip::uint >::max() - 1 ) == 0 );
 
    // smaller 5
-   DOCTEST_CHECK( dip::GetOptimalDFTSize( 10, false, 5 ) == 10 );
-   DOCTEST_CHECK( dip::GetOptimalDFTSize( 11, false, 5 ) == 10 );
-   DOCTEST_CHECK( dip::GetOptimalDFTSize( 13, false, 5 ) == 12 );
-   DOCTEST_CHECK( dip::GetOptimalDFTSize( 107, false, 5 ) == 100 );
-   DOCTEST_CHECK( dip::GetOptimalDFTSize( 2123366399, false, 5 ) == 2109375000 );
+   DOCTEST_CHECK( dip::PreviousOptimalSize< 5 >( 10 ) == 10 );
+   DOCTEST_CHECK( dip::PreviousOptimalSize< 5 >( 11 ) == 10 );
+   DOCTEST_CHECK( dip::PreviousOptimalSize< 5 >( 13 ) == 12 );
+   DOCTEST_CHECK( dip::PreviousOptimalSize< 5 >( 107 ) == 100 );
+   DOCTEST_CHECK( dip::PreviousOptimalSize< 5 >( 2123366399 ) == 2109375000 );
    // smaller 7
-   DOCTEST_CHECK( dip::GetOptimalDFTSize( 10, false, 7 ) == 10 );
-   DOCTEST_CHECK( dip::GetOptimalDFTSize( 11, false, 7 ) == 10 );
-   DOCTEST_CHECK( dip::GetOptimalDFTSize( 13, false, 7 ) == 12 );
-   DOCTEST_CHECK( dip::GetOptimalDFTSize( 107, false, 7 ) == 105 );
-   DOCTEST_CHECK( dip::GetOptimalDFTSize( 2123366399, false, 7 ) == 2117682000 );
+   DOCTEST_CHECK( dip::PreviousOptimalSize< 7 >( 10 ) == 10 );
+   DOCTEST_CHECK( dip::PreviousOptimalSize< 7 >( 11 ) == 10 );
+   DOCTEST_CHECK( dip::PreviousOptimalSize< 7 >( 13 ) == 12 );
+   DOCTEST_CHECK( dip::PreviousOptimalSize< 7 >( 107 ) == 105 );
+   DOCTEST_CHECK( dip::PreviousOptimalSize< 7 >( 2123366399 ) == 2117682000 );
    // smaller 11
-   DOCTEST_CHECK( dip::GetOptimalDFTSize( 10, false, 11 ) == 10 );
-   DOCTEST_CHECK( dip::GetOptimalDFTSize( 11, false, 11 ) == 11 );
-   DOCTEST_CHECK( dip::GetOptimalDFTSize( 13, false, 11 ) == 12 );
-   DOCTEST_CHECK( dip::GetOptimalDFTSize( 107, false, 11 ) == 105 );
-   DOCTEST_CHECK( dip::GetOptimalDFTSize( 2123366399, false, 11 ) == 2122312500 );
+   DOCTEST_CHECK( dip::PreviousOptimalSize< 11 >( 10 ) == 10 );
+   DOCTEST_CHECK( dip::PreviousOptimalSize< 11 >( 11 ) == 11 );
+   DOCTEST_CHECK( dip::PreviousOptimalSize< 11 >( 13 ) == 12 );
+   DOCTEST_CHECK( dip::PreviousOptimalSize< 11 >( 107 ) == 105 );
+   DOCTEST_CHECK( dip::PreviousOptimalSize< 11 >( 2123366399 ) == 2122312500 );
+   if( sizeof( dip::uint ) == 8 ) {
+      DOCTEST_CHECK( dip::PreviousOptimalSize< 11 >( std::numeric_limits< dip::uint >::max() ) == 18446613971412049920ull );
+   } else { // sizeof( dip::uint ) == 4
+      DOCTEST_CHECK( dip::PreviousOptimalSize< 11 >( std::numeric_limits< dip::uint >::max() ) == 4293273600ul );
+   }
 
    // Invalid argument
    DOCTEST_CHECK_THROWS( dip::GetOptimalDFTSize( 100, true, 13 ));
