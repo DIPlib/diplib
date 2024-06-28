@@ -97,7 +97,6 @@ jobs:
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --parallel ${{matrix.n_cores}}
 
       - name: Test
-        if: ${{ ! matrix.cross_compile }}
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --target check
 
       - name: Package
