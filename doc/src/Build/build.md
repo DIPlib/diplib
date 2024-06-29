@@ -141,6 +141,7 @@ Important *CMake* variables controlling the build of *DIPlib*:
 - `DIP_ENABLE_ICS`: `On` (default) or `Off`. Enable support for the ICS file format using the included *libics* library.
 - `DIP_ENABLE_TIFF`: `On` (default) or `Off`. Enable support for the TIFF file format using the included *LibTIFF* library.
 - `DIP_ENABLE_JPEG`: `On` (default) or `Off`. Enable support for the JPEG file format using the included *libjpeg* library.
+- `DIP_ENABLE_PNG`: `On` (default) or `Off`. Enable support for the PNG file format using the included *libspng* library.
 - `DIP_ENABLE_ZLIB`: `On` (default) or `Off`. Enable support for ZIP (deflate) compression in the ICS and TIFF file
     formats using the included *zlib* library.
 - `DIP_ENABLE_FFTW`: `On` or `Off` (default). Enable the use of the *FFTW3* library, if available.
