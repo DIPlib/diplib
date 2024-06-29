@@ -56,14 +56,21 @@ namespace {
 
 // The saturated multiplication code below is modified from include/diplib/saturated_arithmetic.h
 
+struct saturated_mul_result {
+   bool overflow;
+   dip::uint result;
+};
+
 template< typename T >
-constexpr dip::uint saturated_mul_simple( T lhs, T rhs ) {
+constexpr saturated_mul_result saturated_mul_simple( T lhs, T rhs ) {
    T result = lhs * rhs;
-   result = std::min< T >( result, std::numeric_limits< dip::uint >::max() );
-   return static_cast< dip::uint >( result );
+   if( result > std::numeric_limits< dip::uint >::max() ) {
+      return { true, std::numeric_limits< dip::uint >::max() };
+   }
+   return { false, static_cast< dip::uint >( result ) };
 }
 
-constexpr dip::uint saturated_mul( dip::uint lhs, dip::uint rhs ) {
+constexpr saturated_mul_result saturated_mul( dip::uint lhs, dip::uint rhs ) {
    static_assert(( sizeof( dip::uint ) == 8 ) || ( sizeof( dip::uint ) == 4 ), "This function expects either a 32-bit system or a 64-bit system." );
    // Note that the sizeof() choice should be elided by an optimizing compiler, only leaving one of the two branches.
    if( sizeof( dip::uint ) == 4 ) {
@@ -77,9 +84,9 @@ constexpr dip::uint saturated_mul( dip::uint lhs, dip::uint rhs ) {
       // 64-bit system, the hard (and expensive) way
       dip::uint result = lhs * rhs;
       if(( lhs != 0 ) && ( result / lhs != rhs )) {
-         return std::numeric_limits< dip::uint >::max();
+         return { true, std::numeric_limits< dip::uint >::max() };
       }
-      return result;
+      return { false, result };
    #endif
 }
 
@@ -94,25 +101,34 @@ dip::uint NextOptimalSize( dip::uint n ) {
       // No matter how many bits n has, there is no fast number >= n.
       return 0;
    }
-   dip::uint best = saturated_mul( n, 2 );
-   for( dip::uint f11 = 1; f11 < ( maxFactor >= 11 ? best : 2 ); f11 = saturated_mul( f11, 11 )) {
-      for( dip::uint f117 = f11; f117 < ( maxFactor >= 7 ? best : 2 ); f117 = saturated_mul( f117, 7 )) {
-         for( dip::uint f1175 = f117; f1175 < best; f1175 = saturated_mul( f1175, 5 )) {
+   dip::uint best = saturated_mul( n, 2 ).result;
+   for( dip::uint f11 = 1; f11 < ( maxFactor >= 11 ? best : 2 ); f11 = saturated_mul( f11, 11 ).result ) {
+      for( dip::uint f117 = f11; f117 < ( maxFactor >= 7 ? best : 2 ); f117 = saturated_mul( f117, 7 ).result ) {
+         for( dip::uint f1175 = f117; f1175 < best; f1175 = saturated_mul( f1175, 5 ).result ) {
             dip::uint x = f1175;
             while( x < n ) {
-               x = saturated_mul( x, 2 );
+               auto res = saturated_mul( x, 2 );
+               if( res.overflow ) {
+                  break;
+               }
+               x = res.result;
             }
             while( true ) {
+               if( x == n ) {
+                  return n;
+               }
                if( x < n ) {
-                  x = saturated_mul( x, 3 );
-               } else if( x > n ) {
+                  auto res = saturated_mul( x, 3 );
+                  if( res.overflow ) {
+                     break;
+                  }
+                  x = res.result;
+               } else { // x > n
                   best = std::min( x, best );
                   if( x & 1 ) {
                      break;
                   }
                   x /= 2;
-               } else {
-                  return n;
                }
             }
          }
@@ -137,20 +153,20 @@ dip::uint PreviousOptimalSize( dip::uint n ) {
       n -= 1;
    }
    dip::uint best = 1;
-   for( dip::uint f11 = 1; f11 <= ( maxFactor >= 11 ? n : 1 ); f11 = saturated_mul( f11, 11 )) {
-      for( dip::uint f117 = f11; f117 <= ( maxFactor >= 7 ? n : 1 ); f117 = saturated_mul( f117, 7 )) {
-         for( dip::uint f1175 = f117; f1175 <= n; f1175 = saturated_mul( f1175, 5 )) {
+   for( dip::uint f11 = 1; f11 <= ( maxFactor >= 11 ? n : 1 ); f11 = saturated_mul( f11, 11 ).result ) {
+      for( dip::uint f117 = f11; f117 <= ( maxFactor >= 7 ? n : 1 ); f117 = saturated_mul( f117, 7 ).result ) {
+         for( dip::uint f1175 = f117; f1175 <= n; f1175 = saturated_mul( f1175, 5 ).result ) {
             dip::uint x = f1175;
-            dip::uint x2 = saturated_mul( x, 2 );
-            while( x2 <= n ) {
-               x = x2;
+            auto x2 = saturated_mul( x, 2 );
+            while( x2.result <= n ) {
+               x = x2.result;
                x2 = saturated_mul( x, 2 );
             }
             best = std::max( x, best );
             while( true ) {
-               dip::uint x3 = saturated_mul( x, 3 );
-               if( x3 <= n ) {
-                  x = x3;
+               auto x3 = saturated_mul( x, 3 );
+               if( x3.result <= n ) {
+                  x = x3.result;
                }
                else if(( x & 1 ) == 0 ) {
                   x /= 2;
@@ -242,10 +258,9 @@ DOCTEST_TEST_CASE("[DIPlib] testing GetOptimalDFTSize") {
    DOCTEST_CHECK( dip::PreviousOptimalSize< 11 >( 13 ) == 12 );
    DOCTEST_CHECK( dip::PreviousOptimalSize< 11 >( 107 ) == 105 );
    DOCTEST_CHECK( dip::PreviousOptimalSize< 11 >( 2123366399 ) == 2122312500 );
+   DOCTEST_CHECK( dip::PreviousOptimalSize< 11 >( std::numeric_limits< dip::uint32 >::max() ) == 4293273600ul );
    if( sizeof( dip::uint ) == 8 ) {
       DOCTEST_CHECK( dip::PreviousOptimalSize< 11 >( std::numeric_limits< dip::uint >::max() ) == 18446613971412049920ull );
-   } else { // sizeof( dip::uint ) == 4
-      DOCTEST_CHECK( dip::PreviousOptimalSize< 11 >( std::numeric_limits< dip::uint >::max() ) == 4293273600ul );
    }
 
    // Invalid argument
