@@ -46,7 +46,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "diplib/dft.h"
 
-#include <algorithm>
 #include <limits>
 
 #include "diplib.h"
@@ -56,73 +55,39 @@ namespace {
 
 // The saturated multiplication code below is modified from include/diplib/saturated_arithmetic.h
 
-struct saturated_mul_result {
-   bool overflow;
-   dip::uint result;
-};
-
-template< typename T >
-constexpr saturated_mul_result saturated_mul_simple( T lhs, T rhs ) {
-   T result = lhs * rhs;
-   if( result > std::numeric_limits< dip::uint >::max() ) {
-      return { true, std::numeric_limits< dip::uint >::max() };
-   }
-   return { false, static_cast< dip::uint >( result ) };
-}
-
-constexpr saturated_mul_result saturated_mul( dip::uint lhs, dip::uint rhs ) {
-   static_assert(( sizeof( dip::uint ) == 8 ) || ( sizeof( dip::uint ) == 4 ), "This function expects either a 32-bit system or a 64-bit system." );
-   // Note that the sizeof() choice should be elided by an optimizing compiler, only leaving one of the two branches.
-   if( sizeof( dip::uint ) == 4 ) {
-      // 32-bit system
-      return saturated_mul_simple< uint64 >( lhs, rhs );
-   }
-   #ifdef __SIZEOF_INT128__
-      // 64-bit system, using 128-bit arithmetic
-      return saturated_mul_simple< __uint128_t >( lhs, rhs );
-   #else
-      // 64-bit system, the hard (and expensive) way
-      dip::uint result = lhs * rhs;
-      if(( lhs != 0 ) && ( result / lhs != rhs )) {
-         return { true, std::numeric_limits< dip::uint >::max() };
-      }
-      return { false, result };
-   #endif
-}
-
-template< dip::uint maxFactor >
-dip::uint NextOptimalSize( dip::uint n ) {
+template< dip::uint maxFactor, typename UIntT >
+UIntT NextOptimalSize( UIntT n ) {
+   // UIntT should be an unsigned integer type, typically 32-bit or 64-bit.
    // maxFactor should be 5, 7 or 11
    if( n <= maxFactor + 1 ) {
       return n;
    }
-   if( n == std::numeric_limits< dip::uint >::max() ) {
-      // The algorithm below doesn't work for this value.
-      // No matter how many bits n has, there is no fast number >= n.
+   if( n > std::numeric_limits< UIntT >::max() / maxFactor / 2 ) {
+      // The algorithm below doesn't work for this value, the multiplication can overflow.
+      if( sizeof( UIntT ) == 4 ) {
+         // We can try using this algorithm with 64-bit integers:
+         uint64 res = NextOptimalSize< maxFactor >( static_cast< uint64 >( n ));
+         if( res <= std::numeric_limits< UIntT >::max() ) {
+            return static_cast< UIntT >( res );
+         }
+      }
+      // Otherwise, this size is ridiculously large, people shouldn't be computing FFTs this large.
       return 0;
    }
-   dip::uint best = saturated_mul( n, 2 ).result;
-   for( dip::uint f11 = 1; f11 < ( maxFactor >= 11 ? best : 2 ); f11 = saturated_mul( f11, 11 ).result ) {
-      for( dip::uint f117 = f11; f117 < ( maxFactor >= 7 ? best : 2 ); f117 = saturated_mul( f117, 7 ).result ) {
-         for( dip::uint f1175 = f117; f1175 < best; f1175 = saturated_mul( f1175, 5 ).result ) {
-            dip::uint x = f1175;
+   UIntT best = n * 2;
+   for( UIntT f11 = 1; f11 < ( maxFactor >= 11 ? best : 2 ); f11 *= 11 ) {
+      for( UIntT f117 = f11; f117 < ( maxFactor >= 7 ? best : 2 ); f117 *= 7 ) {
+         for( UIntT f1175 = f117; f1175 < best; f1175 *= 5 ) {
+            UIntT x = f1175;
             while( x < n ) {
-               auto res = saturated_mul( x, 2 );
-               if( res.overflow ) {
-                  break;
-               }
-               x = res.result;
+               x *= 2;
             }
             while( true ) {
                if( x == n ) {
                   return n;
                }
                if( x < n ) {
-                  auto res = saturated_mul( x, 3 );
-                  if( res.overflow ) {
-                     break;
-                  }
-                  x = res.result;
+                  x *= 3;
                } else { // x > n
                   best = std::min( x, best );
                   if( x & 1 ) {
@@ -134,39 +99,46 @@ dip::uint NextOptimalSize( dip::uint n ) {
          }
       }
    }
-   if( best == std::numeric_limits< dip::uint >::max() ) {
+   if( best == std::numeric_limits< UIntT >::max() ) {
       // This means there's no value larger than `n` that is good for FFT.
       return 0;
    }
    return best;
 }
 
-template< dip::uint maxFactor >
-dip::uint PreviousOptimalSize( dip::uint n ) {
+template< dip::uint maxFactor, typename UIntT >
+UIntT PreviousOptimalSize( UIntT n ) {
    // maxFactor should be 5, 7 or 11
    if( n <= maxFactor + 1 ) {
       return n;
    }
-   if( n == std::numeric_limits< dip::uint >::max() ) {
-      // The algorithm below is an infinite loop for this value.
-      // No matter how many bits n has, this number cannot be nice, so we search for a fast number <= n-1.
-      n -= 1;
+   if( n > std::numeric_limits< UIntT >::max() / maxFactor ) {
+      // The algorithm below doesn't work for this value, the multiplication can overflow.
+      if( sizeof( UIntT ) == 4 ) {
+         // We can try using this algorithm with 64-bit integers:
+         uint64 res = PreviousOptimalSize< maxFactor >( static_cast< uint64 >( n ));
+         if( res <= std::numeric_limits< UIntT >::max() ) { // This should always be the case
+            return static_cast< UIntT >( res );
+         }
+      }
+      // Otherwise, this size is ridiculously large, people shouldn't be computing FFTs this large.
+      return 0;
    }
-   dip::uint best = 1;
-   for( dip::uint f11 = 1; f11 <= ( maxFactor >= 11 ? n : 1 ); f11 = saturated_mul( f11, 11 ).result ) {
-      for( dip::uint f117 = f11; f117 <= ( maxFactor >= 7 ? n : 1 ); f117 = saturated_mul( f117, 7 ).result ) {
-         for( dip::uint f1175 = f117; f1175 <= n; f1175 = saturated_mul( f1175, 5 ).result ) {
-            dip::uint x = f1175;
-            auto x2 = saturated_mul( x, 2 );
-            while( x2.result <= n ) {
-               x = x2.result;
-               x2 = saturated_mul( x, 2 );
+   UIntT best = 1;
+   for( UIntT f11 = 1; f11 <= ( maxFactor >= 11 ? n : 1 ); f11 *= 11 ) {
+      for( UIntT f117 = f11; f117 <= ( maxFactor >= 7 ? n : 1 ); f117 *= 7 ) {
+         for( UIntT f1175 = f117; f1175 <= n; f1175 *= 5 ) {
+            UIntT x = f1175;
+            auto x2 = x * 2;
+            while( x2 <= n ) {
+               x = x2;
+               x2 = x * 2;
             }
             best = std::max( x, best );
             while( true ) {
-               auto x3 = saturated_mul( x, 3 );
-               if( x3.result <= n ) {
-                  x = x3.result;
+               auto x3 = x * 3;
+               if( x3 <= n ) {
+                  x = x3;
                }
                else if(( x & 1 ) == 0 ) {
                   x /= 2;
@@ -237,6 +209,10 @@ DOCTEST_TEST_CASE("[DIPlib] testing GetOptimalDFTSize") {
    DOCTEST_CHECK( dip::NextOptimalSize< 11 >( 13 ) == 14 );
    DOCTEST_CHECK( dip::NextOptimalSize< 11 >( 101 ) == 105 );
    DOCTEST_CHECK( dip::NextOptimalSize< 11 >( 2109375001 ) == 2112000000 );
+   DOCTEST_CHECK( dip::NextOptimalSize< 11 >( std::numeric_limits< dip::uint32 >::max() / 11 / 2 ) == 195230112 ); // does the work in the 32-bit algorithm
+   DOCTEST_CHECK( dip::NextOptimalSize< 11 >( std::numeric_limits< dip::uint32 >::max() / 11 / 2 + 1 ) == 195230112 ); // should be elevated to the 64-bit algorithm
+   DOCTEST_CHECK( dip::NextOptimalSize< 11 >( std::numeric_limits< dip::uint32 >::max() ) == 0 );
+   DOCTEST_CHECK( dip::NextOptimalSize< 11 >( std::numeric_limits< dip::uint32 >::max() - 1 ) == 0 );
    DOCTEST_CHECK( dip::NextOptimalSize< 11 >( std::numeric_limits< dip::uint >::max() ) == 0 );
    DOCTEST_CHECK( dip::NextOptimalSize< 11 >( std::numeric_limits< dip::uint >::max() - 1 ) == 0 );
 
@@ -258,9 +234,11 @@ DOCTEST_TEST_CASE("[DIPlib] testing GetOptimalDFTSize") {
    DOCTEST_CHECK( dip::PreviousOptimalSize< 11 >( 13 ) == 12 );
    DOCTEST_CHECK( dip::PreviousOptimalSize< 11 >( 107 ) == 105 );
    DOCTEST_CHECK( dip::PreviousOptimalSize< 11 >( 2123366399 ) == 2122312500 );
+   DOCTEST_CHECK( dip::PreviousOptimalSize< 11 >( std::numeric_limits< dip::uint32 >::max() / 11 ) == 390297600); // does the work in the 32-bit algorithm
+   DOCTEST_CHECK( dip::PreviousOptimalSize< 11 >( std::numeric_limits< dip::uint32 >::max() / 11 + 1 ) == 390297600); // should be elevated to the 64-bit algorithm
    DOCTEST_CHECK( dip::PreviousOptimalSize< 11 >( std::numeric_limits< dip::uint32 >::max() ) == 4293273600ul );
    if( sizeof( dip::uint ) == 8 ) {
-      DOCTEST_CHECK( dip::PreviousOptimalSize< 11 >( std::numeric_limits< dip::uint >::max() ) == 18446613971412049920ull );
+      DOCTEST_CHECK( dip::PreviousOptimalSize< 11 >( std::numeric_limits< dip::uint >::max() ) == 0 );
    }
 
    // Invalid argument

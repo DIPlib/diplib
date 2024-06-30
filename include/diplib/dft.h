@@ -367,7 +367,7 @@ class RDFT {
 DIP_EXPORT dip::uint GetOptimalDFTSize( dip::uint size0, bool larger = true, dip::uint maxFactor = 5 );
 
 /// \brief The largest size supported by \ref DFT and \ref FourierTransform. Is equal to 2^31^-1 when using FFTW,
-/// or 2^64^-1 when using PocketFFT.
+/// 2^64^-1 when using PocketFFT on a 64-bit system, or 2^32^-1 when using PocketFFT on a 32-bit system.
 DIP_EXPORT extern dip::uint const maximumDFTSize;
 
 /// \brief Is `true` if `dip::DFT` and `dip::RDFT` use the FFTW library, or false if they use PocketFFT.
