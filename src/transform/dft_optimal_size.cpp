@@ -57,9 +57,13 @@ namespace {
 
 template< dip::uint maxFactor, typename UIntT >
 UIntT NextOptimalSize( UIntT n ) {
-   // UIntT should be an unsigned integer type, typically 32-bit or 64-bit.
-   // maxFactor should be 5, 7 or 11
-   if( n <= maxFactor + 1 ) {
+   // Some static asserts. This is an internal function, we don't have to worry about these firing because the user does something weird.
+   static_assert( sizeof( UIntT ) >= sizeof( dip::uint ), "Template instantiated with type of unexpected size." );
+   static_assert( std::numeric_limits< UIntT >::is_integer && !std::numeric_limits< UIntT >::is_signed,
+                  "Template instantiated with type that is not unsigned integer." );
+   static_assert( maxFactor == 5 || maxFactor == 7 || maxFactor == 11, "Illegal value for maxFactor template argument" );
+
+   if( n <= static_cast< UIntT >( maxFactor + 1 )) {
       return n;
    }
    if( n > std::numeric_limits< UIntT >::max() / maxFactor / 2 ) {
@@ -108,8 +112,13 @@ UIntT NextOptimalSize( UIntT n ) {
 
 template< dip::uint maxFactor, typename UIntT >
 UIntT PreviousOptimalSize( UIntT n ) {
-   // maxFactor should be 5, 7 or 11
-   if( n <= maxFactor + 1 ) {
+   // Some static asserts. This is an internal function, we don't have to worry about these firing because the user does something weird.
+   static_assert( sizeof( UIntT ) >= sizeof( dip::uint ), "Template instantiated with type of unexpected size." );
+   static_assert( std::numeric_limits< UIntT >::is_integer && !std::numeric_limits< UIntT >::is_signed,
+                  "Template instantiated with type that is not unsigned integer." );
+   static_assert( maxFactor == 5 || maxFactor == 7 || maxFactor == 11, "Illegal value for maxFactor template argument" );
+
+   if( n <= static_cast< UIntT >( maxFactor + 1 )) {
       return n;
    }
    if( n > std::numeric_limits< UIntT >::max() / maxFactor ) {
@@ -192,53 +201,69 @@ dip::uint MaxFactor( bool complex ) {
 
 DOCTEST_TEST_CASE("[DIPlib] testing GetOptimalDFTSize") {
    // larger, 5
-   DOCTEST_CHECK( dip::NextOptimalSize< 5 >( 10 ) == 10 );
-   DOCTEST_CHECK( dip::NextOptimalSize< 5 >( 11 ) == 12 );
-   DOCTEST_CHECK( dip::NextOptimalSize< 5 >( 13 ) == 15 );
-   DOCTEST_CHECK( dip::NextOptimalSize< 5 >( 101 ) == 108 );
-   DOCTEST_CHECK( dip::NextOptimalSize< 5 >( 2109375001 ) == 2123366400 );
+   DOCTEST_CHECK( dip::GetOptimalDFTSize( 10, true, 5 ) == 10 );
+   DOCTEST_CHECK( dip::GetOptimalDFTSize( 11, true, 5 ) == 12 );
+   DOCTEST_CHECK( dip::GetOptimalDFTSize( 13, true, 5 ) == 15 );
+   DOCTEST_CHECK( dip::GetOptimalDFTSize( 101, true, 5 ) == 108 );
+   DOCTEST_CHECK( dip::GetOptimalDFTSize( 2109375001, true, 5 ) == 2123366400 );
    // larger, 7
-   DOCTEST_CHECK( dip::NextOptimalSize< 7 >( 10 ) == 10 );
-   DOCTEST_CHECK( dip::NextOptimalSize< 7 >( 11 ) == 12 );
-   DOCTEST_CHECK( dip::NextOptimalSize< 7 >( 13 ) == 14 );
-   DOCTEST_CHECK( dip::NextOptimalSize< 7 >( 101 ) == 105 );
-   DOCTEST_CHECK( dip::NextOptimalSize< 7 >( 2109375001 ) == 2113929216 );
+   DOCTEST_CHECK( dip::GetOptimalDFTSize( 10, true, 7 ) == 10 );
+   DOCTEST_CHECK( dip::GetOptimalDFTSize( 11, true, 7 ) == 12 );
+   DOCTEST_CHECK( dip::GetOptimalDFTSize( 13, true, 7 ) == 14 );
+   DOCTEST_CHECK( dip::GetOptimalDFTSize( 101, true, 7 ) == 105 );
+   DOCTEST_CHECK( dip::GetOptimalDFTSize( 2109375001, true, 7 ) == 2113929216 );
    // larger, 11
-   DOCTEST_CHECK( dip::NextOptimalSize< 11 >( 10 ) == 10 );
-   DOCTEST_CHECK( dip::NextOptimalSize< 11 >( 11 ) == 11 );
-   DOCTEST_CHECK( dip::NextOptimalSize< 11 >( 13 ) == 14 );
-   DOCTEST_CHECK( dip::NextOptimalSize< 11 >( 101 ) == 105 );
-   DOCTEST_CHECK( dip::NextOptimalSize< 11 >( 2109375001 ) == 2112000000 );
-   DOCTEST_CHECK( dip::NextOptimalSize< 11 >( std::numeric_limits< dip::uint32 >::max() / 11 / 2 ) == 195230112 ); // does the work in the 32-bit algorithm
-   DOCTEST_CHECK( dip::NextOptimalSize< 11 >( std::numeric_limits< dip::uint32 >::max() / 11 / 2 + 1 ) == 195230112 ); // should be elevated to the 64-bit algorithm
-   DOCTEST_CHECK( dip::NextOptimalSize< 11 >( std::numeric_limits< dip::uint32 >::max() ) == 0 );
-   DOCTEST_CHECK( dip::NextOptimalSize< 11 >( std::numeric_limits< dip::uint32 >::max() - 1 ) == 0 );
-   DOCTEST_CHECK( dip::NextOptimalSize< 11 >( std::numeric_limits< dip::uint >::max() ) == 0 );
-   DOCTEST_CHECK( dip::NextOptimalSize< 11 >( std::numeric_limits< dip::uint >::max() - 1 ) == 0 );
+   DOCTEST_CHECK( dip::GetOptimalDFTSize( 10, true, 11 ) == 10 );
+   DOCTEST_CHECK( dip::GetOptimalDFTSize( 11, true, 11 ) == 11 );
+   DOCTEST_CHECK( dip::GetOptimalDFTSize( 13, true, 11 ) == 14 );
+   DOCTEST_CHECK( dip::GetOptimalDFTSize( 101, true, 11 ) == 105 );
+   DOCTEST_CHECK( dip::GetOptimalDFTSize( 2109375001, true, 11 ) == 2112000000 );
+   // The following two values test proper handling on a 32-bit system
+   DOCTEST_CHECK( dip::GetOptimalDFTSize( std::numeric_limits< dip::uint32 >::max() / 11 / 2, true, 11 ) == 195230112 ); // does the work in the 32-bit algorithm
+   DOCTEST_CHECK( dip::GetOptimalDFTSize( std::numeric_limits< dip::uint32 >::max() / 11 / 2 + 1, true, 11 ) == 195230112 ); // should be elevated to the 64-bit algorithm
+   // The following two values depend on the system's pointer size and the FFT library linked
+   dip::uint result = 0;
+   if(( sizeof( dip::uint ) == 8 ) && ( dip::maximumDFTSize > std::numeric_limits< dip::uint32 >::max() )) {
+      // The `dip::maximumDFTSize > ...` is not exact, but currently, `maximumDFTSize` is either INT_MAX or dip::uint_MAX
+      result = 4294967296;
+   }
+   DOCTEST_CHECK( dip::GetOptimalDFTSize( std::numeric_limits< dip::uint32 >::max(), true, 11 ) == result );
+   DOCTEST_CHECK( dip::GetOptimalDFTSize( std::numeric_limits< dip::uint32 >::max() - 1, true, 11 ) == result );
+   // The following two values are always 0, because they don't fit in a dip::uint
+   DOCTEST_CHECK( dip::GetOptimalDFTSize( std::numeric_limits< dip::uint >::max(), true, 11 ) == 0 );
+   DOCTEST_CHECK( dip::GetOptimalDFTSize( std::numeric_limits< dip::uint >::max() - 1, true, 11 ) == 0 );
 
    // smaller 5
-   DOCTEST_CHECK( dip::PreviousOptimalSize< 5 >( 10 ) == 10 );
-   DOCTEST_CHECK( dip::PreviousOptimalSize< 5 >( 11 ) == 10 );
-   DOCTEST_CHECK( dip::PreviousOptimalSize< 5 >( 13 ) == 12 );
-   DOCTEST_CHECK( dip::PreviousOptimalSize< 5 >( 107 ) == 100 );
-   DOCTEST_CHECK( dip::PreviousOptimalSize< 5 >( 2123366399 ) == 2109375000 );
+   DOCTEST_CHECK( dip::GetOptimalDFTSize( 10, false, 5 ) == 10 );
+   DOCTEST_CHECK( dip::GetOptimalDFTSize( 11, false, 5 ) == 10 );
+   DOCTEST_CHECK( dip::GetOptimalDFTSize( 13, false, 5 ) == 12 );
+   DOCTEST_CHECK( dip::GetOptimalDFTSize( 107, false, 5 ) == 100 );
+   DOCTEST_CHECK( dip::GetOptimalDFTSize( 2123366399, false, 5 ) == 2109375000 );
    // smaller 7
-   DOCTEST_CHECK( dip::PreviousOptimalSize< 7 >( 10 ) == 10 );
-   DOCTEST_CHECK( dip::PreviousOptimalSize< 7 >( 11 ) == 10 );
-   DOCTEST_CHECK( dip::PreviousOptimalSize< 7 >( 13 ) == 12 );
-   DOCTEST_CHECK( dip::PreviousOptimalSize< 7 >( 107 ) == 105 );
-   DOCTEST_CHECK( dip::PreviousOptimalSize< 7 >( 2123366399 ) == 2117682000 );
+   DOCTEST_CHECK( dip::GetOptimalDFTSize( 10, false, 7 ) == 10 );
+   DOCTEST_CHECK( dip::GetOptimalDFTSize( 11, false, 7 ) == 10 );
+   DOCTEST_CHECK( dip::GetOptimalDFTSize( 13, false, 7 ) == 12 );
+   DOCTEST_CHECK( dip::GetOptimalDFTSize( 107, false, 7 ) == 105 );
+   DOCTEST_CHECK( dip::GetOptimalDFTSize( 2123366399, false, 7 ) == 2117682000 );
    // smaller 11
-   DOCTEST_CHECK( dip::PreviousOptimalSize< 11 >( 10 ) == 10 );
-   DOCTEST_CHECK( dip::PreviousOptimalSize< 11 >( 11 ) == 11 );
-   DOCTEST_CHECK( dip::PreviousOptimalSize< 11 >( 13 ) == 12 );
-   DOCTEST_CHECK( dip::PreviousOptimalSize< 11 >( 107 ) == 105 );
-   DOCTEST_CHECK( dip::PreviousOptimalSize< 11 >( 2123366399 ) == 2122312500 );
-   DOCTEST_CHECK( dip::PreviousOptimalSize< 11 >( std::numeric_limits< dip::uint32 >::max() / 11 ) == 390297600); // does the work in the 32-bit algorithm
-   DOCTEST_CHECK( dip::PreviousOptimalSize< 11 >( std::numeric_limits< dip::uint32 >::max() / 11 + 1 ) == 390297600); // should be elevated to the 64-bit algorithm
-   DOCTEST_CHECK( dip::PreviousOptimalSize< 11 >( std::numeric_limits< dip::uint32 >::max() ) == 4293273600ul );
+   DOCTEST_CHECK( dip::GetOptimalDFTSize( 10, false, 11 ) == 10 );
+   DOCTEST_CHECK( dip::GetOptimalDFTSize( 11, false, 11 ) == 11 );
+   DOCTEST_CHECK( dip::GetOptimalDFTSize( 13, false, 11 ) == 12 );
+   DOCTEST_CHECK( dip::GetOptimalDFTSize( 107, false, 11 ) == 105 );
+   DOCTEST_CHECK( dip::GetOptimalDFTSize( 2123366399, false, 11 ) == 2122312500 );
+   // The following two values test proper handling on a 32-bit system
+   DOCTEST_CHECK( dip::GetOptimalDFTSize( std::numeric_limits< dip::uint32 >::max() / 11, false, 11 ) == 390297600 ); // does the work in the 32-bit algorithm
+   DOCTEST_CHECK( dip::GetOptimalDFTSize( std::numeric_limits< dip::uint32 >::max() / 11 + 1, false, 11 ) == 390297600 ); // should be elevated to the 64-bit algorithm
+   // The following value depends on the system's pointer size and the FFT library linked
+   result = 0;
+   if(( sizeof( dip::uint ) == 8 ) && ( dip::maximumDFTSize > std::numeric_limits< dip::uint32 >::max() )) {
+      // The `dip::maximumDFTSize > ...` is not exact, but currently, `maximumDFTSize` is either INT_MAX or dip::uint_MAX
+      result = 4293273600ul;
+   }
+   DOCTEST_CHECK( dip::GetOptimalDFTSize( std::numeric_limits< dip::uint32 >::max(), false, 11 ) == result );
+   // The following value is always 0, because this is outside the ability of the algorithm
    if( sizeof( dip::uint ) == 8 ) {
-      DOCTEST_CHECK( dip::PreviousOptimalSize< 11 >( std::numeric_limits< dip::uint >::max() ) == 0 );
+      DOCTEST_CHECK( dip::GetOptimalDFTSize( std::numeric_limits< dip::uint >::max(), false, 11 ) == 0 );
    }
 
    // Invalid argument
