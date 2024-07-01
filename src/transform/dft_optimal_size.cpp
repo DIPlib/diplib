@@ -224,8 +224,9 @@ DOCTEST_TEST_CASE("[DIPlib] testing GetOptimalDFTSize") {
    // The following two values depend on the system's pointer size and the FFT library linked
    dip::uint result = 0;
    if(( sizeof( dip::uint ) == 8 ) && ( dip::maximumDFTSize > std::numeric_limits< dip::uint32 >::max() )) {
-      // The `dip::maximumDFTSize > ...` is not exact, but currently, `maximumDFTSize` is either INT_MAX or dip::uint_MAX
-      result = 4294967296;
+      // The `dip::maximumDFTSize > ...` is not exact, but currently, `maximumDFTSize` is either INT_MAX or dip::uint_MAX,
+      // we just want to distinguish these two here.
+      result = 4294967296u;
    }
    DOCTEST_CHECK( dip::GetOptimalDFTSize( std::numeric_limits< dip::uint32 >::max(), true, 11 ) == result );
    DOCTEST_CHECK( dip::GetOptimalDFTSize( std::numeric_limits< dip::uint32 >::max() - 1, true, 11 ) == result );
@@ -255,10 +256,9 @@ DOCTEST_TEST_CASE("[DIPlib] testing GetOptimalDFTSize") {
    DOCTEST_CHECK( dip::GetOptimalDFTSize( std::numeric_limits< dip::uint32 >::max() / 11, false, 11 ) == 390297600 ); // does the work in the 32-bit algorithm
    DOCTEST_CHECK( dip::GetOptimalDFTSize( std::numeric_limits< dip::uint32 >::max() / 11 + 1, false, 11 ) == 390297600 ); // should be elevated to the 64-bit algorithm
    // The following value depends on the system's pointer size and the FFT library linked
-   result = 0;
-   if(( sizeof( dip::uint ) == 8 ) && ( dip::maximumDFTSize > std::numeric_limits< dip::uint32 >::max() )) {
-      // The `dip::maximumDFTSize > ...` is not exact, but currently, `maximumDFTSize` is either INT_MAX or dip::uint_MAX
-      result = 4293273600ul;
+   result = 4293273600u;
+   if( result > dip::maximumDFTSize ) {
+      result = 0;
    }
    DOCTEST_CHECK( dip::GetOptimalDFTSize( std::numeric_limits< dip::uint32 >::max(), false, 11 ) == result );
    // The following value is always 0, because this is outside the ability of the algorithm
