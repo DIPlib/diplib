@@ -448,6 +448,7 @@ void init_assorted( py::module& m ) {
           "in_array"_a );
    m.def( "JoinChannels", py::overload_cast< dip::ImageConstRefArray const&, dip::Image& >( &dip::JoinChannels ),
           "in_array"_a, py::kw_only(), "out"_a );
+   m.def( "SplitChannels", &dip::SplitChannels, "in"_a );
 
    // diplib/testing.h
    auto mtesting = m.def_submodule( "testing", "Functions to help test and debug your code." );

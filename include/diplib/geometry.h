@@ -938,6 +938,13 @@ DIP_NODISCARD inline Image JoinChannels(
    return out;
 }
 
+/// \brief Splits the tensor elements of a tensor image into individual images.
+///
+/// The output array contains images that each point to the data in `in`.
+DIP_EXPORT ImageArray SplitChannels(
+      Image const& in
+);
+
 
 /// \endgroup
 

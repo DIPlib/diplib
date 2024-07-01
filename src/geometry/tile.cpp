@@ -219,9 +219,9 @@ void TileTensorElements(
    for( dip::uint row = 0; row < M; ++row ) {
       for( dip::uint col = 0; col < N; ++col ) {
          if( lut[ row + col * M ] < 0 ) {
-            imrefar.push_back( blank );
+            imrefar.emplace_back( blank );
          } else {
-            imrefar.push_back( imar[ static_cast< dip::uint >( lut[ row + col * M ] ) ] ); // Note we're transposing the elements here
+            imrefar.emplace_back( imar[ static_cast< dip::uint >( lut[ row + col * M ] ) ] ); // Note we're transposing the elements here
          }
       }
    }
@@ -262,7 +262,7 @@ void JoinChannels(
    // buffer already allocated for `c_out`, and would mean not using any external interface set in it.
    // NOTE that there is no way for `ReForge` to keep the data segment if `c_out` is the same as one of
    // the images in `in`, because out will always be larger than each of the images in `in` (the case
-   // where the is one one image to tile has already been taken care of).
+   // where the is only one image to tile has already been taken care of).
    Image out( c_out ); //
    out.ReForge( sizes, nImages, dataType );
    out.SetPixelSize( std::move( pixelSize ));
@@ -276,4 +276,45 @@ void JoinChannels(
    c_out.swap( out );
 }
 
+ImageArray SplitChannels(
+      Image const& in
+) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   ImageArray out( in.TensorElements(), in );
+   for( dip::uint ii = 0; ii < out.size(); ++ii ) {
+      out[ ii ].SetTensorSizesUnsafe( 1 );
+      out[ ii ].ShiftOriginUnsafe( static_cast< dip::sint >( ii ) * in.TensorStride() );
+   }
+   return out;
+}
+
 } // namespace dip
+
+#ifdef DIP_CONFIG_ENABLE_DOCTEST
+#include "doctest.h"
+#include "diplib/generation.h"
+#include "diplib/random.h"
+#include "diplib/testing.h"
+
+DOCTEST_TEST_CASE( "[DIPlib] testing dip::SplitChannels and dip::JoinChannels" ) {
+   dip::Random random;
+   dip::Image img( { 50, 30 }, 6, dip::DT_UINT8 );
+   img.ReshapeTensor( dip::Tensor( dip::Tensor::Shape::SYMMETRIC_MATRIX, 3, 3 ));  // A 3x3 symmetric tensor has 6 elements
+   img.SetPixelSize( dip::PhysicalQuantityArray{ 0.4 * dip::Units::Micrometer(), 1.3 * dip::Units::Second() } );
+   img.SetColorSpace( "CMYK" );  // This cannot have 6 tensor components, but that doesn't matter for this test.
+   dip::UniformNoise( img, img, random, 0, 255 );
+   auto imar = dip::SplitChannels( img );
+   DOCTEST_CHECK( imar.size() == 6 );
+   for( auto const& a : imar ) {
+      DOCTEST_CHECK( a.IsForged() );
+      DOCTEST_CHECK( a.IsScalar() );
+   }
+   dip::Image out = dip::JoinChannels( dip::CreateImageConstRefArray( imar ));
+   DOCTEST_CHECK( dip::testing::CompareImages( img, out ));
+   DOCTEST_CHECK( !img.Aliases( out ));
+   DOCTEST_CHECK( out.PixelSize() == img.PixelSize() );
+   DOCTEST_CHECK( out.TensorShape() == dip::Tensor::Shape::COL_VECTOR );  // This is the default shape
+   DOCTEST_CHECK( out.ColorSpace().empty() );
+}
+
+#endif // DIP_CONFIG_ENABLE_DOCTEST

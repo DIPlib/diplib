@@ -8,6 +8,8 @@ date: 2020-00-00
 
 ### New functionality
 
+- Added `dip::SplitChannels()` to `diplib/geometry.h`.
+
 ### Changed functionality
 
 - `dip::HoughTransformCircleCenters()` now draws lines in the parameter space with an intensity proportional to the
