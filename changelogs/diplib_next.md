@@ -70,7 +70,9 @@ None, but see bugfixes to *DIPlib*.
 
 ### Bug fixes
 
-None, but see bugfixes to *DIPlib*.
+- `dip.ChainCode.Length()` had a parameter `boundaryPixels` added in *DIPlib* 3.3.0, but the Python bindings
+  did not know about its default value.
+
 (See also bugfixes to *DIPlib*.)
 
 ### Build and installation changes

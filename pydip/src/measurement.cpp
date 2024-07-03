@@ -474,7 +474,7 @@ void init_measurement( py::module& m ) {
    chain.def_readonly( "is8connected", &dip::ChainCode::is8connected );
    chain.def( "ConvertTo8Connected", &dip::ChainCode::ConvertTo8Connected );
    chain.def( "Empty", &dip::ChainCode::Empty );
-   chain.def( "Length", &dip::ChainCode::Length );
+   chain.def( "Length", &dip::ChainCode::Length, "boundaryPixels"_a = dip::S::EXCLUDE );
    chain.def( "Feret", &dip::ChainCode::Feret, "angleStep"_a = 5.0 / 180.0 * dip::pi );
    chain.def( "BendingEnergy", &dip::ChainCode::BendingEnergy );
    chain.def( "BoundingBox", []( dip::ChainCode const& self ) {
