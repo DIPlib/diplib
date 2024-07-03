@@ -87,6 +87,14 @@ class DIP_NO_EXPORT StatisticsAccumulator {
 
       /// Combine two accumulators
       StatisticsAccumulator& operator+=( StatisticsAccumulator const& b ) {
+         if( b.n_ == 0 ) {
+            return *this;
+         }
+         if( n_ == 0 ) {
+            *this = b;
+            return *this;
+         }
+         // The code below assumes n_ + b.n_ > 0
          dfloat an = static_cast< dfloat >( n_ );
          dfloat an2 = an * an;
          dfloat bn = static_cast< dfloat >( b.n_ );
@@ -208,6 +216,14 @@ class DIP_NO_EXPORT VarianceAccumulator {
 
       /// Combine two accumulators
       VarianceAccumulator& operator+=( VarianceAccumulator const& b ) {
+         if( b.n_ == 0 ) {
+            return *this;
+         }
+         if( n_ == 0 ) {
+            *this = b;
+            return *this;
+         }
+         // The code below assumes n_ + b.n_ > 0
          dfloat oldn = static_cast< dfloat >( n_ );
          n_ += b.n_;
          dfloat n = static_cast< dfloat >( n_ );
@@ -384,21 +400,25 @@ class DIP_NO_EXPORT CovarianceAccumulator {
 
       /// Combine two accumulators
       CovarianceAccumulator& operator+=( const CovarianceAccumulator& other ) {
+         if( other.n_ == 0 ) {
+            return *this;
+         }
          if( n_ == 0 ) {
             *this = other; // copy over the data
-         } else if( other.n_ > 0 ) {
-            dip::uint intN = n_ + other.n_;
-            dfloat N = static_cast< dfloat >( intN );
-            dfloat dx = other.meanx_ - meanx_;
-            dfloat dy = other.meany_ - meany_;
-            meanx_ = ( static_cast< dfloat >( n_ ) * meanx_ + static_cast< dfloat >( other.n_ ) * other.meanx_ ) / N;
-            meany_ = ( static_cast< dfloat >( n_ ) * meany_ + static_cast< dfloat >( other.n_ ) * other.meany_ ) / N;
-            dfloat fN = static_cast< dfloat >( n_ * other.n_ ) / N;
-            m2x_ += other.m2x_ + dx * dx * fN;
-            m2y_ += other.m2y_ + dy * dy * fN;
-            C_ += other.C_ + dx * dy * fN;
-            n_ = intN;
+            return *this;
          }
+         // The code below assumes n_ + b.n_ > 0
+         dip::uint intN = n_ + other.n_;
+         dfloat N = static_cast< dfloat >( intN );
+         dfloat dx = other.meanx_ - meanx_;
+         dfloat dy = other.meany_ - meany_;
+         meanx_ = ( static_cast< dfloat >( n_ ) * meanx_ + static_cast< dfloat >( other.n_ ) * other.meanx_ ) / N;
+         meany_ = ( static_cast< dfloat >( n_ ) * meany_ + static_cast< dfloat >( other.n_ ) * other.meany_ ) / N;
+         dfloat fN = static_cast< dfloat >( n_ * other.n_ ) / N;
+         m2x_ += other.m2x_ + dx * dx * fN;
+         m2y_ += other.m2y_ + dy * dy * fN;
+         C_ += other.C_ + dx * dy * fN;
+         n_ = intN;
          return *this;
       }
 

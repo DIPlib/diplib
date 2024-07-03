@@ -30,6 +30,10 @@ date: 2020-00-00
 - `dip::GetOptimalDFTSize()` could loop indefinitely for inputs close to the maximum `dip::uint` value, because
   of an integer overflow in arithmetic.
 
+- The classes `dip::StatisticsAccumulator` and `dip::VarianceAccumulator` divided by 0 when adding two empty
+  accumulators together, producing NaN values as output. This caused the function `dip::SampleStatistics()`
+  to sometimes produce NaN statistics when called with a mask image.
+
 ### Updated dependencies
 
 ### Build changes

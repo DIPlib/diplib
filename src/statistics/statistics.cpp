@@ -374,7 +374,7 @@ class MaximumAndMinimumLineFilter : public MaximumAndMinimumLineFilterBase {
       dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override { return 3; }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
-         MinMaxAccumulator vars;
+         MinMaxAccumulator& vars = accArray_[ params.thread ];
          auto bufferLength = params.bufferLength;
          auto inStride = params.inBuffer[ 0 ].stride;
          if( params.inBuffer.size() > 1 ) {
@@ -401,7 +401,6 @@ class MaximumAndMinimumLineFilter : public MaximumAndMinimumLineFilterBase {
                vars.Push( static_cast< dfloat >( *in ));
             }
          }
-         accArray_[ params.thread ] += vars;
       }
       void SetNumberOfThreads( dip::uint threads ) override {
          accArray_.resize( threads );
@@ -507,7 +506,7 @@ class SampleStatisticsLineFilter : public SampleStatisticsLineFilterBase {
       dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override { return 23; }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
-         StatisticsAccumulator vars;
+         StatisticsAccumulator& vars = accArray_[ params.thread ];
          auto bufferLength = params.bufferLength;
          auto inStride = params.inBuffer[ 0 ].stride;
          if( params.inBuffer.size() > 1 ) {
@@ -528,7 +527,6 @@ class SampleStatisticsLineFilter : public SampleStatisticsLineFilterBase {
                in += inStride;
             }
          }
-         accArray_[ params.thread ] += vars;
       }
       void SetNumberOfThreads( dip::uint threads ) override {
          accArray_.resize( threads );
@@ -572,7 +570,7 @@ class CovarianceLineFilter : public CovarianceLineFilterBase {
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in1 = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          TPI const* in2 = static_cast< TPI const* >( params.inBuffer[ 1 ].buffer );
-         CovarianceAccumulator vars;
+         CovarianceAccumulator& vars = accArray_[ params.thread ];
          auto bufferLength = params.bufferLength;
          auto in1Stride = params.inBuffer[ 0 ].stride;
          auto in2Stride = params.inBuffer[ 1 ].stride;
@@ -596,7 +594,6 @@ class CovarianceLineFilter : public CovarianceLineFilterBase {
                in2 += in2Stride;
             }
          }
-         accArray_[ params.thread ] += vars;
       }
       void SetNumberOfThreads( dip::uint threads ) override {
          accArray_.resize( threads );
@@ -731,7 +728,7 @@ class CenterOfMassLineFilter : public CenterOfMassLineFilterBase {
       dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override { return nD_ + 1; }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
-         FloatArray vars( nD_ + 1, 0.0 );
+         FloatArray& vars = accArray_[ params.thread ];
          auto bufferLength = params.bufferLength;
          auto inStride = params.inBuffer[ 0 ].stride;
          UnsignedArray pos = params.position;
@@ -762,7 +759,6 @@ class CenterOfMassLineFilter : public CenterOfMassLineFilterBase {
                ++( pos[ procDim ] );
             }
          }
-         accArray_[ params.thread ] += vars;
       }
       CenterOfMassLineFilter( dip::uint nD ) : nD_( nD ) {}
       void SetNumberOfThreads( dip::uint threads ) override {
@@ -820,7 +816,7 @@ class MomentsLineFilter : public MomentsLineFilterBase {
       }
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
-         MomentAccumulator vars( nD_ );
+         MomentAccumulator& vars = accArray_[ params.thread ];
          auto bufferLength = params.bufferLength;
          auto inStride = params.inBuffer[ 0 ].stride;
          FloatArray pos{ params.position };
@@ -845,7 +841,6 @@ class MomentsLineFilter : public MomentsLineFilterBase {
                ++( pos[ procDim ] );
             }
          }
-         accArray_[ params.thread ] += vars;
       }
       MomentsLineFilter( dip::uint nD ) : nD_( nD ) {}
       void SetNumberOfThreads( dip::uint threads ) override {
