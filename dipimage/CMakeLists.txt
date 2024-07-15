@@ -117,6 +117,7 @@ if(DIP_BUILD_DIPVIEWER)
 
       # DIPviewer Java binding
       include(UseJava)
+      # set(CMAKE_JAVA_COMPILE_FLAGS ${CMAKE_JAVA_COMPILE_FLAGS} -Xlint:deprecation)
       add_jar(ViewerJava "${PROJECT_SOURCE_DIR}/viewer/java/Viewer.java"
               INCLUDE_JARS "${Matlab_ROOT_DIR}/java/jarext/svnkit/jna.jar"
                            "${Matlab_ROOT_DIR}/java/jarext/jogl-all.jar"

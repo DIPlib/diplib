@@ -101,7 +101,7 @@ Note that it is necessary to install the *DIPlib* libraries before running the `
 
 We recommend you additionally specify the `-DCMAKE_CXX_FLAGS="-march=native"`
 option to `cmake`. This will enable additional optimizations that are specific
-to your computer. Note that the resulting binaries will likely be slower on another
+to your computer. Note that the resulting binaries will likely be slower on a different
 computer, and possibly not work at all.
 
 If you build a static version of the *DIPlib* library, *DIPimage* and *PyDIP* will not work

@@ -33,8 +33,12 @@ make sure it is the Apple Silicon native version (installed in `/opt/homebrew/`,
 so that all libraries and so forth that you install use the same architecture.
 Note that it is possible to run two versions of *Homebrew* side by side.
 
-The latest versions of *MATLAB* run natively on Apple Silicon, again no special instructions are needed. But if
-you are running an older version of *MATLAB* for the x86_64 architecture (Intel), then you need to build *DIPlib*
+The latest versions of *MATLAB* run natively on Apple Silicon, again no special instructions are needed. However,
+the interface to *DIPviewer* (the `viewslice` function) depends on the Java Native Access library, and the version
+that comes with MATLAB (as of R2023b) does not work on Apple Silicon machines. If you find that `viewslice` does
+not work, see [this issue](https://github.com/DIPlib/diplib/issues/151).
+
+If you are running an older version of *MATLAB* for the x86_64 architecture (Intel), then you need to build *DIPlib*
 and *DIPimage* for that same x86_64 architecture.
 
 \subsection macos_silicon_cross_compile Cross-compiling for the x86_64 architecture on an Apple Silicon Mac.
@@ -196,7 +200,7 @@ macOS used to build you Python binaries, the error message will show what versio
 
 We recommend you additionally specify the `-DCMAKE_CXX_FLAGS="-march=native"` option to `cmake`.
 This will enable additional optimizations that are specific to your computer.
-Note that the resulting binaries will likely be slower on another computer, and possibly not work at all.
+Note that the resulting binaries will likely be slower on a different computer, and possibly not work at all.
 
 If you build a static version of the *DIPlib* library, *DIPimage* and *PyDIP* will not work correctly.
 
