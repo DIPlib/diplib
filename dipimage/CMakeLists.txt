@@ -129,19 +129,21 @@ if(DIP_BUILD_DIPVIEWER)
 endif()
 
 # Create the Contents.m file
-# TODO: Starting with R2019a we can use the -batch command line option instead.
-if(WIN32)
-	add_custom_command(
-		  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Contents.m
-		  COMMAND ${Matlab_MAIN_PROGRAM} -nojvm -wait -nosplash -r "try, makecontents('${CMAKE_CURRENT_BINARY_DIR}'), catch ME, disp(ME.message), exit(1), end, exit(0)"
-		  WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/tools"
-		  DEPENDS "${DIPIMAGE_MFILES}" "${DIPVIEWER_MFILES}")
+if(Matlab_VERSION_STRING VERSION_GREATER_EQUAL "9.6")
+   # Starting with R2019a we can use the -batch command line option.
+   set(MATLAB_COMMAND_ARGUMENTS -nojvm -batch "makecontents('${CMAKE_CURRENT_BINARY_DIR}')")
 else()
-	add_custom_command(
-		  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Contents.m
-		  COMMAND ${Matlab_MAIN_PROGRAM} -nojvm -nodisplay -nosplash -r "try, makecontents\\(\\'${CMAKE_CURRENT_BINARY_DIR}\\'\\), catch ME, disp\\(ME.message\\), exit\\(1\\), end, exit\\(0\\)"
-		  WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/tools"
-		  DEPENDS "${DIPIMAGE_MFILES}" "${DIPVIEWER_MFILES}")
+   # For older MATLABs we must use the awkward -r command line option, catching possible errors, etc.
+   if(WIN32)
+      set(MATLAB_WAIT_OPTION -wait)
+   endif()
+   set(MATLAB_COMMAND_ARGUMENTS -nojvm -nosplash ${MATLAB_WAIT_OPTION} -r "try, makecontents('${CMAKE_CURRENT_BINARY_DIR}'), catch ME, disp(ME.message), exit(1), end, exit(0)")
 endif()
+add_custom_command(
+     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Contents.m
+     COMMAND ${Matlab_MAIN_PROGRAM} ${MATLAB_COMMAND_ARGUMENTS}
+     WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/tools"
+     DEPENDS "${DIPIMAGE_MFILES}" "${DIPVIEWER_MFILES}"
+     VERBATIM)
 add_custom_target(contents ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Contents.m)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Contents.m DESTINATION ${DIPIMAGE_INSTALL_PATH})
