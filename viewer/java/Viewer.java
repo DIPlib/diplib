@@ -38,33 +38,33 @@ import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.KeyEvent;
-import java.awt.event.WindowListener;  
-import java.awt.event.MouseListener;  
-import java.awt.event.MouseMotionListener;  
-import java.awt.event.MouseWheelListener;  
-import java.awt.event.KeyListener;  
+import java.awt.event.WindowListener;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelListener;
+import java.awt.event.KeyListener;
 
 import javax.swing.JFrame;
 
 /// JNA interface to ProxyManager
 interface Proxy extends Library {
-        
+
     interface SwapBuffersCallback extends Callback {
         void invoke();
     }
-    
+
     interface SetWindowTitleCallback extends Callback {
         void invoke(String title);
     }
-    
+
     interface RefreshWindowCallback extends Callback {
         void invoke();
     }
-        
+
     interface CreateWindowCallback extends Callback {
         void invoke(Pointer window);
     }
-        
+
     int proxyShouldClose(Pointer window);
     int proxyGetWidth(Pointer window);
     int proxyGetHeight(Pointer window);
@@ -107,20 +107,20 @@ public class Viewer extends JFrame implements GLEventListener, WindowListener, M
           System.out.println(e.toString());
         }
 
-        proxy_ = (Proxy) Native.loadLibrary("DIPviewer", Proxy.class);
+        proxy_ = Native.load("DIPviewer", Proxy.class);
 
         pointer_ = new Pointer(pointer);
-        
+
         // Just a default. Will get overwritten on reshape event.
         framebuffer_width_ = proxy_.proxyGetWidth(pointer_);
         framebuffer_height_ = proxy_.proxyGetHeight(pointer_);
-        
+
         GLProfile profile = GLProfile.get(GLProfile.GL2);
         GLCapabilities capabilities = new GLCapabilities(profile);
         capabilities.setDoubleBuffered(true);
-        
+
         canvas_ = new GLCanvas(capabilities);
-        
+
         canvas_.addGLEventListener(this);
         canvas_.addMouseListener(this);
         canvas_.addMouseMotionListener(this);
@@ -135,7 +135,7 @@ public class Viewer extends JFrame implements GLEventListener, WindowListener, M
         this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         this.setVisible(true);
         this.setResizable(true);
-        
+
         canvas_.requestFocusInWindow();
 
         title_cb_ = new Proxy.SetWindowTitleCallback() {
@@ -159,57 +159,57 @@ public class Viewer extends JFrame implements GLEventListener, WindowListener, M
         };
         proxy_.proxySetCreateWindowCallback(pointer_, create_cb_);
     }
-    
+
     /// Convert from window to framebuffer coordinates
     Point translateMouse(MouseEvent e)
     {
         return new Point(e.getX() * framebuffer_width_ / canvas_.getWidth(),
                          e.getY() * framebuffer_height_ / canvas_.getHeight());
     }
-    
+
     int translateModifiers(InputEvent e)
     {
       int m = e.getModifiersEx();
-      int t = ((m&InputEvent.SHIFT_DOWN_MASK)>0?1:0) + 
+      int t = ((m&InputEvent.SHIFT_DOWN_MASK)>0?1:0) +
               ((m&InputEvent.CTRL_DOWN_MASK )>0?2:0) +
               ((m&InputEvent.ALT_DOWN_MASK  )>0?4:0) +
               ((m&InputEvent.META_DOWN_MASK )>0?8:0);
       return t;
     }
-    
+
     public String display() {
         // Avoid error message when Matlab tries to disp() this object.
         return "org.java.viewer.Viewer";
     }
-    
+
     public long[] pointer() {
         long[] retval = { pointer_.nativeValue( pointer_ ) };
         return retval;
     }
-    
+
     // GLEventListener
-    
+
     public void display(GLAutoDrawable drawable) {
         proxy_.proxyDrawEvent(pointer_);
-        
+
         if (proxy_.proxyGetDestroyed(pointer_))
             dispose();
     }
-    
+
     public void dispose(GLAutoDrawable drawable) {
     }
-    
+
     public void init(GLAutoDrawable drawable) {
         drawable.getGL().setSwapInterval(0);
         proxy_.proxyCreateEvent(pointer_);
     }
-    
+
     public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
         framebuffer_width_ = width;
         framebuffer_height_ = height;
         proxy_.proxyReshapeEvent(pointer_, width, height);
     }
-    
+
     // MouseListener
 
     public void mouseClicked(MouseEvent e) {
@@ -230,9 +230,9 @@ public class Viewer extends JFrame implements GLEventListener, WindowListener, M
         final Point p = translateMouse(e);
         proxy_.proxyClickEvent(pointer_, e.getButton()-1, 1, p.x, p.y, translateModifiers(e));
     }
-    
+
     // MouseMotionListener
-    
+
     public void mouseMoved(MouseEvent e) {
     }
 
@@ -240,52 +240,52 @@ public class Viewer extends JFrame implements GLEventListener, WindowListener, M
         final Point p = translateMouse(e);
         proxy_.proxyMotionEvent(pointer_, p.x, p.y);
     }
-    
+
     // MouseWheelListener
-    
+
     public void mouseWheelMoved(MouseWheelEvent e) {
         final Point p = translateMouse(e);
 
         int button = 3;
         if (e.getWheelRotation() > 0)
             button = button + 1;
-        
+
         if (e.getWheelRotation() != 0)
         {
           proxy_.proxyClickEvent(pointer_, button, 1, p.x, p.y, translateModifiers(e));
           proxy_.proxyClickEvent(pointer_, button, 0, p.x, p.y, translateModifiers(e));
         }
     }
-    
+
     // WindowListener
 
-    public void windowActivated(WindowEvent e) {  
+    public void windowActivated(WindowEvent e) {
     }
-    
+
     public void windowClosed(WindowEvent e) {
         proxy_.proxyCloseEvent(pointer_);
         proxy_.proxyRelease(pointer_);
     }
-    
-    public void windowClosing(WindowEvent e) {  
+
+    public void windowClosing(WindowEvent e) {
     }
-    
-    public void windowDeactivated(WindowEvent e) {  
+
+    public void windowDeactivated(WindowEvent e) {
     }
-    
-    public void windowDeiconified(WindowEvent e) {  
+
+    public void windowDeiconified(WindowEvent e) {
         proxy_.proxyVisibleEvent(pointer_, 1);
     }
-    
-    public void windowIconified(WindowEvent e) {  
+
+    public void windowIconified(WindowEvent e) {
         proxy_.proxyVisibleEvent(pointer_, 0);
     }
-    
-    public void windowOpened(WindowEvent e) {  
+
+    public void windowOpened(WindowEvent e) {
     }
-    
+
     // KeyListener
-    
+
     public void keyTyped(KeyEvent e) {
     }
 
@@ -299,7 +299,7 @@ public class Viewer extends JFrame implements GLEventListener, WindowListener, M
         // use capitals
         if (c >= 'a' && c <= 'z')
             c = c - 'a' + 'A';
-            
+
         int t = translateModifiers(e);
         if ((t & 3) == 3 && c == 'W')
         {

@@ -79,22 +79,22 @@ dip::viewer::SliceViewer* GetViewer( const mxArray *obj ) {
       rhs[ 1 ] = ( mxArray* ) obj;
       mxArray *lhs;
       mexCallMATLAB( 1, &lhs, 2, rhs, "javaMethod" );
-     
+
       if ( mxIsInt64( lhs ) && mxGetNumberOfElements( lhs ) == 1 ) {
          dip::viewer::SliceViewer *viewer = ( dip::viewer::SliceViewer* ) *( ( int64_t* ) mxGetData( lhs ) );
 
          if ( dip::viewer::ProxyManager::instance()->isWindow( viewer ) ) {
             return viewer;
          }
-            
+
          mexErrMsgIdAndTxt( "DIPlib:RunTimeError", "Viewer returned invalid window handle" );
       }
-      
+
       mexErrMsgIdAndTxt( "DIPlib:RunTimeError", "Viewer did not return window handle" );
   }
-  
+
   mexErrMsgIdAndTxt( "DIPlib:RunTimeError", "Not a Viewer object" );
-  
+
   // Never reached
   return NULL;
 }
@@ -106,12 +106,12 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    try {
       DML_MIN_ARGS( 0 );
       DML_MAX_ARGS( 2 );
-      
+
       static_assert( sizeof( void* ) == 8, "viewslice requires a 64-bit environment" );
 
       if ( nrhs > 0 ) {
          mxArray* obj = NULL;
-         
+
          if ( mxIsClass( prhs[ 0 ], ViewerClassName ) ) {
             // Change image in current window
             dip::viewer::SliceViewer *viewer = GetViewer( prhs[ 0 ] );
@@ -127,7 +127,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
             if( nrhs > 1 ) {
                title = dml::GetString( prhs[ 1 ] );
             }
-    
+
             dip::viewer::WindowPtr wdw = dip::viewer::SliceViewer::Create( image, title );
             dip::viewer::ProxyManager::instance()->createWindow( wdw, false );
 
@@ -142,7 +142,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
             plhs[ 0 ] = obj;
          }
       }
-      
+
       if ( dip::viewer::ProxyManager::instance()->activeWindows() ) {
          if ( !mexIsLocked() ) {
             mexLock();
