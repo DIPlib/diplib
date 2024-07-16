@@ -25,16 +25,17 @@ constexpr char const* JarFileName = "Viewer.jar";
 void JavaAddPath( bool add = true ) {
    // The code below does:
    //    path = fullfile(fileparts(which('viewslice')),'Viewer.jar')
+   // We're using calls to MATLAB for path manipulation. If we upgrade to C++17 we'll be able to use `std::filesystem::path`.
    mxArray* fname = mxCreateString( MexFileName );
    mxArray* path1;
    mexCallMATLAB( 1, &path1, 1, &fname, "which" );
    mxArray* path2;
-   mexCallMATLAB( 1, &path2, 1, &path1, "fileparts" ); // Is this easier than implementing it in C++?
+   mexCallMATLAB( 1, &path2, 1, &path1, "fileparts" );
    mxArray* path;
    mxArray* args[ 2 ];
    args[ 0 ] = path2;
    args[ 1 ] = mxCreateString( JarFileName );
-   mexCallMATLAB( 1, &path, 2, args, "fullfile" ); // Is this easier than implementing it in C++?
+   mexCallMATLAB( 1, &path, 2, args, "fullfile" );
    // Add the found path to the Java Path:
    mexCallMATLABWithTrap( 0, nullptr, 1, &path, add ? "javaaddpath" : "javarmpath" ); // Ignore any errors generated
    //mexPrintf( add ? "Added to the Java path\n" : "Removed from the Java path\n" );
