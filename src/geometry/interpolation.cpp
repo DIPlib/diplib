@@ -339,6 +339,21 @@ class SkewLineFilter : public Framework::SeparableLineFilter {
                ++length; // Fill in one sample more than we have in the input, so we interpolate properly.
             }
             interpolation::Dispatch( method_, in, out, length, 1.0, shift, buffer );
+            // TODO: The ExpandBuffer() call below doensn't work with "asym" boundary conditions because TPI is always
+            //       a flex type here. We need to make this line filter take the original input data in its original
+            //       type, copy the line into a flex-typed buffer, do boundary extension in that buffer, do the
+            //       interpolation into another buffer, copy this buffer (with clamping) into the output image in
+            //       the output type, then call ExpandBuffer() on that output image line.
+            //
+            //       This work is currently done by the framework, which doesn't allow us to call ExpandBuffer on
+            //       the actual output image. Replicating the framework code here for this is stupid.
+            //
+            //       Can we modify the framework to allow this? Maybe have it call a second, optional Filter()-like
+            //       function (Complete(), Finish(), whatever) that offers only the actual output image pointer.
+            //       How do we pass the relevant information from this function to that one? Probably though an
+            //       array of structs, that holds one struct per thread. It would be guaranteed that each call to
+            //       Filter() would be immediately followed by one call to Finish().
+            //       Do we add the same functionality to other frameworks? We haven't had the need yet...
             detail::ExpandBuffer( out.Pointer(), DataType( TPI( 0 )), out.Stride(), 1, length, 1, static_cast< dip::uint >( offset ),
                                   params.outBuffer.length - length - static_cast< dip::uint >( offset ), boundaryCondition_[ procDim ] );
          }

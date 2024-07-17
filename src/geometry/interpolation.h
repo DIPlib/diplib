@@ -76,6 +76,7 @@ void SplineDerivative(
       TPI* buffer,  // buffer will be filled with the estimated second derivative, second half of buffer for temp data
       dip::uint n   // length of input, buffer has 2n elements
 ) {
+   static_assert( std::is_same< FlexType< TPI>, TPI >::value, "dip::interpolation::SplineDerivative<> must be called with a float or complex type." );
    TPI* spline1 = buffer;
    TPI* spline2 = buffer + n;
    using TPF = FloatType< TPI >;
@@ -111,6 +112,7 @@ void BSpline(
       dfloat shift,
       TPI* buffer    // temporary buffer, size = 2 * ( size of input + border )
 ) {
+   static_assert( std::is_same< FlexType< TPI>, TPI >::value, "dip::interpolation::BSpline<> must be called with a float or complex type." );
    constexpr dip::uint boundary = 5;
    using TPF = FloatType< TPI >;
    dip::sint offset = floor_cast( shift );
@@ -157,6 +159,7 @@ void FourthOrderCubicSpline(
       dfloat zoom,
       dfloat shift
 ) {
+   static_assert( std::is_same< FlexType< TPI>, TPI >::value, "dip::interpolation::FourthOrderCubicSpline<> must be called with a float or complex type." );
    using TPD = DoubleType< TPI >;
    dip::sint offset = floor_cast( shift );
    input += offset;
@@ -210,6 +213,7 @@ void ThirdOrderCubicSpline(
       dfloat zoom,
       dfloat shift
 ) {
+   static_assert( std::is_same< FlexType< TPI>, TPI >::value, "dip::interpolation::ThirdOrderCubicSpline<> must be called with a float or complex type." );
    using TPD = DoubleType< TPI >;
    dip::sint offset = floor_cast( shift );
    input += offset;
@@ -257,6 +261,7 @@ void Linear(
       dfloat zoom,
       dfloat shift
 ) {
+   static_assert( std::is_same< FlexType< TPI>, TPI >::value, "dip::interpolation::Linear<> must be called with a float or complex type." );
    using TPF = FloatType< TPI >;
    dip::sint offset = floor_cast( shift );
    input += offset;
@@ -322,6 +327,7 @@ void Lanczos(
       dfloat zoom,
       dfloat shift
 ) {
+   static_assert( std::is_same< FlexType< TPI>, TPI >::value, "dip::interpolation::Lanczos<> must be called with a float or complex type." );
    static_assert(( a > 0 ) && ( a < 20 ), "Parameter out of range." );
    constexpr dip::sint sa = static_cast< dip::sint >( a );
    using TPF = FloatType< TPI >;
@@ -419,6 +425,7 @@ void Fourier(
       ComplexType< TPI > const* weights,  // weights to apply a shift in the FT, <size of input> elements; if nullptr, use <shift> -- see FourierShiftWeights()
       ComplexType< TPI >* intermediate    // temporary buffer, size = max( <size of input>, <size of output> ), or size / 2 + 1 for real-valued inputs
 ) {
+   static_assert( std::is_same< FlexType< TPI>, TPI >::value, "dip::interpolation::Fourier<> must be called with a float or complex type." );
    using TPR = RealType< TPI >;
    using TPC = ComplexType< TPI >;
    dip::uint inSize = ft.TransformSize();
