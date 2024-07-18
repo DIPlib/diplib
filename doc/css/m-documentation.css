@@ -130,10 +130,7 @@ h3 .m-doc-template, h3 .m-doc-include {
   font-weight: normal;
 }
 .m-doc-template, dl.m-doc dd, ul.m-doc li > span.m-doc {
-  color: var(--muted-color);
-}
-dl.m-doc dd svg.m-math, ul.m-doc li > span.m-doc svg.m-math {
-  fill: var(--muted-color);
+   font-size: 0.9rem;
 }
 .m-doc-template a, dl.m-doc dd a, ul.m-doc li > span.m-doc a {
   color: var(--dim-link-color);

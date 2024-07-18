@@ -48,7 +48,7 @@ struct FileInformation {
       StringArray           history;           ///< Assorted metadata in the file, in the form of strings
 };
 
-/// \brief A pure virtual base class for output buffers.
+/// \brief An abstract base class for output buffers.
 ///
 /// Some image writing functions can write the file to a memory buffer. They do so through an object derived from this class.
 class OutputBuffer {

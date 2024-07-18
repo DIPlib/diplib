@@ -51,7 +51,7 @@ using xy = std::array< dfloat, 2 >;
 using XYZMatrix = std::array< dfloat, 9 >;
 
 
-/// \brief Base class for conversion between two color spaces.
+/// \brief Abstract base class for conversion between two color spaces.
 ///
 /// Classes that convert between color spaces must derive from this and overload all the pure virtual functions.
 /// See \ref dip::ColorSpaceManager for how to use these converters.

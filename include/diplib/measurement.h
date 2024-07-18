@@ -750,7 +750,7 @@ DIP_EXPORT std::ostream& operator<<( std::ostream& os, Measurement const& measur
 
 namespace Feature {
 
-/// \brief The pure virtual base class for all measurement features.
+/// \brief The abstract base class for all measurement features.
 class DIP_CLASS_EXPORT Base {
    public:
       Information const information; ///< Information on the feature
@@ -797,7 +797,10 @@ class DIP_CLASS_EXPORT Base {
       virtual ~Base() = default;
 };
 
-/// \brief The pure virtual base class for all line-based measurement features.
+/// \brief The abstract base class for all line-based measurement features.
+///
+/// To define a line-based measurement feature, derive from this class and override all the pure vitrual functions,
+/// including the ones from \ref Base. See the existing line-based features in `/src/measurement/` for examples.
 class DIP_CLASS_EXPORT LineBased : public Base {
    public:
       explicit LineBased( Information const& information ) : Base( information, Type::LINE_BASED ) {}
@@ -830,7 +833,10 @@ class DIP_CLASS_EXPORT LineBased : public Base {
       virtual void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) = 0;
 };
 
-/// \brief The pure virtual base class for all image-based measurement features.
+/// \brief The abstract base class for all image-based measurement features.
+///
+/// To define an image-based measurement feature, derive from this class and override all the pure vitrual functions,
+/// including the ones from \ref Base. See the existing image-based features in `/src/measurement/` for examples.
 class DIP_CLASS_EXPORT ImageBased : public Base {
    public:
       explicit ImageBased( Information const& information ) : Base( information, Type::IMAGE_BASED ) {}
@@ -839,7 +845,10 @@ class DIP_CLASS_EXPORT ImageBased : public Base {
       virtual void Measure( Image const& label, Image const& grey, Measurement::IteratorFeature& output ) = 0;
 };
 
-/// \brief The pure virtual base class for all chain-code--based measurement features.
+/// \brief The abstract base class for all chain-code--based measurement features.
+///
+/// To define a chain-code--based measurement feature, derive from this class and override all the pure vitrual functions,
+/// including the ones from \ref Base. See the existing chain-code--based features in `/src/measurement/` for examples.
 class DIP_CLASS_EXPORT ChainCodeBased : public Base {
    public:
       explicit ChainCodeBased( Information const& information ) : Base( information, Type::CHAINCODE_BASED ) {}
@@ -848,7 +857,10 @@ class DIP_CLASS_EXPORT ChainCodeBased : public Base {
       virtual void Measure( ChainCode const& chainCode, Measurement::ValueIterator output ) = 0;
 };
 
-/// \brief The pure virtual base class for all polygon-based measurement features.
+/// \brief The abstract base class for all polygon-based measurement features.
+///
+/// To define a polygon-based measurement feature, derive from this class and override all the pure vitrual functions,
+/// including the ones from \ref Base. See the existing polygon-based features in `/src/measurement/` for examples.
 class DIP_CLASS_EXPORT PolygonBased : public Base {
    public:
       explicit PolygonBased( Information const& information ) : Base( information, Type::POLYGON_BASED ) {}
@@ -857,7 +869,10 @@ class DIP_CLASS_EXPORT PolygonBased : public Base {
       virtual void Measure( Polygon const& polygon, Measurement::ValueIterator output ) = 0;
 };
 
-/// \brief The pure virtual base class for all convex-hull--based measurement features.
+/// \brief The abstract base class for all convex-hull--based measurement features.
+///
+/// To define a convex-hull--based measurement feature, derive from this class and override all the pure vitrual functions,
+/// including the ones from \ref Base. See the existing convex-hull--based features in `/src/measurement/` for examples.
 class DIP_CLASS_EXPORT ConvexHullBased : public Base {
    public:
       explicit ConvexHullBased( Information const& information ) : Base( information, Type::CONVEXHULL_BASED ) {}
@@ -866,7 +881,10 @@ class DIP_CLASS_EXPORT ConvexHullBased : public Base {
       virtual void Measure( ConvexHull const& convexHull, Measurement::ValueIterator output ) = 0;
 };
 
-/// \brief The pure virtual base class for all composite measurement features.
+/// \brief The abstract base class for all composite measurement features.
+///
+/// To define a composite measurement feature, derive from this class and override all the pure vitrual functions,
+/// including the ones from \ref Base. See the existing composite features in `/src/measurement/` for examples.
 class DIP_CLASS_EXPORT Composite : public Base {
    public:
       explicit Composite( Information const& information ) : Base( information, Type::COMPOSITE ) {}

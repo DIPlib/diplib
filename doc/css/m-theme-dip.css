@@ -70,7 +70,7 @@ Secondary color (blue): 009999  1d7373  006363  33cccc  5ccccc
   /* Basics */
   --background-color: #ffffff;
   --color: #000000;
-  --muted-color: #888888;
+  --muted-color: #666666;
   --line-color: var(--cs-primary-base);
   --link-color: var(--cs-primary-base);
   --link-active-color: var(--cs-secondary-base);

@@ -510,7 +510,7 @@ div.m-scroll {
 .m-text.m-big { font-size: 117%; }
 h1 .m-thin, h2 .m-thin, h3 .m-thin, h4 .m-thin, h5 .m-thin, h6 .m-thin {
   font-weight: normal;
-  color: #888888
+  color: #666666
 }
 ul.m-unstyled, ol.m-unstyled {
   list-style-type: none;
@@ -1998,7 +1998,7 @@ body > header > nav #m-navbar-brand .m-thin {
   font-weight: normal;
 }
 body > header > nav #m-navbar-brand .m-breadcrumb {
-  color: #888888;
+  color: #666666;
 }
 body > header > nav a#m-navbar-show:before, body > header > nav a#m-navbar-hide:before {
   content: '\2630';
@@ -2165,7 +2165,7 @@ article h1 {
   font-size: 1.75rem;
 }
 article h1 .m-breadcrumb {
-  color: #888888;
+  color: #666666;
   font-weight: normal;
 }
 article h1 .m-breadcrumb a {
@@ -2801,10 +2801,7 @@ h3 .m-doc-template, h3 .m-doc-include {
   font-weight: normal;
 }
 .m-doc-template, dl.m-doc dd, ul.m-doc li > span.m-doc {
-  color: #888888;
-}
-dl.m-doc dd svg.m-math, ul.m-doc li > span.m-doc svg.m-math {
-  fill: #888888;
+   font-size: 0.9rem;
 }
 .m-doc-template a, dl.m-doc dd a, ul.m-doc li > span.m-doc a {
   color: #ffa866;
