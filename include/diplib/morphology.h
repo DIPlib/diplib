@@ -343,7 +343,12 @@ DIP_EXPORT void BasicMorphology(
 
 } // namespace detail
 
-/// \brief Applies the dilation.
+/// \brief Applies the dilation with a standard or custom structuring element.
+///
+/// If the structuring element $S$ is a set (i.e. a binary image, or a footprint), the dilation of image $f$
+/// is defined as $(\delta f)(x) = \bigvee\limits_{z \in S} f(x+z)$ (the supremum or maximum over the pixels
+/// covered by the structuring element).
+/// For gray-scale structuring elements, it is defined as $(\delta f)(x) = \bigvee\limits_{z} f(x+z) + S(z)$.
 ///
 /// `se` defines the structuring element, see \ref dip::StructuringElement for options and details.
 ///
@@ -374,9 +379,14 @@ DIP_NODISCARD inline Image Dilation(
    return out;
 }
 
-/// \brief Applies the erosion with a standard structuring element.
+/// \brief Applies the erosion with a standard or custom structuring element.
 ///
-/// `se` defines the structuring element. See \ref dip::Dilation for details and warnings.
+/// If the structuring element $S$ is a set (i.e. a binary image, or a footprint), the erosion of image $f$
+/// is defined as $(\epsilon f)(x) = \bigwedge\limits_{z \in S} f(x+z)$ (the infimum or minimum over the pixels
+/// covered by the structuring element).
+/// For gray-scale structuring elements, it is defined as $(\epsilon f)(x) = \bigwedge\limits_{z} f(x+z) - S(z)$.
+///
+/// `se` defines the structuring element, see \ref dip::StructuringElement for options and details.
 ///
 /// `boundaryCondition` determines the boundary conditions. See \ref dip::BoundaryCondition.
 /// The default value, and most meaningful one, is `"add max"`, but any value can be used.
@@ -405,9 +415,11 @@ DIP_NODISCARD inline Image Erosion(
    return out;
 }
 
-/// \brief Applies the closing with a standard structuring element.
+/// \brief Applies the closing with a standard or custom structuring element.
 ///
-/// `se` defines the structuring element. See \ref dip::Dilation for details and warnings.
+/// The closing is defined as a dilation followed by its complementary erosion (i.e. with the mirrored structuring element).
+///
+/// `se` defines the structuring element, see \ref dip::StructuringElement for options and details.
 ///
 /// `boundaryCondition` determines the boundary conditions. See \ref dip::BoundaryCondition.
 /// Meaningful values for the closing are `"add max"` and `"add min"`, but any value can
@@ -438,9 +450,11 @@ DIP_NODISCARD inline Image Closing(
    return out;
 }
 
-/// \brief Applies the opening with a standard structuring element.
+/// \brief Applies the opening with a standard or custom structuring element.
 ///
-/// `se` defines the structuring element. See \ref dip::Dilation for details and warnings.
+/// The opening is defined as a erosion followed by its complementary dilation (i.e. with the mirrored structuring element).
+///
+/// `se` defines the structuring element, see \ref dip::StructuringElement for options and details.
 ///
 /// `boundaryCondition` determines the boundary conditions. See \ref dip::BoundaryCondition.
 /// Meaningful values for the opening are `"add max"` and `"add min"`, but any value can
@@ -681,7 +695,7 @@ DIP_NODISCARD inline Image Lee(
 /// - `"average"`: computes the average of the result of the first two modes.
 ///
 /// `se` defines the structuring element, and `boundaryCondition` the boundary conditions.
-/// See \ref dip::Dilation for a description of these parameters..
+/// See \ref dip::Dilation for a description of these parameters.
 DIP_EXPORT void MorphologicalSmoothing(
       Image const& in,
       Image& out,
@@ -706,7 +720,7 @@ DIP_NODISCARD inline Image MorphologicalSmoothing(
 /// whichever is closest to the input image.
 ///
 /// `se` defines the structuring element, and `boundaryCondition` the boundary conditions.
-/// See \ref dip::Dilation for a description of these parameters..
+/// See \ref dip::Dilation for a description of these parameters.
 DIP_EXPORT void MorphologicalSharpening(
       Image const& in,
       Image& out,
