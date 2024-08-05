@@ -25,7 +25,7 @@ import sys
 
 
 # (WINDOWS ONLY) First, we make sure that the DIP.dll file is on the PATH
-if os.name == 'nt' and @pydip_wheel_include_libs@ == False:
+if os.name == "nt" and @pydip_wheel_include_libs@ == False:
     _pydip_dir = os.path.join("@CMAKE_INSTALL_PREFIX@", "@LIBRARY_DESTINATION@")
     try:
         os.add_dll_directory(_pydip_dir)
@@ -38,7 +38,7 @@ if os.name == 'nt' and @pydip_wheel_include_libs@ == False:
 try:
     from .PyDIP_bin import *
 except:
-    if os.name == 'nt' and @pydip_wheel_include_libs@ == True:
+    if os.name == "nt" and @pydip_wheel_include_libs@ == True:
         print("Could not load PyDIP binary extension. Did you install the Microsoft Visual C++ Redistributable?")
     raise
 
@@ -108,7 +108,7 @@ def ImageRead(*args, **kwargs):
 
 
 # Here we display library information
-if hasattr(sys, 'ps1'):
+if hasattr(sys, "ps1"):
     print(libraryInformation.name + " -- " + libraryInformation.description)
     print("Version " + libraryInformation.version + " (" + libraryInformation.date + ")")
     print("For more information see " + libraryInformation.URL)
