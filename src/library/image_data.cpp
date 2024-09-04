@@ -16,6 +16,7 @@
  */
 
 #include <algorithm>
+#include <cstddef>   // std::max_align_t
 #include <cstdint>
 #include <cstdlib>   // std::malloc, std::realloc, std::free
 #include <iostream>
@@ -172,12 +173,21 @@ DataSegment AlignedAllocInterface::AllocateData(
       dip::Tensor const& tensor,
       dip::sint& tensorStride
 ) {
+   // Determine scanline padding
+   dip::uint sample_size = dataType.SizeOf();
+   UnsignedArray padded_sizes = sizes;
+   if( !sizes.empty() ) {
+      padded_sizes[ 0 ] = div_ceil( sizes[ 0 ] * sample_size, alignment_ ) * alignment_ / sample_size;
+   }
    // Determine image size
-   dip::uint size = FindNumberOfPixels( sizes );
+   dip::uint size = FindNumberOfPixels( padded_sizes );
    size *= tensor.Elements();
-   size *= dataType.SizeOf();
+   size *= sample_size;
    // Allocate enough memory to store the data with an offset necessary for the requested alignment
-   dip::uint unalignedSize = size + alignment_;
+   dip::uint unalignedSize = size;
+   if( alignment_ > alignof( std::max_align_t )) {
+      unalignedSize += alignment_;
+   }
    // Allocate unaligned memory
    void* pUnaligned = std::malloc( unalignedSize );
    if( !pUnaligned ) {
@@ -185,13 +195,16 @@ DataSegment AlignedAllocInterface::AllocateData(
    }
    auto dataBlock = DataSegment{ pUnaligned, std::free };
    // Create pointer to the aligned block within the unaligned block
-   void* pAligned = std::align( alignment_, size, pUnaligned, unalignedSize );
-   if( !pAligned ) {
-      DIP_THROW_RUNTIME( "Failed to align memory" );
+   void* pAligned = pUnaligned;
+   if( alignment_ > alignof( std::max_align_t )) {
+      pAligned = std::align( alignment_, size, pUnaligned, unalignedSize );
+      if( !pAligned ) {
+         DIP_THROW_RUNTIME( "Failed to align memory" );
+      }
    }
    // Set strides and tensorStride
    tensorStride = 1; // We set tensor strides to 1 by default.
-   ComputeStrides( sizes, tensor.Elements(), strides );
+   ComputeStrides( padded_sizes, tensor.Elements(), strides );
    // Set origin and return shared pointer to unaligned data block.
    origin = static_cast< uint8* >( pAligned );
    return dataBlock;
@@ -927,6 +940,24 @@ DOCTEST_TEST_CASE("[DIPlib] testing dip::Image move constructor") {
    DOCTEST_CHECK( other.IsForged() );
    DOCTEST_CHECK( other.At( 4, 2 ) == 5 );
    DOCTEST_CHECK( !img.IsForged() ); // NOLINT(*-use-after-move)
+}
+
+DOCTEST_TEST_CASE("[DIPlib] testing dip::AlignedAllocInterface") {
+   constexpr dip::uint N = 16;
+   dip::Image img;
+   img.SetExternalInterface( dip::AlignedAllocInterface::GetInstance< N >() );
+   img.SetSizes( { 5, 3 } );
+   img.SetTensorSizes( 3 );
+   img.SetDataType( dip::DT_SINT16 );
+   // This image has 5 * 3 * 2 = 30 samples per scan line, which doesn't divide evenly by N.
+   img.Forge();
+   DOCTEST_REQUIRE( img.IsForged() );
+   DOCTEST_CHECK( reinterpret_cast< dip::uint >( img.Origin() ) % N == 0 );
+   DOCTEST_CHECK( reinterpret_cast< dip::uint >( img.At( 0, 1 ).Origin() ) % N == 0 );
+   DOCTEST_CHECK( img.Stride( 0 ) == img.TensorElements() );
+   DOCTEST_CHECK( img.Stride( 1 ) >= img.TensorElements() * img.Size( 0 ) );
+   DOCTEST_REQUIRE( img.Stride( 1 ) > 0 );
+   DOCTEST_CHECK(( static_cast< dip::uint >( img.Stride( 1 )) * img.DataType().SizeOf() ) % N == 0 );
 }
 
 #endif // DIP_CONFIG_ENABLE_DOCTEST

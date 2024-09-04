@@ -10,6 +10,10 @@ date: 2020-00-00
 
 ### Changed functionality
 
+- `dip::AlignedAllocInterface` now aligns each of the scanlines (rows of the image), not just the first one.
+  This means it can be used to create images that are compatible with some image display widgets (Windows
+  bitmap, Qt image, etc.).
+
 ### Bug fixes
 
 ### Updated dependencies
@@ -62,6 +66,8 @@ None, but see bugfixes to *DIPlib*.
 ### Changed functionality
 
 ### Bug fixes
+
+- The Java interface used `Native.loadLibrary()`, which was deprecated. It now uses `Native.load()` instead.
 
 ### Build changes
 

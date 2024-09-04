@@ -120,26 +120,23 @@ class DIP_CLASS_EXPORT ExternalInterface {
 
 /// \brief \ref dip::ExternalInterface that allocates aligned data.
 ///
-/// The class is designed as a singleton: \ref dip::AlignedAllocInterface::GetInstance()
-/// returns a pointer to a unique instance.
+/// Image data allocated by this external interface have each scan line aligned on a `alignment`-byte boundary.
+/// That is, the pointer to the first pixel of each scan line is aligned. This is accomplished by padding the
+/// scan lines so that their length is a multiple of `alignment`.
+///
+/// If `alignment` is larger than `alignof(std::max_align_t)`, then the first scan line is additionally aligned
+/// by padding to its left: a larger buffer is allocated and `std::align()` is used to get the aligned pointer.
+///
+/// The class is designed as a singleton: \ref GetInstance returns a pointer to a unique instance.
 /// The alignment, in bytes, is passed to `GetInstance` as a template parameter.
 ///
-/// For example, here we create an allocator that guarantees 64-byte alignment:
+/// For example, here we create an allocator that guarantees 4-byte (32-bits) alignment:
 ///
 /// ```cpp
-/// ExternalInterface* ei = dip::AlignedAllocInterface::GetInstance<64>();
+/// ExternalInterface* ei = dip::AlignedAllocInterface::GetInstance<4>();
 /// ```
 ///
-/// Note: This interface is only suitable for allocating blocks of memory that are
-/// larger than the alignment size. Internally, the class allocates an oversized memory block
-/// padded with `alignment`, and returns an aligned pointer within that oversized block.
-///
-/// Note: Only the first pixel of the first image line is aligned at the given boundary.
-/// Subsequent pixels and subsequent lines are not.
-/// !!! TODO
-///     This allocator should make it so that each image line is aligned at such a boundary,
-///     by adding some padding in between image lines. This would make this allocator useful
-///     for compatibility with some libraries/UIs that expect that type of alignment.
+/// The scanline dimension is the first dimension.
 class DIP_CLASS_EXPORT AlignedAllocInterface : public ExternalInterface {
    private:
       // Private constructor to enforce the singleton interface
@@ -159,7 +156,7 @@ class DIP_CLASS_EXPORT AlignedAllocInterface : public ExternalInterface {
             dip::sint& tensorStride
       ) override;
 
-      /// \brief Singleton interface, templated in the alignment parameter.
+      /// \brief Singleton interface, templated in the `alignment` parameter.
       /// Only one instance is needed for each distinct alignment.
       /// `alignment` is in bytes.
       template< dip::uint alignment >

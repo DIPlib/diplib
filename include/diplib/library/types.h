@@ -938,6 +938,7 @@ class AlignedBuffer {
       void free_array() noexcept {
          if( data_ ) {
             std::free( data_ );
+            data_ = nullptr;
          }
       }
 };
