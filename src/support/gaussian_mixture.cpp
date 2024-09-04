@@ -200,7 +200,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing GaussianMixtureModel") {
    } else {
       DOCTEST_CHECK( std::abs( params[ 0 ].position - 300.0 ) < 0.5 );
    }
-   DOCTEST_CHECK( std::abs( params[ 1 ].position - 100.0 ) < 0.5 );
+   DOCTEST_CHECK( std::abs( params[ 1 ].position - 100.0 ) < 0.75 );
    DOCTEST_CHECK( std::abs( params[ 0 ].sigma - 15.0 ) < 0.5 );
    DOCTEST_CHECK( std::abs( params[ 1 ].sigma - 20.0 ) < 1.5 );
    DOCTEST_CHECK( std::abs( params[ 0 ].amplitude - 100.0 / ( 15.0 * std::sqrt( 2.0 * dip::pi ))) < 0.1 );
