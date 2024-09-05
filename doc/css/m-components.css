@@ -420,6 +420,9 @@ table.m-table th, table.m-table td {
   border-color: var(--line-color);
   padding: 0.1rem 0.6rem;
 }
+.m-grid table.m-table tr:nth-child(even) {
+   background-color: var(--dim-filled-background-color);
+}
 .m-spaced table.m-table td { /* We can put a table inside a div with class="m-spaced" to make more space between rows */
   padding-bottom: 0.5rem;
 }

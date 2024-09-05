@@ -707,6 +707,9 @@ table.m-table th, table.m-table td {
   border-color: #ff7400;
   padding: 0.1rem 0.6rem;
 }
+.m-grid table.m-table tr:nth-child(even) {
+   background-color: #e6e6e6;
+}
 .m-spaced table.m-table td {
   padding-bottom: 0.5rem;
 }

@@ -348,37 +348,41 @@ struct DIP_NO_EXPORT DataType {
    ///
    /// Valid values are:
    ///
-   /// Classes constant   | Definition
-   /// ------------------ | ----------
-   /// `Class_Bin`        | \ref DT_BIN
-   /// `Class_UInt8`      | \ref DT_UINT8
-   /// `Class_SInt8`      | \ref DT_SINT8
-   /// `Class_UInt16`     | \ref DT_UINT16
-   /// `Class_SInt16`     | \ref DT_SINT16
-   /// `Class_UInt32`     | \ref DT_UINT32
-   /// `Class_SInt32`     | \ref DT_SINT32
-   /// `Class_UInt64`     | \ref DT_UINT64
-   /// `Class_SInt64`     | \ref DT_SINT64
-   /// `Class_SFloat`     | \ref DT_SFLOAT
-   /// `Class_DFloat`     | \ref DT_DFLOAT
-   /// `Class_SComplex`   | \ref DT_SCOMPLEX
-   /// `Class_DComplex`   | \ref DT_DCOMPLEX
-   /// `Class_Binary`     | `Class_Bin`
-   /// `Class_UInt`       | `Class_UInt8 + Class_UInt16 + Class_UInt32 + Class_UInt64`
-   /// `Class_SInt`       | `Class_SInt8 + Class_SInt16 + Class_SInt32 + Class_SInt64`
-   /// `Class_Integer`    | `Class_UInt + Class_SInt`
-   /// `Class_IntOrBin`   | `Class_Integer + Class_Binary`
-   /// `Class_Float`      | `Class_SFloat + Class_DFloat`
-   /// `Class_Complex`    | `Class_SComplex + Class_DComplex`
-   /// `Class_Flex`       | `Class_Float + Class_Complex`
-   /// `Class_FlexBin`    | `Class_Flex + Class_Binary`
-   /// `Class_Unsigned`   | `Class_Binary + Class_UInt`
-   /// `Class_Signed`     | `Class_SInt + Class_Float + Class_Complex`
-   /// `Class_Real`       | `Class_Integer + Class_Float`
-   /// `Class_SignedReal` | `Class_SInt + Class_Float`
-   /// `Class_NonBinary`  | `Class_Real + Class_Complex`
-   /// `Class_NonComplex` | `Class_Binary + Class_Real`
-   /// `Class_All`        | `Class_Binary + Class_Real + Class_Complex`
+   /// <div markdown="1" class="m-smaller-font m-grid m-block m-flat">
+   ///
+   /// Classes constant   | `DT_BIN` | `DT_UINT8` | `DT_SINT8` | `DT_UINT16` | `DT_SINT16` | `DT_UINT32` | `DT_SINT32` | `DT_UINT64` | `DT_SINT64` | `DT_SFLOAT` | `DT_DFLOAT` | `DT_SCOMPLEX` | `DT_DCOMPLEX`
+   /// ------------------ |:--------:|:----------:|:----------:|:-----------:|:-----------:|:-----------:|:-----------:|:-----------:|:-----------:|:-----------:|:-----------:|:-------------:|:-------------:
+   /// `Class_Bin`        | ✔        |            |            |             |             |             |             |             |             |             |             |               |
+   /// `Class_UInt8`      |          | ✔          |            |             |             |             |             |             |             |             |             |               |
+   /// `Class_SInt8`      |          |            | ✔          |             |             |             |             |             |             |             |             |               |
+   /// `Class_UInt16`     |          |            |            | ✔           |             |             |             |             |             |             |             |               |
+   /// `Class_SInt16`     |          |            |            |             | ✔           |             |             |             |             |             |             |               |
+   /// `Class_UInt32`     |          |            |            |             |             | ✔           |             |             |             |             |             |               |
+   /// `Class_SInt32`     |          |            |            |             |             |             | ✔           |             |             |             |             |               |
+   /// `Class_UInt64`     |          |            |            |             |             |             |             | ✔           |             |             |             |               |
+   /// `Class_SInt64`     |          |            |            |             |             |             |             |             | ✔           |             |             |               |
+   /// `Class_SFloat`     |          |            |            |             |             |             |             |             |             | ✔           |             |               |
+   /// `Class_DFloat`     |          |            |            |             |             |             |             |             |             |             | ✔           |               |
+   /// `Class_SComplex`   |          |            |            |             |             |             |             |             |             |             |             | ✔             |
+   /// `Class_DComplex`   |          |            |            |             |             |             |             |             |             |             |             |               | ✔
+   /// `Class_Binary`     | ✔        |            |            |             |             |             |             |             |             |             |             |               |
+   /// `Class_UInt`       |          | ✔          |            | ✔           |             | ✔           |             | ✔           |             |             |             |               |
+   /// `Class_SInt`       |          |            | ✔          |             | ✔           |             | ✔           |             | ✔           |             |             |               |
+   /// `Class_Integer`    |          | ✔          | ✔          | ✔           | ✔           | ✔           | ✔           | ✔           | ✔           |             |             |               |
+   /// `Class_IntOrBin`   | ✔        | ✔          | ✔          | ✔           | ✔           | ✔           | ✔           | ✔           | ✔           |             |             |               |
+   /// `Class_Float`      |          |            |            |             |             |             |             |             |             | ✔           | ✔           |               |
+   /// `Class_Complex`    |          |            |            |             |             |             |             |             |             |             |             | ✔             | ✔
+   /// `Class_Flex`       |          |            |            |             |             |             |             |             |             | ✔           | ✔           | ✔             | ✔
+   /// `Class_FlexBin`    | ✔        |            |            |             |             |             |             |             |             | ✔           | ✔           | ✔             | ✔
+   /// `Class_Unsigned`   | ✔        | ✔          |            | ✔           |             | ✔           |             | ✔           |             |             |             |               |
+   /// `Class_Signed`     |          |            | ✔          |             | ✔           |             | ✔           |             | ✔           | ✔           | ✔           | ✔             | ✔
+   /// `Class_Real`       |          | ✔          | ✔          | ✔           | ✔           | ✔           | ✔           | ✔           | ✔           | ✔           | ✔           |               |
+   /// `Class_SignedReal` |          |            | ✔          |             | ✔           |             | ✔           |             | ✔           | ✔           | ✔           |               |
+   /// `Class_NonBinary`  |          | ✔          | ✔          | ✔           | ✔           | ✔           | ✔           | ✔           | ✔           | ✔           | ✔           | ✔             | ✔
+   /// `Class_NonComplex` | ✔        | ✔          | ✔          | ✔           | ✔           | ✔           | ✔           | ✔           | ✔           | ✔           | ✔           |               |
+   /// `Class_All`        | ✔        | ✔          | ✔          | ✔           | ✔           | ✔           | ✔           | ✔           | ✔           | ✔           | ✔           | ✔             | ✔
+   ///
+   /// </div>
    ///
    /// Note that you can add these constants together, for example `dip::DataType::Class_UInt8 + dip::DataType::Class_UInt16`.
    ///
