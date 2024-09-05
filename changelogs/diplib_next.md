@@ -16,6 +16,9 @@ date: 2020-00-00
 
 ### Bug fixes
 
+- `dip::Log2` computed the natural logarithm instead of the base-2 logarithm. #168
+  See [PR #168](https://github.com/DIPlib/diplib/pull/168).
+
 ### Updated dependencies
 
 ### Build changes
