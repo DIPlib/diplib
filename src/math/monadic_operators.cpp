@@ -149,7 +149,7 @@ DIP_MONADIC_OPERATOR_FLEX( Exp, []( auto its ) { return std::exp( *its[ 0 ] ); }
 DIP_MONADIC_OPERATOR_FLOAT( Exp2, []( auto its ) { return std::exp2( *its[ 0 ] ); }, DataType::Class_Real, 20 )
 DIP_MONADIC_OPERATOR_FLOAT( Exp10, []( auto its ) { return std::pow( decltype( *its[ 0 ] )( 10 ), *its[ 0 ] ); }, DataType::Class_Real, 20 )
 DIP_MONADIC_OPERATOR_FLEX( Ln, []( auto its ) { return std::log( *its[ 0 ] ); }, DataType::Class_NonBinary, 20 )
-DIP_MONADIC_OPERATOR_FLOAT( Log2, []( auto its ) { return std::log( *its[ 0 ] ); }, DataType::Class_Real, 20 )
+DIP_MONADIC_OPERATOR_FLOAT( Log2, []( auto its ) { return std::log2( *its[ 0 ] ); }, DataType::Class_Real, 20 )
 DIP_MONADIC_OPERATOR_FLOAT( Log10, []( auto its ) { return std::log10( *its[ 0 ] ); }, DataType::Class_Real, 20 )
 
 DIP_MONADIC_OPERATOR_FLEX( Sin, []( auto its ) { return std::sin( *its[ 0 ] ); }, DataType::Class_NonBinary, 20 )
