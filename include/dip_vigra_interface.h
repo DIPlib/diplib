@@ -127,13 +127,13 @@ inline vigra::MultiArrayView< Dimensionality, PixelType, vigra::StridedArrayTag 
    DIP_THROW_IF( img.TensorElements() != templateParams.tensorElements, dip::E::NTENSORELEM_DONT_MATCH );
    DIP_THROW_IF( img.DataType() != templateParams.dataType, dip::E::DATA_TYPES_DONT_MATCH );
    DIP_THROW_IF(( img.TensorElements() > 1 ) && ( img.TensorStride() != 1 ), "Vigra requires a tensor stride of 1" );
-   VigraView::difference_type shape;
-   VigraView::difference_type stride;
+   typename VigraView::difference_type shape;
+   typename VigraView::difference_type stride;
    for( dip::uint ii = 0; ii < Dimensionality; ++ii ) {
       shape[ ii ] = img.Size( ii );
       stride[ ii ] = img.Stride( ii ) / static_cast< dip::sint >( templateParams.tensorElements );
    }
-   auto ptr = static_cast< VigraView::const_pointer >( img.Origin() );
+   auto ptr = static_cast< typename VigraView::const_pointer >( img.Origin() );
    return VigraView( shape, stride, ptr );
 }
 

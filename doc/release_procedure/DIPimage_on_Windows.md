@@ -160,7 +160,7 @@ FFTW comes with the GNU General Public License, Version 2 which is not compatibl
    setenv('PATH',['C:\diplib\diplib\bin',';',getenv('PATH')]);
    dipsetpref('ImageFilePath', 'c:/diplib/images')
    dipimage
-   a = readim('erika.ics','')
+   a = readim('trui.ics','')
    b = ft(a,{},[])
    c = ift(b,{},[])
    viewslice(a)

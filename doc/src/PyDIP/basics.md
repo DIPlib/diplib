@@ -135,10 +135,10 @@ It is also possible to use `imageio.v3.imread()`, `matplotlib.pyplot.imread()`, 
 all return a *NumPy* array that can be directly used by *PyDIP* functions, or converted into a `dip.Image` object.
 ```python
 import matplotlib.pyplot as plt
-b = dip.Image(plt.imread('examples/erika.tif'))
+b = dip.Image(plt.imread('examples/cameraman.tif'))
 b.Show()
 ```
-![The 'erika' image](basics-8.png)
+![The 'cameraman' image](basics-8.png)
 
 
 \section pum_basics_color Color images

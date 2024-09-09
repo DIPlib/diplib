@@ -230,7 +230,7 @@ DIP_NODISCARD inline Image Shift(
 /// to change its phase in such a way that the image `img` will be shifted. For example:
 ///
 /// ```cpp
-/// dip::Image img = dip::ImageReadTIFF( "erika" );
+/// dip::Image img = dip::ImageReadICS( "trui" );
 /// dip::Image ft = dip::FourierTransform( img );
 /// dip::ShiftFT( ft, ft, { 10.3, -5.2 } );
 /// dip::Image shifted = dip::FourierTransform( ft, { "inverse", "real" } );
@@ -239,7 +239,7 @@ DIP_NODISCARD inline Image Shift(
 /// Produces the same output as:
 ///
 /// ```cpp
-/// dip::Image img = dip::ImageReadTIFF( "erika" );
+/// dip::Image img = dip::ImageReadICS( "trui" );
 /// dip::Image shifted = dip::Shift( img, { 10.3, -5.2 }, "fourier" );
 /// ```
 DIP_EXPORT void ShiftFT(

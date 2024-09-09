@@ -69,7 +69,7 @@ int main() {
 
       // Read an image from disk
       vigra::MultiArray< 2, vigra::UInt8 > input;
-      vigra::importImage( DIP_EXAMPLES_DIR "/erika.tif", input );
+      vigra::importImage( DIP_EXAMPLES_DIR "/cameraman.tif", input );
       input = input.subarray( { 0, 5 }, { 255, 250 } ); // Crop the image so it is not square, we want to see proper sizes in DIPlib
 
       // Create a DIPlib object that points to the pixel data in `input`

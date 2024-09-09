@@ -2,12 +2,12 @@ import diplib as dip
 
 # Replicate what ../cpp/oversegmentation.cpp does
 
-input = dip.ImageReadICS("../trui.ics")
+input = dip.ImageRead("../orka.tif")
 superpixels = dip.Superpixels(input, 0.01, 1.0, "CW", {"no gaps"})
 msr = dip.MeasurementTool.Measure(superpixels, input, ["Mean"])
 graph = dip.RegionAdjacencyGraph(superpixels, msr["Mean"], "touching")
 graph = graph.MinimumSpanningForest([1])
-graph.RemoveLargestEdges(80 - 1)  # Find 80 regions
+graph.RemoveLargestEdges(50 - 1)  # Find 50 regions
 output = dip.Relabel(superpixels, graph)
 
 superpixels = dip.ObjectToMeasurement(superpixels, msr["Mean"])

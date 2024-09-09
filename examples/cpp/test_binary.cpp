@@ -24,8 +24,8 @@ int main( int argc, char** argv ) {
       inputPath = argv[ 1 ];
    }
 
-   std::cout << "Reading " << inputPath << "/erika\n";
-   dip::Image image = dip::ImageReadTIFF( inputPath + "/erika" ) > 100;
+   std::cout << "Reading " << inputPath << "/cameraman\n";
+   dip::Image image = dip::ImageReadTIFF( inputPath + "/cameraman" ) > 100;
    dip::Tile( { image, image, image, image, image, image, image, image, image, image, image, image }, image, { 4, 3 } );
    std::cout << image;
 

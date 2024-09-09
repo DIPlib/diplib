@@ -30,7 +30,7 @@
 %  maxshift = [] (meaning no range limitation)
 %
 % EXAMPLE:
-%  a = readim('erika');
+%  a = readim('trui');
 %  b = shift(a,[-1.4 3.75]);
 %  sv1 = findshift(a,b)
 %  sv2 = findshift(a,b,'iter')

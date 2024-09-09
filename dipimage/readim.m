@@ -9,7 +9,7 @@
 %            IMREAD, or 'bioformats'.
 %
 % DEFAULTS:
-%  filename = 'erika.ics'
+%  filename = 'trui.ics'
 %  format = ''
 %
 % NOTES:
@@ -69,7 +69,7 @@ if nargin < 2
    format = '';
 end
 if nargin < 1
-   filename = 'erika.ics';
+   filename = 'trui.ics';
 end
 
 % If we don't have a format, look for the file name extension

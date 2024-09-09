@@ -15,14 +15,14 @@
 %            the function to search for the correct type.
 %
 % DEFAULTS:
-%  filename = 'erika.ics'
+%  filename = 'trui.ics'
 %  spacing = 4
 %  origin = []
 %  sizes = []
 %  format = ''
 %
 % EXAMPLE:
-%  out = readroiim('erika',[2 2],[64 64],[128 128])
+%  out = readroiim('trui',[2 2],[64 64],[128 128])
 %
 % NOTE:
 %  For TIFF files, only the first image in the file is read. To control
@@ -46,7 +46,7 @@
 function [image,file_info] = readroiim(filename,spacing,origin,sizes,format)
 
 if nargin < 1
-   filename = 'erika.ics';
+   filename = 'trui.ics';
 end
 if nargin < 2
    spacing = 4;

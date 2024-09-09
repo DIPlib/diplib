@@ -17,7 +17,7 @@
 %  c = cell2im(b,'srgb');  % c is identical to a.
 %
 %  a = cell(2,2);
-%  a{1,1} = readim('erika');
+%  a{1,1} = readim('trui');
 %  a{1,2} = gaussf(a{1,1});
 %  a{2,1} = a{1,2};
 %  a{2,2} = medif(a{1,1});

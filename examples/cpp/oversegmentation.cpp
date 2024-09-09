@@ -4,7 +4,7 @@
  */
 
 #include "diplib.h"
-#include "diplib/file_io.h"
+#include "diplib/simple_file_io.h"
 #include "diplib/segmentation.h"
 #include "diplib/regions.h"
 #include "diplib/measurement.h"
@@ -13,7 +13,7 @@
 
 int main() {
    // Read image
-   dip::Image input = dip::ImageReadICS( DIP_EXAMPLES_DIR "/trui.ics" );
+   dip::Image input = dip::ImageRead( DIP_EXAMPLES_DIR "/orka.tif" );
 
    // Create superpixels
    dip::Image superpixels = dip::Superpixels( input, 0.01, 1.0, "CW", { "no gaps" } );
@@ -25,7 +25,7 @@ int main() {
 
    // Simplify graph
    graph = graph.MinimumSpanningForest( { 1 } );
-   graph.RemoveLargestEdges( 80 - 1 ); // Find 80 regions
+   graph.RemoveLargestEdges( 50 - 1 ); // Find 50 regions
 
    // Convert back to a labeled image
    dip::Image output = dip::Relabel( superpixels, graph );

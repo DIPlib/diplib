@@ -555,7 +555,7 @@ DIP_NODISCARD inline Image CoherenceEnhancingDiffusion(
 /// # Example:
 ///
 /// ```cpp
-/// dip::Image in = dip::ImageReadTIFF( "erika.tif" );             // Defined in "diplib/file_io.h"
+/// dip::Image in = dip::ImageReadICS( "trui.ics" );               // Defined in "diplib/file_io.h"
 /// dip::Image st = dip::StructureTensor( in, {}, { 1 }, { 3 } );  // Defined in "diplib/analysis.h"
 /// dip::ImageArray params = dip::StructureTensorAnalysis( st, { "orientation" } );
 /// dip::Image out = dip::AdaptiveGauss( in, { params[ 0 ] }, { 2, 0 } );
@@ -616,7 +616,7 @@ DIP_NODISCARD inline Image AdaptiveGauss(
 /// # Example:
 ///
 /// ```cpp
-/// dip::Image in = dip::ImageReadTIFF( "erika.tif" );     // Defined in "diplib/file_io.h"
+/// dip::Image in = dip::ImageReadICS( "trui.ics" );           // Defined in "diplib/file_io.h"
 /// dip::Image st = dip::StructureTensor( in, {}, {1}, {3} );  // Defined in "diplib/analysis.h"
 /// dip::ImageArray params = dip::StructureTensorAnalysis( st, { "orientation", "curvature" } );
 /// dip::Image out = dip::AdaptiveBanana( in, dip::CreateImageConstRefArray( params ), { 2, 0 } );
