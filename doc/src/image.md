@@ -1113,7 +1113,7 @@ dip::Image img(
 
 \subsection external_interface Define an image's allocator
 
-The the previous sub-section we saw how to encapsulate external data. The
+Int the previous sub-section we saw how to encapsulate external data. The
 resulting image object can be used as input and output, but most *DIPlib*
 functions will reforge their output images to be of appropriate size and data type.
 Unless the allocated image is of suitable size and data type, and the image is
@@ -1162,7 +1162,7 @@ class VectorInterface : public dip::ExternalInterface {
          if(( sizes.size() != 2 ) || ( !tensor.IsScalar() )) {
             return nullptr; // We do not want to handle such images.
          }
-         auto data = new std::vector< unsigned char >( sizes[ 0 ] * sizes[ 1 ], 0 );
+         auto data = new std::vector< unsigned char >( sizes[ 0 ] * sizes[ 1 ] * datatype.SizeOf(), 0 );
          origin = data.data();
          strides = dip::UnsignedArray{ 1, sizes[ 0 ] };
          tstride = 1;
