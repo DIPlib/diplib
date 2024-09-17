@@ -66,7 +66,8 @@ mkdir ~/src
 cd ~/src
 git clone https://github.com/DIPlib/diplib.git
 ```
-This creates a directory `src/diplib` in your home directory.
+This creates a directory `src/diplib` in your home directory. Feel free to use any other
+directory if you prefer.
 
 
 \section linux_build Building
@@ -89,8 +90,14 @@ This will install *DIPlib*, *DIPviewer*, *DIPjavaio*, *DIPimage* and the documen
 under the `lib`, `include` and `share` directories in your home directory.
 
 Before running `make`, examine the output of `cmake` to verify all the features you need are enabled,
-and that your chosen dependencies were found. See \ref cmake_variables for a summary of all the
-*CMake* options to manually specify paths and configure your build.
+and that your chosen dependencies were found. This is also a good moment to disable the features that
+you don't need. By default, everything will be build and installed, if the required external dependencies
+are found: you need *FreeGLUT* or *GLFW* for *DIPviewer*, a *Java JDK* for *DIPjavaio*, *Python* for *PyDIP*, and
+*MATLAB* for *DIPimage*. Add `-DDIP_BUILD_DIPVIEWER=Off`, `-DDIP_BUILD_JAVAIO=Off`, `-DDIP_BUILD_DIPIMAGE=Off`
+or `-DDIP_BUILD_PYDIP=Off` to your *CMake* command to turn the corresponding component off, if you don't
+need that component.
+
+See \ref cmake_variables for a summary of all the *CMake* options to manually specify paths and configure your build.
 
 *PyDIP* is installed separately through `pip`. Once the `install` target has finished building
 and installing, run

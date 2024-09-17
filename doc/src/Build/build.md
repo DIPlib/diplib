@@ -93,7 +93,7 @@ Also define `DIP_CONFIG_HAS_DIPJAVAIO` for the function `dip::ImageRead` to be a
 - `DIP`:           builds the *DIPlib* library
 - `DIPviewer`:     builds the *DIPviewer* module (plus the *DIPlib* library)
 - `DIPjavaio`:     builds the *DIPjavaio* module (plus the *DIPlib* library)
-- `PyDIP`:         builds the *PyDIP* Python module (includes the `DIP`, `DIPviewer` and `DIPjavaio` targets)
+- `PyDIP`:         builds the *PyDIP* *Python* module (includes the `DIP`, `DIPviewer` and `DIPjavaio` targets)
 - `dipview`:       builds the standalone `dipview` image viewer program
 - `dipviewjava`:   builds the *DIPjavaio*-enabled standalone `dipviewjava` image viewer program
 - `all`: (default) builds all of the targets above that were configured
@@ -103,8 +103,8 @@ Also define `DIP_CONFIG_HAS_DIPJAVAIO` for the function `dip::ImageRead` to be a
 - `apidoc`:        builds all the HTML documentation
 - `examples`:      builds the example programs
 - `package`:       creates a distributable package for `install` [note: not fully functional]
-- `bdist_wheel`:   builds a Python wheel for *PyDIP*
-- `pip_install`:   builds and installs a Python wheel for *PyDIP*
+- `bdist_wheel`:   builds a *Python* wheel for *PyDIP*
+- `pip_install`:   builds and installs a *Python* wheel for *PyDIP*
 - `pip_uninstall`: uninstalls *PyDIP*
 
 The `apidoc` target requires that [*dox++*](https://crisluengo.github.io/doxpp/) is available,
@@ -161,7 +161,7 @@ Controlling the build of *DIPjavaio*:
     if its dependencies are available.
 - `JAVA_HOME`: Set the path to the JDK to use.
 - `DIP_JAVA_VERSION`: Set the version of Java to target. Defaults to "1.8".
-- Note that for the *MATLAB* toolbox, *DIPjavaio* is not used; build this only if you work in C++ or Python.
+- Note that for the *MATLAB* toolbox, *DIPjavaio* is not used; build this only if you work in C++ or *Python*.
 
 Controlling the build of *DIPimage*:
 
@@ -169,15 +169,15 @@ Controlling the build of *DIPimage*:
     if *MATLAB* is available.
 - `Matlab_ROOT_DIR`: Set the path of the *MATLAB* installation to compile *DIPimage* against.
 - `JAVA_HOME`: Set the path to the JDK to use. Java is used by *DIPimage* to interface with *DIPviewer*.
-- `DIP_JAVA_VERSION`: Set the version of Java to target. Defaults to "1.8". For MATLAB versions prior to R2017b
+- `DIP_JAVA_VERSION`: Set the version of Java to target. Defaults to "1.8". For *MATLAB* versions prior to R2017b
     use "1.7" (and set `JAVA_HOME` to a release of the JDK that supports 1.7). You should not target a Java version
-    later than the one used by your MATLAB. Check the version of Java used by MATLAB by running `version -java`
-    on the MATLAB command prompt.
+    later than the one used by your *MATLAB*. Check the version of Java used by *MATLAB* by running `version -java`
+    on the *MATLAB* command prompt.
 
 Controlling the build of *PyDIP*:
 
 - `DIP_BUILD_PYDIP`: `On` (default) or `Off`. Choose whether to build the *PyDIP* package, if *Python* is available.
-- `Python_EXECUTABLE`: Set the path to the Python binary, in case *CMake* doesn't find the right one. It is also
+- `Python_EXECUTABLE`: Set the path to the *Python* binary, in case *CMake* doesn't find the right one. It is also
     possible to instead set `Python_ROOT_DIR`, see [*FindPython*](https://cmake.org/cmake/help/latest/module/FindPython.html).
 - `DIP_PYDIP_WHEEL_INCLUDE_LIBS`: `On` or `Off` (default). Include the *DIPlib* libraries in the *PyDIP* wheel.
     Turn on for binary distribution, keep off for personal builds.
@@ -222,4 +222,4 @@ Optionally, you can install [*OME Bio-Formats*](https://www.openmicroscopy.org/b
 enable *DIPimage* to read many microscopy image file formats (type `help readim` in *MATLAB*,
 after installing *DIPimage*, to learn more).
 
-*PyDIP* requires that [Python 3](https://www.python.org) be installed.
+*PyDIP* requires that [*Python 3*](https://www.python.org) be installed.

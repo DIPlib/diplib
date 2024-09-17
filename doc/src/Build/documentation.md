@@ -33,7 +33,7 @@ and on macOS with
 ```bash
 brew install python3 python3-pip
 ```
-We have built the documentation with *Python* 3.6 and 3.9, it is unknown if versions older
+We have built the documentation with *Python* 3.6, 3.9, and 3.12; it is unknown if versions older
 than 3.6 will work.
 
 Once *Python* is installed, install the required packages:
