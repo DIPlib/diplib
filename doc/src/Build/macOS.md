@@ -20,34 +20,43 @@ install these programs.
 See \ref building_cmake for additional information on the build targets and *CMake* configuration options.
 
 We mostly use the command line here, which you will find in the terminal window. To open a terminal window,
-press <key>Command</key> \<Command>-\<Space> to bring up the *Spotlight* search tool, type `terminal`,
-and press \<Enter>. Alternatively, in *Finder*, go to the 'Applications' folder, find the 'Utilities' folder in it,
+press **Command**{ .m-label .m-warning }-**Space**{ .m-label .m-warning } to bring up the *Spotlight* search tool,
+type `terminal`, and press **Enter**{ .m-label .m-warning }.
+Alternatively, in *Finder*, go to the 'Applications' folder, find the 'Utilities' folder in it,
 and the 'Terminal' app inside it.
 
 
 \section macos_silicon Computers with an Apple Silicon chip (M1 and M2 processors)
 
 If you are building *DIPlib* for use in C++ or *Python* on a Apple Silicon computer, you don't need to do anything
-special. The instructions below will result in native (aarch64) binaries that will work well with the aarch64 version
-of *Python*, the aarch64 version of *MATLAB*, and with your own aarch64 programs. If you already have *Homebrew*
+special. The instructions below will result in native (arm64) binaries that will work well with the arm64 version
+of *Python*, the arm64 version of *MATLAB*, and with your own arm64 programs. If you already have *Homebrew*
 installed, make sure it is the Apple Silicon native version (installed in `/opt/homebrew/`, not in `/usr/local/`),
 so that all libraries and so forth that you install use the same architecture.
 Note that it is possible to run two versions of *Homebrew* side by side.
 
-The latest versions of *MATLAB* run natively on Apple Silicon, again no special instructions are needed. However,
-the interface to *DIPviewer* (the `viewslice` function) depends on the *Java Native Access library*, and the version
+*MATLAB R2023b* and up can run natively on Apple Silicon (and we strongly recommend you install the Apple Silicon
+version of *MATLAB*, not the Intel version, if you can). No special instructions for building *DIPimage* are needed.
+However, the interface to *DIPviewer* (the `viewslice` function) depends on the *Java Native Access library*, and the version
 that comes with *MATLAB* (as of R2023b) does not work on Apple Silicon machines. If you find that `viewslice` does
 not work, see [this issue](https://github.com/DIPlib/diplib/issues/151).
 
-If you are running an older version of *MATLAB* for the x86_64 architecture (Intel), then you need to build *DIPlib*
-and *DIPimage* for that same x86_64 architecture.
+If you are running a version of *MATLAB* for the x86_64 architecture (Intel), then you need to build *DIPlib*
+and *DIPimage* for that same x86_64 architecture, see below.
+
+If you are not sure what architecture your *MATLAB* installation is for, then find the *MATLAB* binary and
+examine it with the `file` command (on the Terminal command line):
+```bash
+file /Applications/MATLAB_R2023b.app/Contents/MacOS/MATLAB
+```
+This will print out either "Mach-O 64-bit executable **x86_64**" or "Mach-O 64-bit executable **arm64**".
 
 \subsection macos_silicon_cross_compile Cross-compiling for the x86_64 architecture on an Apple Silicon Mac.
 
 There are two ways to cross-compile *DIPlib* for the x86_64 architecture. We recommend running all the instructions
 below in x86_64 compatibility mode (through Rosetta 2, which is an emulation layer).
 Rosetta 2 can be installed by launching any program that is built for the x86_64 architecture,
-if you have *MATLAB* running, you already have Rosetta 2 installed. You can install Rosetta 2 manually
+if you have an Intel-based *MATLAB* running, you already have Rosetta 2 installed. You can install Rosetta 2 manually
 by typing the following in a terminal window:
 ```bash
 softwareupdate --install-rosetta
@@ -68,7 +77,7 @@ A second way to cross-compile *DIPlib* for the x86_64 architecture is by adding
 `-DCMAKE_OSX_ARCHITECTURES=x86_64` to your `cmake` command (see ["Building"](#macos_building) below).
 This will have all tools run in native mode, but cross-compile to produce x86_64 binaries.
 This works, but I had trouble getting *CMake* to identify the right version of all the libraries,
-and attempting to link to aarch64 libraries, which of course doesn't work.
+and attempting to link to arm64 libraries, which of course doesn't work.
 I was able to build *DIPimage* this way, by disabling all optional components that depend on external libraries.
 
 
