@@ -36,7 +36,10 @@ date: 2020-00-00
 
 ### Bug fixes
 
-None, but see bugfixes to *DIPlib*.
+- The `dip_image` constructor (and consequently some functions such as `newim`) again accept
+  some data type aliases that existed in DIPimage 2.x (`'bin8'`, `'int'`, `'uint'`, `'float'`, `'complex'`).
+  These are not terribly useful, but there's no reason not to accept them.
+
 (See also bugfixes to *DIPlib*.)
 
 ### Build and installation changes

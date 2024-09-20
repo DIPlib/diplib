@@ -192,19 +192,19 @@ classdef dip_image
          %
          %   DATATYPE is a string representing the required data type of
          %   the created dip_image object. Possible string and aliases are:
-         %    - 'binary', aliases 'logical','bin'
+         %    - 'binary' == 'logical' == 'bin' == 'bin8'
          %    - 'uint8'
          %    - 'uint16'
-         %    - 'uint32'
+         %    - 'uint32' == 'uint'
          %    - 'uint64'
-         %    - 'int8', alias 'sint8'
-         %    - 'int16', alias 'sint16'
-         %    - 'int32', alias 'sint32'
-         %    - 'int64', alias 'sint64'
-         %    - 'single', alias 'sfloat'
-         %    - 'double', alias 'dfloat'
+         %    - 'int8' == 'sint8'
+         %    - 'int16' == 'sint16'
+         %    - 'int32' == 'sint32' == 'int'
+         %    - 'int64' == 'sint64'
+         %    - 'single' == 'sfloat' == 'float'
+         %    - 'double' == 'dfloat'
          %    - 'scomplex'
-         %    - 'dcomplex'
+         %    - 'dcomplex' == 'complex'
          %
          %   NDIMS is the number of dimensions in the data. It equals
          %   SIZE(ARRAY)-2, but can be set to be larger, to add singleton
@@ -2476,23 +2476,25 @@ function [str,complex] = matlabtype(str)
    if ~isstring(str), error('String expected'); end
    complex = false;
    switch str
-      case {'logical','binary','bin'}
+      case {'logical','binary','bin','bin8'}
          str = 'logical';
-      case {'uint8','uint16','uint32','uint64'}
+      case {'uint32','uint'}
+         str = 'uint32';
+      case {'uint8','uint16','uint64'}
          % nothing to do, it's OK.
       case {'int8','sint8'}
          str = 'int8';
       case {'int16','sint16'}
          str = 'int16';
-      case {'int32','sint32'}
+      case {'int32','sint32','int'}
          str = 'int32';
       case {'int64','sint64'}
          str = 'int64';
-      case {'single','sfloat'}
+      case {'single','sfloat','float'}
          str = 'single';
       case {'double','dfloat'}
          str = 'double';
-      case 'scomplex'
+      case {'scomplex','complex'}
          str = 'single';
          complex = true;
       case 'dcomplex'
