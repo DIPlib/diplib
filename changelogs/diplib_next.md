@@ -44,6 +44,9 @@ date: 2020-00-00
 
 ### Build and installation changes
 
+- Ported and improved the old *DIPimage* test suite, which is not (yet?) run automatically with `make test`
+  because it requires *DIPimage* to be installed.
+
 
 
 
