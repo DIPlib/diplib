@@ -120,40 +120,40 @@ error('Could not open the file for reading')
 function [image,file_info] = readim_core(filename,format)
 
 switch upper(format)
-  case 'ICS'
-     [image,file_info] = dip_fileio('readics',filename);
-  case 'TIFF'
-     [image,file_info] = dip_fileio('readtiff',filename);
-  case 'NPY'
-     [image,file_info] = dip_fileio('readnpy',filename);
-  case 'BIOFORMATS'
-     [image,file_info] = bfread(filename);
-  case ''
-     % If no format is given, try each of the readers in turn
-     try
-        [image,file_info] = dip_fileio('readics',filename);
-        return
-     end
-     try
-        [image,file_info] = dip_fileio('readtiff',filename);
-        return
-     end
-     try
-        [image,file_info] = dip_fileio('readnpy',filename);
-        return
-     end
-     try
-        [image,file_info] = bfread(filename);
-        return
-     end
-     try
-        [image,file_info] = mlread(filename);
-        return
-     end
-     error('Could not open the file with any method')
-  otherwise
-     % For any other format, relay to MATLAB's built-in file reading
-     [image,file_info] = mlread(filename,format);
+   case 'ICS'
+      [image,file_info] = dip_fileio('readics',filename);
+   case 'TIFF'
+      [image,file_info] = dip_fileio('readtiff',filename);
+   case 'NPY'
+      [image,file_info] = dip_fileio('readnpy',filename);
+   case 'BIOFORMATS'
+      [image,file_info] = bfread(filename);
+   case ''
+      % If no format is given, try each of the readers in turn
+      try
+         [image,file_info] = dip_fileio('readics',filename);
+      catch
+         try
+            [image,file_info] = dip_fileio('readtiff',filename);
+         catch
+            try
+               [image,file_info] = dip_fileio('readnpy',filename);
+            catch
+               try
+                  [image,file_info] = bfread(filename);
+               catch
+                  try
+                     [image,file_info] = mlread(filename);
+                  catch
+                     error('Could not open the file with any method')
+                  end
+               end
+            end
+         end
+      end
+   otherwise
+      % For any other format, relay to MATLAB's built-in file reading
+      [image,file_info] = mlread(filename,format);
 end
 
 
@@ -173,14 +173,16 @@ end
 if ~isempty(map)
    map = single(map*255);
    image = lut(image,map);
-elseif ndims(image)==3
+else
    if isa(image,'double')
       image = image*255;
    end
    image = dip_image(image);
-   image = joinchannels('sRGB',image);
-else
-   image = dip_image(image);
+   if ndims(image)==3
+      image = joinchannels('sRGB',image);
+   elseif ndims(image)==4
+      image = joinchannels('CMYK',image);
+   end
 end
 
 % Reading .png that set the sBit (e.g. exported by LabView) are not correctly

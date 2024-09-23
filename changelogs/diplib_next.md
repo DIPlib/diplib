@@ -35,6 +35,10 @@ date: 2020-00-00
 
 ### Changed functionality
 
+- The `'FileWriteWarning'` setting now also applies to the warning regarding conversion to `uint8` when
+  `imwrite` delegates to MATLAB's built-in image writing capability. A warning is no longer produced if
+  the image already was `uint8`.
+
 (See also changes to *DIPlib*.)
 
 ### Bug fixes
@@ -42,6 +46,9 @@ date: 2020-00-00
 - The `dip_image` constructor (and consequently some functions such as `newim`) again accept
   some data type aliases that existed in DIPimage 2.x (`'bin8'`, `'int'`, `'uint'`, `'float'`, `'complex'`).
   These are not terribly useful, but there's no reason not to accept them.
+
+- When `imread` delegated to MATLAB's built-in image file reading capability, it failed to tag
+  CMYK images as such.
 
 (See also bugfixes to *DIPlib*.)
 

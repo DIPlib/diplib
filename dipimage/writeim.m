@@ -88,30 +88,34 @@ end
 
 % Write
 switch upper(format)
-  case 'ICSV1'
+   case 'ICSV1'
       dip_fileio('writeics',image,filename,{},0,{'v1','fast'});
-  case 'ICSV2'
+   case 'ICSV2'
       dip_fileio('writeics',image,filename);
-  case 'TIFF'
-     if dipgetpref('FileWriteWarning')
-        warning('You are writing a ZIP compressed TIFF. Older image viewers may not be able to read this compression.');
-        dt = datatype(image);
-        if ~any(strcmp(dt,{'uint8','uint16','bin'}))
-           warning(['You are writing a ',dt,' TIFF. This is not supported by most image viewers.'])
-        end
-     end
-     dip_fileio('writetiff',image,filename);
-  case 'NPY'
-     dip_fileio('writenpy',image,filename);
-  otherwise
-     % For any other format, relay to MATLAB's built-in file writing
-     warning('Converting the image to uint8 for writing using MATLAB''s imwrite function')
-     if iscolor(image)
-        image = colorspace(image,'sRGB');
-     end
-     if ~isscalar(image)
-        image = tensortospatial(image,ndims(image)+1);
-     end
-     image = uint8(image);
-     imwrite(image,filename,format);
+   case 'TIFF'
+      if dipgetpref('FileWriteWarning')
+         warning('You are writing a ZIP compressed TIFF. Older image viewers may not be able to read this compression.');
+         dt = datatype(image);
+         if ~any(strcmp(dt,{'uint8','uint16','bin'}))
+            warning(['You are writing a ',dt,' TIFF. This is not supported by most image viewers.'])
+         end
+      end
+      dip_fileio('writetiff',image,filename);
+   case 'NPY'
+      dip_fileio('writenpy',image,filename);
+   otherwise
+      % For any other format, relay to MATLAB's built-in file writing
+      if dipgetpref('FileWriteWarning')
+         if ~strcmp(datatype(image),'uint8')
+            warning('Converting the image to uint8 for writing using MATLAB''s imwrite function')
+         end
+      end
+      if iscolor(image)
+         image = colorspace(image,'sRGB');
+      end
+      if ~isscalar(image)
+         image = tensortospatial(image,ndims(image)+1);
+      end
+      image = uint8(image);
+      imwrite(image,filename,format);
 end
