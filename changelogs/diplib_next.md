@@ -19,6 +19,9 @@ date: 2020-00-00
 - `dip::Log2` computed the natural logarithm instead of the base-2 logarithm. #168
   See [PR #168](https://github.com/DIPlib/diplib/pull/168).
 
+- `dip::StructureTensorAnalysis3D()` would try to read a non-existing tensor element when requesting the 'l3' output
+  (producing an obscure error message).
+
 ### Updated dependencies
 
 ### Build changes

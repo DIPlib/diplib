@@ -201,7 +201,7 @@ void StructureTensorAnalysis3D(
       *l2 = eigenvalues[ 1 ];
    }
    if( l3 ) {
-      *l3 = eigenvalues[ 3 ];
+      *l3 = eigenvalues[ 2 ];
    }
    if( energy ) {
       Add( eigenvalues[ 0 ], eigenvalues[ 1 ], *energy );
