@@ -185,14 +185,33 @@ in your home directory. You can pick whatever installation directory makes sense
 things get installed.
 
 Before running `make`, examine the output of `cmake` to verify all the features you need are enabled,
-and that your chosen dependencies were found. This is also a good moment to disable the features that
-you don't need. By default, everything will be build and installed, if the required external dependencies
-are found: you need *GLFW* for *DIPviewer*, a *Java JDK* for *DIPjavaio*, *Python* for *PyDIP*, and 
-*MATLAB* for *DIPimage*. Add `-DDIP_BUILD_DIPVIEWER=Off`, `-DDIP_BUILD_JAVAIO=Off`, `-DDIP_BUILD_DIPIMAGE=Off`
-or `-DDIP_BUILD_PYDIP=Off` to your *CMake* command to turn the corresponding component off, if you don't
-need that component.
+and that your chosen dependencies were found. Some hints to improve your configuration:
 
-See \ref cmake_variables for a summary of all the *CMake* options to manually specify paths and configure your build.
+  - By default, everything that can be build will be build and installed. Components can be build if the required
+    external dependencies were found: you need *GLFW* for *DIPviewer*, a *Java JDK* for *DIPjavaio*,
+    *Python* for *PyDIP*, and *MATLAB* for *DIPimage*.
+    Add `-DDIP_BUILD_DIPVIEWER=Off`, `-DDIP_BUILD_JAVAIO=Off`, `-DDIP_BUILD_DIPIMAGE=Off` or `-DDIP_BUILD_PYDIP=Off`
+    to your *CMake* command to turn the corresponding component off, if you don't need that component
+    (not building unnecessary components will save time).
+
+  - We recommend you additionally specify the `-DCMAKE_CXX_FLAGS="-march=native"` option to `cmake`.
+    This will enable additional optimizations that are specific to your computer.
+    Note that the resulting binaries will likely be slower on a different computer, and possibly not work at all.
+
+  - Build a static version of the *DIPlib* library only if you don't want to build *DIPimage* or *PyDIP*, as
+    these components will not work correctly unless the *DIPlib* library is a dynamic library.
+
+  - If you installed `libomp`, but *CMake* couldn't find it (you'll see "Multithreading disabled" in the configuration
+    report), you might need to tell *CMake* where to find the library and header files. When building for Apple Silicon,
+    Add `-DOpenMP_CXX_INCLUDE_DIR=/opt/homebrew/opt/libomp/include -DCMAKE_CXX_FLAGS=-L/opt/homebrew/opt/libomp/lib`
+    to your *CMake* command  (for Intel-based Macs the paths should start with `/usr/local/opt/libomp/`).
+
+  - If you want to use the *GCC* compiler, add `-DCMAKE_C_COMPILER=gcc-11 -DCMAKE_CXX_COMPILER=g++-11`
+    to the `cmake` command line. By default, `cmake` will find the compiler that came with *Xcode*.
+    (**Note**: at the time of this writing, `gcc-11` and `g++-11` were the executables installed by the `gcc` package.
+    This will change over time, as new versions of *GCC* are adopted by *HomeBrew*. Adjust as necessary.)
+
+  - See \ref cmake_variables for a summary of all the *CMake* options to manually specify paths and configure your build.
 
 *PyDIP* is installed separately through `pip`. Once the `install` target has finished building and installing, run
 ```bash
@@ -206,19 +225,6 @@ with a newer version of macOS and an older version of *Python*. The wheel will b
 to the `cmake` command and rebuilding the whole project would fix this issue (the 12 there being the version of
 macOS used to build you *Python* binaries, the error message will show what version you need to build for).
 \[Also, binaries built for an older macOS will work on a newer macOS, but not the other way around\].
-
-We recommend you additionally specify the `-DCMAKE_CXX_FLAGS="-march=native"` option to `cmake`.
-This will enable additional optimizations that are specific to your computer.
-Note that the resulting binaries will likely be slower on a different computer, and possibly not work at all.
-
-If you build a static version of the *DIPlib* library, *DIPimage* and *PyDIP* will not work correctly.
-
-Finally, if you installed the `gcc` package because you want to use *OpenMP*,
-add `-DCMAKE_C_COMPILER=gcc-11 -DCMAKE_CXX_COMPILER=g++-11` to the `cmake` command line.
-By default, `cmake` will find the compiler that came with *Xcode*.
-These two options specify that you want to use the *GCC* compilers instead.
-(**Note**: at the time of this writing, `gcc-11` and `g++-11` were the executables installed by the `gcc` package.
-This will change over time, as new versions of *GCC* are adopted by *HomeBrew*. Adjust as necessary.)
 
 
 \section macos_bioformats Enabling *Bio-Formats*
