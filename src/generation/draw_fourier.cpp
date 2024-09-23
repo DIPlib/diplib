@@ -304,7 +304,7 @@ void TestObject(
          DIP_STACK_TRACE_THIS( FTEllipsoid( out, sizes, params.objectAmplitude ));
       } else {
          for( dip::uint ii = 1; ii < params.objectSizes.size(); ++ii ) {
-            DIP_THROW_IF( params.objectSizes[ ii ] != params.objectSizes[ 0 ], "The combination of \"ellipsoid\" and \"gauss\" requires isotropic object sizes" );
+            DIP_THROW_IF( params.objectSizes[ ii ] != params.objectSizes[ 0 ], "The combination of \"ellipsoid\" and \"gaussian\" generation requires isotropic object sizes" );
          }
          out.Fill( 0 );
          DIP_STACK_TRACE_THIS( DrawBandlimitedBall( out, params.objectSizes[ 0 ], origin, { params.objectAmplitude }, S::FILLED, 0.9 ));
@@ -320,7 +320,7 @@ void TestObject(
          out -= inner;
       } else {
          for( dip::uint ii = 1; ii < params.objectSizes.size(); ++ii ) {
-            DIP_THROW_IF( params.objectSizes[ ii ] != params.objectSizes[ 0 ], "The combination of \"ellipsoid shell\" and \"gauss\" requires isotropic object sizes" );
+            DIP_THROW_IF( params.objectSizes[ ii ] != params.objectSizes[ 0 ], "The combination of \"ellipsoid shell\" and \"gaussian\" generation requires isotropic object sizes" );
          }
          out.Fill( 0 );
          DIP_STACK_TRACE_THIS( DrawBandlimitedBall( out, params.objectSizes[ 0 ], origin, { params.objectAmplitude }, S::EMPTY, 0.9 ));
@@ -349,7 +349,7 @@ void TestObject(
       }
    } else if( params.objectShape == S::CUSTOM ) {
       // Don't do anything, `out` already contains the shape
-      // TODO: call Shift if params.randomShift
+      // TODO: call Shift if params.randomShift and !isFT
    } else {
       DIP_THROW_INVALID_FLAG( params.objectShape );
    }
@@ -400,6 +400,7 @@ void TestObject(
 
          ToSpatial( out, outFT, isFT );
          DIP_STACK_TRACE_THIS( GaussFIR( out, out, { 0.9 * params.oversampling } ));
+         // TODO: If isFT, we can do GaussFT().
 
       } else if( params.pointSpreadFunction == S::INCOHERENT ) {
 
