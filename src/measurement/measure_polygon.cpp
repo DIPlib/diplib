@@ -383,7 +383,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing chain code polygons") {
    DOCTEST_CHECK( f.maxDiameter == doctest::Approx( 1.0 ));
    DOCTEST_CHECK( f.minDiameter == doctest::Approx( std::sqrt( 2 ) / 2.0 ));
 
-   cc.codes = { 0, 6, 4, 2 }; // A chain code that is a little square.
+   cc.codes = { 0u, 6u, 4u, 2u }; // A chain code that is a little square.
    DOCTEST_CHECK( cc.Area() == doctest::Approx( 4.0 ));
    p = cc.Polygon();
    DOCTEST_CHECK( p.vertices.size() == 8 );

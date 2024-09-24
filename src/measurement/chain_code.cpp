@@ -31,7 +31,7 @@ ChainCode ChainCode::ConvertTo8Connected() const {
    out.objectID = objectID;
    out.start = start;
    if( codes.size() < 3 ) {
-      #if __GNUC__ >= 12 && __GNUC__ <= 13
+      #if __GNUC__ >= 12 && __GNUC__ <= 14
          // A bug in GCC 12 puts out a bogus warning here
          #pragma GCC diagnostic push
          #pragma GCC diagnostic ignored "-Wstringop-overflow="
@@ -40,7 +40,7 @@ ChainCode ChainCode::ConvertTo8Connected() const {
       for( auto& c : out.codes ) {
          c = Code( c * 2, c.IsBorder() );
       }
-      #if __GNUC__ >= 12 && __GNUC__ <= 13
+      #if __GNUC__ >= 12 && __GNUC__ <= 14
          #pragma GCC diagnostic pop
       #endif
    } else {
@@ -247,11 +247,11 @@ DOCTEST_TEST_CASE("[DIPlib] testing ChainCode::Offset") {
 
 DOCTEST_TEST_CASE("[DIPlib] testing chain code conversion to polygon") {
    dip::ChainCode cc8;
-   cc8.codes = { 0, 0, 7, 6, 6, 5, 4, 4, 3, 2, 2, 1 }; // A chain code that is a little circle.
+   cc8.codes = { 0u, 0u, 7u, 6u, 6u, 5u, 4u, 4u, 3u, 2u, 2u, 1u }; // A chain code that is a little circle.
    cc8.is8connected = true;
    cc8.start = { 10, 12 };
    dip::ChainCode cc4;
-   cc4.codes = { 0, 0, 3, 0, 3, 3, 2, 3, 2, 2, 1, 2, 1, 1, 0, 1 }; // A 4-connected chain code for the same object.
+   cc4.codes = { 0u, 0u, 3u, 0u, 3u, 3u, 2u, 3u, 2u, 2u, 1u, 2u, 1u, 1u, 0u, 1u }; // A 4-connected chain code for the same object.
    cc4.is8connected = false;
    cc4.start = { 10, 12 };
    auto P8 = cc8.Polygon();

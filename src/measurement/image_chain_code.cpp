@@ -219,7 +219,7 @@ void ChainCode::Image( dip::Image& out ) const {
 
 DOCTEST_TEST_CASE("[DIPlib] testing chain code conversion to image and back") {
    dip::ChainCode cc;
-   cc.codes = { 0, 0, 7, 6, 6, 5, 4, 4, 3, 2, 2, 1 }; // A chain code that is a little circle.
+   cc.codes = { 0u, 0u, 7u, 6u, 6u, 5u, 4u, 4u, 3u, 2u, 2u, 1u }; // A chain code that is a little circle.
    cc.start = { 1, 0 }; // start so that the bounding box has a top-left corner at {0,0}.
    cc.is8connected = true;
    dip::Image img = cc.Image();
