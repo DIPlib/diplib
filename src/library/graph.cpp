@@ -105,29 +105,33 @@ Graph::Graph( Image const& image, dip::uint connectivity, String const& weights 
          Framework::ScanOption::NoMultiThreading + Framework::ScanOption::NeedCoordinates ));
 }
 
-Graph Graph::MinimumSpanningForest( std::vector< dip::uint > const& roots ) const {
+Graph MinimumSpanningForest( Graph const& graph, std::vector< Graph::VertexIndex > const& roots ) {
 #ifdef DIP_CONFIG_ENABLE_ASSERT
    for( auto r : roots ) {
-      DIP_ASSERT( r < NumberOfVertices() );
+      DIP_ASSERT( r < graph.NumberOfVertices() );
    }
 #endif
-   Graph msf( NumberOfVertices() );
-   for( dip::uint ii = 0; ii < NumberOfVertices(); ++ii ) {
-      msf.vertices_[ ii ].value = vertices_[ ii ].value;
+   using EdgeIndex = Graph::EdgeIndex;
+   using VertexIndex = Graph::VertexIndex;
+   Graph msf( graph.NumberOfVertices() );
+   for( dip::uint ii = 0; ii < graph.NumberOfVertices(); ++ii ) {
+      msf.VertexValue( ii ) = graph.VertexValue( ii );
    }
-   std::vector< bool > visited( NumberOfVertices(), false );
-   auto Comparator = [ & ]( EdgeIndex lhs, EdgeIndex rhs ){ return edges_[ lhs ].weight > edges_[ rhs ].weight; }; // NOTE! inverted order to give higher priority to lower weights
+   std::vector< bool > visited( graph.NumberOfVertices(), false );
+   auto Comparator = [ & ]( EdgeIndex lhs, EdgeIndex rhs ) {
+      return graph.EdgeWeight( lhs ) > graph.EdgeWeight( rhs );
+   }; // NOTE! inverted order to give higher priority to lower weights
    std::priority_queue< EdgeIndex, std::vector< EdgeIndex >, decltype( Comparator ) > queue( Comparator );
    if( roots.empty() ) {
       visited[ 0 ] = true;
-      for( auto index : vertices_[ 0 ].edges ) {
+      for( auto index : graph.EdgeIndices( 0 )) {
          queue.push( index );
       }
    } else {
       for( auto q : roots ) {
          if( !visited[ q ] ) {
             visited[ q ] = true;
-            for( auto index : vertices_[ q ].edges ) {
+            for( auto index : graph.EdgeIndices( q )) {
                queue.push( index );
             }
          }
@@ -136,14 +140,14 @@ Graph Graph::MinimumSpanningForest( std::vector< dip::uint > const& roots ) cons
    while( !queue.empty() ) {
       EdgeIndex edgeIndex = queue.top();
       queue.pop();
-      VertexIndex q = edges_[ edgeIndex ].vertices[ 0 ];
+      VertexIndex q = graph.EdgeVertex( edgeIndex, 0 );
       if( visited[ q ] ) {
-         q = edges_[ edgeIndex ].vertices[ 1 ]; // try the other end then
+         q = graph.EdgeVertex( edgeIndex, 1 ); // try the other end then
       }
       if( !visited[ q ] ) {
          visited[ q ] = true;
-         msf.AddEdgeNoCheck( edges_[ edgeIndex ] );
-         for( auto index : vertices_[ q ].edges ) {
+         msf.AddEdgeNoCheck( graph.Edges()[ edgeIndex ] );
+         for( auto index : graph.EdgeIndices( q )) {
             queue.push( index );
          }
       }
@@ -228,7 +232,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing dip::Graph") {
    DOCTEST_CHECK( edge2.weight == 12.0 );
 
    // Test MinimumSpanningForest()
-   graph = graph.MinimumSpanningForest();
+   graph = dip::MinimumSpanningForest( graph );
    DOCTEST_REQUIRE( graph.Edges().size() == 19 );
    DOCTEST_REQUIRE( graph.NumberOfVertices() == 20 );
    auto edges0 = graph.EdgeIndices( 0 ); // Joined to 1 and 4

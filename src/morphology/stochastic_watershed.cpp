@@ -43,6 +43,11 @@ class Matrix {
    public:
       Matrix() = default;
       Matrix( dip::uint xSize, dip::uint ySize, T value = {} ) : m_( xSize * ySize, value ), xSize_( xSize ), ySize_( ySize ) {}
+      Matrix( Matrix&& ) = default;
+      Matrix& operator=( Matrix&& ) = default;
+      Matrix( Matrix const& ) = default;
+      Matrix& operator=( Matrix const& ) = default;
+      ~Matrix() = default;
 
       T& at( dip::uint x, dip::uint y ) {
          DIP_ASSERT( x < xSize_ );
@@ -66,6 +71,11 @@ class SymmetricMatrix {
    public:
       SymmetricMatrix() = default;
       SymmetricMatrix( dip::uint size, T value = {} ) : m_( size * ( size + 1 ) / 2, value ), size_( size ) {}
+      SymmetricMatrix( SymmetricMatrix&& ) = default;
+      SymmetricMatrix& operator=( SymmetricMatrix&& ) = default;
+      SymmetricMatrix( SymmetricMatrix const& ) = default;
+      SymmetricMatrix& operator=( SymmetricMatrix const& ) = default;
+      ~SymmetricMatrix() = default;
 
       T& at( dip::uint x, dip::uint y ) {
          if( y < x ) {
@@ -119,6 +129,11 @@ class SparseTable {
             }
          }
       }
+      SparseTable( SparseTable&& ) = default;
+      SparseTable& operator=( SparseTable&& ) = default;
+      SparseTable( SparseTable const& ) = default;
+      SparseTable& operator=( SparseTable const& ) = default;
+      ~SparseTable() = default;
 
       dip::uint at( dip::uint x, dip::uint y ) const {
          return sparseMatrix_.at( x, y );
@@ -146,9 +161,8 @@ template< typename T >
 class LookUpTable {
    public:
       LookUpTable() = default;
-      LookUpTable( std::vector< T > sequence ) {
-         DIP_ASSERT( !sequence.empty() );
-         sequence_ = std::move( sequence );
+      LookUpTable( std::vector< T > sequence ) : sequence_( std::move( sequence )) {
+         DIP_ASSERT( !sequence_.empty() );
          // Normalize sequence
          T minVal = *min_element( sequence_.begin(), sequence_.end() );
          for( auto& s : sequence_ ) {
@@ -173,6 +187,12 @@ class LookUpTable {
             }
          }
       }
+      LookUpTable( LookUpTable&& ) = default;
+      LookUpTable& operator=( LookUpTable&& ) = default;
+      LookUpTable( LookUpTable const& ) = default;
+      LookUpTable& operator=( LookUpTable const& ) = default;
+      ~LookUpTable() = default;
+
       bool isInitialized() const {
          return !sequence_.empty();
       }
@@ -189,11 +209,14 @@ class LookUpTable {
 
 class Block {
    public:
-      LookUpTable< dip::uint > lut;
-
       Block() = default;
       Block( LookUpTable< dip::uint > lut, dip::uint sequenceLength, dip::uint firstIndex )
          : lut( std::move( lut ) ), lastIndex_internal_( sequenceLength - 1 ), firstIndex_external_( firstIndex ) {}
+      Block( Block&& ) = default;
+      Block& operator=( Block&& ) = default;
+      Block( Block const& ) = default;
+      Block& operator=( Block const& ) = default;
+      ~Block() = default;
 
       dip::uint getIndexOfMinVal() const {
          return firstIndex_external_ + lut.getEntry( 0, lastIndex_internal_ );
@@ -209,6 +232,7 @@ class Block {
       }
 
    private:
+      LookUpTable< dip::uint > lut{};
       dip::uint lastIndex_internal_ = 0;
       dip::uint firstIndex_external_ = 0;
 };
@@ -224,6 +248,11 @@ class RangeMinimumQuery {
          createBlocks();
          createSparseTableForBlockMinima();
       }
+      RangeMinimumQuery( RangeMinimumQuery&& ) = default;
+      RangeMinimumQuery& operator=( RangeMinimumQuery&& ) = default;
+      RangeMinimumQuery( RangeMinimumQuery const& ) = default;
+      RangeMinimumQuery& operator=( RangeMinimumQuery const& ) = default;
+      ~RangeMinimumQuery() = default;
 
       dip::uint getIndexOfMinimum( dip::uint p1, dip::uint p2 ) const {
          if( p1 > p2 ) {
@@ -330,12 +359,11 @@ class LowestCommonAncestorSolver {
    /// \brief The constructor takes a `graph`, which must not have any cycles in it (it must be a tree). The
    /// easiest way to turn an arbitrary graph into a tree is to compute the MST (see \ref dip::Graph::MinimumSpanningForest).
    LowestCommonAncestorSolver( Graph const& graph );
-
+   LowestCommonAncestorSolver( LowestCommonAncestorSolver&& ) = default;
+   LowestCommonAncestorSolver& operator=( LowestCommonAncestorSolver&& ) = default;
    // Prevent copying, that might go wrong because we use a shared pointer, `rmq_` might be shared...
    LowestCommonAncestorSolver( LowestCommonAncestorSolver const& ) = delete;
-   LowestCommonAncestorSolver( LowestCommonAncestorSolver&& ) = default;
    LowestCommonAncestorSolver& operator=( LowestCommonAncestorSolver const& ) = delete;
-   LowestCommonAncestorSolver& operator=( LowestCommonAncestorSolver&& ) = default;
    ~LowestCommonAncestorSolver() = default;
 
    /// \brief Returns the vertex that is the nearest common ancestor to vertices `a` and `b`.
@@ -458,7 +486,7 @@ void ExactStochasticWatershed(
 ) {
    // Calculate minimum spanning tree
    Graph graph( in, 1, "average" );
-   DIP_STACK_TRACE_THIS( graph = graph.MinimumSpanningForest() );
+   DIP_STACK_TRACE_THIS( graph = MinimumSpanningForest( graph ));
 
    // Compute Stochastic Watershed weights
    {

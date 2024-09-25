@@ -24,7 +24,7 @@ int main() {
    dip::Graph graph = dip::RegionAdjacencyGraph( superpixels, msr["Mean"], "touching" );
 
    // Simplify graph
-   graph = graph.MinimumSpanningForest( { 1 } );
+   graph = dip::MinimumSpanningForest( graph, { 1 } );
    graph.RemoveLargestEdges( 50 - 1 ); // Find 50 regions
 
    // Convert back to a labeled image
