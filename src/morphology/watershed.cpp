@@ -1,7 +1,6 @@
 /*
  * (c)2017-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
- * Based on Exact stochastic watershed code: (c)2013, Filip Malmberg.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,22 +22,15 @@
 #include <cstdlib>
 #include <functional>
 #include <limits>
-#include <numeric>
 #include <queue>
 #include <utility>
 #include <vector>
 
 #include "diplib.h"
 #include "diplib/border.h"
-#include "diplib/framework.h"
-#include "diplib/generation.h"
-#include "diplib/graph.h"
 #include "diplib/iterators.h"
-#include "diplib/linear.h"
-#include "diplib/math.h"
 #include "diplib/neighborlist.h"
 #include "diplib/overload.h"
-#include "diplib/random.h"
 #include "diplib/regions.h"
 #include "diplib/statistics.h"
 #include "diplib/union_find.h"
@@ -1071,161 +1063,6 @@ void WatershedMaxima(
       String const& output
 ) {
    DIP_STACK_TRACE_THIS( FastWatershed( in, mask, out, connectivity, maxDepth, maxSize, { output, S::HIGHFIRST }, FastWatershedOperation::EXTREMA ));
-}
-
-
-namespace {
-
-class ExactSWLineFilter : public Framework::ScanLineFilter {
-   public:
-      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override { return 100; } // TODO: this is absolutely a wild guess...
-      void Filter( Framework::ScanLineFilterParameters const& params ) override {
-         sfloat* out = static_cast< sfloat* >( params.outBuffer[ 0 ].buffer );
-         auto stride = params.outBuffer[ 0 ].stride;
-         dip::uint length = params.bufferLength - 1;
-         dip::uint dim = params.dimension;
-         dip::uint nDims = sizes_.size();
-         DIP_ASSERT( params.position.size() == nDims );
-         dip::uint index = Image::Index( params.position, sizes_ );
-         UnsignedArray indexStrides( nDims );
-         indexStrides[ 0 ] = 1;
-         for( dip::uint jj = 1; jj < nDims; ++jj ) {
-            indexStrides[ jj ] = indexStrides[ jj - 1 ] * sizes_[ jj - 1 ];
-         }
-         BooleanArray process( nDims, true );
-         for( dip::uint jj = 0; jj < nDims; ++jj ) {
-            process[ jj ] = params.position[ jj ] < ( sizes_[ jj ] - 1 );
-         }
-         for( dip::uint ii = 0; ii < length; ++ii, index += indexStrides[ dim ], out += stride ) {
-            *out = ComputePixel( index, process, indexStrides, nDims );
-         }
-         process[ dim ] = false; // For the last pixel in the array, we don't have a next.
-         *out = ComputePixel( index, process, indexStrides, nDims );
-      }
-      ExactSWLineFilter( LowestCommonAncestorSolver const& lca, UnsignedArray const& sizes ) : lca_( lca ), sizes_( sizes ) {}
-   private:
-      LowestCommonAncestorSolver const& lca_;
-      UnsignedArray const& sizes_;
-
-      sfloat ComputePixel( dip::uint index, BooleanArray const& process, UnsignedArray const& indexStrides, dip::uint nDims ) {
-         dfloat logPv = 0.0;
-         for( dip::uint jj = 0; jj < nDims; ++jj ) {
-            if( process[ jj ] ) {
-               dip::uint neighborIndex = index + indexStrides[ jj ];
-               dip::uint rootIndex = lca_.GetLCA( index, neighborIndex );
-               dfloat logFthis = lca_.GetLogF( index );
-               dfloat logFthat = lca_.GetLogF( neighborIndex );
-               dfloat logFroot = lca_.GetLogF( rootIndex );
-               dfloat logOneMinusPe = logFthis + logFthat - 2 * logFroot;
-               logPv = logPv + logOneMinusPe;
-            }
-         }
-         return static_cast< sfloat >( 1.0 - std::exp( logPv ));
-      }
-};
-
-void ExactStochasticWatershed(
-      Image const& in,
-      Image& out,
-      dfloat density
-) {
-   // Calculate minimum spanning tree
-   Graph graph( in, 1, "average" );
-   DIP_STACK_TRACE_THIS( graph = graph.MinimumSpanningForest() );
-
-   // Compute Stochastic Watershed weights
-   {
-      dfloat nSeeds = static_cast< dfloat >( in.NumberOfPixels() ) * density;
-      dip::uint nVertices = graph.NumberOfVertices();
-      DIP_ASSERT( nVertices > 0 );
-      Graph result( nVertices );
-      UnionFind< Graph::VertexIndex, dip::uint, std::plus<> > ds( nVertices, 1, std::plus<>() );
-      auto const& edges = graph.Edges();
-      auto Comparator = [ & ]( Graph::EdgeIndex lhs, Graph::EdgeIndex rhs ) { return edges[ lhs ].weight < edges[ rhs ].weight; };
-      std::vector< Graph::EdgeIndex > edgeIndices( edges.size() );
-      std::iota( edgeIndices.begin(), edgeIndices.end(), 0 );
-      std::sort( edgeIndices.begin(), edgeIndices.end(), Comparator );
-      for( auto index : edgeIndices ) {
-         auto edge = edges[ index ];
-         Graph::VertexIndex p_index = ds.FindRoot( edge.vertices[ 0 ] );
-         Graph::VertexIndex q_index = ds.FindRoot( edge.vertices[ 1 ] );
-         dfloat p_size = static_cast< dfloat >( ds.Value( p_index )) / static_cast< dfloat >( nVertices );
-         dfloat q_size = static_cast< dfloat >( ds.Value( q_index )) / static_cast< dfloat >( nVertices );
-         // Calculate edge weight based on p_size and q_size
-         edge.weight = 1 - std::pow( 1 - p_size, nSeeds ) - std::pow( 1 - q_size, nSeeds ) + std::pow( 1 - ( p_size + q_size ), nSeeds );
-         result.AddEdgeNoCheck( edge );
-         ds.Union( p_index, q_index );
-      }
-      std::swap( graph, result );
-   }
-
-   DIP_START_STACK_TRACE
-      // Compute support data
-      LowestCommonAncestorSolver lca( graph );
-      // Calculate boundary probability for all pixels
-      out.ReForge( in.Sizes(), 1, DT_SFLOAT, Option::AcceptDataTypeChange::DONT_ALLOW );
-      ExactSWLineFilter lineFilter( lca, out.Sizes() );
-      Framework::ScanSingleOutput( out, DT_SFLOAT, lineFilter, Framework::ScanOption::NeedCoordinates );
-   DIP_END_STACK_TRACE
-}
-
-} // namespace
-
-void StochasticWatershed(
-      Image const& c_in,
-      Image& out,
-      Random& random,
-      dip::uint nSeeds,
-      dip::uint nIterations,
-      dfloat noise,
-      String const& seeds
-) {
-   DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !c_in.IsScalar(), E::IMAGE_NOT_SCALAR );
-   DIP_THROW_IF( !c_in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
-   DIP_THROW_IF( c_in.Dimensionality() < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
-   DIP_THROW_IF( nSeeds == 0, E::INVALID_PARAMETER );
-   dfloat density = static_cast< dfloat >( nSeeds ) / static_cast< dfloat >( c_in.NumberOfPixels() );
-   if(( seeds == S::EXACT ) || ( nIterations == 0 )) {
-      if( noise > 0 ) {
-         Image tmp( c_in.Sizes(), 3, DT_SFLOAT );
-         Image noisy;
-         for( dip::uint ii = 0; ii < 3; ++ii ) {
-            UniformNoise( c_in, noisy, random, 0.0, noise );
-            Image tmp_out = tmp[ ii ];
-            tmp_out.Protect();
-            ExactStochasticWatershed( noisy, tmp_out, density );
-         }
-         tmp.Protect();
-         Gauss( tmp, tmp, { 0.8 }, { 0 }, "fir" );
-         GeometricMeanTensorElement( tmp, out );
-      } else {
-         ExactStochasticWatershed( c_in, out, density );
-      }
-      return;
-   }
-   bool poisson = seeds == S::POISSON;
-   Image in = c_in; // NOLINT(*-unnecessary-copy-initialization)
-   if( out.Aliases( in )) {
-      out.Strip();
-   }
-   out.ReForge( in, DT_LABEL, Option::AcceptDataTypeChange::DO_ALLOW );
-   out.Fill( 0 );
-   Image grid = in.Similar( DT_BIN );
-   Image edges = in.Similar( DT_BIN );
-   Image noisy = noise > 0.0 ? in.Similar( DataType::SuggestFloat( in.DataType() )) : in.QuickCopy();
-   for( dip::uint iter = 0; iter < nIterations; ++iter ) {
-      if( poisson ) {
-         FillPoissonPointProcess( grid, random, density );
-      } else {
-         FillRandomGrid( grid, random, density, seeds, S::ROTATION );
-      }
-      if( noise > 0.0 ) {
-         UniformNoise( in, noisy, random, 0.0, noise );
-      }
-      SeededWatershed( noisy, grid, {}, edges, 1, -1 /* no merging */ );
-      out += edges;
-   }
 }
 
 } // namespace dip

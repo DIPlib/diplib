@@ -292,38 +292,6 @@ class DIP_NO_EXPORT Graph {
       }
 };
 
-class DIP_NO_EXPORT RangeMinimumQuery;
-
-/// \brief Solves the lowest common ancestor problem for a tree.
-class DIP_NO_EXPORT LowestCommonAncestorSolver {
-   public:
-      /// \brief The constructor takes a `graph`, which must not have any cycles in it (it must be a tree). The
-      /// easiest way to turn an arbitrary graph into a tree is to compute the MST (see \ref dip::Graph::MinimumSpanningForest).
-      DIP_EXPORT LowestCommonAncestorSolver( Graph const& graph );
-
-      // Prevent copying, that might go wrong because we use a shared pointer, `rmq_` might be shared...
-      LowestCommonAncestorSolver( LowestCommonAncestorSolver const& ) = delete;
-      LowestCommonAncestorSolver( LowestCommonAncestorSolver&& ) = default;
-      LowestCommonAncestorSolver& operator=( LowestCommonAncestorSolver const& ) = delete;
-      LowestCommonAncestorSolver& operator=( LowestCommonAncestorSolver&& ) = default;
-      ~LowestCommonAncestorSolver() = default;
-
-      /// \brief Returns the vertex that is the nearest common ancestor to vertices `a` and `b`.
-      DIP_EXPORT dip::uint GetLCA( dip::uint a, dip::uint b ) const;
-
-      /// \brief Returns the value associated to the vertex `index`. TODO: describe this value!
-      dfloat GetLogF( dip::uint index ) const {
-         DIP_ASSERT( index < logF_.size() );
-         return logF_[ index ];
-      }
-
-   private:
-      std::vector< dip::uint > tourArray_;
-      std::vector< dip::uint > R_;
-      std::vector< dfloat > logF_;
-      std::shared_ptr< RangeMinimumQuery > rmq_; // Hidden implementation to avoid all that cruft in these headers...
-};
-
 /// \endgroup
 
 } // namespace dip

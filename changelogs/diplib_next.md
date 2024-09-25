@@ -17,6 +17,9 @@ date: 2020-00-00
   This means it can be used to create images that are compatible with some image display widgets (Windows
   bitmap, Qt image, etc.).
 
+- `dip::LowestCommonAncestorSolver` is no longer in the public API. This class contained code used in the
+  Exact Stochastic Watershed (`dip::StochasticWatershed` with `seeds` set to `"exact"` or `nIterations` set to 0).
+
 ### Bug fixes
 
 - `dip::Log2` computed the natural logarithm instead of the base-2 logarithm.
