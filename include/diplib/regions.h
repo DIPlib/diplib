@@ -172,8 +172,8 @@ DIP_NODISCARD inline Image Relabel( Image const& label ) {
 /// dip::Image label = dip::Watershed( dip::GradientMagnitude( input, { 2 } ), {}, 2, 1, 0, { "labels" } );
 /// dip::MeasurementTool measurementTool;
 /// auto msr = measurementTool.Measure( label, input, { "Mean" } );
-/// dip::Graph graph = RegionAdjacencyGraph( label, msr[ "Mean" ], "watershed" );
-/// graph = graph.MinimumSpanningForest( { 1 } ); // make sure we don't use the unconnected vertex 0 as root.
+/// dip::Graph graph = dip::RegionAdjacencyGraph( label, msr[ "Mean" ], "watershed" );
+/// graph = dip::MinimumSpanningForest( graph, { 1 } ); // make sure we don't use the unconnected vertex 0 as root.
 /// graph.RemoveLargestEdges( 100 );
 /// dip::Relabel( label, label, graph );
 /// ```

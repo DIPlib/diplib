@@ -20,6 +20,12 @@ date: 2020-00-00
 - `dip::LowestCommonAncestorSolver` is no longer in the public API. This class contained code used in the
   Exact Stochastic Watershed (`dip::StochasticWatershed` with `seeds` set to `"exact"` or `nIterations` set to 0).
 
+- `dip::MinimumSpanningForest()` is now an free function. The `dip::Graph::MinimumSpanningForest()` class
+  function still exists for backwards-compatibility, it calls the free function.
+
+- Added `dip::Graph::EdgeVertex()` for convenience. `graph.EdgeVertex( edge, which )` is the same as what
+  previously was written `graph.Edges()[ edge ].vertices[ which ].`
+
 ### Bug fixes
 
 - `dip::Log2` computed the natural logarithm instead of the base-2 logarithm.
