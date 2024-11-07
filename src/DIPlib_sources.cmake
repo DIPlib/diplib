@@ -153,7 +153,6 @@ library/framework_projection.cpp
 library/framework_scan.cpp
 library/framework_separable.cpp
 library/framework_support.h
-library/graph.cpp
 library/image.cpp
 library/image_copy.cpp
 library/image_data.cpp
@@ -274,6 +273,8 @@ regions/labelingGrana2016.h
 regions/region_adjacency_graph.cpp
 segmentation/canny.cpp
 segmentation/ellipse_fit.cpp
+segmentation/graph.cpp
+segmentation/graph_cut.cpp
 segmentation/kmeans_clustering.cpp
 segmentation/minimum_variance_partitioning.cpp
 segmentation/superpixels.cpp

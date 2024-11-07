@@ -136,8 +136,10 @@ void init_segmentation( py::module& m ) {
    graph.def( "NumberOfVertices", &dip::Graph::NumberOfVertices );
    graph.def( "NumberOfEdges", &dip::Graph::NumberOfEdges );
    graph.def( "CountEdges", &dip::Graph::CountEdges );
+   graph.def( "EdgeVertex", &dip::Graph::EdgeVertex,  "edge"_a, "which"_a  );
    graph.def( "OtherVertex", &dip::Graph::OtherVertex, "edge"_a, "vertex"_a );
    graph.def( "EdgeWeight", &dip::Graph::EdgeWeight, "edge"_a );
+   graph.def( "IsValidEdge", &dip::Graph::IsValidEdge, "edge"_a );
    graph.def( "EdgeIndices", &dip::Graph::EdgeIndices, "v"_a );
    graph.def( "VertexValue", &dip::Graph::VertexValue, "v"_a );
    graph.def( "AddEdge", &dip::Graph::AddEdge, "v1"_a, "v2"_a, "weight"_a );
@@ -145,9 +147,14 @@ void init_segmentation( py::module& m ) {
    graph.def( "DeleteEdge", py::overload_cast< dip::Graph::VertexIndex, dip::Graph::VertexIndex >( &dip::Graph::DeleteEdge ), "v1"_a, "v2"_a );
    graph.def( "DeleteEdge", py::overload_cast< dip::Graph::EdgeIndex >( &dip::Graph::DeleteEdge ), "edge"_a );
    graph.def( "Neighbors", &dip::Graph::Neighbors, "v"_a );
-   graph.def( "UpdateEdgeWeights", &dip::Graph::UpdateEdgeWeights );
+   // graph.def( "UpdateEdgeWeights", py::overload_cast<>( &dip::Graph::UpdateEdgeWeights, py::const_ ));
+   graph.def( "UpdateEdgeWeights", static_cast< void ( dip::Graph::* )() const >( &dip::Graph::UpdateEdgeWeights ));
+   // TODO: If py::overload_cast ever gets fixed for this particular case, remove the ugly hack above.
    graph.def( "MinimumSpanningForest", &dip::Graph::MinimumSpanningForest, "roots"_a = std::vector< dip::Graph::VertexIndex >{} );
    graph.def( "RemoveLargestEdges", &dip::Graph::RemoveLargestEdges, "number"_a );
+
+   m.def( "MinimumSpanningForest", &dip::MinimumSpanningForest, "graph"_a, "roots"_a );
+   m.def( "GraphCut", &dip::GraphCut, "graph"_a, "sourceIndex"_a, "sinkIndex"_a );
 
    // diplib/regions.h
    m.def( "Label", py::overload_cast< dip::Image const&, dip::uint, dip::uint, dip::uint, dip::StringArray, dip::String const& >( &dip::Label ),

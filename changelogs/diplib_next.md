@@ -8,6 +8,19 @@ date: 2020-00-00
 
 ### New functionality
 
+- Added `dip::Graph::EdgeVertex()` for convenience. `graph.EdgeVertex( edge, which )` is the same as what
+  previously was written `graph.Edges()[ edge ].vertices[ which ].`
+
+- Added `dip::Graph::IsValidEdge()`.
+
+- Added `dip::Graph::UpdateEdgeWeights<>()`, an overload that takes a function as input; this function
+  is applied to the two vertex weights for each edge, and should return an edge weight.
+
+- Added `dip::GraphCut()`, a function that computes the minimum cut of a graph. This is a segmentation
+  algorithm that splits the graph into two sections based on two marker vertices (nodes).
+
+- Added `dip::Label()` with a `dip::Graph` as input. It finds connected components in the graph.
+
 ### Changed functionality
 
 - `dip::AlignedAllocInterface` now aligns each of the scanlines (rows of the image), not just the first one.
@@ -19,9 +32,6 @@ date: 2020-00-00
 
 - `dip::MinimumSpanningForest()` is now an free function. The `dip::Graph::MinimumSpanningForest()` class
   function still exists for backwards-compatibility, it calls the free function.
-
-- Added `dip::Graph::EdgeVertex()` for convenience. `graph.EdgeVertex( edge, which )` is the same as what
-  previously was written `graph.Edges()[ edge ].vertices[ which ].`
 
 ### Bug fixes
 

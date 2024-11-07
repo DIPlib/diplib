@@ -25,17 +25,24 @@
 #include <vector>
 
 #include "diplib.h"
+#include "diplib/label_map.h"
 
 
 /// \file
-/// \brief Representing and working with an image as a graph
-/// See \ref infrastructure.
+/// \brief Representing graphs and working with an image as a graph.
+/// See \ref graphs.
 
 
 namespace dip {
 
 
-/// \addtogroup infrastructure
+/// \group graphs Graphs
+/// \ingroup segmentation
+/// \brief Representing graphs and working with an image as a graph.
+///
+/// \see dip::RegionAdjacencyGraph, dip::Relabel(dip::Image const&, dip::Image&, dip::Graph const&)
+///
+/// \addtogroup
 
 
 /// \brief A non-directed, edge-weighted graph.
@@ -72,12 +79,12 @@ class DIP_NO_EXPORT Graph {
 
       /// \brief An edge in the graph
       ///
-      /// If both vertices are 0, the edge is not valid (never used or deleted). Otherwise, `vertices[1] > vertices[0]`.
+      /// If both vertices are 0, the edge is not valid (never used or deleted). Otherwise, `vertices[0] < vertices[1]`.
       struct Edge {
          std::array< VertexIndex, 2 > vertices = {{ 0, 0 }};   ///< The two vertices joined by this edge
          mutable dfloat weight = 0.0;                          ///< The weight of this edge
          bool IsValid() const {
-            return vertices[ 0 ] != vertices[ 1 ];
+            return vertices[ 0 ] < vertices[ 1 ];
          }
       };
 
@@ -147,6 +154,11 @@ class DIP_NO_EXPORT Graph {
       DIP_NODISCARD dfloat& EdgeWeight( EdgeIndex edge ) const {
          DIP_ASSERT( edge < edges_.size() );
          return edges_[ edge ].weight;
+      }
+
+      /// \brief Returns `true` if the edge is a valid edge.
+      DIP_NODISCARD bool IsValidEdge( EdgeIndex edge ) const {
+         return edge < edges_.size() ? edges_[ edge ].IsValid() : false;
       }
 
       /// \brief Get the indices to the edges that join vertex `v`.
@@ -228,6 +240,7 @@ class DIP_NO_EXPORT Graph {
       // Adds an edge. Doesn't check for duplicates. If the edge already exists, disaster ensues.
       // And if v1 >= v2, disaster ensues.
       void AddEdgeNoCheck( Edge edge ) {
+         DIP_ASSERT( edge.vertices[ 0 ] < edge.vertices[ 1 ] );
          EdgeIndex ii = edges_.size();
          vertices_[ edge.vertices[ 0 ]].edges.push_back( ii );
          vertices_[ edge.vertices[ 1 ]].edges.push_back( ii );
@@ -237,11 +250,18 @@ class DIP_NO_EXPORT Graph {
          AddEdgeNoCheck( {{ v1, v2 }, weight } );
       }
 
+      /// \brief Re-computes edge weights using the function `func`, called as `dfloat func(dfloat val1, dfloat val2)`,
+      /// where the two inputs to `func` are the value of the two vertices.
+      template< typename F >
+      void UpdateEdgeWeights( F func ) const {
+         for( auto& edge: edges_ ) {
+            edge.weight = func( vertices_[ edge.vertices[ 0 ]].value, vertices_[ edge.vertices[ 1 ]].value );
+         }
+      }
+
       /// \brief Re-computes edge weights as the absolute difference between vertex values.
       void UpdateEdgeWeights() const {
-         for( auto& edge: edges_ ) {
-            edge.weight = std::abs( vertices_[ edge.vertices[ 0 ]].value - vertices_[ edge.vertices[ 1 ]].value );
-         }
+         UpdateEdgeWeights( []( dfloat val1, dfloat val2 ) { return std::abs( val1 - val2 ); } );
       }
 
       /// \brief Computes the minimum spanning forest (MSF) using Prim's algorithm.
@@ -298,6 +318,38 @@ DIP_NODISCARD DIP_EXPORT Graph MinimumSpanningForest( Graph const& graph, std::v
 DIP_NODISCARD inline Graph Graph::MinimumSpanningForest( std::vector< VertexIndex > const& roots ) const {
    return dip::MinimumSpanningForest( *this, roots );
 }
+
+/// \brief Computes the minimum cut of the graph, separating the source node from the sink node.
+///
+/// The output graph will be identical to the input graph, but with edges removed such that source and
+/// sink are no longer connected. The edges removed are those of the minimum cut; they are the edges that are saturated
+/// when pushing maximal from from source to sink. Consequently, it is the low edge weights that will dictate where
+/// the cut happens.
+///
+/// `sourceIndex` and `sinkIndex` are indices pointing at a node (vertex). These are the two marker nodes that
+/// dictate the cut. If there are more than one marker node for either source or sink, create a new node that
+/// is strongly connected (very large edge weight) to all these marker nodes, and use this new node as the
+/// source or sink.
+///
+/// `graph` is expected to have a path from `sourceIndex` to `sinkIndex`. If no such path exists,
+/// there's nothing to cut.
+///
+/// The algorithm used to find the edges to remove is the one proposed by Boykov and Kolmogorov. This algorithm
+/// was shown to be faster than older algorithms when applied to a 2D image converted to a graph using a 4-connected
+/// neighborhood.
+///
+/// !!! literature
+///     - Y. Boykov and V. Kolmogorov, "An Experimental Comparison of Min-Cut/Max-Flow Algorithms for Energy Minimization in Vision",
+///       IEEE Transactions on Pattern Analysis and Machine Intelligence 26(9):1124-1137, 2004.
+DIP_NODISCARD DIP_EXPORT Graph GraphCut( Graph const& graph, Graph::VertexIndex sourceIndex, Graph::VertexIndex sinkIndex );
+
+/// \brief Connected component analysis of a graph.
+///
+/// The output can be used to relabel the image that the graph was constructed from. It maps the graph's vertex
+/// indices to labels, where each connected component in the graph represents a label.
+///
+/// See also \ref Relabel(Image const&, Image&, Graph const&).
+DIP_NODISCARD DIP_EXPORT LabelMap Label( Graph const& graph );
 
 /// \endgroup
 

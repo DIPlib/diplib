@@ -25,7 +25,9 @@
 
 #include "diplib.h"
 #include "diplib/framework.h"
+#include "diplib/label_map.h"
 #include "diplib/overload.h"
+#include "diplib/union_find.h"
 
 
 namespace dip {
@@ -178,6 +180,17 @@ void Graph::RemoveLargestEdges( dip::uint number ) {
    for( dip::uint ii = 0; ii < number; ++ii ) {
       DeleteEdge( indices[ ii ] );
    }
+}
+
+LabelMap Label( Graph const& graph ) {
+   SimpleUnionFind< Graph::EdgeIndex > regions( graph.NumberOfVertices() );
+   for( auto& edge: graph.Edges() ) {
+      if( edge.IsValid() ) {
+         regions.Union( edge.vertices[ 0 ], edge.vertices[ 1 ] );
+      }
+   }
+   regions.Relabel();
+   return LabelMap( regions );
 }
 
 } // namespace dip
