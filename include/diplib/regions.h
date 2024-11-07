@@ -394,6 +394,9 @@ RangeArray DIP_EXPORT GetLabelBoundingBox( Image const& label, LabelType objectI
 /// to another region, then the edge weight is very small to indicate a strong connection.
 ///
 /// Vertex values are not assigned.
+///
+/// After modifying the graph (removing edges to split the graph into separate islands), use
+/// \ref dip::Relabel(dip::Image const&, dip::Image&, dip::Graph const&) to update the `labels` image.
 DIP_EXPORT Graph RegionAdjacencyGraph( Image const& labels, String const& mode = "touching" );
 
 /// \brief Construct a graph for the given labeled image.

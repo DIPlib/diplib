@@ -193,14 +193,7 @@ void Relabel( Image const& label, Image& out, Graph const& graph ) {
    DIP_THROW_IF( !label.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !label.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !label.DataType().IsUInt(), E::DATA_TYPE_NOT_SUPPORTED );
-   SimpleUnionFind< Graph::EdgeIndex > regions( graph.NumberOfVertices() );
-   for( auto& edge: graph.Edges() ) {
-      if( edge.IsValid() ) {
-         regions.Union( edge.vertices[ 0 ], edge.vertices[ 1 ] );
-      }
-   }
-   regions.Relabel();
-   LabelMap lut( regions );
+   LabelMap lut = Label( graph );
    lut.Apply( label, out );
 }
 

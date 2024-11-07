@@ -142,8 +142,10 @@ void init_segmentation( py::module& m ) {
    graph.def( "NumberOfVertices", &dip::Graph::NumberOfVertices, doc_strings::dip·Graph·NumberOfVertices·C );
    graph.def( "NumberOfEdges", &dip::Graph::NumberOfEdges, doc_strings::dip·Graph·NumberOfEdges·C );
    graph.def( "CountEdges", &dip::Graph::CountEdges, doc_strings::dip·Graph·CountEdges·C );
+   graph.def( "EdgeVertex", &dip::Graph::EdgeVertex,  "edge"_a, "which"_a, doc_strings::dip·Graph·EdgeVertex·EdgeIndex··bool··C );
    graph.def( "OtherVertex", &dip::Graph::OtherVertex, "edge"_a, "vertex"_a, doc_strings::dip·Graph·OtherVertex·EdgeIndex··VertexIndex··C );
    graph.def( "EdgeWeight", &dip::Graph::EdgeWeight, "edge"_a, doc_strings::dip·Graph·EdgeWeight·EdgeIndex··C );
+   graph.def( "IsValidEdge", &dip::Graph::IsValidEdge, "edge"_a, doc_strings::dip·Graph·IsValidEdge·EdgeIndex··C );
    graph.def( "EdgeIndices", &dip::Graph::EdgeIndices, "v"_a, doc_strings::dip·Graph·EdgeIndices·VertexIndex··C );
    graph.def( "VertexValue", &dip::Graph::VertexValue, "v"_a, doc_strings::dip·Graph·VertexValue·VertexIndex··C );
    graph.def( "AddEdge", &dip::Graph::AddEdge, "v1"_a, "v2"_a, "weight"_a, doc_strings::dip·Graph·AddEdge·VertexIndex··VertexIndex··dfloat· );
@@ -151,9 +153,14 @@ void init_segmentation( py::module& m ) {
    graph.def( "DeleteEdge", py::overload_cast< dip::Graph::VertexIndex, dip::Graph::VertexIndex >( &dip::Graph::DeleteEdge ), "v1"_a, "v2"_a, doc_strings::dip·Graph·DeleteEdge·VertexIndex··VertexIndex· );
    graph.def( "DeleteEdge", py::overload_cast< dip::Graph::EdgeIndex >( &dip::Graph::DeleteEdge ), "edge"_a, doc_strings::dip·Graph·DeleteEdge·EdgeIndex· );
    graph.def( "Neighbors", &dip::Graph::Neighbors, "v"_a, doc_strings::dip·Graph·Neighbors·VertexIndex· );
-   graph.def( "UpdateEdgeWeights", &dip::Graph::UpdateEdgeWeights, doc_strings::dip·Graph·UpdateEdgeWeights·C );
+   // graph.def( "UpdateEdgeWeights", &dip::Graph::UpdateEdgeWeights, doc_strings::dip·Graph·UpdateEdgeWeights·C );
+   graph.def( "UpdateEdgeWeights", static_cast< void ( dip::Graph::* )() const >( &dip::Graph::UpdateEdgeWeights ), doc_strings::dip·Graph·UpdateEdgeWeights·C );
    graph.def( "MinimumSpanningForest", &dip::Graph::MinimumSpanningForest, "roots"_a = std::vector< dip::Graph::VertexIndex >{}, doc_strings::dip·Graph·MinimumSpanningForest·std·vectorgtVertexIndexlt·CL·C );
    graph.def( "RemoveLargestEdges", &dip::Graph::RemoveLargestEdges, "number"_a, doc_strings::dip·Graph·RemoveLargestEdges·dip·uint· );
+
+   m.def( "MinimumSpanningForest", &dip::MinimumSpanningForest, "graph"_a, "roots"_a, doc_strings::dip·MinimumSpanningForest·Graph·CL·std·vectorgtGraph·VertexIndexlt·CL );
+   m.def( "GraphCut", &dip::GraphCut, "graph"_a, "sourceIndex"_a, "sinkIndex"_a, doc_strings::dip·GraphCut·Graph·CL·Graph·VertexIndex··Graph·VertexIndex· );
+   m.def( "Label", py::overload_cast< dip::Graph const& >( &dip::Label ), "graph"_a, doc_strings::dip·Label·Graph·CL );
 
    // diplib/regions.h
    m.def( "Label", py::overload_cast< dip::Image const&, dip::uint, dip::uint, dip::uint, dip::StringArray, dip::String const& >( &dip::Label ),

@@ -38,7 +38,7 @@ class Measurement; // Defined in "diplib/measurement.h"
 ///
 /// The object contains a set of known labels. Each of these known labels will be associated
 /// to a target label. If the target label is 0 (background), we refer to it as a zero mapping.
-/// If the taget is any other value, we refer to it as a non-zero mapping.
+/// If the target is any other value, we refer to it as a non-zero mapping.
 ///
 /// The function \ref Apply, when given a label image as input, will look up each pixel's value
 /// in the set of known labels. If it is known, the corresponding pixel in the output image will
