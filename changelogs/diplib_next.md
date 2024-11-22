@@ -16,11 +16,15 @@ date: 2020-00-00
 
 ### Bug fixes
 
-- `dip::Log2` computed the natural logarithm instead of the base-2 logarithm. #168
+- `dip::Log2` computed the natural logarithm instead of the base-2 logarithm.
   See [PR #168](https://github.com/DIPlib/diplib/pull/168).
 
 - `dip::StructureTensorAnalysis3D()` would try to read a non-existing tensor element when requesting the 'l3' output
   (producing an obscure error message).
+
+- `dip::GaussFT()` could, under some circumstances, try to reforge the output image to an intermediate, extended size.
+  This would throw an exception if the image was protected, but was always a bad thing to do.
+  See [issue #170](https://github.com/DIPlib/diplib/issues/170).
 
 ### Updated dependencies
 

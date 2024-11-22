@@ -408,45 +408,7 @@ void GaussFT(
          }
       }
    }
-   if( sigmas.any() || order.any() ) {
-      bool real = false;
-      Image inFT;
-      bool reuseInFT = false;
-      if( inSpatial ) {
-         real = !in.DataType().IsComplex();
-         expanded = !boundaryCondition.empty();
-         dip::Image const& tmp = expanded ? ExpandInput( in, sigmas, order, truncation, boundaryCondition ) : in;
-         DIP_STACK_TRACE_THIS( inFT = FourierTransform( tmp ));
-         reuseInFT = true;
-      } else {
-         inFT = in;
-      }
-      DataType dtype = inFT.DataType(); // a complex type
-      Image outFT;
-      if( !outSpatial || !real ) { // write directly into out if out is not real-valued
-         DIP_STACK_TRACE_THIS( out.ReForge( inFT, dtype ));
-         outFT = out.QuickCopy();
-      } else {
-         if( reuseInFT ) {
-            outFT = inFT.QuickCopy();
-         } // else outFT will be a new temporary
-      }
-      std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
-      DIP_OVL_NEW_COMPLEX( scanLineFilter, GaussFTLineFilter, ( inFT.Sizes(), sigmas, order, truncation ), dtype );
-      Framework::ScanMonadic(
-            inFT, outFT, dtype, dtype, 1, *scanLineFilter,
-            Framework::ScanOption::TensorAsSpatialDim + Framework::ScanOption::NeedCoordinates );
-      if( outSpatial ) {
-         StringSet options{ S::INVERSE };
-         if( real ) {
-            options.insert( S::REAL );
-         }
-         DIP_STACK_TRACE_THIS( FourierTransform( outFT, out, options ));
-         if( expanded ) {
-            out.Crop( originalSizes );
-         }
-      }
-   } else {
+   if( !sigmas.any() && !order.any() ) {
       DIP_START_STACK_TRACE
       if( inSpatial == outSpatial ) {
          out = in;
@@ -455,7 +417,51 @@ void GaussFT(
       } else {
          FourierTransform( in, out, { S::INVERSE } );
       }
+      return;
       DIP_END_STACK_TRACE
+   }
+   bool real = false;
+   Image inFT;
+   bool reuseInFT = false;
+   if( inSpatial ) {
+      real = !in.DataType().IsComplex();
+      expanded = !boundaryCondition.empty();
+      dip::Image const& tmp = expanded ? ExpandInput( in, sigmas, order, truncation, boundaryCondition ) : in;
+      DIP_STACK_TRACE_THIS( inFT = FourierTransform( tmp ));
+      reuseInFT = true;
+   } else {
+      inFT = in.QuickCopy();
+      inFT.SetPixelSize( in.PixelSize() );
+   }
+   DataType dtype = inFT.DataType(); // a complex type
+   Image outFT;
+   if( !outSpatial || !real ) { // write directly into out if out is not real-valued
+      DIP_STACK_TRACE_THIS( out.ReForge( inFT, dtype ));
+      outFT = out.QuickCopy();
+   } else {
+      if( reuseInFT ) {
+         outFT = inFT.QuickCopy();
+      } // else outFT will be a new temporary
+   }
+   std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+   DIP_OVL_NEW_COMPLEX( scanLineFilter, GaussFTLineFilter, ( inFT.Sizes(), sigmas, order, truncation ), dtype );
+   Framework::ScanMonadic(
+         inFT, outFT, dtype, dtype, 1, *scanLineFilter,
+         Framework::ScanOption::TensorAsSpatialDim + Framework::ScanOption::NeedCoordinates );
+   if( outSpatial ) {
+      StringSet options{ S::INVERSE };
+      if( real ) {
+         options.insert( S::REAL );
+      }
+      if( expanded ) {
+         dip::Image tmp;
+         DIP_STACK_TRACE_THIS( FourierTransform( outFT, tmp, options ));
+         out = tmp.Crop( originalSizes );
+      } else {
+         DIP_STACK_TRACE_THIS( FourierTransform( outFT, out, options ));
+      }
+   } else {
+      out.SetPixelSize( inFT.PixelSize() );
    }
 }
 
@@ -502,6 +508,14 @@ DOCTEST_TEST_CASE("[DIPlib] testing the Gaussian filters") {
    DOCTEST_CHECK( fir.At( 128 ).As< dip::dfloat >() == doctest::Approx( 2.0 ));
    iir = dip::GaussIIR( img, { sigma }, { 2 } );
    DOCTEST_CHECK( iir.At( 128 ).As< dip::dfloat >() == doctest::Approx( 2.0 ));
+
+   // Test we can protect the output image (issue #170)
+   dip::Image out = img.Similar();
+   out.Protect();
+   DOCTEST_CHECK_NOTHROW( dip::GaussFT( img, out, { sigma } ));
+   DOCTEST_CHECK_NOTHROW( dip::GaussFIR( img, out, { sigma } ));
+   DOCTEST_CHECK_NOTHROW( dip::GaussIIR( img, out, { sigma } ));
+   DOCTEST_CHECK_NOTHROW( dip::Gradient( img, out, { .79 } ));
 }
 
 #ifdef _OPENMP
