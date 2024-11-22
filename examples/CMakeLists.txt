@@ -117,7 +117,14 @@ if(DIP_BUILD_DIPVIEWER)
 
    # An example program that uses superpixel segmentation and graph manipulation, it displays some images
    # using dip::viewer::Show, and links those displays together
-   add_executable(oversegmentation cpp/oversegmentation.cpp)
+   add_executable(oversegmentation cpp/oversegmentation.cpp
+                  /Users/cris/src/maxflow/maxflow-v3.04.src/graph.cpp
+                  /Users/cris/src/maxflow/maxflow-v3.04.src/block.h
+                  /Users/cris/src/maxflow/maxflow-v3.04.src/graph.h
+                  /Users/cris/src/maxflow/maxflow-v3.04.src/instances.inc
+                  /Users/cris/src/maxflow/maxflow-v3.04.src/maxflow.cpp
+                  )
+   target_include_directories(oversegmentation PRIVATE /Users/cris/src/maxflow/maxflow-v3.04.src)
    target_compile_definitions(oversegmentation PRIVATE DIP_EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
    target_link_libraries(oversegmentation DIP DIPviewer)
 

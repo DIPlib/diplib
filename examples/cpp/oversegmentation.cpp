@@ -15,6 +15,9 @@
 #include "diplib/viewer/slice.h" // To manipulate the dip::viewer::SliceView objects
 #include "diplib/viewer/viewer.h" // To manipulate the dip::viewer::SliceView objects
 
+#include "graph.h"
+#include "diplib/testing.h"
+
 int main() {
    // Read image
    dip::Image input = dip::ImageRead( DIP_EXAMPLES_DIR "/orka.tif" );
@@ -79,8 +82,27 @@ int main() {
    graph.AddEdge( background, superpixels.At( 71, 116 ).As< dip::uint >(), 1e12 );
    graph.AddEdge( background, superpixels.At( 34, 139 ).As< dip::uint >(), 1e12 );
    graph.AddEdge( background, superpixels.At( 32, 177 ).As< dip::uint >(), 1e12 );
-   // Cut
+
+   // Copy graph structure to maxflow format
+   typedef Graph<int,int,int> GraphType;
+   GraphType *g = new GraphType(graph.NumberOfVertices(), graph.NumberOfEdges());
+   g -> add_node(graph.NumberOfVertices());
+   for( dip::uint ii = 0; ii < graph.NumberOfVertices(); ii++ ) {
+      g->add_tweights( ii, graph.VertexValue( ii ) * 1000, graph.VertexValue( ii ) * 1000 );
+   }
+   for( dip::uint ii = 0; ii < graph.NumberOfEdges(); ii++ ) {
+      g->add_edge( graph.EdgeVertex( ii, 0 ), graph.EdgeVertex( ii, 1 ), graph.EdgeWeight( ii ) * 1000, graph.EdgeWeight( ii ) * 1000 );
+   }
+
+   // Cut with both methods4
+   dip::testing::Timer timer;
+   int flow = g -> maxflow();
+   timer.Stop();
+   std::cout << "maxflow(): " << timer << '\n';
+   timer.Reset();
    segmented_graph = dip::GraphCut( graph, background, foreground );
+   timer.Stop();
+   std::cout << "dip::GraphCut(): " << timer << '\n';
 
    // Convert back to a labeled image
    output = dip::Relabel( superpixels, segmented_graph );
