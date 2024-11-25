@@ -240,3 +240,51 @@ def MeasurementToDataFrame(measurement):
         index=measurement.Objects(),
         columns=columns,
     )
+
+
+_doc_dict = {}
+root_url = 'https://diplib.org/diplib-docs/'
+
+
+def Doc(function_name):
+    """Open the online DIPlib documentation to the page for the given function."""
+    import urllib.parse
+    import webbrowser
+
+    global _doc_dict
+    if not _doc_dict:
+        from .documentation_urls import doc_url_pairs
+        for name, url in doc_url_pairs:
+            if name.startswith('dip.'):  # ignore the macros and the interfaces
+                # TODO: How do we filter out the functions that are not bound?
+                #       How to prioritize the functions that take an image as input?
+                name = name.casefold()
+                if name in _doc_dict:
+                    _doc_dict[name].append(url)
+                else:
+                    _doc_dict[name] = [url]
+
+    if not isinstance(function_name, str):
+        # Maybe it's a function?
+        if callable(function_name):
+            function_name = function_name.__name__
+        else:
+            raise RuntimeError("The input was not a function nor a function name.")
+
+    function_name = function_name.removeprefix('diplib.').removeprefix('PyDIP_bin.')
+    name = function_name.casefold()
+    if not name.startswith('dip.'):
+        name = 'dip.' + name
+
+    if not name in _doc_dict:
+        print (f'No function {function_name} found. Opening Google search.')
+        search_string = urllib.parse.quote(function_name)
+        webbrowser.open(f'https://www.google.com/search?q=site:diplib.org+{search_string}', new=0, autoraise=True)
+        return
+
+    urls = _doc_dict[name]
+    if len(urls) > 1:
+        print(f'Found multiple matches for {function_name} (opening the first one):')
+        for u in urls:
+            print(f'  - {root_url + u}')
+    webbrowser.open(root_url + urls[0], new=0, autoraise=True)

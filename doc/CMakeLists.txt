@@ -32,9 +32,29 @@ find_program(
 )
 mark_as_advanced(DOXPP_HTML_EXECUTABLE)
 
-if(DOXPP_PARSE_EXECUTABLE AND DOXPP_HTML_EXECUTABLE)
+find_program(
+      DOXPP_SUMMARY_EXECUTABLE
+      NAMES dox++summary
+      PATHS
+         /Users/cris/src/dox++/
+      DOC "dox++ documentation generation tool, summary generator (https://crisluengo.github.io/doxpp/)"
+)
+mark_as_advanced(DOXPP_SUMMARY_EXECUTABLE)
+
+find_program(
+      DOXPP_URLS_EXECUTABLE
+      NAMES dox++urls
+      PATHS
+         /Users/cris/src/dox++/
+      DOC "dox++ documentation generation tool, URLs generator (https://crisluengo.github.io/doxpp/)"
+)
+mark_as_advanced(DOXPP_URLS_EXECUTABLE)
+
+if(DOXPP_PARSE_EXECUTABLE AND DOXPP_HTML_EXECUTABLE AND DOXPP_SUMMARY_EXECUTABLE AND DOXPP_URLS_EXECUTABLE)
    message(STATUS "Found dox++parse: ${DOXPP_PARSE_EXECUTABLE}")
    message(STATUS "Found dox++html: ${DOXPP_HTML_EXECUTABLE}")
+   message(STATUS "Found dox++summary: ${DOXPP_SUMMARY_EXECUTABLE}")
+   message(STATUS "Found dox++urls: ${DOXPP_URLS_EXECUTABLE}")
    set(DOXPP_FOUND on)
 else()
    set(DOXPP_FOUND off)
@@ -56,6 +76,8 @@ if(DOXPP_FOUND)
          COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_INSTALL_PREFIX}/${DOCUMENTATION_OUTPUT}"
          COMMAND "${DOXPP_PARSE_EXECUTABLE}"
          COMMAND "${DOXPP_HTML_EXECUTABLE}"
+         COMMAND "${DOXPP_SUMMARY_EXECUTABLE}"
+         COMMAND "${DOXPP_URLS_EXECUTABLE}"
          WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
    )
 endif()

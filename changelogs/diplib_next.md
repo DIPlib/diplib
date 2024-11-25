@@ -71,6 +71,9 @@ date: 2020-00-00
 
 ### New functionality
 
+- Added the function `dip.Doc()`, which will open the documentation for the given function or class in the
+  default web browser.
+
 ### Changed functionality
 
 (See also changes to *DIPlib*.)

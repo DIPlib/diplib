@@ -48,6 +48,12 @@ file index expand levels = 1
 class index expand levels = 1
 class index expand inner = no
 
+[summary]
+filename = @PROJECT_SOURCE_DIR@/pydip/src/documentation_strings.h
+
+[urls]
+filename = @PROJECT_SOURCE_DIR@/pydip/src/documentation_urls.py
+
 [search]
 enable = yes
 download binary = no

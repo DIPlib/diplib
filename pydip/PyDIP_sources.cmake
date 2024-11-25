@@ -6,6 +6,8 @@ src/__main__.py
 src/analysis.cpp
 src/assorted.cpp
 src/dipview.py
+src/documentation_strings.h
+src/documentation_urls.py
 src/filtering.cpp
 src/generation.cpp
 src/histogram.cpp
