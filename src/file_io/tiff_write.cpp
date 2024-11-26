@@ -211,7 +211,8 @@ void FillBufferMultiChannelN(
 
 void WriteTIFFStrips(
       Image const& image,
-      TiffFile& tiff
+      TiffFile& tiff,
+      size_t slice
 ) {
    DIP_THROW_IF( !image.IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint tensorElements = image.TensorElements();
@@ -225,6 +226,13 @@ void WriteTIFFStrips(
    uint32 rowsPerStrip = TIFFDefaultStripSize( tiff, 0 );
    WRITE_TIFF_TAG( tiff, TIFFTAG_ROWSPERSTRIP, rowsPerStrip );
 
+   dip::UnsignedArray startCoords;
+   if (image.Dimensionality() == 2) {
+      startCoords = { 0, 0 };
+   } else {
+      startCoords = { 0, 0, slice };
+   }
+
    // Write it to the file
    tmsize_t scanline = TIFFScanlineSize( tiff );
    if( binary ) {
@@ -236,7 +244,7 @@ void WriteTIFFStrips(
    if( image.HasNormalStrides() && !binary ) {
       // Simple writing
       tstrip_t strip = 0;
-      uint8* data = static_cast< uint8* >( image.Origin() );
+      uint8* data = static_cast< uint8* >( image.Pointer(startCoords) );
       for( uint32 row = 0; row < imageLength; row += rowsPerStrip ) {
          uint32 nrow = row + rowsPerStrip > imageLength ? imageLength - row : rowsPerStrip;
          if( TIFFWriteEncodedStrip( tiff, strip, data, static_cast< tmsize_t >( nrow ) * scanline ) < 0 ) {
@@ -249,7 +257,7 @@ void WriteTIFFStrips(
       // Writing requires an intermediate buffer, filled using strides
       std::vector< uint8 > buf( static_cast< dip::uint >( TIFFStripSize( tiff )));
       tstrip_t strip = 0;
-      uint8* data = static_cast< uint8* >( image.Origin() );
+      uint8* data = static_cast< uint8* >( image.Pointer(startCoords) );
       for( uint32 row = 0; row < imageLength; row += rowsPerStrip ) {
          uint32 nrow = row + rowsPerStrip > imageLength ? imageLength - row : rowsPerStrip;
          if( tensorElements == 1 ) {
@@ -285,12 +293,13 @@ void ImageWriteTIFF(
       dip::uint jpegLevel
 ) {
    DIP_THROW_IF( !image.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( image.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
-   // TODO: Implement writing of 3D images as a stack of 2D images
+   DIP_THROW_IF( image.Dimensionality() != 2 && image.Dimensionality() != 3, E::DIMENSIONALITY_NOT_SUPPORTED );
 
+   size_t slices = image.Dimensionality() == 3 ? image.Size(2) : 1;
    // Get image info and quit if we can't write
    DIP_THROW_IF(( image.Size( 0 ) > std::numeric_limits< uint32 >::max() ) ||
-                ( image.Size( 1 ) > std::numeric_limits< uint32 >::max() ), "Image size too large for TIFF file" );
+                ( image.Size( 1 ) > std::numeric_limits< uint32 >::max() ) ||
+                ( slices > std::numeric_limits< uint32 >::max()), "Image size too large for TIFF file" );
    uint32 imageWidth = static_cast< uint32 >( image.Size( 0 ));
    uint32 imageLength = static_cast< uint32 >( image.Size( 1 ));
    dip::uint sizeOf = image.DataType().SizeOf();
@@ -327,54 +336,60 @@ void ImageWriteTIFF(
    // Create the TIFF file and set the tags
    TiffFile tiff( filename );
 
-   if( image.DataType().IsBinary() ) {
-      WRITE_TIFF_TAG( tiff, TIFFTAG_PHOTOMETRIC, uint16( PHOTOMETRIC_MINISBLACK ));
-   } else if(( image.ColorSpace() == "RGB" ) || ( image.ColorSpace() == "sRGB" )){
-      WRITE_TIFF_TAG( tiff, TIFFTAG_PHOTOMETRIC, uint16( PHOTOMETRIC_RGB )); // TODO: Both linear RGB and non-linear sRGB are mapped to 'RGB' photometric interpretation, not ideal.
-   } else if( image.ColorSpace() == "Lab" ) {
-      WRITE_TIFF_TAG( tiff, TIFFTAG_PHOTOMETRIC, uint16( PHOTOMETRIC_CIELAB ));
-   } else if(( image.ColorSpace() == "CMY" ) || ( image.ColorSpace() == "CMYK" )) {
-      WRITE_TIFF_TAG( tiff, TIFFTAG_PHOTOMETRIC, uint16( PHOTOMETRIC_SEPARATED ));
-   } else {
-      WRITE_TIFF_TAG( tiff, TIFFTAG_PHOTOMETRIC, uint16( PHOTOMETRIC_MINISBLACK ));
-   }
-
-   WRITE_TIFF_TAG( tiff, TIFFTAG_IMAGEWIDTH, imageWidth );
-   WRITE_TIFF_TAG( tiff, TIFFTAG_IMAGELENGTH, imageLength );
-
-   if( !image.DataType().IsBinary() ) {
-      WRITE_TIFF_TAG( tiff, TIFFTAG_BITSPERSAMPLE, bitsPerSample );
-      WRITE_TIFF_TAG( tiff, TIFFTAG_SAMPLEFORMAT, sampleFormat );
-      WRITE_TIFF_TAG( tiff, TIFFTAG_SAMPLESPERPIXEL, static_cast< uint16 >( image.TensorElements() ));
-      if( image.TensorElements() > 1 ) {
-         WRITE_TIFF_TAG( tiff, TIFFTAG_PLANARCONFIG, uint16( PLANARCONFIG_CONTIG ));
-         // This is the standard way of writing channels (planes), PLANARCONFIG_SEPARATE is not required to be
-         // supported by all readers.
+   for (size_t i = 0; i < slices; i++) {
+      if (i > 0) {
+         TIFFWriteDirectory(tiff);
       }
-   }
 
-   WRITE_TIFF_TAG( tiff, TIFFTAG_COMPRESSION, compmode );
-   if( compmode == COMPRESSION_JPEG ) {
-      jpegLevel = clamp< dip::uint >( jpegLevel, 1, 100 );
-      WRITE_TIFF_TAG( tiff, TIFFTAG_JPEGQUALITY, static_cast< int >( jpegLevel ));
-      WRITE_TIFF_TAG( tiff, TIFFTAG_JPEGCOLORMODE, int( JPEGCOLORMODE_RGB ));
-   }
+      if( image.DataType().IsBinary() ) {
+         WRITE_TIFF_TAG( tiff, TIFFTAG_PHOTOMETRIC, uint16( PHOTOMETRIC_MINISBLACK ));
+      } else if(( image.ColorSpace() == "RGB" ) || ( image.ColorSpace() == "sRGB" )){
+         WRITE_TIFF_TAG( tiff, TIFFTAG_PHOTOMETRIC, uint16( PHOTOMETRIC_RGB )); // TODO: Both linear RGB and non-linear sRGB are mapped to 'RGB' photometric interpretation, not ideal.
+      } else if( image.ColorSpace() == "Lab" ) {
+         WRITE_TIFF_TAG( tiff, TIFFTAG_PHOTOMETRIC, uint16( PHOTOMETRIC_CIELAB ));
+      } else if(( image.ColorSpace() == "CMY" ) || ( image.ColorSpace() == "CMYK" )) {
+         WRITE_TIFF_TAG( tiff, TIFFTAG_PHOTOMETRIC, uint16( PHOTOMETRIC_SEPARATED ));
+      } else {
+         WRITE_TIFF_TAG( tiff, TIFFTAG_PHOTOMETRIC, uint16( PHOTOMETRIC_MINISBLACK ));
+      }
 
-   DIP_STACK_TRACE_THIS( WriteTIFFStrips( image, tiff ));
+      WRITE_TIFF_TAG( tiff, TIFFTAG_IMAGEWIDTH, imageWidth );
+      WRITE_TIFF_TAG( tiff, TIFFTAG_IMAGELENGTH, imageLength );
 
-   TIFFSetField( tiff, TIFFTAG_SOFTWARE, "DIPlib " DIP_VERSION_STRING );
+      if( !image.DataType().IsBinary() ) {
+         WRITE_TIFF_TAG( tiff, TIFFTAG_BITSPERSAMPLE, bitsPerSample );
+         WRITE_TIFF_TAG( tiff, TIFFTAG_SAMPLEFORMAT, sampleFormat );
+         WRITE_TIFF_TAG( tiff, TIFFTAG_SAMPLESPERPIXEL, static_cast< uint16 >( image.TensorElements() ));
+         if( image.TensorElements() > 1 ) {
+            WRITE_TIFF_TAG( tiff, TIFFTAG_PLANARCONFIG, uint16( PLANARCONFIG_CONTIG ));
+            // This is the standard way of writing channels (planes), PLANARCONFIG_SEPARATE is not required to be
+            // supported by all readers.
+         }
+      }
 
-   auto ps = image.PixelSize( 0 );
-   if( ps.units.HasSameDimensions( Units::Meter() )) {
-      ps.RemovePrefix();
-      TIFFSetField( tiff, TIFFTAG_XRESOLUTION, static_cast< float >( 0.01 / ps.magnitude ));
+      WRITE_TIFF_TAG( tiff, TIFFTAG_COMPRESSION, compmode );
+      if( compmode == COMPRESSION_JPEG ) {
+         jpegLevel = clamp< dip::uint >( jpegLevel, 1, 100 );
+         WRITE_TIFF_TAG( tiff, TIFFTAG_JPEGQUALITY, static_cast< int >( jpegLevel ));
+         WRITE_TIFF_TAG( tiff, TIFFTAG_JPEGCOLORMODE, int( JPEGCOLORMODE_RGB ));
+      }
+
+      DIP_STACK_TRACE_THIS( WriteTIFFStrips( image, tiff, i ));
+
+      TIFFSetField( tiff, TIFFTAG_SOFTWARE, "DIPlib " DIP_VERSION_STRING );
+
+      auto ps = image.PixelSize( 0 );
+      if( ps.units.HasSameDimensions( Units::Meter() )) {
+         ps.RemovePrefix();
+         TIFFSetField( tiff, TIFFTAG_XRESOLUTION, static_cast< float >( 0.01 / ps.magnitude ));
+      }
+      ps = image.PixelSize( 1 );
+      if( ps.units.HasSameDimensions( Units::Meter() )) {
+         ps.RemovePrefix();
+         TIFFSetField( tiff, TIFFTAG_YRESOLUTION, static_cast< float >( 0.01 / ps.magnitude ));
+      }
+      TIFFSetField( tiff, TIFFTAG_RESOLUTIONUNIT, uint16( RESUNIT_CENTIMETER ));
    }
-   ps = image.PixelSize( 1 );
-   if( ps.units.HasSameDimensions( Units::Meter() )) {
-      ps.RemovePrefix();
-      TIFFSetField( tiff, TIFFTAG_YRESOLUTION, static_cast< float >( 0.01 / ps.magnitude ));
-   }
-   TIFFSetField( tiff, TIFFTAG_RESOLUTIONUNIT, uint16( RESUNIT_CENTIMETER ));
 }
 
 } // namespace dip
@@ -410,6 +425,38 @@ DOCTEST_TEST_CASE( "[DIPlib] testing TIFF file reading and writing" ) {
    dip::ImageWriteTIFF( image, "test2.tif" );
    result = dip::ImageReadTIFF( "test2" );
    DOCTEST_CHECK( dip::testing::CompareImages( image, result ));
+
+   // Write 3D image
+   const int Slices = 5;
+   dip::Image image3D({image.Size(0), image.Size(1), (size_t) Slices}, image.TensorElements(), image.DataType());
+   for (int z = 0; z < Slices; z++) {
+      image3D.At({0, -1}, {0, -1}, dip::Range(z)) = (((float)z+0.5f)/(float)Slices)*image;
+   }
+
+   dip::ImageWriteTIFF( image3D, "test3.tif" );
+   result = dip::ImageReadTIFF( "test3", {0, Slices - 1} );
+   DOCTEST_CHECK( dip::testing::CompareImages( image3D, result ));
+   DOCTEST_CHECK( image3D.PixelSize() == result.PixelSize() );
+
+   // Try reading it into a 3D image with non-standard strides
+   result.Strip();
+   strides = result.Strides();
+   strides[ 0 ] = static_cast< dip::sint >( result.Size( 1 ) * result.Size( 2 ));
+   strides[ 1 ] = static_cast< dip::sint >( result.Size( 2 ));
+   strides[ 2 ] = 1;
+   result.SetStrides( strides );
+   result.Forge();
+   result.Protect();
+   dip::ImageReadTIFF( result, "test3", {0, Slices - 1} );
+   DOCTEST_CHECK( dip::testing::CompareImages( image3D, result ));
+   DOCTEST_CHECK( image3D.PixelSize() == result.PixelSize() );
+   result.Protect( false );
+
+   // Turn it on its side so the image to write has non-standard strides
+   image3D.SwapDimensions( 0, 1 );
+   dip::ImageWriteTIFF( image3D, "test4.tif" );
+   result = dip::ImageReadTIFF( "test4", {0, Slices - 1} );
+   DOCTEST_CHECK( dip::testing::CompareImages( image3D, result ));
 }
 
 #endif // DIP_CONFIG_ENABLE_DOCTEST
