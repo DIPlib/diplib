@@ -414,9 +414,6 @@ DIP_EXPORT bool ImageIsTIFF( String const& filename );
 /// The TIFF image file format is very flexible in how data can be written, but is limited to multiple pages
 /// of 2D images. A 3D image will be written as a multi-page TIFF file.
 ///
-/// !!! warning
-///     Writing of 3D images has not yet been implemented.
-///
 /// A tensor image will be written as an image with multiple samples per pixel, but the tensor shape will be lost.
 /// If the tensor image has color space information, and it is one of the few color spaces known to the TIFF
 /// standard, this information will be stored; images in other color spaces are stored without color space information.
