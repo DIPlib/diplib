@@ -48,12 +48,6 @@ file index expand levels = 1
 class index expand levels = 1
 class index expand inner = no
 
-[summary]
-filename = @PROJECT_SOURCE_DIR@/pydip/src/documentation_strings.h
-
-[urls]
-filename = @PROJECT_SOURCE_DIR@/pydip/src/documentation_urls.py
-
 [search]
 enable = yes
 download binary = no
@@ -61,3 +55,9 @@ base url = https://diplib.org/diplib-docs/
 external url = https://google.com/search?q=site:diplib.org+{query}
 add snake case suffixes = yes
 add camel case suffixes = yes
+
+[brief]
+filename = @PROJECT_SOURCE_DIR@/pydip/src/documentation_strings.h
+
+[urls]
+filename = @PROJECT_SOURCE_DIR@/pydip/src/documentation_urls.py

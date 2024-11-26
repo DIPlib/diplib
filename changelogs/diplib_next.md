@@ -74,6 +74,11 @@ date: 2020-00-00
 - Added the function `dip.Doc()`, which will open the documentation for the given function or class in the
   default web browser.
 
+- Automatically copying the brief section of the documentation to each function as the Python doc string.
+  We finally have some documentation in Python!  
+  NOTE: We could copy the full documentation in the future, but that requires more extensive Markdown
+  parsing to produce good results.
+
 ### Changed functionality
 
 (See also changes to *DIPlib*.)

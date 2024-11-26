@@ -32,6 +32,8 @@
 #include <pybind11/numpy.h>
 // IWYU pragma: end_exports
 
+#include "documentation_strings.h"
+
 using namespace pybind11::literals;
 namespace py = pybind11;
 

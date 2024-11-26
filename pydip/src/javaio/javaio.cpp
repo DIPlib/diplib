@@ -37,7 +37,7 @@ PYBIND11_MODULE( PyDIPjavaio, m ) {
          out.ReverseDimensions();
       }
       return out;
-   }, "filename"_a, "interface"_a = dip::javaio::bioformatsInterface, "imageNumber"_a = 0 );
+   }, "filename"_a, "interface"_a = dip::javaio::bioformatsInterface, "imageNumber"_a = 0, doc_strings::dip·javaio·ImageReadJavaIO·Image·L·String·CL·String·CL·dip·uint· );
    m.def( "ImageReadJavaIO", []( dip::Image& out, dip::String const& filename, dip::String const& interface, dip::uint imageNumber ) {
       auto fi = dip::javaio::ImageReadJavaIO( out, filename, interface, imageNumber );
       if( !AreDimensionsReversed() ) {
@@ -45,7 +45,7 @@ PYBIND11_MODULE( PyDIPjavaio, m ) {
          ReverseDimensions( fi );
       }
       return fi;
-   }, py::kw_only(), "out"_a, "filename"_a, "interface"_a = dip::javaio::bioformatsInterface, "imageNumber"_a = 0 );
+   }, py::kw_only(), "out"_a, "filename"_a, "interface"_a = dip::javaio::bioformatsInterface, "imageNumber"_a = 0, doc_strings::dip·javaio·ImageReadJavaIO·Image·L·String·CL·String·CL·dip·uint· );
 
    // diplib/simple_file_io.h
    // We redefine ImageRead here, the version in PyDIP_bin is without DIPjavaio.
@@ -55,7 +55,7 @@ PYBIND11_MODULE( PyDIPjavaio, m ) {
          out.ReverseDimensions();
       }
       return out;
-   }, "filename"_a, "format"_a = "" );
+   }, "filename"_a, "format"_a = "", doc_strings::dip·ImageRead·Image·L·String·CL·String· );
    m.def( "ImageRead", []( dip::Image& out, dip::String const& filename, dip::String const& format ) {
       auto fi = dip::ImageRead( out, filename, format );
       if( !AreDimensionsReversed() ) {
@@ -63,5 +63,5 @@ PYBIND11_MODULE( PyDIPjavaio, m ) {
          ReverseDimensions( fi );
       }
       return fi;
-   }, py::kw_only(), "out"_a, "filename"_a, "format"_a = "" );
+   }, py::kw_only(), "out"_a, "filename"_a, "format"_a = "", doc_strings::dip·ImageRead·Image·L·String·CL·String· );
 }

@@ -126,29 +126,29 @@ dip::String ConfigRepr( dip::Histogram::Configuration const& s ) {
 void init_histogram( py::module& m ) {
 
    // diplib/histogram.h
-   auto hist = py::class_< dip::Histogram >( m, "Histogram", "Computes and holds histograms." );
+   auto hist = py::class_< dip::Histogram >( m, "Histogram", doc_strings::dip·Histogram );
 
-   auto conf = py::class_< dip::Histogram::Configuration >( hist, "Configuration", "Configuration information for how the histogram is computed." );
-   conf.def_readwrite( "lowerBound", &dip::Histogram::Configuration::lowerBound, "Lower bound for this dimension, corresponds to the lower bound of the first bin." );
-   conf.def_readwrite( "upperBound", &dip::Histogram::Configuration::upperBound, "Upper bound for this dimension, corresponds to the upper bound of the last bin." );
-   conf.def_readwrite( "nBins", &dip::Histogram::Configuration::nBins, "Number of bins for this dimension." );
-   conf.def_readwrite( "binSize", &dip::Histogram::Configuration::binSize, "Size of each bin for this dimension." );
-   conf.def_readwrite( "mode", &dip::Histogram::Configuration::mode, "The given value is ignored and replaced by the computed value." );
-   conf.def_readwrite( "lowerIsPercentile", &dip::Histogram::Configuration::lowerIsPercentile, "If set, `lowerBound` is replaced by the given percentile pixel value." );
-   conf.def_readwrite( "upperIsPercentile", &dip::Histogram::Configuration::upperIsPercentile, "If set, `upperBound` is replaced by the given percentile pixel value." );
-   conf.def_readwrite( "excludeOutOfBoundValues", &dip::Histogram::Configuration::excludeOutOfBoundValues, "If set, pixels outside of the histogram bounds are not counted." );
-   conf.def( py::init<>() );
-   conf.def( py::init< dip::dfloat, dip::dfloat, dip::dfloat >(), "lowerBound"_a, "upperBound"_a, "binSize"_a );
-   conf.def( py::init< dip::dfloat, dip::dfloat, dip::uint >(), "lowerBound"_a, "upperBound"_a, "nBins"_a );
-   conf.def( py::init< dip::dfloat, dip::uint, dip::dfloat >(), "lowerBound"_a, "nBins"_a, "binSize"_a );
-   conf.def( py::init< dip::dfloat, dip::dfloat >(), "lowerBound"_a, "upperBound"_a );
-   conf.def( py::init< dip::DataType >(), "dataType"_a );
+   auto conf = py::class_< dip::Histogram::Configuration >( hist, "Configuration", doc_strings::dip·Histogram·Configuration );
+   conf.def_readwrite( "lowerBound", &dip::Histogram::Configuration::lowerBound, doc_strings::dip·Histogram·Configuration·lowerBound );
+   conf.def_readwrite( "upperBound", &dip::Histogram::Configuration::upperBound, doc_strings::dip·Histogram·Configuration·upperBound );
+   conf.def_readwrite( "nBins", &dip::Histogram::Configuration::nBins, doc_strings::dip·Histogram·Configuration·nBins );
+   conf.def_readwrite( "binSize", &dip::Histogram::Configuration::binSize, doc_strings::dip·Histogram·Configuration·binSize );
+   conf.def_readwrite( "mode", &dip::Histogram::Configuration::mode, doc_strings::dip·Histogram·Configuration·mode );
+   conf.def_readwrite( "lowerIsPercentile", &dip::Histogram::Configuration::lowerIsPercentile, doc_strings::dip·Histogram·Configuration·lowerIsPercentile );
+   conf.def_readwrite( "upperIsPercentile", &dip::Histogram::Configuration::upperIsPercentile, doc_strings::dip·Histogram·Configuration·upperIsPercentile );
+   conf.def_readwrite( "excludeOutOfBoundValues", &dip::Histogram::Configuration::excludeOutOfBoundValues, doc_strings::dip·Histogram·Configuration·excludeOutOfBoundValues );
+   conf.def( py::init<>(), doc_strings::dip·Histogram·Configuration·Configuration );
+   conf.def( py::init< dip::dfloat, dip::dfloat, dip::dfloat >(), "lowerBound"_a, "upperBound"_a, "binSize"_a, doc_strings::dip·Histogram·Configuration·Configuration·dfloat··dfloat··dfloat· );
+   conf.def( py::init< dip::dfloat, dip::dfloat, dip::uint >(), "lowerBound"_a, "upperBound"_a, "nBins"_a, doc_strings::dip·Histogram·Configuration·Configuration·dfloat··dfloat··dip·uint· );
+   conf.def( py::init< dip::dfloat, dip::uint, dip::dfloat >(), "lowerBound"_a, "nBins"_a, "binSize"_a, doc_strings::dip·Histogram·Configuration·Configuration·dfloat··dip·uint··dfloat· );
+   conf.def( py::init< dip::dfloat, dip::dfloat >(), "lowerBound"_a, "upperBound"_a, "The number of bins defaults to 256, the bin size is computed." );
+   conf.def( py::init< dip::DataType >(), "dataType"_a, doc_strings::dip·Histogram·Configuration·Configuration·DataType· );
    conf.def( "__repr__", &ConfigRepr );
-   hist.def( "OptimalConfiguration", &dip::Histogram::OptimalConfiguration );
-   hist.def( "OptimalConfigurationWithFullRange", &dip::Histogram::OptimalConfigurationWithFullRange );
+   hist.def( "OptimalConfiguration", &dip::Histogram::OptimalConfiguration, doc_strings::dip·Histogram·OptimalConfiguration );
+   hist.def( "OptimalConfigurationWithFullRange", &dip::Histogram::OptimalConfigurationWithFullRange, doc_strings::dip·Histogram·OptimalConfigurationWithFullRange );
 
    hist.def( py::init< dip::Image const&, dip::Image const&, dip::Histogram::ConfigurationArray >(),
-             "input"_a, "mask"_a = dip::Image{}, "configuration"_a = dip::Histogram::ConfigurationArray{} );
+             "input"_a, "mask"_a = dip::Image{}, "configuration"_a = dip::Histogram::ConfigurationArray{}, doc_strings::dip·Histogram·Histogram·Image·CL·Image·CL·ConfigurationArray· );
    hist.def( py::init( []( dip::Image const& input, dip::Image const& mask, dip::FloatArray const& bounds, dip::uint nBins, bool boundsArePercentile ) {
                 DIP_THROW_IF( bounds.size() != 2, dip::E::ARRAY_PARAMETER_WRONG_LENGTH );
                 dip::Histogram::Configuration config( bounds[ 0 ], bounds[ 1 ], nBins );
@@ -157,9 +157,10 @@ void init_histogram( py::module& m ) {
                 }
                 return dip::Histogram( input, mask, config );
              } ),
-             "input"_a, "mask"_a = dip::Image{}, "bounds"_a = dip::FloatArray{ 0, 255 }, "nBins"_a = 256, "boundsArePercentile"_a = false );
+             "input"_a, "mask"_a = dip::Image{}, "bounds"_a = dip::FloatArray{ 0, 255 }, "nBins"_a = 256, "boundsArePercentile"_a = false,
+             "A constructor that creates a `dip::Histogram::Configuration` object for you." );
    hist.def( py::init< dip::Image const&, dip::Image const&, dip::Image const&, dip::Histogram::ConfigurationArray >(),
-             "input1"_a, "input2"_a, "mask"_a = dip::Image{}, "configuration"_a = dip::Histogram::ConfigurationArray{} );
+             "input1"_a, "input2"_a, "mask"_a = dip::Image{}, "configuration"_a = dip::Histogram::ConfigurationArray{}, doc_strings::dip·Histogram·Histogram·Image·CL·Image·CL·Image·CL·ConfigurationArray· );
    hist.def( py::init( []( dip::Image const& input1,
                            dip::Image const& input2,
                            dip::Image const& mask,
@@ -181,8 +182,9 @@ void init_histogram( py::module& m ) {
                 return dip::Histogram( input1, input2, mask, config );
              } ),
              "input1"_a, "input2"_a, "mask"_a = dip::Image{}, "bounds1"_a = dip::FloatArray{ 0, 255 }, "bounds2"_a = dip::FloatArray{ 0, 100 },
-             "nBins1"_a = 256, "nBins2"_a = 256, "boundsArePercentile"_a = false );
-   hist.def( py::init< dip::Histogram::ConfigurationArray >(), "configuration"_a );
+             "nBins1"_a = 256, "nBins2"_a = 256, "boundsArePercentile"_a = false,
+             "A constructor that creates a `dip::Histogram::Configuration` object for you." );
+   hist.def( py::init< dip::Histogram::ConfigurationArray >(), "configuration"_a, doc_strings::dip·Histogram·Histogram·ConfigurationArray· );
    hist.def( "__repr__", []( dip::Histogram const& self ) {
       if( !self.IsInitialized() ) {
          return std::string{ "<Uninitialized histogram>" };
@@ -196,87 +198,87 @@ void init_histogram( py::module& m ) {
       os << self;
       return os.str();
    } );
-   hist.def( "IsInitialized", &dip::Histogram::IsInitialized );
-   hist.def( "Copy", &dip::Histogram::Copy );
+   hist.def( "IsInitialized", &dip::Histogram::IsInitialized, doc_strings::dip·Histogram·IsInitialized·C );
+   hist.def( "Copy", &dip::Histogram::Copy, doc_strings::dip·Histogram·Copy·C );
    hist.def( "ReverseLookup", py::overload_cast< dip::Image const&, dip::BooleanArray >( &dip::Histogram::ReverseLookup ),
-             "input"_a, "excludeOutOfBoundValues"_a = dip::BooleanArray{ false } );
+             "input"_a, "excludeOutOfBoundValues"_a = dip::BooleanArray{ false }, doc_strings::dip·Histogram·ReverseLookup·Image·CL·Image·L·BooleanArray· );
    hist.def( "ReverseLookup", py::overload_cast< dip::Image const&, dip::Image&, dip::BooleanArray >( &dip::Histogram::ReverseLookup ),
-             "input"_a, py::kw_only(), "out"_a, "excludeOutOfBoundValues"_a = dip::BooleanArray{ false } );
-   hist.def( py::self += py::self );
-   hist.def( py::self + py::self );
-   hist.def( py::self -= py::self );
-   hist.def( py::self - py::self ); // NOLINT(*-redundant-expression)
-   hist.def( "Dimensionality", &dip::Histogram::Dimensionality );
-   hist.def( "Bins", &dip::Histogram::Bins, "dim"_a = 0 );
-   hist.def( "BinSize", &dip::Histogram::BinSize, "dim"_a = 0 );
-   hist.def( "LowerBound", &dip::Histogram::LowerBound, "dim"_a = 0 );
-   hist.def( "UpperBound", &dip::Histogram::UpperBound, "dim"_a = 0 );
-   hist.def( "BinBoundaries", &dip::Histogram::BinBoundaries, "dim"_a = 0 );
-   hist.def( "BinCenters", &dip::Histogram::BinCenters, "dim"_a = 0 );
-   hist.def( "BinCenter", &dip::Histogram::BinCenter, "bin"_a, "dim"_a = 0 );
-   hist.def( "Bin", py::overload_cast< dip::dfloat >( &dip::Histogram::Bin, py::const_ ), "value"_a );
-   hist.def( "Bin", py::overload_cast< dip::dfloat, dip::dfloat >( &dip::Histogram::Bin, py::const_ ), "x_value"_a, "y_value"_a );
-   hist.def( "Bin", py::overload_cast< dip::dfloat, dip::dfloat, dip::dfloat >( &dip::Histogram::Bin, py::const_ ), "x_value"_a, "y_value"_a, "z_value"_a );
-   hist.def( "Bin", py::overload_cast< dip::FloatArray const& >( &dip::Histogram::Bin, py::const_ ), "value"_a );
-   hist.def( "__getitem__", []( dip::Histogram const& self, dip::uint x ) -> dip::Histogram::CountType { return self.At( x ); } );
-   hist.def( "__getitem__", []( dip::Histogram const& self, dip::uint x, dip::uint y ) -> dip::Histogram::CountType { return self.At( x, y ); } );
-   hist.def( "__getitem__", []( dip::Histogram const& self, dip::uint x, dip::uint y, dip::uint z ) -> dip::Histogram::CountType { return self.At( x, y, z ); } );
-   hist.def( "__getitem__", []( dip::Histogram const& self, dip::UnsignedArray const& bin ) -> dip::Histogram::CountType { return self.At( bin ); } );
-   hist.def( "GetImage", &dip::Histogram::GetImage );
-   hist.def( "Count", &dip::Histogram::Count );
-   hist.def( "Cumulative", &dip::Histogram::Cumulative );
-   hist.def( "GetMarginal", &dip::Histogram::GetMarginal, "dim"_a );
-   hist.def( "Smooth", py::overload_cast< dip::FloatArray >( &dip::Histogram::Smooth ), "sigma"_a = dip::FloatArray{ 1 } );
+             "input"_a, py::kw_only(), "out"_a, "excludeOutOfBoundValues"_a = dip::BooleanArray{ false }, doc_strings::dip·Histogram·ReverseLookup·Image·CL·Image·L·BooleanArray· );
+   hist.def( py::self += py::self, doc_strings::dip·Histogram·operatorpluseq·Histogram·CL );
+   hist.def( py::self + py::self, doc_strings::dip·operatorplus·Histogram·CL·Histogram·CL );
+   hist.def( py::self -= py::self, doc_strings::dip·Histogram·operatorminuseq·Histogram·CL );
+   hist.def( py::self - py::self, doc_strings::dip·operatorminus·Histogram·CL·Histogram·CL ); // NOLINT(*-redundant-expression)
+   hist.def( "Dimensionality", &dip::Histogram::Dimensionality, doc_strings::dip·Histogram·Dimensionality·C );
+   hist.def( "Bins", &dip::Histogram::Bins, "dim"_a = 0, doc_strings::dip·Histogram·Bins·dip·uint··C );
+   hist.def( "BinSize", &dip::Histogram::BinSize, "dim"_a = 0, doc_strings::dip·Histogram·BinSize·dip·uint··C );
+   hist.def( "LowerBound", &dip::Histogram::LowerBound, "dim"_a = 0, doc_strings::dip·Histogram·LowerBound·dip·uint··C );
+   hist.def( "UpperBound", &dip::Histogram::UpperBound, "dim"_a = 0, doc_strings::dip·Histogram·UpperBound·dip·uint··C );
+   hist.def( "BinBoundaries", &dip::Histogram::BinBoundaries, "dim"_a = 0, doc_strings::dip·Histogram·BinBoundaries·dip·uint··C );
+   hist.def( "BinCenters", &dip::Histogram::BinCenters, "dim"_a = 0, doc_strings::dip·Histogram·BinCenters·dip·uint··C );
+   hist.def( "BinCenter", &dip::Histogram::BinCenter, "bin"_a, "dim"_a = 0, doc_strings::dip·Histogram·BinCenter·dip·uint··dip·uint··C );
+   hist.def( "Bin", py::overload_cast< dip::dfloat >( &dip::Histogram::Bin, py::const_ ), "value"_a, doc_strings::dip·Histogram·Bin·dfloat··C );
+   hist.def( "Bin", py::overload_cast< dip::dfloat, dip::dfloat >( &dip::Histogram::Bin, py::const_ ), "x_value"_a, "y_value"_a, doc_strings::dip·Histogram·Bin·dfloat··dfloat··C );
+   hist.def( "Bin", py::overload_cast< dip::dfloat, dip::dfloat, dip::dfloat >( &dip::Histogram::Bin, py::const_ ), "x_value"_a, "y_value"_a, "z_value"_a, doc_strings::dip·Histogram·Bin·dfloat··dfloat··dfloat··C );
+   hist.def( "Bin", py::overload_cast< dip::FloatArray const& >( &dip::Histogram::Bin, py::const_ ), "value"_a, doc_strings::dip·Histogram·Bin·FloatArray·CL·C );
+   hist.def( "__getitem__", []( dip::Histogram const& self, dip::uint x ) -> dip::Histogram::CountType { return self.At( x ); }, doc_strings::dip·Histogram·At·dip·uint··C );
+   hist.def( "__getitem__", []( dip::Histogram const& self, dip::uint x, dip::uint y ) -> dip::Histogram::CountType { return self.At( x, y ); }, doc_strings::dip·Histogram·At·dip·uint··dip·uint··C );
+   hist.def( "__getitem__", []( dip::Histogram const& self, dip::uint x, dip::uint y, dip::uint z ) -> dip::Histogram::CountType { return self.At( x, y, z ); }, doc_strings::dip·Histogram·At·dip·uint··dip·uint··dip·uint··C );
+   hist.def( "__getitem__", []( dip::Histogram const& self, dip::UnsignedArray const& bin ) -> dip::Histogram::CountType { return self.At( bin ); }, doc_strings::dip·Histogram·At·UnsignedArray·CL·C );
+   hist.def( "GetImage", &dip::Histogram::GetImage, doc_strings::dip·Histogram·GetImage·C );
+   hist.def( "Count", &dip::Histogram::Count, doc_strings::dip·Histogram·Count·C );
+   hist.def( "Cumulative", &dip::Histogram::Cumulative, doc_strings::dip·Histogram·Cumulative );
+   hist.def( "GetMarginal", &dip::Histogram::GetMarginal, "dim"_a, doc_strings::dip·Histogram·GetMarginal·dip·uint··C );
+   hist.def( "Smooth", py::overload_cast< dip::FloatArray >( &dip::Histogram::Smooth ), "sigma"_a = dip::FloatArray{ 1 }, doc_strings::dip·Histogram·Smooth·FloatArray· );
 
-   m.def( "CumulativeHistogram", &dip::CumulativeHistogram, "in"_a );
+   m.def( "CumulativeHistogram", &dip::CumulativeHistogram, "in"_a, doc_strings::dip·CumulativeHistogram·Histogram·CL );
    m.def( "Smooth", py::overload_cast< dip::Histogram const&, dip::FloatArray const& >( &dip::Smooth ),
-          "in"_a, "sigma"_a = dip::FloatArray{ 1 } );
-   m.def( "Mean", py::overload_cast< dip::Histogram const& >( &dip::Mean ), "in"_a );
-   m.def( "Covariance", py::overload_cast< dip::Histogram const& >( &dip::Covariance ), "in"_a );
-   m.def( "MarginalPercentile", &dip::MarginalPercentile, "in"_a, "percentile"_a = 50 );
-   m.def( "MarginalMedian", &dip::MarginalMedian, "in"_a );
-   m.def( "Mode", py::overload_cast< dip::Histogram const& >( &dip::Mode ), "in"_a );
-   m.def( "PearsonCorrelation", py::overload_cast< dip::Histogram const& >( &dip::PearsonCorrelation ), "in"_a );
-   m.def( "Regression", py::overload_cast< dip::Histogram const& >( &dip::Regression ), "in"_a );
-   m.def( "MutualInformation", py::overload_cast< dip::Histogram const& >( &dip::MutualInformation ), "in"_a );
-   m.def( "Entropy", py::overload_cast< dip::Histogram const& >( &dip::Entropy ), "in"_a );
+          "in"_a, "sigma"_a = dip::FloatArray{ 1 }, doc_strings::dip·Smooth·Histogram·CL·FloatArray·CL );
+   m.def( "Mean", py::overload_cast< dip::Histogram const& >( &dip::Mean ), "in"_a, doc_strings::dip·Mean·Histogram·CL );
+   m.def( "Covariance", py::overload_cast< dip::Histogram const& >( &dip::Covariance ), "in"_a, doc_strings::dip·Covariance·Histogram·CL );
+   m.def( "MarginalPercentile", &dip::MarginalPercentile, "in"_a, "percentile"_a = 50, doc_strings::dip·MarginalPercentile·Histogram·CL·dfloat· );
+   m.def( "MarginalMedian", &dip::MarginalMedian, "in"_a, doc_strings::dip·MarginalMedian·Histogram·CL );
+   m.def( "Mode", py::overload_cast< dip::Histogram const& >( &dip::Mode ), "in"_a, doc_strings::dip·Mode·Histogram·CL );
+   m.def( "PearsonCorrelation", py::overload_cast< dip::Histogram const& >( &dip::PearsonCorrelation ), "in"_a, doc_strings::dip·PearsonCorrelation·Histogram·CL );
+   m.def( "Regression", py::overload_cast< dip::Histogram const& >( &dip::Regression ), "in"_a, doc_strings::dip·Regression·Histogram·CL );
+   m.def( "MutualInformation", py::overload_cast< dip::Histogram const& >( &dip::MutualInformation ), "in"_a, doc_strings::dip·MutualInformation·Histogram·CL );
+   m.def( "Entropy", py::overload_cast< dip::Histogram const& >( &dip::Entropy ), "in"_a, doc_strings::dip·Entropy·Histogram·CL );
    m.def( "GaussianMixtureModel", py::overload_cast< dip::Histogram const&, dip::uint, dip::uint >( &dip::GaussianMixtureModel ),
-          "in"_a, "numberOfGaussians"_a, "maxIter"_a = 20 );
+          "in"_a, "numberOfGaussians"_a, "maxIter"_a = 20, doc_strings::dip·GaussianMixtureModel·Histogram·CL·dip·uint··dip·uint· );
 
    m.def( "IsodataThreshold", py::overload_cast< dip::Histogram const&, dip::uint >( &dip::IsodataThreshold ),
-          "in"_a, "nThresholds"_a = 1 );
+          "in"_a, "nThresholds"_a = 1, doc_strings::dip·IsodataThreshold·Histogram·CL·dip·uint· );
    m.def( "OtsuThreshold", py::overload_cast< dip::Histogram const& >( &dip::OtsuThreshold ),
-          "in"_a );
+          "in"_a, doc_strings::dip·OtsuThreshold·Histogram·CL );
    m.def( "MinimumErrorThreshold", py::overload_cast< dip::Histogram const& >( &dip::MinimumErrorThreshold ),
-          "in"_a );
+          "in"_a, doc_strings::dip·MinimumErrorThreshold·Histogram·CL );
    m.def( "GaussianMixtureModelThreshold", py::overload_cast< dip::Histogram const&, dip::uint >( &dip::GaussianMixtureModelThreshold ),
-          "in"_a, "nThresholds"_a = 1 );
+          "in"_a, "nThresholds"_a = 1, doc_strings::dip·GaussianMixtureModelThreshold·Histogram·CL·dip·uint· );
    m.def( "TriangleThreshold", py::overload_cast< dip::Histogram const&, dip::dfloat >( &dip::TriangleThreshold ),
-          "in"_a, "sigma"_a = 4.0 );
+          "in"_a, "sigma"_a = 4.0, doc_strings::dip·TriangleThreshold·Histogram·CL·dfloat· );
    m.def( "BackgroundThreshold", py::overload_cast< dip::Histogram const&, dip::dfloat, dip::dfloat >( &dip::BackgroundThreshold ),
-          "in"_a, "distance"_a = 2.0, "sigma"_a = 4.0 );
+          "in"_a, "distance"_a = 2.0, "sigma"_a = 4.0, doc_strings::dip·BackgroundThreshold·Histogram·CL·dfloat··dfloat· );
    m.def( "KMeansClustering", py::overload_cast< dip::Histogram const&, dip::uint >( &dip::KMeansClustering ),
-          "in"_a, "nClusters"_a = 2 );
+          "in"_a, "nClusters"_a = 2, doc_strings::dip·KMeansClustering·Histogram·CL·dip·uint· );
    m.def( "MinimumVariancePartitioning", py::overload_cast< dip::Histogram const&, dip::uint >( &dip::MinimumVariancePartitioning ),
-          "in"_a, "nClusters"_a = 2 );
+          "in"_a, "nClusters"_a = 2, doc_strings::dip·MinimumVariancePartitioning·Histogram·CL·dip·uint· );
    m.def( "EqualizationLookupTable", &dip::EqualizationLookupTable,
-          "in"_a );
+          "in"_a, doc_strings::dip·EqualizationLookupTable·Histogram·CL );
    m.def( "MatchingLookupTable", &dip::MatchingLookupTable,
-          "in"_a, "example"_a );
+          "in"_a, "example"_a, doc_strings::dip·MatchingLookupTable·Histogram·CL·Histogram·CL );
 
    m.def( "PerObjectHistogram", &dip::PerObjectHistogram,
-          "grey"_a, "label"_a, "mask"_a = dip::Image{}, "configuration"_a = dip::Histogram::Configuration{}, "mode"_a = dip::S::FRACTION, "background"_a = dip::S::EXCLUDE );
+          "grey"_a, "label"_a, "mask"_a = dip::Image{}, "configuration"_a = dip::Histogram::Configuration{}, "mode"_a = dip::S::FRACTION, "background"_a = dip::S::EXCLUDE, doc_strings::dip·PerObjectHistogram·Image·CL·Image·CL·Image·CL·Histogram·Configuration··String·CL·String·CL );
 
-   auto regParams = py::class_< dip::RegressionParameters >( m, "RegressionParameters", "Regression parameters." );
+   auto regParams = py::class_< dip::RegressionParameters >( m, "RegressionParameters", doc_strings::dip·RegressionParameters );
    regParams.def( "__repr__", []( dip::RegressionParameters const& s ) {
       std::ostringstream os;
       os << "<RegressionParameters: intercept=" << s.intercept << ", slope=" << s.slope << '>';
       return os.str();
    } );
-   regParams.def_readonly( "intercept", &dip::RegressionParameters::intercept );
-   regParams.def_readonly( "slope", &dip::RegressionParameters::slope );
+   regParams.def_readonly( "intercept", &dip::RegressionParameters::intercept, doc_strings::dip·RegressionParameters·intercept );
+   regParams.def_readonly( "slope", &dip::RegressionParameters::slope, doc_strings::dip·RegressionParameters·slope );
 
-   auto gaussParams = py::class_< dip::GaussianParameters >( m, "GaussianParameters", "Parameters of a Gaussian." );
+   auto gaussParams = py::class_< dip::GaussianParameters >( m, "GaussianParameters", doc_strings::dip·GaussianParameters );
    gaussParams.def( "__repr__", []( dip::GaussianParameters const& s ) {
       std::ostringstream os;
       os << "<GaussianParameters: "
@@ -286,9 +288,9 @@ void init_histogram( py::module& m ) {
          << '>';
       return os.str();
    } );
-   gaussParams.def_readonly( "position", &dip::GaussianParameters::position );
-   gaussParams.def_readonly( "amplitude", &dip::GaussianParameters::amplitude );
-   gaussParams.def_readonly( "sigma", &dip::GaussianParameters::sigma );
+   gaussParams.def_readonly( "position", &dip::GaussianParameters::position, doc_strings::dip·GaussianParameters·position );
+   gaussParams.def_readonly( "amplitude", &dip::GaussianParameters::amplitude, doc_strings::dip·GaussianParameters·amplitude );
+   gaussParams.def_readonly( "sigma", &dip::GaussianParameters::sigma, doc_strings::dip·GaussianParameters·sigma );
 
    // These next two functions are the old implementation of `dip.Histogram`, which we keep
    // here for backwards compatibility. Setting `dip.Histogram = dip.Histogram_old` in Python
@@ -322,8 +324,8 @@ void init_histogram( py::module& m ) {
           "Overload that takes two scalar images and outputs a 2D histogram." );
 
    // diplib/lookup_table.h
-   auto lut = py::class_< dip::LookupTable >( m, "LookupTable", "Encapsulates the concept of the look-up table (LUT)." );
-   lut.def( py::init< dip::Image, dip::FloatArray >(), "values"_a, "index"_a = dip::FloatArray{} );
+   auto lut = py::class_< dip::LookupTable >( m, "LookupTable", doc_strings::dip·LookupTable );
+   lut.def( py::init< dip::Image, dip::FloatArray >(), "values"_a, "index"_a = dip::FloatArray{}, doc_strings::dip·LookupTable·LookupTable·Image··FloatArray· );
    lut.def( "__repr__", []( dip::LookupTable const& self ) {
       std::ostringstream os;
       os << "<LookupTable, " << self.DataType();
@@ -333,22 +335,22 @@ void init_histogram( py::module& m ) {
       os << '>';
       return os.str();
    } );
-   lut.def( "HasIndex", &dip::LookupTable::HasIndex );
-   lut.def( "DataType", &dip::LookupTable::DataType );
+   lut.def( "HasIndex", &dip::LookupTable::HasIndex, doc_strings::dip·LookupTable·HasIndex·C );
+   lut.def( "DataType", &dip::LookupTable::DataType, doc_strings::dip·LookupTable·DataType·C );
    lut.def( "SetOutOfBoundsValue", py::overload_cast< dip::dfloat >( &dip::LookupTable::SetOutOfBoundsValue ),
-            "value"_a );
+            "value"_a, doc_strings::dip·LookupTable·SetOutOfBoundsValue·dfloat· );
    lut.def( "SetOutOfBoundsValue", py::overload_cast< dip::dfloat, dip::dfloat >( &dip::LookupTable::SetOutOfBoundsValue ),
-            "lowerValue"_a, "upperValue"_a );
-   lut.def( "KeepInputValueOnOutOfBounds", &dip::LookupTable::KeepInputValueOnOutOfBounds );
-   lut.def( "ClampOutOfBoundsValues", &dip::LookupTable::ClampOutOfBoundsValues );
+            "lowerValue"_a, "upperValue"_a, doc_strings::dip·LookupTable·SetOutOfBoundsValue·dfloat··dfloat· );
+   lut.def( "KeepInputValueOnOutOfBounds", &dip::LookupTable::KeepInputValueOnOutOfBounds, doc_strings::dip·LookupTable·KeepInputValueOnOutOfBounds );
+   lut.def( "ClampOutOfBoundsValues", &dip::LookupTable::ClampOutOfBoundsValues, doc_strings::dip·LookupTable·ClampOutOfBoundsValues );
    lut.def( "Apply", py::overload_cast< dip::Image const&, dip::String const& >( &dip::LookupTable::Apply, py::const_ ),
-            "in"_a, "interpolation"_a = dip::S::LINEAR );
+            "in"_a, "interpolation"_a = dip::S::LINEAR, doc_strings::dip·LookupTable·Apply·Image·CL·Image·L·String·CL·C );
    lut.def( "Apply", py::overload_cast< dip::Image const&, dip::Image&, dip::String const& >( &dip::LookupTable::Apply, py::const_ ),
-            "in"_a, py::kw_only(), "out"_a, "interpolation"_a = dip::S::LINEAR );
+            "in"_a, py::kw_only(), "out"_a, "interpolation"_a = dip::S::LINEAR, doc_strings::dip·LookupTable·Apply·Image·CL·Image·L·String·CL·C );
    lut.def( "Apply", py::overload_cast< dip::dfloat, dip::String const& >( &dip::LookupTable::Apply, py::const_ ),
-            "value"_a, "interpolation"_a = dip::S::LINEAR );
+            "value"_a, "interpolation"_a = dip::S::LINEAR, doc_strings::dip·LookupTable·Apply·dfloat··String·CL·C );
    lut.def( "Convert", &dip::LookupTable::Convert,
-            "dataType"_a );
+            "dataType"_a, doc_strings::dip·LookupTable·Convert·dip·DataType· );
 
    // This next function is the old implementation of `dip.LookupTable`, which we keep
    // here for backwards compatibility. Setting `dip.LookupTable = dip.LookupTable_old` in Python
