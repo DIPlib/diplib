@@ -8,6 +8,9 @@ date: 2020-00-00
 
 ### New functionality
 
+- `dip::ImageWriteTiff()` now can write 3D images to a TIFF file as a series of slices.
+  See [PR #182](https://github.com/DIPlib/diplib/pull/182).
+
 ### Changed functionality
 
 - `dip::AlignedAllocInterface` now aligns each of the scanlines (rows of the image), not just the first one.

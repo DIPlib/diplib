@@ -212,7 +212,7 @@ void FillBufferMultiChannelN(
 void WriteTIFFStrips(
       Image const& image,
       TiffFile& tiff,
-      size_t slice
+      dip::uint slice
 ) {
    DIP_THROW_IF( !image.IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint tensorElements = image.TensorElements();
@@ -227,7 +227,7 @@ void WriteTIFFStrips(
    WRITE_TIFF_TAG( tiff, TIFFTAG_ROWSPERSTRIP, rowsPerStrip );
 
    dip::UnsignedArray startCoords;
-   if (image.Dimensionality() == 2) {
+   if( image.Dimensionality() == 2 ) {
       startCoords = { 0, 0 };
    } else {
       startCoords = { 0, 0, slice };
@@ -244,7 +244,7 @@ void WriteTIFFStrips(
    if( image.HasNormalStrides() && !binary ) {
       // Simple writing
       tstrip_t strip = 0;
-      uint8* data = static_cast< uint8* >( image.Pointer(startCoords) );
+      uint8* data = static_cast< uint8* >( image.Pointer( startCoords ));
       for( uint32 row = 0; row < imageLength; row += rowsPerStrip ) {
          uint32 nrow = row + rowsPerStrip > imageLength ? imageLength - row : rowsPerStrip;
          if( TIFFWriteEncodedStrip( tiff, strip, data, static_cast< tmsize_t >( nrow ) * scanline ) < 0 ) {
@@ -295,11 +295,11 @@ void ImageWriteTIFF(
    DIP_THROW_IF( !image.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( image.Dimensionality() != 2 && image.Dimensionality() != 3, E::DIMENSIONALITY_NOT_SUPPORTED );
 
-   size_t slices = image.Dimensionality() == 3 ? image.Size(2) : 1;
+   dip::uint nSlices = image.Dimensionality() == 3 ? image.Size( 2 ) : 1;
    // Get image info and quit if we can't write
    DIP_THROW_IF(( image.Size( 0 ) > std::numeric_limits< uint32 >::max() ) ||
                 ( image.Size( 1 ) > std::numeric_limits< uint32 >::max() ) ||
-                ( slices > std::numeric_limits< uint32 >::max()), "Image size too large for TIFF file" );
+                ( nSlices > std::numeric_limits< uint32 >::max()), "Image size too large for TIFF file" );
    uint32 imageWidth = static_cast< uint32 >( image.Size( 0 ));
    uint32 imageLength = static_cast< uint32 >( image.Size( 1 ));
    dip::uint sizeOf = image.DataType().SizeOf();
@@ -336,9 +336,9 @@ void ImageWriteTIFF(
    // Create the TIFF file and set the tags
    TiffFile tiff( filename );
 
-   for (size_t i = 0; i < slices; i++) {
-      if (i > 0) {
-         TIFFWriteDirectory(tiff);
+   for( dip::uint slice = 0; slice < nSlices; slice++ ) {
+      if( slice > 0 ) {
+         TIFFWriteDirectory( tiff );
       }
 
       if( image.DataType().IsBinary() ) {
@@ -374,7 +374,7 @@ void ImageWriteTIFF(
          WRITE_TIFF_TAG( tiff, TIFFTAG_JPEGCOLORMODE, int( JPEGCOLORMODE_RGB ));
       }
 
-      DIP_STACK_TRACE_THIS( WriteTIFFStrips( image, tiff, i ));
+      DIP_STACK_TRACE_THIS( WriteTIFFStrips( image, tiff, slice ));
 
       TIFFSetField( tiff, TIFFTAG_SOFTWARE, "DIPlib " DIP_VERSION_STRING );
 
@@ -427,14 +427,14 @@ DOCTEST_TEST_CASE( "[DIPlib] testing TIFF file reading and writing" ) {
    DOCTEST_CHECK( dip::testing::CompareImages( image, result ));
 
    // Write 3D image
-   const int Slices = 5;
-   dip::Image image3D({image.Size(0), image.Size(1), (size_t) Slices}, image.TensorElements(), image.DataType());
-   for (int z = 0; z < Slices; z++) {
-      image3D.At({0, -1}, {0, -1}, dip::Range(z)) = (((float)z+0.5f)/(float)Slices)*image;
+   const int nSlices = 5;
+   dip::Image image3D( { image.Size( 0 ), image.Size( 1 ), ( size_t )nSlices }, image.TensorElements(), image.DataType() );
+   for( int z = 0; z < nSlices; z++ ) {
+      image3D.At( { 0, -1 }, { 0, -1 }, dip::Range( z ) ) = (( static_cast< float >( z ) + 0.5f ) / static_cast< float >( nSlices )) * image;
    }
 
    dip::ImageWriteTIFF( image3D, "test3.tif" );
-   result = dip::ImageReadTIFF( "test3", {0, -1} );
+   result = dip::ImageReadTIFF( "test3", { 0, -1 } );
    DOCTEST_CHECK( dip::testing::CompareImages( image3D, result ));
    DOCTEST_CHECK( image3D.PixelSize() == result.PixelSize() );
 
@@ -447,7 +447,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing TIFF file reading and writing" ) {
    result.SetStrides( strides );
    result.Forge();
    result.Protect();
-   dip::ImageReadTIFF( result, "test3", {0, -1} );
+   dip::ImageReadTIFF( result, "test3", { 0, -1 } );
    DOCTEST_CHECK( dip::testing::CompareImages( image3D, result ));
    DOCTEST_CHECK( image3D.PixelSize() == result.PixelSize() );
    result.Protect( false );
@@ -455,7 +455,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing TIFF file reading and writing" ) {
    // Turn it on its side so the image to write has non-standard strides
    image3D.SwapDimensions( 0, 1 );
    dip::ImageWriteTIFF( image3D, "test4.tif" );
-   result = dip::ImageReadTIFF( "test4", {0, -1} );
+   result = dip::ImageReadTIFF( "test4", { 0, -1 } );
    DOCTEST_CHECK( dip::testing::CompareImages( image3D, result ));
 }
 

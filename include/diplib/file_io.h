@@ -309,7 +309,11 @@ DIP_EXPORT void ImageWriteICS(
 /// With this option set, it becomes possible to read an ROI of a color-mapped image, or to read a
 /// multi-paged color-mapped image.
 ///
-/// The pixels per inch value in the TIFF file will be used to set the pixel size of `out`.
+/// The pixels per inch value in the TIFF file will be used to set the pixel size of `out`. In the case of
+/// multiple 2D slices read as a 3D image, there is no information about the pixel size along the 3rd dimension
+/// in the TIFF file. In this case, the pixel size along the 2nd dimension will be copied over to the 3rd one.
+/// This is meaningful for isotropic images, but the user should probably adjust that value explicitly if
+/// the pixel sizes are needed.
 ///
 /// Color TIFF files produce an image with proper color space name set: either sRGB, CMY, CMYK or Lab. Other
 /// multi-channel TIFF files are read as vector images without color space information.
@@ -421,7 +425,9 @@ DIP_EXPORT bool ImageIsTIFF( String const& filename );
 /// images are currently also tagged as sRGB, though this might not be ideal. It is recommended to transform any
 /// color image to the sRGB color space before saving as TIFF.
 ///
-/// Pixel sizes, if in units of length, will set the pixels per centimeter value in the TIFF file.
+/// Pixel sizes, if in units of length, will set the pixels per centimeter value in the TIFF file. For 3D images,
+/// the TIFF format has no standard way to store the pixel size along the 3rd dimension, so this value will not
+/// be preserved.
 ///
 /// The samples of `image` are written directly to the TIFF file, no matter what their data type is. Complex data
 /// are not supported by the TIFF format, but all binary, integer and floating-point types are. However, if the type
