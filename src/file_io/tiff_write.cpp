@@ -434,7 +434,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing TIFF file reading and writing" ) {
    }
 
    dip::ImageWriteTIFF( image3D, "test3.tif" );
-   result = dip::ImageReadTIFF( "test3", {0, Slices - 1} );
+   result = dip::ImageReadTIFF( "test3", {0, -1} );
    DOCTEST_CHECK( dip::testing::CompareImages( image3D, result ));
    DOCTEST_CHECK( image3D.PixelSize() == result.PixelSize() );
 
@@ -447,7 +447,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing TIFF file reading and writing" ) {
    result.SetStrides( strides );
    result.Forge();
    result.Protect();
-   dip::ImageReadTIFF( result, "test3", {0, Slices - 1} );
+   dip::ImageReadTIFF( result, "test3", {0, -1} );
    DOCTEST_CHECK( dip::testing::CompareImages( image3D, result ));
    DOCTEST_CHECK( image3D.PixelSize() == result.PixelSize() );
    result.Protect( false );
@@ -455,7 +455,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing TIFF file reading and writing" ) {
    // Turn it on its side so the image to write has non-standard strides
    image3D.SwapDimensions( 0, 1 );
    dip::ImageWriteTIFF( image3D, "test4.tif" );
-   result = dip::ImageReadTIFF( "test4", {0, Slices - 1} );
+   result = dip::ImageReadTIFF( "test4", {0, -1} );
    DOCTEST_CHECK( dip::testing::CompareImages( image3D, result ));
 }
 
