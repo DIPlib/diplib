@@ -27,7 +27,10 @@ will point you to a series of functions related to the watershed.
 A few classes and functions work differently than in C++, and are not explicitly named here.
 For these cases, the Python `help()` function should give you sufficient information to understand
 the differences. For all other cases, the `help()` function only gives an automatically-generated
-function signature, use the on-line documentation to learn more about the function.
+function signature and the brief documentation (the first paragraph of documentation for the function).
+Use the on-line documentation to learn more about the function. From within Python, type
+`dip.Doc('Gabor')` or `dip.Doc(dip.Gabor)` to open the relevant on-line documentation in your default
+web browser.
 
 \section pum_differences_correspondences Type correspondences
 
@@ -114,7 +117,7 @@ Functions that expect an image interpret `None` as an empty (non-forged) image.
 Most operators have been overloaded to do what they do in C++:
 
 - Arithmetic operators: `+`, `-`, `/`, `%`, and the unary `+` and `-`.
-- Bit-wise logical operators: `&`, `|`, `^`.
+- Bit-wise logical operators: `&`, `|`, `^`, `~`.
 - Comparison operators: `<`, `<=`, `==`, `>=`, `>` and `!=`.
 
 Operators that work differently in Python and C++:

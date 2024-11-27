@@ -53,7 +53,7 @@ To install, simply type
     pip install diplib
 
 Windows users might need to install the
-[Microsoft Visual C++ Redistributable for Visual Studio 2015, 2017 and 2019](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads).
+[Microsoft Visual C++ Redistributable for Visual Studio](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist).
 
 To read images through the *Bio-Formats* library, you will need to download it
 separately:
@@ -70,16 +70,18 @@ You can find more information about the simultaneous use of multiple *OpenMP* li
 
 ## Usage
 
-The interface only has automatically generated docstrings that show the names
-of each of the parameters. Use the *DIPlib* reference to learn how to use each
-function. Get started by reading [the User Manual](https://diplib.org/diplib-docs/pydip_user_manual.html).
+The interface only has automatically generated docstrings that show the names of
+each of the parameters, together with the first paragraph of the function's documentation,
+except where the syntax differs from that of *DIPlib*.
+Use the *DIPlib* reference to learn how to use each function.
+Get started by reading [the *PyDIP* User Manual](/diplib-docs/pydip_user_manual.html).
 
-These Jupyter notebooks give a short introduction:
+These Jupyter notebooks replicate much of what is shown in the User Manual:
 
-- [01_pydip_basics.ipynb](https://github.com/DIPlib/diplib/blob/master/examples/python/01_pydip_basics.ipynb)
-- [02_filtering.ipynb](https://github.com/DIPlib/diplib/blob/master/examples/python/02_filtering.ipynb)
-- [03_numpy_interaction.ipynb](https://github.com/DIPlib/diplib/blob/master/examples/python/03_numpy_interaction.ipynb)
-- [04_tensor_images.ipynb](https://github.com/DIPlib/diplib/blob/master/examples/python/04_tensor_images.ipynb)
+- [01_pydip_basics.ipynb](https://github.com/DIPlib/diplib-notebooks/blob/main/01_pydip_basics.ipynb)
+- [02_filtering.ipynb](https://github.com/DIPlib/diplib-notebooks/blob/main/02_filtering.ipynb)
+- [03_numpy_interaction.ipynb](https://github.com/DIPlib/diplib-notebooks/blob/main/03_numpy_interaction.ipynb)
+- [04_tensor_images.ipynb](https://github.com/DIPlib/diplib-notebooks/blob/main/04_tensor_images.ipynb)
 
 ## License
 
