@@ -135,7 +135,7 @@ void DrawOneLine(
       dip::sint stride,
       BresenhamLineIterator& iterator,
       std::vector< TPI > const& value,
-      F const &blend
+      F const& blend
 ) {
    do {
       dip::sint offset = *iterator;
@@ -151,7 +151,7 @@ void DrawLineInternal(
       Image& out,
       BresenhamLineIterator& iterator,
       Image::Pixel const& value,
-      F const &blend
+      F const& blend
 ) {
    std::vector< TPI > value_;
    CopyPixelToVector( value, value_, out.TensorElements() );
@@ -163,7 +163,7 @@ void DrawLinesInternal(
       Image& out,
       CoordinateArray const& points,
       Image::Pixel const& value,
-      F const &blend
+      F const& blend
 ) {
    std::vector< TPI > value_;
    CopyPixelToVector( value, value_, out.TensorElements() );
@@ -185,7 +185,7 @@ void DrawLine(
       UnsignedArray const& start,
       UnsignedArray const& end,
       Image::Pixel const& value,
-      String const &blend
+      String const& blend
 ) {
    DIP_THROW_IF( !out.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( out.Dimensionality() < 2, E::DIMENSIONALITY_NOT_SUPPORTED );
@@ -208,7 +208,7 @@ void DrawLines(
       Image& out,
       CoordinateArray const& points,
       Image::Pixel const& value,
-      String const &blend
+      String const& blend
 ) {
    DIP_THROW_IF( !out.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( out.Dimensionality() < 2, E::DIMENSIONALITY_NOT_SUPPORTED );

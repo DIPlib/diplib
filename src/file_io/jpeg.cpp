@@ -310,7 +310,7 @@ class JpegOutput {
       bool mem_buffer_ = false;
 };
 
-void ImageWriteJPEG( Image const &image, JpegOutput &jpeg, dip::uint jpegLevel ) {
+void ImageWriteJPEG( Image const& image, JpegOutput& jpeg, dip::uint jpegLevel ) {
    DIP_THROW_IF( !image.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( image.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
    int nchan = static_cast< int >( image.TensorElements() );
@@ -356,7 +356,7 @@ void ImageWriteJPEG( Image const &image, JpegOutput &jpeg, dip::uint jpegLevel )
 
 } // namespace
 
-FileInformation ImageReadJPEG( Image &out, String const &filename ) {
+FileInformation ImageReadJPEG( Image& out, String const& filename ) {
    DIP_DECLARE_JPEG_EXIT( ERROR_READING_JPEG );
    JpegInput jpeg( filename, setjmp_buffer, error_msg );
    FileInformation info = GetJPEGInfo( jpeg );
@@ -396,7 +396,7 @@ FileInformation ImageReadJPEGInfo( void const* buffer, dip::uint length ) {
    return info;
 }
 
-void ImageWriteJPEG( Image const &image, String const &filename, dip::uint jpegLevel ) {
+void ImageWriteJPEG( Image const& image, String const& filename, dip::uint jpegLevel ) {
    DIP_DECLARE_JPEG_EXIT( "Error writing JPEG file: " );
    JpegOutput jpeg( filename, setjmp_buffer, error_msg );
    ImageWriteJPEG( image, jpeg, jpegLevel );

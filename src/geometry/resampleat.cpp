@@ -398,7 +398,7 @@ class ResampleAtLineFilter : public Framework::ScanLineFilter
 };
 
 template< typename TPI, typename Func >
-std::unique_ptr< Framework::ScanLineFilter > NewResampleAtLineFilter( Image const &in, Func interpolate, Image::Pixel const& fill ) {
+std::unique_ptr< Framework::ScanLineFilter > NewResampleAtLineFilter( Image const& in, Func interpolate, Image::Pixel const& fill ) {
    return static_cast< std::unique_ptr< Framework::ScanLineFilter >>( new ResampleAtLineFilter< TPI, Func >( in, interpolate, fill ));
 }
 

@@ -151,11 +151,11 @@ PYBIND11_MODULE( PyDIPviewer, m ) {
 
    sv.def_property(
       "labels",
-      []( dip::viewer::SliceViewer &self ) {
+      []( dip::viewer::SliceViewer& self ) {
          dip::viewer::SliceViewer::Guard guard( self );
          return self.options().labels_;
       },
-      []( dip::viewer::SliceViewer &self, dip::String const &labels ) {
+      []( dip::viewer::SliceViewer& self, dip::String const& labels ) {
          dip::viewer::SliceViewer::Guard guard( self );
          DIP_THROW_IF( labels.empty(), dip::E::INVALID_PARAMETER );
          self.options().labels_ = labels;
