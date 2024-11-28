@@ -158,9 +158,42 @@ void init_segmentation( py::module& m ) {
    graph.def( "MinimumSpanningForest", &dip::Graph::MinimumSpanningForest, "roots"_a = std::vector< dip::Graph::VertexIndex >{}, doc_strings::dip·Graph·MinimumSpanningForest·std·vectorgtVertexIndexlt·CL·C );
    graph.def( "RemoveLargestEdges", &dip::Graph::RemoveLargestEdges, "number"_a, doc_strings::dip·Graph·RemoveLargestEdges·dip·uint· );
 
+   auto dgraph = py::class_< dip::DirectedGraph >( m, "DirectedGraph", doc_strings::dip·DirectedGraph );
+   dgraph.def( py::init<>() );
+   dgraph.def( py::init< dip::uint, dip::uint >(), "nVertices"_a, "nEdges"_a = 0, doc_strings::dip·DirectedGraph·DirectedGraph·dip·uint··dip·uint· );
+   dgraph.def( py::init< dip::Image const&, dip::uint, dip::String const& >(), "image"_a, "connectivity"_a = 1, "weights"_a = "difference", doc_strings::dip·DirectedGraph·DirectedGraph·Image·CL·dip·uint··String·CL );
+   dgraph.def( py::init< dip::Graph const& >(), "graph"_a, doc_strings::dip·DirectedGraph·DirectedGraph·Graph·CL );
+   dgraph.def( "__repr__", []( dip::DirectedGraph const& self ) {
+      std::ostringstream os;
+      os << "<DirectedGraph with " << self.NumberOfVertices() << " vertices and " << self.NumberOfEdges() << " edges>";
+      return os.str();
+   } );
+   dgraph.def( "NumberOfVertices", &dip::DirectedGraph::NumberOfVertices, doc_strings::dip·DirectedGraph·NumberOfVertices·C );
+   dgraph.def( "NumberOfEdges", &dip::DirectedGraph::NumberOfEdges, doc_strings::dip·DirectedGraph·NumberOfEdges·C );
+   dgraph.def( "CountEdges", &dip::DirectedGraph::CountEdges, doc_strings::dip·DirectedGraph·CountEdges·C );
+   dgraph.def( "SourceVertex", &dip::DirectedGraph::SourceVertex,  "edge"_a, doc_strings::dip·DirectedGraph·SourceVertex·EdgeIndex··C );
+   dgraph.def( "TargetVertex", &dip::DirectedGraph::TargetVertex, "edge"_a, doc_strings::dip·DirectedGraph·TargetVertex·EdgeIndex··C );
+   dgraph.def( "SiblingEdge", &dip::DirectedGraph::SiblingEdge, "edge"_a, doc_strings::dip·DirectedGraph·SiblingEdge·EdgeIndex··C );
+   dgraph.def( "EdgeWeight", &dip::DirectedGraph::EdgeWeight, "edge"_a, doc_strings::dip·DirectedGraph·EdgeWeight·EdgeIndex··C );
+   dgraph.def( "IsValidEdge", &dip::DirectedGraph::IsValidEdge, "edge"_a, doc_strings::dip·DirectedGraph·IsValidEdge·EdgeIndex··C );
+   dgraph.def( "EdgeIndices", &dip::DirectedGraph::EdgeIndices, "v"_a, doc_strings::dip·DirectedGraph·EdgeIndices·VertexIndex··C );
+   dgraph.def( "VertexValue", &dip::DirectedGraph::VertexValue, "v"_a, doc_strings::dip·DirectedGraph·VertexValue·VertexIndex··C );
+   dgraph.def( "AddEdge", &dip::DirectedGraph::AddEdge, "source"_a, "target"_a, "weight"_a, doc_strings::dip·DirectedGraph·AddEdge·VertexIndex··VertexIndex··dfloat· );
+   dgraph.def( "AddEdgeSumWeight", &dip::DirectedGraph::AddEdgeSumWeight, "source"_a, "target"_a, "weight"_a, doc_strings::dip·DirectedGraph·AddEdgeSumWeight·VertexIndex··VertexIndex··dfloat· );
+   dgraph.def( "AddEdgePair", &dip::DirectedGraph::AddEdgePair, "v1"_a, "v2"_a, "weight"_a, doc_strings::dip·DirectedGraph·AddEdgePair·VertexIndex··VertexIndex··dfloat· );
+   dgraph.def( "AddEdgePairSumWeight", &dip::DirectedGraph::AddEdgePairSumWeight, "v1"_a, "v2"_a, "weight"_a, doc_strings::dip·DirectedGraph·AddEdgePairSumWeight·VertexIndex··VertexIndex··dfloat· );
+   dgraph.def( "DeleteEdge", py::overload_cast< dip::DirectedGraph::VertexIndex, dip::DirectedGraph::VertexIndex >( &dip::DirectedGraph::DeleteEdge ), "source"_a, "target"_a, doc_strings::dip·DirectedGraph·DeleteEdge·VertexIndex··VertexIndex· );
+   dgraph.def( "DeleteEdgePair", py::overload_cast< dip::DirectedGraph::VertexIndex, dip::DirectedGraph::VertexIndex >( &dip::DirectedGraph::DeleteEdgePair ), "v1"_a, "v2"_a, doc_strings::dip·DirectedGraph·DeleteEdge·VertexIndex··VertexIndex· );
+   dgraph.def( "DeleteEdge", py::overload_cast< dip::DirectedGraph::EdgeIndex >( &dip::DirectedGraph::DeleteEdge ), "edge"_a, doc_strings::dip·DirectedGraph·DeleteEdge·EdgeIndex· );
+   dgraph.def( "DeleteEdgePair", py::overload_cast< dip::DirectedGraph::EdgeIndex >( &dip::DirectedGraph::DeleteEdgePair ), "edge"_a, doc_strings::dip·DirectedGraph·DeleteEdge·EdgeIndex· );
+   dgraph.def( "Neighbors", &dip::DirectedGraph::Neighbors, "v"_a, doc_strings::dip·DirectedGraph·Neighbors·VertexIndex· );
+   // dgraph.def( "UpdateEdgeWeights", &dip::DirectedGraph::UpdateEdgeWeights, doc_strings::dip·DirectedGraph·UpdateEdgeWeights·C );
+   dgraph.def( "UpdateEdgeWeights", static_cast< void ( dip::DirectedGraph::* )() const >( &dip::DirectedGraph::UpdateEdgeWeights ), doc_strings::dip·DirectedGraph·UpdateEdgeWeights·C );
+
    m.def( "MinimumSpanningForest", &dip::MinimumSpanningForest, "graph"_a, "roots"_a, doc_strings::dip·MinimumSpanningForest·Graph·CL·std·vectorgtGraph·VertexIndexlt·CL );
-   m.def( "GraphCut", &dip::GraphCut, "graph"_a, "sourceIndex"_a, "sinkIndex"_a, doc_strings::dip·GraphCut·Graph·CL·Graph·VertexIndex··Graph·VertexIndex· );
+   m.def( "GraphCut", &dip::GraphCut, "graph"_a, "sourceIndex"_a, "sinkIndex"_a, doc_strings::dip·GraphCut·DirectedGraph·L·DirectedGraph·VertexIndex··DirectedGraph·VertexIndex· );
    m.def( "Label", py::overload_cast< dip::Graph const& >( &dip::Label ), "graph"_a, doc_strings::dip·Label·Graph·CL );
+   m.def( "Label", py::overload_cast< dip::DirectedGraph const& >( &dip::Label ), "graph"_a, doc_strings::dip·Label·DirectedGraph·CL );
 
    // diplib/regions.h
    m.def( "Label", py::overload_cast< dip::Image const&, dip::uint, dip::uint, dip::uint, dip::StringArray, dip::String const& >( &dip::Label ),
@@ -170,7 +203,7 @@ void init_segmentation( py::module& m ) {
    m.def( "ListObjectLabels", py::overload_cast< dip::Image const&, dip::Image const&, dip::String const&, dip::String const& >( &dip::ListObjectLabels ),
           "label"_a, "mask"_a = dip::Image{}, "background"_a = dip::S::EXCLUDE, "region"_a = "", doc_strings::dip·ListObjectLabels·Image·CL·Image·CL·String·CL·String·CL );
    // Deprecated function May 4, 2024 (after release 3.4.3) TODO: remove eventually.
-   m.def( "GetObjectLabels", []( dip::Image const &label, dip::Image const &mask, dip::String const &background ) {
+   m.def( "GetObjectLabels", []( dip::Image const& label, dip::Image const& mask, dip::String const& background ) {
           PyErr_WarnEx( PyExc_DeprecationWarning, "`GetObjectLabels()` is deprecated, use `ListObjectLabels() instead`.", 1 );
           return dip::ListObjectLabels( label, mask, background );
    }, "label"_a, "mask"_a = dip::Image{}, "background"_a = dip::S::EXCLUDE, doc_strings::dip·ListObjectLabels·Image·CL·Image·CL·String·CL·String·CL );
@@ -182,6 +215,10 @@ void init_segmentation( py::module& m ) {
           "label"_a, "graph"_a, doc_strings::dip·Relabel·Image·CL·Image·L·Graph·CL );
    m.def( "Relabel", py::overload_cast< dip::Image const&, dip::Image&, dip::Graph const& >( &dip::Relabel ),
           "label"_a, py::kw_only(), "out"_a, "graph"_a, doc_strings::dip·Relabel·Image·CL·Image·L·Graph·CL );
+   m.def( "Relabel", py::overload_cast< dip::Image const&, dip::DirectedGraph const& >( &dip::Relabel ),
+          "label"_a, "graph"_a, doc_strings::dip·Relabel·Image·CL·Image·L·DirectedGraph·CL );
+   m.def( "Relabel", py::overload_cast< dip::Image const&, dip::Image&, dip::DirectedGraph const& >( &dip::Relabel ),
+          "label"_a, py::kw_only(), "out"_a, "graph"_a, doc_strings::dip·Relabel·Image·CL·Image·L·DirectedGraph·CL );
    m.def( "SmallObjectsRemove", py::overload_cast< dip::Image const&, dip::uint, dip::uint >( &dip::SmallObjectsRemove ),
           "in"_a, "threshold"_a, "connectivity"_a = 0, doc_strings::dip·SmallObjectsRemove·Image·CL·Image·L·dip·uint··dip·uint· );
    m.def( "SmallObjectsRemove", py::overload_cast< dip::Image const&, dip::Image&, dip::uint, dip::uint >( &dip::SmallObjectsRemove ),

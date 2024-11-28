@@ -184,6 +184,16 @@ DIP_NODISCARD inline Image Relabel( Image const& label, Graph const& graph ) {
    return out;
 }
 
+/// \brief Re-assigns labels to objects in a labeled image, such that regions joined by an edge in `graph` obtain the same label.
+///
+/// \ref dip::DirectedGraph version of the function above.
+DIP_EXPORT void Relabel( Image const& label, Image& out, DirectedGraph const& graph );
+DIP_NODISCARD inline Image Relabel( Image const& label, DirectedGraph const& graph ) {
+   Image out;
+   Relabel( label, out, graph );
+   return out;
+}
+
 /// \brief Removes small objects from a labeled or binary image.
 ///
 /// If `in` is an unsigned integer image, it is assumed to be a labeled image. The size of the objects

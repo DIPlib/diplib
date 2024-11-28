@@ -15,6 +15,7 @@
 #include "diplib/viewer/slice.h" // To manipulate the dip::viewer::SliceView objects
 #include "diplib/viewer/viewer.h" // To manipulate the dip::viewer::SliceView objects
 
+
 int main() {
    // Read image
    dip::Image input = dip::ImageRead( DIP_EXAMPLES_DIR "/orka.tif" );
@@ -79,11 +80,13 @@ int main() {
    graph.AddEdge( background, superpixels.At( 71, 116 ).As< dip::uint >(), 1e12 );
    graph.AddEdge( background, superpixels.At( 34, 139 ).As< dip::uint >(), 1e12 );
    graph.AddEdge( background, superpixels.At( 32, 177 ).As< dip::uint >(), 1e12 );
-   // Cut
-   segmented_graph = dip::GraphCut( graph, background, foreground );
+
+   // Copy graph to directed graph and apply graph cut algorithm
+   dip::DirectedGraph dgraph( graph );
+   dip::GraphCut( dgraph, background, foreground );
 
    // Convert back to a labeled image
-   output = dip::Relabel( superpixels, segmented_graph );
+   output = dip::Relabel( superpixels, dgraph );
 
    // Display
    win1 = dip::viewer::Show( input, "input" );

@@ -90,6 +90,62 @@ class CreateGraphLineFilter : public Framework::ScanLineFilter {
       bool useDifferences_;
 };
 
+template< typename TPI >
+class CreateDirectedGraphLineFilter : public Framework::ScanLineFilter {
+   public:
+      CreateDirectedGraphLineFilter( DirectedGraph& graph, UnsignedArray const& sizes, IntegerArray const& strides, bool useDifferences )
+            : graph_( graph ), sizes_( sizes ), strides_( strides ), useDifferences_( useDifferences ) {}
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
+         TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
+         dip::sint stride = params.inBuffer[ 0 ].stride;
+         dip::uint length = params.bufferLength - 1;
+         dip::uint dim = params.dimension;
+         dip::uint nDims = sizes_.size();
+         DIP_ASSERT( params.position.size() == nDims );
+         DIP_ASSERT( strides_[ dim ] == stride );
+         dip::uint index = Image::Index( params.position, sizes_ );
+         UnsignedArray indexStrides( nDims );
+         indexStrides[ 0 ] = 1;
+         for( dip::uint jj = 1; jj < nDims; ++jj ) {
+            indexStrides[ jj ] = indexStrides[ jj - 1 ] * sizes_[ jj - 1 ];
+         }
+         BooleanArray process( nDims, true );
+         for( dip::uint jj = 0; jj < nDims; ++jj ) {
+            process[ jj ] = params.position[ jj ] < ( sizes_[ jj ] - 1 );
+         }
+         for( dip::uint ii = 0; ii < length; ++ii, index += indexStrides[ dim ], in += stride ) {
+            // Add to graph_ links to each of the *forward* neighbors (i.e. those that you can reach by incrementing
+            // one of the coordinates). The other neighbors are already linked to when those neighbors were processed
+            dfloat value = static_cast< dfloat >( in[ 0 ] );
+            graph_.VertexValue( index ) = value;
+            for( dip::uint jj = 0; jj < nDims; ++jj ) {
+               if( process[ jj ] ) {
+                  dip::uint neighborIndex = index + indexStrides[ jj ];
+                  dfloat neighborValue = static_cast< dfloat >( in[ strides_[ jj ]] );
+                  dfloat weight = useDifferences_ ? std::abs( value - neighborValue ) : ( value + neighborValue ) / 2;
+                  graph_.AddEdgePairNoCheck( index, neighborIndex, weight );
+               }
+            }
+         }
+         process[ dim ] = false;
+         dfloat value = static_cast< dfloat >( in[ 0 ] );
+         graph_.VertexValue( index ) = value;
+         for( dip::uint jj = 0; jj < nDims; ++jj ) {
+            if( process[ jj ] ) {
+               dip::uint neighborIndex = index + indexStrides[ jj ];
+               dfloat neighborValue = static_cast< dfloat >( in[ strides_[ jj ]] );
+               dfloat weight = useDifferences_ ? std::abs( value - neighborValue ) : ( value + neighborValue ) / 2;
+               graph_.AddEdgePairNoCheck( index, neighborIndex, weight );
+            }
+         }
+      }
+   private:
+      DirectedGraph& graph_;
+      UnsignedArray const& sizes_;
+      IntegerArray const& strides_;
+      bool useDifferences_;
+};
+
 } // namespace
 
 Graph::Graph( Image const& image, dip::uint connectivity, String const& weights )
@@ -105,6 +161,34 @@ Graph::Graph( Image const& image, dip::uint connectivity, String const& weights 
    DIP_OVL_NEW_REAL( lineFilter, CreateGraphLineFilter, ( *this, image.Sizes(), image.Strides(), useDifferences ), image.DataType() );
    DIP_STACK_TRACE_THIS( Framework::ScanSingleInput( image, {}, image.DataType(), *lineFilter,
          Framework::ScanOption::NoMultiThreading + Framework::ScanOption::NeedCoordinates ));
+}
+
+DirectedGraph::DirectedGraph( Image const& image, dip::uint connectivity, String const& weights )
+      : DirectedGraph( image.NumberOfPixels(), 2 * image.Dimensionality() ) {
+   DIP_THROW_IF( !image.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !image.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( !image.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( image.Dimensionality() < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
+   DIP_THROW_IF( connectivity != 1, E::NOT_IMPLEMENTED );
+   bool useDifferences{};
+   DIP_STACK_TRACE_THIS( useDifferences = BooleanFromString( weights, "difference", "average" ));
+   std::unique_ptr< Framework::ScanLineFilter > lineFilter;
+   DIP_OVL_NEW_REAL( lineFilter, CreateDirectedGraphLineFilter, ( *this, image.Sizes(), image.Strides(), useDifferences ), image.DataType() );
+   DIP_STACK_TRACE_THIS( Framework::ScanSingleInput( image, {}, image.DataType(), *lineFilter,
+         Framework::ScanOption::NoMultiThreading + Framework::ScanOption::NeedCoordinates ));
+}
+
+DirectedGraph::DirectedGraph( Graph const& graph )
+   : DirectedGraph( graph.NumberOfVertices() ) {
+   for( dip::uint ii = 0; ii < graph.NumberOfVertices(); ++ii ) {
+      vertices_[ ii ].value = graph.VertexValue( ii );
+   }
+   auto const& e = graph.Edges();
+   for( dip::uint ii = 0; ii < graph.NumberOfEdges(); ++ii ) {
+      if( e[ ii ].IsValid() ) {
+         AddEdgePairNoCheck( e[ ii ].vertices[ 0 ], e[ ii ].vertices[ 1 ], e[ ii ].weight );
+      }
+   }
 }
 
 Graph MinimumSpanningForest( Graph const& graph, std::vector< Graph::VertexIndex > const& roots ) {
@@ -193,6 +277,17 @@ LabelMap Label( Graph const& graph ) {
    return LabelMap( regions );
 }
 
+LabelMap Label( DirectedGraph const& graph ) {
+   SimpleUnionFind< DirectedGraph::EdgeIndex > regions( graph.NumberOfVertices() );
+   for( auto& edge: graph.Edges() ) {
+      if( edge.IsValid() ) {
+         regions.Union( edge.source, edge.target );
+      }
+   }
+   regions.Relabel();
+   return LabelMap( regions );
+}
+
 } // namespace dip
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
@@ -271,6 +366,36 @@ DOCTEST_TEST_CASE("[DIPlib] testing dip::Graph") {
       DOCTEST_CHECK( v2 == 0 );
    }
    DOCTEST_CHECK( graph.OtherVertex( edges2[ 0 ], 2 ) == 1 );
+}
+
+DOCTEST_TEST_CASE("[DIPlib] testing dip::DirectedGraph") {
+   dip::Image img( { 4, 5 }, 1, dip::DT_UINT8 );
+   img.Fill( 0 );
+   img.At( 0 ) = 10;
+   img.At( 1 ) = 12;
+   img.At( 2 ) = 15;
+   // Create a directed graph directly
+   dip::DirectedGraph graph1( img, 1, "difference" );
+   // Create an undirected graph (tested elsewhere) and convert to directed graph
+   dip::DirectedGraph graph2 = dip::DirectedGraph( dip::Graph( img, 1, "difference" ));
+   // We expect the two to produce identical results (with edges and vertices stored in same order).
+   DOCTEST_REQUIRE( graph1.NumberOfVertices() == graph2.NumberOfVertices() );
+   for( dip::uint ii = 0; ii < graph1.NumberOfVertices(); ++ii ) {
+      DOCTEST_CHECK( graph1.VertexValue( ii ) == graph2.VertexValue( ii ));
+      auto const& edges1 = graph1.EdgeIndices( ii );
+      auto const& edges2 = graph2.EdgeIndices( ii );
+      DOCTEST_REQUIRE( edges1.size() == edges2.size() );
+      for( dip::uint jj = 0; jj < edges1.size(); ++jj ) {
+         DOCTEST_CHECK( edges1[ jj ] == edges2[ jj ] );
+      }
+   }
+   DOCTEST_REQUIRE( graph1.NumberOfEdges() == graph2.NumberOfEdges() );
+   for( dip::uint ii = 0; ii < graph1.NumberOfEdges(); ++ii ) {
+      DOCTEST_CHECK( graph1.SourceVertex( ii ) == graph2.SourceVertex( ii ));
+      DOCTEST_CHECK( graph1.TargetVertex( ii ) == graph2.TargetVertex( ii ));
+      DOCTEST_CHECK( graph1.SiblingEdge( ii ) == graph2.SiblingEdge( ii ));
+      DOCTEST_CHECK( graph1.EdgeWeight( ii ) == graph2.EdgeWeight( ii ));
+   }
 }
 
 #endif // DIP_CONFIG_ENABLE_DOCTEST

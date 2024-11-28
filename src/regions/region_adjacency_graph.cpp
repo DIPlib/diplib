@@ -27,7 +27,6 @@
 #include "diplib/measurement.h"
 #include "diplib/overload.h"
 #include "diplib/statistics.h"
-#include "diplib/union_find.h"
 
 namespace dip {
 
@@ -190,6 +189,14 @@ Graph RegionAdjacencyGraph( Image const& label, Measurement::IteratorFeature con
 }
 
 void Relabel( Image const& label, Image& out, Graph const& graph ) {
+   DIP_THROW_IF( !label.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !label.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( !label.DataType().IsUInt(), E::DATA_TYPE_NOT_SUPPORTED );
+   LabelMap lut = Label( graph );
+   lut.Apply( label, out );
+}
+
+void Relabel( Image const& label, Image& out, DirectedGraph const& graph ) {
    DIP_THROW_IF( !label.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !label.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !label.DataType().IsUInt(), E::DATA_TYPE_NOT_SUPPORTED );
