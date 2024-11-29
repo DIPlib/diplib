@@ -705,7 +705,7 @@ DIP_NODISCARD inline Graph Graph::MinimumSpanningForest( std::vector< VertexInde
 /// !!! literature
 ///     - Y. Boykov and V. Kolmogorov, "An Experimental Comparison of Min-Cut/Max-Flow Algorithms for Energy Minimization in Vision",
 ///       IEEE Transactions on Pattern Analysis and Machine Intelligence 26(9):1124-1137, 2004.
-DIP_NODISCARD DIP_EXPORT void GraphCut( DirectedGraph& graph, DirectedGraph::VertexIndex sourceIndex, DirectedGraph::VertexIndex sinkIndex );
+DIP_EXPORT void GraphCut( DirectedGraph& graph, DirectedGraph::VertexIndex sourceIndex, DirectedGraph::VertexIndex sinkIndex );
 
 /// \brief Connected component analysis of a graph.
 ///
