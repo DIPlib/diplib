@@ -343,7 +343,7 @@ void adopt_next(
    DeQueue< VertexIndex >& orphanNodes,
    DeQueue< VertexIndex >& activeNodes
 ) {
-   DIP_ASSERT( !orphanNodes.empty() );
+   DIP_ASSERT( !orphanNodes.Empty() );
    VertexIndex orphan = orphanNodes.PopFront();
    bool isSource = flowGraph.vertices[ orphan ].root == SOURCE;
    // Try to find new parent for orphan

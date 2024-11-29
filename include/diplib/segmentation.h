@@ -660,6 +660,10 @@ DIP_NODISCARD inline Image Superpixels(
    return out;
 }
 
+// TODO: Document
+// TODO: Implement
+//DIP_EXPORT void GraphCut( Image const& in, Image const& markers, Image& out );
+
 /// \endgroup
 
 } // namespace dip
