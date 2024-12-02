@@ -34,10 +34,18 @@ namespace dip {
 
 namespace {
 
-template< typename TPI >
-class CreateGraphLineFilter : public Framework::ScanLineFilter {
+void AddEdgeToGraph( Graph& graph, Graph::VertexIndex v1, Graph::VertexIndex v2, dfloat weight) {
+   graph.AddEdgeNoCheck( v1, v2, weight );
+}
+
+void AddEdgeToGraph( DirectedGraph& graph, DirectedGraph::VertexIndex v1, DirectedGraph::VertexIndex v2, dfloat weight) {
+   graph.AddEdgePairNoCheck( v1, v2, weight );
+}
+
+template< typename GraphType, typename TPI >
+class CreateGenericGraphLineFilter : public Framework::ScanLineFilter {
    public:
-      CreateGraphLineFilter( Graph& graph, UnsignedArray const& sizes, IntegerArray const& strides, bool useDifferences )
+      CreateGenericGraphLineFilter( GraphType& graph, UnsignedArray const& sizes, IntegerArray const& strides, bool useDifferences )
             : graph_( graph ), sizes_( sizes ), strides_( strides ), useDifferences_( useDifferences ) {}
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
@@ -67,7 +75,7 @@ class CreateGraphLineFilter : public Framework::ScanLineFilter {
                   dip::uint neighborIndex = index + indexStrides[ jj ];
                   dfloat neighborValue = static_cast< dfloat >( in[ strides_[ jj ]] );
                   dfloat weight = useDifferences_ ? std::abs( value - neighborValue ) : ( value + neighborValue ) / 2;
-                  graph_.AddEdgeNoCheck( index, neighborIndex, weight );
+                  AddEdgeToGraph( graph_, index, neighborIndex, weight );
                }
             }
          }
@@ -79,72 +87,22 @@ class CreateGraphLineFilter : public Framework::ScanLineFilter {
                dip::uint neighborIndex = index + indexStrides[ jj ];
                dfloat neighborValue = static_cast< dfloat >( in[ strides_[ jj ]] );
                dfloat weight = useDifferences_ ? std::abs( value - neighborValue ) : ( value + neighborValue ) / 2;
-               graph_.AddEdgeNoCheck( index, neighborIndex, weight );
+               AddEdgeToGraph( graph_, index, neighborIndex, weight );
             }
          }
       }
    private:
-      Graph& graph_;
+      GraphType& graph_;
       UnsignedArray const& sizes_;
       IntegerArray const& strides_;
       bool useDifferences_;
 };
 
 template< typename TPI >
-class CreateDirectedGraphLineFilter : public Framework::ScanLineFilter {
-   public:
-      CreateDirectedGraphLineFilter( DirectedGraph& graph, UnsignedArray const& sizes, IntegerArray const& strides, bool useDifferences )
-            : graph_( graph ), sizes_( sizes ), strides_( strides ), useDifferences_( useDifferences ) {}
-      void Filter( Framework::ScanLineFilterParameters const& params ) override {
-         TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
-         dip::sint stride = params.inBuffer[ 0 ].stride;
-         dip::uint length = params.bufferLength - 1;
-         dip::uint dim = params.dimension;
-         dip::uint nDims = sizes_.size();
-         DIP_ASSERT( params.position.size() == nDims );
-         DIP_ASSERT( strides_[ dim ] == stride );
-         dip::uint index = Image::Index( params.position, sizes_ );
-         UnsignedArray indexStrides( nDims );
-         indexStrides[ 0 ] = 1;
-         for( dip::uint jj = 1; jj < nDims; ++jj ) {
-            indexStrides[ jj ] = indexStrides[ jj - 1 ] * sizes_[ jj - 1 ];
-         }
-         BooleanArray process( nDims, true );
-         for( dip::uint jj = 0; jj < nDims; ++jj ) {
-            process[ jj ] = params.position[ jj ] < ( sizes_[ jj ] - 1 );
-         }
-         for( dip::uint ii = 0; ii < length; ++ii, index += indexStrides[ dim ], in += stride ) {
-            // Add to graph_ links to each of the *forward* neighbors (i.e. those that you can reach by incrementing
-            // one of the coordinates). The other neighbors are already linked to when those neighbors were processed
-            dfloat value = static_cast< dfloat >( in[ 0 ] );
-            graph_.VertexValue( index ) = value;
-            for( dip::uint jj = 0; jj < nDims; ++jj ) {
-               if( process[ jj ] ) {
-                  dip::uint neighborIndex = index + indexStrides[ jj ];
-                  dfloat neighborValue = static_cast< dfloat >( in[ strides_[ jj ]] );
-                  dfloat weight = useDifferences_ ? std::abs( value - neighborValue ) : ( value + neighborValue ) / 2;
-                  graph_.AddEdgePairNoCheck( index, neighborIndex, weight );
-               }
-            }
-         }
-         process[ dim ] = false;
-         dfloat value = static_cast< dfloat >( in[ 0 ] );
-         graph_.VertexValue( index ) = value;
-         for( dip::uint jj = 0; jj < nDims; ++jj ) {
-            if( process[ jj ] ) {
-               dip::uint neighborIndex = index + indexStrides[ jj ];
-               dfloat neighborValue = static_cast< dfloat >( in[ strides_[ jj ]] );
-               dfloat weight = useDifferences_ ? std::abs( value - neighborValue ) : ( value + neighborValue ) / 2;
-               graph_.AddEdgePairNoCheck( index, neighborIndex, weight );
-            }
-         }
-      }
-   private:
-      DirectedGraph& graph_;
-      UnsignedArray const& sizes_;
-      IntegerArray const& strides_;
-      bool useDifferences_;
-};
+using CreateGraphLineFilter = CreateGenericGraphLineFilter< Graph, TPI >;
+
+template< typename TPI >
+using CreateDirectedGraphLineFilter = CreateGenericGraphLineFilter< DirectedGraph, TPI >;
 
 } // namespace
 
