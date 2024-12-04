@@ -35,8 +35,8 @@
 %  gaussf, derivative
 %
 % DIPlib:
-%  This function calls the DIPlib functions dip::NormalizedConvolution and
-%  dip::NormalizedDifferentialConvolution.
+%  This function calls the DIPlib functions <a href="https://diplib.org/diplib-docs/linear.html#dip-NormalizedConvolution-Image-CL-Image-CL-Image-L-FloatArray-CL-String-CL-StringArray-CL-dfloat-">dip::NormalizedConvolution</a> and
+%  <a href="https://diplib.org/diplib-docs/linear.html#dip-NormalizedDifferentialConvolution-Image-CL-Image-CL-Image-L-dip-uint--FloatArray-CL-String-CL-StringArray-CL-dfloat-">dip::NormalizedDifferentialConvolution</a>.
 
 % (c)2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

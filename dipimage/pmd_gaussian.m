@@ -23,7 +23,7 @@
 %  pmd, aniso, ced
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::GaussianAnisotropicDiffusion.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/nonlinear.html#dip-GaussianAnisotropicDiffusion-Image-CL-Image-L-dip-uint--dfloat--dfloat--String-CL">dip::GaussianAnisotropicDiffusion</a>.
 
 % (c)2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

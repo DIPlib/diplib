@@ -46,8 +46,8 @@
 %  options = {} (equivalent to covariance = 'no', normalisation = 'none')
 %
 % DIPlib:
-%  This function calls the DIPlib functions dip::PairCorrelation and
-%  dip::ProbabilisticPairCorrelation.
+%  This function calls the DIPlib functions <a href="https://diplib.org/diplib-docs/analysis.html#dip-PairCorrelation-Image-CL-Image-CL-Random-L-dip-uint--dip-uint--String-CL-StringSet-CL">dip::PairCorrelation</a> and
+%  <a href="https://diplib.org/diplib-docs/analysis.html#dip-ProbabilisticPairCorrelation-Image-CL-Image-CL-Random-L-dip-uint--dip-uint--String-CL-StringSet-CL">dip::ProbabilisticPairCorrelation</a>.
 
 % (c)2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

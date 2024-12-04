@@ -5,7 +5,7 @@
 %  2*BESSELJ(1,RR)/RR is the Fourier transform of a correctly sampled
 %  circle.
 %
-%  This function calls the DIPlib function dip::BesselJN.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/math_trigonometric.html#dip-BesselJN-Image-CL-Image-L-dip-uint-">dip::BesselJN</a>.
 %
 %  See also: DIP_IMAGE/BESSELY
 

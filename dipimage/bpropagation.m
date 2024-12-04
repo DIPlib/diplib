@@ -23,7 +23,7 @@
 %  edgeCondition = 'object'
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::BinaryPropagation
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/binary.html#dip-BinaryPropagation-Image-CL-Image-CL-Image-L-dip-sint--dip-uint--String-CL">dip::BinaryPropagation</a>
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

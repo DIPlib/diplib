@@ -44,7 +44,7 @@
 %       Oklch
 %       wavelength
 %
-%    See the DIPlib documentation for dip::ColorSpaceManager for more
+%    See the DIPlib documentation for <a href="https://diplib.org/diplib-docs/dip-ColorSpaceManager.html">dip::ColorSpaceManager</a> for more
 %    information on the color spaces.
 %
 %    See also: dip_image/iscolor

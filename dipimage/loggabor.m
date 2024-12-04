@@ -31,7 +31,7 @@
 %  See the DIPlib documentation for more details on this function.
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::LogGaborFilterBank.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/linear.html#dip-LogGaborFilterBank-Image-CL-Image-L-FloatArray-CL-dfloat--dip-uint--String-CL-String-CL">dip::LogGaborFilterBank</a>.
 
 % (c)2018, Cris Luengo.
 %

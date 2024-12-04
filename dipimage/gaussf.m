@@ -31,8 +31,8 @@
 %  derivative
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::Derivative (which calls dip::GaussFIR,
-%  dip::GaussIIR and dip::GaussFT) and dip::CreateGauss.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/linear.html#dip-Derivative-Image-CL-Image-L-UnsignedArray--FloatArray--String-CL-StringArray-CL-dfloat-">dip::Derivative</a> (which calls <a href="https://diplib.org/diplib-docs/linear.html#dip-GaussFIR-Image-CL-Image-L-FloatArray--UnsignedArray--StringArray-CL-dfloat-">dip::GaussFIR</a>,
+%  <a href="https://diplib.org/diplib-docs/linear.html#dip-GaussIIR-Image-CL-Image-L-FloatArray--UnsignedArray--StringArray-CL-UnsignedArray--String-CL-dfloat-">dip::GaussIIR</a> and <a href="https://diplib.org/diplib-docs/linear.html#dip-GaussFT-Image-CL-Image-L-FloatArray--UnsignedArray--dfloat--String-CL-String-CL-StringArray-CL">dip::GaussFT</a>) and <a href="https://diplib.org/diplib-docs/generation_test.html#dip-CreateGauss-Image-L-FloatArray-CL-UnsignedArray--dfloat--UnsignedArray-">dip::CreateGauss</a>.
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

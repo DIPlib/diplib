@@ -20,7 +20,7 @@
 %  flags = {}
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::Superpixels.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/segmentation.html#dip-Superpixels-Image-CL-Image-L-Random-L-dfloat--dfloat--String-CL-StringSet-CL">dip::Superpixels</a>.
 
 % (c)2019, Cris Luengo.
 %

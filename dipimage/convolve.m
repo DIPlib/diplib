@@ -73,8 +73,8 @@
 %  the right-most weight is not repeated.
 %
 % DIPlib:
-%  This function calls the DIPlib functions dip::Convolution or
-%  dip::SeparableConvolution, depending on the input.
+%  This function calls the DIPlib functions <a href="https://diplib.org/diplib-docs/linear.html#dip-Convolution-Image-CL-Image-CL-Image-L-String-CL-StringArray-CL">dip::Convolution</a> or
+%  <a href="https://diplib.org/diplib-docs/linear.html#dip-SeparableConvolution-Image-CL-Image-L-OneDimensionalFilterArray-CL-StringArray-CL-BooleanArray-">dip::SeparableConvolution</a>, depending on the input.
 
 % (c)2017-2022, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

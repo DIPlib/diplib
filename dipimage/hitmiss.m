@@ -34,7 +34,7 @@
 %     0                      , otherwise
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::HitAndMiss.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/morphology.html#dip-HitAndMiss-Image-CL-Image-L-StructuringElement-CL-StructuringElement-CL-String-CL-StringArray-CL">dip::HitAndMiss</a>.
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.

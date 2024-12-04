@@ -25,8 +25,8 @@
 %  The first output argument is a labeled image representing the clusters.
 %
 % DIPlib:
-%  This function calls the DIPlib functions dip::KMeansClustering and
-%  dip::MinimumVariancePartitioning.
+%  This function calls the DIPlib functions <a href="https://diplib.org/diplib-docs/segmentation.html#dip-KMeansClustering-Image-CL-Image-L-Random-L-dip-uint-">dip::KMeansClustering</a> and
+%  <a href="https://diplib.org/diplib-docs/segmentation.html#dip-MinimumVariancePartitioning-Image-CL-Image-L-dip-uint-">dip::MinimumVariancePartitioning</a>.
 
 % (c)2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

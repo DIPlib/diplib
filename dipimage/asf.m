@@ -27,7 +27,7 @@
 %                           the erosion)
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::AlternatingSequentialFilter.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/morphology.html#dip-AlternatingSequentialFilter-Image-CL-Image-L-Range-CL-String-CL-String-CL-String-CL-StringArray-CL">dip::AlternatingSequentialFilter</a>.
 
 % (c)2018, Cris Luengo.
 %

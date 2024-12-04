@@ -43,7 +43,7 @@
 %  waterseed, watershed
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::CompactWatershed.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/segmentation.html#dip-CompactWatershed-Image-CL-Image-CL-Image-CL-Image-L-dip-uint--dfloat--StringSet-CL">dip::CompactWatershed</a>.
 
 % (c)2019, Cris Luengo.
 %

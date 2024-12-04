@@ -24,7 +24,7 @@
 %  labeling function.
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::SmallObjectsRemove.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/regions.html#dip-SmallObjectsRemove-Image-CL-Image-L-dip-uint--dip-uint-">dip::SmallObjectsRemove</a>.
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

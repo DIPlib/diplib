@@ -35,7 +35,7 @@
 %  8(6):679-697, 1986.
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::Canny.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/segmentation.html#dip-Canny-Image-CL-Image-L-FloatArray-CL-dfloat--dfloat--String-CL">dip::Canny</a>.
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

@@ -34,7 +34,7 @@
 %  size improves the precision.
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::GreyWeightedDistanceTransform
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/distance.html#dip-GreyWeightedDistanceTransform-Image-CL-Image-CL-Image-CL-Image-L-Metric--String-CL">dip::GreyWeightedDistanceTransform</a>
 
 % (c)2017-2019, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

@@ -41,7 +41,7 @@
 %  ift, convolve
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::FourierTransform.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/transform.html#dip-FourierTransform-Image-CL-Image-L-StringSet-CL-BooleanArray-">dip::FourierTransform</a>.
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

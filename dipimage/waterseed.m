@@ -53,7 +53,7 @@
 %  watershed, compactwaterseed
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::SeededWatershed.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/segmentation.html#dip-SeededWatershed-Image-CL-Image-CL-Image-CL-Image-L-dip-uint--dfloat--dip-uint--StringSet-CL">dip::SeededWatershed</a>.
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

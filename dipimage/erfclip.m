@@ -13,7 +13,7 @@
 %  range = 64
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::ErfClip.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/mapping.html#dip-ErfClip-Image-CL-Image-L-dfloat--dfloat--String-CL">dip::ErfClip</a>.
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

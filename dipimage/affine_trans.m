@@ -40,7 +40,7 @@
 %  rotation, rotation3d, resample, fmmatch
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::AffineTransform.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/geometry.html#dip-AffineTransform-Image-CL-Image-L-FloatArray-CL-String-CL">dip::AffineTransform</a>.
 
 % (c)2018, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.

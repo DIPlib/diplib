@@ -37,7 +37,7 @@
 %  multi-dimensional window is the outer product of the 1D windows.
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::ApplyWindow.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/generation_drawing.html#dip-ApplyWindow-Image-CL-Image-L-String-CL-dfloat-">dip::ApplyWindow</a>.
 
 % (c)2018, Cris Luengo.
 %

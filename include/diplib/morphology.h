@@ -1176,6 +1176,8 @@ DIP_NODISCARD inline Image StochasticWatershed(
    return out;
 }
 /// \brief Like above, using a default-initialized \ref dip::Random object.
+///
+/// \ingroup segmentation
 inline void StochasticWatershed(
       Image const& in,
       Image& out,

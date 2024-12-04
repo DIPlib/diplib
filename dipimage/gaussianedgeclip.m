@@ -23,7 +23,7 @@
 %  a = gaussianedgeclip(40-rr)
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::GaussianEdgeClip.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/generation_test.html#dip-GaussianEdgeClip-Image-CL-Image-L-Image-Pixel-CL-dfloat--dfloat-">dip::GaussianEdgeClip</a>.
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.

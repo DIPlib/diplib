@@ -50,7 +50,7 @@
 %  shift, affine_trans
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::FindShift.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/analysis.html#dip-FindShift-Image-CL-Image-CL-String-CL-dfloat--UnsignedArray-">dip::FindShift</a>.
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

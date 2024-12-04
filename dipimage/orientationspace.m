@@ -26,7 +26,7 @@
 %    Netherlands, 2002.
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::OrientationSpace.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/analysis.html#dip-OrientationSpace-Image-CL-Image-L-dip-uint--dfloat--dfloat--dip-uint-">dip::OrientationSpace</a>.
 
 % (c)2019, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

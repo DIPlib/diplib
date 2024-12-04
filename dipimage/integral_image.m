@@ -20,7 +20,7 @@
 %  s2 = intim(x+w-1,y+h-1) + intim(x-1,y-1) - intim(x+w-1,y-1) - intim(x-1,y+h-1)
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::CumulativeSum.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/math_statistics.html#dip-CumulativeSum-Image-CL-Image-CL-Image-L-BooleanArray-CL">dip::CumulativeSum</a>.
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

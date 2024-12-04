@@ -35,7 +35,7 @@
 %  mdhistogram
 %
 % DIPlib:
-%  This function uses the DIPlib function dip::Histogram::ReverseLookup.
+%  This function uses the DIPlib function <a href="https://diplib.org/diplib-docs/dip-Histogram.html#dip-Histogram-ReverseLookup-Image-CL-Image-L-BooleanArray-">dip::Histogram::ReverseLookup</a>.
 
 % (c)2006, 2017, Michael van Ginkel.
 % (c)2018, Cris Luengo.

@@ -47,8 +47,8 @@
 %  Use the FIR method only if more precision is required.
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::GaborIIR, dip::GaborFIR,
-%  and dip::CreateGabor.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/linear.html#dip-GaborIIR-Image-CL-Image-L-FloatArray--FloatArray-CL-StringArray-CL-BooleanArray--IntegerArray-CL-dfloat-">dip::GaborIIR</a>, <a href="https://diplib.org/diplib-docs/linear.html#dip-GaborFIR-Image-CL-Image-L-FloatArray--FloatArray-CL-StringArray-CL-BooleanArray--dfloat-">dip::GaborFIR</a>,
+%  and <a href="https://diplib.org/diplib-docs/generation_test.html#dip-CreateGabor-Image-L-FloatArray-CL-FloatArray-CL-dfloat-">dip::CreateGabor</a>.
 
 % (c)2018-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

@@ -50,9 +50,9 @@
 %  parameter2  = 0
 %
 % DIPlib:
-%  This function calls the DIPlib functions dip::UniformNoise,
-%  dip::GaussianNoise, dip::PoissonNoise, dip::BinaryNoise,
-%  dip::ColoredNoise.
+%  This function calls the DIPlib functions <a href="https://diplib.org/diplib-docs/generation_noise.html#dip-UniformNoise-Image-CL-Image-L-Random-L-dfloat--dfloat-">dip::UniformNoise</a>,
+%  <a href="https://diplib.org/diplib-docs/generation_noise.html#dip-GaussianNoise-Image-CL-Image-L-Random-L-dfloat-">dip::GaussianNoise</a>, <a href="https://diplib.org/diplib-docs/generation_noise.html#dip-PoissonNoise-Image-CL-Image-L-Random-L-dfloat-">dip::PoissonNoise</a>, <a href="https://diplib.org/diplib-docs/generation_noise.html#dip-BinaryNoise-Image-CL-Image-L-Random-L-dfloat--dfloat-">dip::BinaryNoise</a>,
+%  <a href="https://diplib.org/diplib-docs/generation_noise.html#dip-ColoredNoise-Image-CL-Image-L-Random-L-dfloat--dfloat-">dip::ColoredNoise</a>.
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

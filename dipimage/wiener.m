@@ -42,7 +42,7 @@
 %  tikhonovmiller, richardsonlucy, ictm, fista
 %
 % DIPlib:
-%  This function calls the DIPlib functions dip::WienerDeconvolution.
+%  This function calls the DIPlib functions <a href="https://diplib.org/diplib-docs/deconvolution.html#dip-WienerDeconvolution-Image-CL-Image-CL-Image-CL-Image-CL-Image-L-StringSet-CL">dip::WienerDeconvolution</a>.
 
 % (c)2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

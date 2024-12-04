@@ -25,8 +25,8 @@
 %  mode = 'translation'
 %
 % DIPlib:
-%  This function calls the DIPlib functions dip::CreateRandomGrid and
-%  dip::CreatePoissonPointProcess.
+%  This function calls the DIPlib functions <a href="https://diplib.org/diplib-docs/generation_test.html#dip-CreateRandomGrid-Image-L-UnsignedArray-CL-Random-L-dfloat--String-CL-String-CL">dip::CreateRandomGrid</a> and
+%  <a href="https://diplib.org/diplib-docs/generation_test.html#dip-CreatePoissonPointProcess-Image-L-UnsignedArray-CL-Random-L-dfloat-">dip::CreatePoissonPointProcess</a>.
 
 % (c)2019, Cris Luengo.
 %

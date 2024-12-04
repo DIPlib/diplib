@@ -43,8 +43,8 @@
 %  drawtext(a,'DIP','/Library/Fonts/Montserrat-Regular.ttf',40,[128,83],[255,30,100],0,'center')
 %
 % DIPlib:
-%  This function calls the DIPlib functions dip::DrawText and
-%  dip::FreeType::DrawText.
+%  This function calls the DIPlib functions <a href="https://diplib.org/diplib-docs/generation_drawing.html#dip-DrawText-Image-L-String-CL-FloatArray--Image-Pixel-CL-dfloat--String-CL">dip::DrawText</a> and
+%  <a href="https://diplib.org/diplib-docs/dip-FreeTypeTool.html#dip-FreeTypeTool-DrawText-Image-L-String-CL-FloatArray--Image-Pixel-CL-dfloat--String-CL">dip::FreeTypeTool::DrawText</a>.
 
 % (c)2022, Cris Luengo.
 %

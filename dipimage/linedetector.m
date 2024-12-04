@@ -37,9 +37,9 @@
 %  integer larger than 1. SCALE defaults to 15. PARAMETER is not used.
 %
 % DIPlib:
-%  This function calls the DIPlib functions dip::FrangiVesselness,
-%  dip::DanielssonLineDetector, dip::MatchedFiltersLineDetector2D,
-%  dip::RORPOLineDetector.
+%  This function calls the DIPlib functions <a href="https://diplib.org/diplib-docs/detection_lines.html#dip-FrangiVesselness-Image-CL-Image-L-FloatArray-CL-FloatArray--String-CL-StringArray-CL">dip::FrangiVesselness</a>,
+%  <a href="https://diplib.org/diplib-docs/detection_lines.html#dip-DanielssonLineDetector-Image-CL-Image-L-dip-FloatArray-CL-String-CL-StringArray-CL">dip::DanielssonLineDetector</a>, <a href="https://diplib.org/diplib-docs/detection_lines.html#dip-MatchedFiltersLineDetector2D-Image-CL-Image-L-dip-dfloat--dip-dfloat--String-CL-StringArray-CL">dip::MatchedFiltersLineDetector2D</a>,
+%  <a href="https://diplib.org/diplib-docs/detection_lines.html#dip-RORPOLineDetector-Image-CL-Image-L-dip-uint--String-CL">dip::RORPOLineDetector</a>.
 
 % (c)2018, Cris Luengo.
 %

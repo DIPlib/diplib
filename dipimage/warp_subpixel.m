@@ -17,7 +17,7 @@
 %  of IN.
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::ResampleAt.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/geometry.html#dip-ResampleAt-Image-CL-Image-CL-Image-L-String-CL-Image-Pixel-CL">dip::ResampleAt</a>.
 
 % (c)2019, Wouter Caarls.
 %

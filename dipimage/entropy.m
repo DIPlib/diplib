@@ -7,7 +7,7 @@
 %  nBin = 256;
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::Entropy.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/math_error.html#dip-Entropy-Image-CL-Image-CL-dip-uint-">dip::Entropy</a>.
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.

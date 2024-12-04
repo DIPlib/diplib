@@ -62,9 +62,9 @@
 %    Ignores MASK parameter if PARAMETER is given.
 %
 % DIPlib:
-%  This function calls the DIPlib functions dip::Threshold,
-%  dip::IsodataThreshold, dip::GaussianMixtureModelThreshold,
-%  dip::RangeThreshold and dip::HysteresisThreshold.
+%  This function calls the DIPlib functions <a href="https://diplib.org/diplib-docs/segmentation.html#dip-Threshold-Image-CL-Image-CL-Image-L-String-CL-dfloat-">dip::Threshold</a>,
+%  <a href="https://diplib.org/diplib-docs/segmentation.html#dip-IsodataThreshold-Image-CL-Image-CL-Image-L-dip-uint-">dip::IsodataThreshold</a>, <a href="https://diplib.org/diplib-docs/segmentation.html#dip-GaussianMixtureModelThreshold-Image-CL-Image-CL-Image-L-dip-uint-">dip::GaussianMixtureModelThreshold</a>,
+%  <a href="https://diplib.org/diplib-docs/segmentation.html#dip-RangeThreshold-Image-CL-Image-L-dfloat--dfloat--String-CL-dfloat--dfloat-">dip::RangeThreshold</a> and <a href="https://diplib.org/diplib-docs/segmentation.html#dip-HysteresisThreshold-Image-CL-Image-L-dfloat--dfloat-">dip::HysteresisThreshold</a>.
 
 % (c)2017-2020, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

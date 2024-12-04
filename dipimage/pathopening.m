@@ -56,8 +56,8 @@
 %  is the final result.
 %
 % DIPlib:
-%  This function calls the DIPlib functions dip::PathOpening and
-%  dip::DirectedPathOpening.
+%  This function calls the DIPlib functions <a href="https://diplib.org/diplib-docs/morphology.html#dip-PathOpening-Image-CL-Image-CL-Image-L-dip-uint--String-CL-StringSet-CL">dip::PathOpening</a> and
+%  <a href="https://diplib.org/diplib-docs/morphology.html#dip-DirectedPathOpening-Image-CL-Image-CL-Image-L-IntegerArray--String-CL-StringSet-CL">dip::DirectedPathOpening</a>.
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

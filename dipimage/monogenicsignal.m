@@ -62,8 +62,8 @@
 %  dipshow(b,'unit')
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::MonogenicSignal, and
-%  dip::MonogenicSignalAnalysis.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/analysis.html#dip-MonogenicSignal-Image-CL-Image-L-FloatArray-CL-dfloat--String-CL-String-CL">dip::MonogenicSignal</a>, and
+%  <a href="https://diplib.org/diplib-docs/analysis.html#dip-MonogenicSignalAnalysis-Image-CL-ImageRefArray-L-StringArray-CL-dfloat--dfloat--dfloat--dfloat--String-CL">dip::MonogenicSignalAnalysis</a>.
 
 % (c)2018, Cris Luengo.
 %

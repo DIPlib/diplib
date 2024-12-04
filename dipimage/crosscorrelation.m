@@ -19,7 +19,7 @@
 %  rep_out = 'spatial'
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::CrossCorrelationFT.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/analysis.html#dip-CrossCorrelationFT-Image-CL-Image-CL-Image-L-String-CL-String-CL-String-CL-String-CL">dip::CrossCorrelationFT</a>.
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.

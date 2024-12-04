@@ -21,7 +21,7 @@
 %  [noisestd(a) noisestd(b) noisestd(c) noisestd(d)]
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::EstimateNoiseVariance.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/math_error.html#dip-EstimateNoiseVariance-Image-CL-Image-CL">dip::EstimateNoiseVariance</a>.
 %
 % LITERATURE:
 %  John Immerkaer. "Fast Noise Variance Estimation",

@@ -13,7 +13,7 @@
 %  method = 'separable'
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::EuclideanDistanceTransform
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/distance.html#dip-EuclideanDistanceTransform-Image-CL-Image-L-String-CL-String-CL">dip::EuclideanDistanceTransform</a>
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

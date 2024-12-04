@@ -2,7 +2,7 @@
 %  OUT = BESSELY(NU,IN) is the Bessel function of the second kind, of order NU.
 %  NU must be a non-negative integer. IN must be real-valued image.
 %
-%  This function calls the DIPlib function dip::BesselYN.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/math_trigonometric.html#dip-BesselYN-Image-CL-Image-L-dip-uint-">dip::BesselYN</a>.
 %
 %  See also: DIP_IMAGE/BESSELJ
 

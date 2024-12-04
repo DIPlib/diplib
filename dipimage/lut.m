@@ -39,7 +39,7 @@
 %  then the output will have one tensor element per column.
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::LookupTable::Apply and several
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/dip-LookupTable.html#dip-LookupTable-Apply-Image-CL-Image-L-String-CL-C"><a href="https://diplib.org/diplib-docs/dip-LookupTable.html">dip::LookupTable</a>::Apply</a> and several
 %  other methods of the dip::LookupTable class.
 
 % (c)2017-2018, Cris Luengo.

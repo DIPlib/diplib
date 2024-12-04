@@ -19,7 +19,7 @@
 %  wiener, tikhonovmiller, ictm, fista
 %
 % DIPlib:
-%  This function calls the DIPlib functions dip::RichardsonLucy.
+%  This function calls the DIPlib functions <a href="https://diplib.org/diplib-docs/deconvolution.html#dip-RichardsonLucy-Image-CL-Image-CL-Image-L-dfloat--dip-uint--StringSet-CL">dip::RichardsonLucy</a>.
 
 % (c)2022, Cris Luengo.
 %

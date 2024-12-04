@@ -27,7 +27,7 @@
 %  a = gaussianlineclip(rr-40)
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::GaussianLineClip.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/generation_test.html#dip-GaussianLineClip-Image-CL-Image-L-Image-Pixel-CL-dfloat--dfloat-">dip::GaussianLineClip</a>.
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.

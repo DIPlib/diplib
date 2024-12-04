@@ -50,7 +50,7 @@
 %  shift, subsample, skew
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::Resampling.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/geometry.html#dip-Resampling-Image-CL-Image-L-FloatArray--FloatArray--String-CL-StringArray-CL">dip::Resampling</a>.
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

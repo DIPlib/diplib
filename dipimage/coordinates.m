@@ -51,8 +51,8 @@
 %  ramp, xx, yy, zz, rr, phiphi
 %
 % DIPlib:
-%  This function calls the DIPlib functions dip::FillCoordinates, dip::FillRamp,
-%  dip::FillRadiusCoordinate, dip::FillPhiCoordinate, or dip::FillThetaCoordinate
+%  This function calls the DIPlib functions <a href="https://diplib.org/diplib-docs/generation_coordinates.html#dip-FillCoordinates-Image-L-StringSet-CL-String-CL">dip::FillCoordinates</a>, <a href="https://diplib.org/diplib-docs/generation_coordinates.html#dip-FillRamp-Image-L-dip-uint--StringSet-CL">dip::FillRamp</a>,
+%  <a href="https://diplib.org/diplib-docs/generation_coordinates.html#dip-FillRadiusCoordinate-Image-L-StringSet-CL">dip::FillRadiusCoordinate</a>, <a href="https://diplib.org/diplib-docs/generation_coordinates.html#dip-FillPhiCoordinate-Image-L-StringSet-CL">dip::FillPhiCoordinate</a>, or <a href="https://diplib.org/diplib-docs/generation_coordinates.html#dip-FillThetaCoordinate-Image-L-StringSet-CL">dip::FillThetaCoordinate</a>
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

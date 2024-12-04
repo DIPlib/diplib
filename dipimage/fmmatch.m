@@ -34,7 +34,7 @@
 %  affine_trans, findshift
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::FourierMellinMatch2D.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/analysis.html#dip-FourierMellinMatch2D-Image-CL-Image-CL-Image-L-String-CL-String-CL">dip::FourierMellinMatch2D</a>.
 
 % (c)2018, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.

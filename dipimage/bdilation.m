@@ -23,8 +23,8 @@
 %  edgeCondition = 'background'
 %
 % DIPlib:
-%  This function calls the DIPlib functions dip::BinaryDilation and
-%  dip::IsotropicDilation.
+%  This function calls the DIPlib functions <a href="https://diplib.org/diplib-docs/binary.html#dip-BinaryDilation-Image-CL-Image-L-dip-sint--dip-uint--String-CL">dip::BinaryDilation</a> and
+%  <a href="https://diplib.org/diplib-docs/binary.html#dip-IsotropicDilation-Image-CL-Image-L-dfloat-">dip::IsotropicDilation</a>.
 
 % (c)2017-2022, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

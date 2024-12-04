@@ -29,7 +29,7 @@
 %  overlay, lut.
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::ApplyColorMap.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/display.html#dip-ApplyColorMap-Image-CL-Image-L-String-CL">dip::ApplyColorMap</a>.
 
 % (c)2023, Cris Luengo.
 %

@@ -52,8 +52,8 @@
 %  drawshape(newim,80,[127.7,128.1],'disk',255,1)
 %
 % DIPlib:
-%  This function calls the DIPlib functions dip::DrawEllipsoid, dip::DrawBox,
-%  dip::DrawDiamond, dip::DrawBandlimitedBall, and dip::DrawBandlimitedBox.
+%  This function calls the DIPlib functions <a href="https://diplib.org/diplib-docs/generation_drawing.html#dip-DrawEllipsoid-Image-L-FloatArray-CL-FloatArray-CL-Image-Pixel-CL">dip::DrawEllipsoid</a>, <a href="https://diplib.org/diplib-docs/generation_drawing.html#dip-DrawBox-Image-L-FloatArray-CL-FloatArray-CL-Image-Pixel-CL">dip::DrawBox</a>,
+%  <a href="https://diplib.org/diplib-docs/generation_drawing.html#dip-DrawDiamond-Image-L-FloatArray-CL-FloatArray-CL-Image-Pixel-CL">dip::DrawDiamond</a>, <a href="https://diplib.org/diplib-docs/generation_drawing.html#dip-DrawBandlimitedBall-Image-L-dfloat--FloatArray--Image-Pixel-CL-String-CL-dfloat--dfloat-">dip::DrawBandlimitedBall</a>, and <a href="https://diplib.org/diplib-docs/generation_drawing.html#dip-DrawBandlimitedBox-Image-L-FloatArray--FloatArray--Image-Pixel-CL-String-CL-dfloat--dfloat-">dip::DrawBandlimitedBox</a>.
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

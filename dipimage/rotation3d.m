@@ -56,8 +56,8 @@
 %  rotation, skew, affine_trans, resample
 %
 % DIPlib:
-%  This function calls the DIPlib functions dip::Rotation3D,
-%  dip::AffineTransform and dip::RotationMatrix3D.
+%  This function calls the DIPlib functions <a href="https://diplib.org/diplib-docs/geometry.html#dip-Rotation3D-Image-CL-Image-L-dfloat--dip-uint--String-CL-String-CL">dip::Rotation3D</a>,
+%  <a href="https://diplib.org/diplib-docs/geometry.html#dip-AffineTransform-Image-CL-Image-L-FloatArray-CL-String-CL">dip::AffineTransform</a> and <a href="https://diplib.org/diplib-docs/geometry.html#dip-RotationMatrix3D-Image-L-dfloat--dfloat--dfloat-">dip::RotationMatrix3D</a>.
 
 % (c)2020, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

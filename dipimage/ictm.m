@@ -22,7 +22,7 @@
 %  wiener, tikhonovmiller, richardsonlucy, fista
 %
 % DIPlib:
-%  This function calls the DIPlib functions dip::IterativeConstrainedTikhonovMiller.
+%  This function calls the DIPlib functions <a href="https://diplib.org/diplib-docs/deconvolution.html#dip-IterativeConstrainedTikhonovMiller-Image-CL-Image-CL-Image-L-dfloat--dfloat--dip-uint--dfloat--StringSet-CL">dip::IterativeConstrainedTikhonovMiller</a>.
 
 % (c)2022, Cris Luengo.
 %

@@ -53,7 +53,7 @@
 %   symmetric, diagonal and triangular tensors. For example, a 3x3 diagonal
 %   tensor image has only 3 tensor elements (we don't store the 0-valued
 %   off-diagonal elements). For information on how specific tensor shapes
-%   are stored, see the DIPlib documentation: dip::Tensor::Shape.
+%   are stored, see the DIPlib documentation: <a href="https://diplib.org/diplib-docs/dip-Tensor.html#dip-Tensor-Shape">dip::Tensor::Shape</a>.
 %
 %   A statement that returns a DIP_IMAGE object, when not terminated with a
 %   semicolon, will not dump the pixel values to the command line, but
@@ -94,7 +94,7 @@ classdef dip_image
       %   A struct array indicating the size of a pixel along each of the spatial
       %   dimensions. The struct contains fields 'magnitude' and 'units'.
       %   'magnitude' is a double scalar value, and 'units' is a string formatted
-      %   according to the dip::Units class in DIPlib.
+      %   according to the <a href="https://diplib.org/diplib-docs/dip-Units.html">dip::Units</a> class in DIPlib.
       %
       %   It is possible to directly modify this struct:
       %      img.PixelSize = [1,1,3];  % assumes 'm' for units

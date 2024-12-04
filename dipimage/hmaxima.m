@@ -18,7 +18,7 @@
 %  See the user guide for the definition of connectivity in DIPimage.
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::HMaxima.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/morphology.html#dip-HMaxima-Image-CL-Image-L-dfloat--dip-uint-">dip::HMaxima</a>.
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPimage code: (c)2013, Cris Luengo.

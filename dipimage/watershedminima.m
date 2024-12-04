@@ -40,7 +40,7 @@
 %  watershedmaxima, minima, watershed
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::WatershedMinima.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/segmentation.html#dip-WatershedMinima-Image-CL-Image-CL-Image-L-dip-uint--dfloat--dip-uint--String-CL">dip::WatershedMinima</a>.
 
 % (c)2020, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

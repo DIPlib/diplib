@@ -22,7 +22,7 @@
 %  providing a custom binary or grey-value shape.
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::Opening.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/morphology.html#dip-Opening-Image-CL-Image-L-StructuringElement-CL-StringArray-CL">dip::Opening</a>.
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

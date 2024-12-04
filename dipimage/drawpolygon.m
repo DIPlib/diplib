@@ -17,8 +17,8 @@
 %  closed = 'open'
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::DrawLines and
-%  dip::DrawPolygon2D
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/generation_drawing.html#dip-DrawLines-Image-L-CoordinateArray-CL-Image-Pixel-CL-String-CL">dip::DrawLines</a> and
+%  <a href="https://diplib.org/diplib-docs/generation_drawing.html#dip-DrawPolygon2D-Image-L-Polygon-CL-Image-Pixel-CL-String-CL">dip::DrawPolygon2D</a>
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

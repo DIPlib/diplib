@@ -1,5 +1,5 @@
 %SVD Singular value decomposition.
-%  [U,S,V] = SVD(X) 
+%  [U,S,V] = SVD(X)
 %
 %  S = SVD(X) returns a vector image containing the singular values.
 %
@@ -7,8 +7,8 @@
 %  then only the first n columns of U are computed and S is n-by-n.
 %  For m < n, only the first m columns of V are computed and S is m-by-m.
 %
-%  This function calls the DIPlib functions dip::SingularValues and
-%  dip::SingularValueDecomposition.
+%  This function calls the DIPlib functions <a href="https://diplib.org/diplib-docs/math_tensor.html#dip-SingularValues-Image-CL-Image-L">dip::SingularValues</a> and
+%  <a href="https://diplib.org/diplib-docs/math_tensor.html#dip-SingularValueDecomposition-Image-CL-Image-L-Image-L-Image-L">dip::SingularValueDecomposition</a>.
 %
 %  See also: DIP_IMAGE/EIG, EIG_LARGEST, DIP_IMAGE/PINV, DIP_IMAGE/RANK
 

@@ -7,7 +7,7 @@
 %  IMAGE_OUT is a vector image with N components.
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::Riesz.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/transform.html#dip-RieszTransform-Image-CL-Image-L-String-CL-String-CL-BooleanArray-">dip::RieszTransform</a>.
 
 % (c)2018, Cris Luengo.
 %

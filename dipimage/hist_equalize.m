@@ -42,8 +42,8 @@
 %  assumed, meaning that the output image is always in the range [0,255].
 %
 % DIPlib:
-%  This function calls the DIPlib functions dip::HistogramEqualization
-%  and dip::HistogramMatching.
+%  This function calls the DIPlib functions <a href="https://diplib.org/diplib-docs/mapping.html#dip-HistogramEqualization-Image-CL-Image-L-dip-uint-">dip::HistogramEqualization</a>
+%  and <a href="https://diplib.org/diplib-docs/mapping.html#dip-HistogramMatching-Image-CL-Image-L-Histogram-CL">dip::HistogramMatching</a>.
 
 % (c)2018, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.

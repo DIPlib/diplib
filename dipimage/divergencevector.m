@@ -19,7 +19,7 @@
 %  a DIP_IMAGE object.
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::Divergence.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/linear.html#dip-Divergence-Image-CL-Image-L-FloatArray--String-CL-StringArray-CL-BooleanArray--dfloat-">dip::Divergence</a>.
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

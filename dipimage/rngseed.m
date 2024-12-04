@@ -13,7 +13,7 @@
 %  used, so in general it is not necessary to use this syntax.
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::Random::Seed.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/dip-Random.html#dip-Random-Seed">dip::Random::Seed</a>.
 
 % (c)2019, Cris Luengo.
 %

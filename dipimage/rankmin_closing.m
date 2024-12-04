@@ -28,7 +28,7 @@
 %  b = rankmin_closing(a,2,3,'rectangular')
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::RankMinClosing.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/morphology.html#dip-RankMinClosing-Image-CL-Image-L-StructuringElement--dip-uint--StringArray-CL">dip::RankMinClosing</a>.
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

@@ -22,8 +22,8 @@
 %  drawline(newim,[100 100; 0 200],[200 200; 200 0],255)
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::DrawLine and
-%  dip::DrawBandlimitedLine
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/generation_drawing.html#dip-DrawLine-Image-L-UnsignedArray-CL-UnsignedArray-CL-Image-Pixel-CL-String-CL">dip::DrawLine</a> and
+%  <a href="https://diplib.org/diplib-docs/generation_drawing.html#dip-DrawBandlimitedLine-Image-L-FloatArray--FloatArray--Image-Pixel-CL-dfloat--dfloat-">dip::DrawBandlimitedLine</a>
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

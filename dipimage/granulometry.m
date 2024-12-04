@@ -72,7 +72,7 @@
 %     values.
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::Granulometry.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/analysis.html#dip-Granulometry-Image-CL-Image-CL-std-vector%3Cdfloat%3E-CL-String-CL-String-CL-StringSet-CL">dip::Granulometry</a>.
 
 % (c)2018, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.

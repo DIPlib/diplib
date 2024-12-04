@@ -17,7 +17,7 @@
 %  See DERIVATIVE for a description of the parameters and the defaults.
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::GradientMagnitude.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/linear.html#dip-GradientMagnitude-Image-CL-Image-L-FloatArray--String-CL-StringArray-CL-BooleanArray--dfloat-">dip::GradientMagnitude</a>.
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

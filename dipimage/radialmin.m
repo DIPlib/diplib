@@ -32,7 +32,7 @@
 %  the nearest edge to the center.
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::RadialMinimum.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/math_projection.html#dip-RadialMinimum-Image-CL-Image-CL-Image-L-dfloat--String-CL-FloatArray-CL">dip::RadialMinimum</a>.
 
 % (c)2018, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.

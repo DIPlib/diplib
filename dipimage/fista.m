@@ -20,7 +20,7 @@
 %  wiener, tikhonovmiller, richardsonlucy, ictm
 %
 % DIPlib:
-%  This function calls the DIPlib functions dip::FastIterativeShrinkageThresholding.
+%  This function calls the DIPlib functions <a href="https://diplib.org/diplib-docs/deconvolution.html#dip-FastIterativeShrinkageThresholding-Image-CL-Image-CL-Image-L-dfloat--dfloat--dip-uint--dip-uint--StringSet-CL">dip::FastIterativeShrinkageThresholding</a>.
 
 % (c)2022, Cris Luengo.
 %

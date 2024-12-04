@@ -31,7 +31,7 @@
 %  growregions, gdt, dt, waterseed
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::GrowRegionsWeighted.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/regions.html#dip-GrowRegionsWeighted-Image-CL-Image-CL-Image-CL-Image-L-dfloat-">dip::GrowRegionsWeighted</a>.
 
 % (c)2020-2024, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

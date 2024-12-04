@@ -19,7 +19,7 @@
 %  writeics, readim, writeim
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::ImageReadICS.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/file_io.html#dip-ImageReadICS-Image-L-String-CL-RangeArray-CL-Range-CL-String-CL">dip::ImageReadICS</a>.
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

@@ -19,9 +19,9 @@
 %  parameter = 0.04 for 'Harris' and 0.1 for 'WangBrady'.
 %
 % DIPlib:
-%  This function calls the DIPlib functions dip::HarrisCornerDetector,
-%  dip::ShiTomasiCornerDetector, dip::NobleCornerDetector,
-%  dip::WangBradyCornerDetector.
+%  This function calls the DIPlib functions <a href="https://diplib.org/diplib-docs/detection_corners.html#dip-HarrisCornerDetector-Image-CL-Image-L-dfloat--FloatArray-CL-StringArray-CL">dip::HarrisCornerDetector</a>,
+%  <a href="https://diplib.org/diplib-docs/detection_corners.html#dip-ShiTomasiCornerDetector-Image-CL-Image-L-FloatArray-CL-StringArray-CL">dip::ShiTomasiCornerDetector</a>, <a href="https://diplib.org/diplib-docs/detection_corners.html#dip-NobleCornerDetector-Image-CL-Image-L-FloatArray-CL-StringArray-CL">dip::NobleCornerDetector</a>,
+%  <a href="https://diplib.org/diplib-docs/detection_corners.html#dip-WangBradyCornerDetector-Image-CL-Image-L-dfloat--FloatArray-CL-StringArray-CL">dip::WangBradyCornerDetector</a>.
 
 % (c)2018, Cris Luengo.
 %

@@ -23,7 +23,7 @@
 %  FILTERSIZE have been removed.
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::AreaOpening.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/morphology.html#dip-AreaOpening-Image-CL-Image-CL-Image-L-dip-uint--dip-uint--String-CL">dip::AreaOpening</a>.
 
 % (c)2017-2018, Cris Luengo.
 %

@@ -40,7 +40,7 @@
 %  shift, resample
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::Skew.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/geometry.html#dip-Skew-Image-CL-Image-L-FloatArray-CL-dip-uint--String-CL-StringArray-CL">dip::Skew</a>.
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

@@ -52,14 +52,14 @@
 %  must be scalar. MASK is ignored.
 %
 % DIPlib:
-%  This function calls the DIPlib functions dip::MeanError, dip::MeanSquareError,
-%  dip::RootMeanSquareError, dip::MeanAbsoluteError, dip::IDivergence,
-%  dip::InProduct, dip::LnNormError, dip::PSNR, dip::SSIM, dip::MutualInformation,
-%  dip::PearsonCorrelation, dip::SpearmanRankCorrelation,
-%  dip::DiceCoefficient, dip::JaccardIndex, dip::Specificity, dip::Sensitivity,
-%  dip::Accuracy, dip::Precision, dip::HausdorffDistance,
-%  dip::ModifiedHausdorffDistance, dip::SumOfMinimalDistances,
-%  dip::ComplementWeightedSumOfMinimalDistances.
+%  This function calls the DIPlib functions <a href="https://diplib.org/diplib-docs/math_error.html#dip-MeanError-Image-CL-Image-CL-Image-CL">dip::MeanError</a>, <a href="https://diplib.org/diplib-docs/math_error.html#dip-MeanSquareError-Image-CL-Image-CL-Image-CL">dip::MeanSquareError</a>,
+%  <a href="https://diplib.org/diplib-docs/math_error.html#dip-RootMeanSquareError-Image-CL-Image-CL-Image-CL">dip::RootMeanSquareError</a>, <a href="https://diplib.org/diplib-docs/math_error.html#dip-MeanAbsoluteError-Image-CL-Image-CL-Image-CL">dip::MeanAbsoluteError</a>, <a href="https://diplib.org/diplib-docs/math_error.html#dip-IDivergence-Image-CL-Image-CL-Image-CL">dip::IDivergence</a>,
+%  <a href="https://diplib.org/diplib-docs/math_error.html#dip-InProduct-Image-CL-Image-CL-Image-CL">dip::InProduct</a>, <a href="https://diplib.org/diplib-docs/math_error.html#dip-LnNormError-Image-CL-Image-CL-Image-CL-dfloat-">dip::LnNormError</a>, <a href="https://diplib.org/diplib-docs/math_error.html#dip-PSNR-Image-CL-Image-CL-Image-CL-dfloat-">dip::PSNR</a>, <a href="https://diplib.org/diplib-docs/math_error.html#dip-SSIM-Image-CL-Image-CL-Image-CL-dfloat--dfloat--dfloat-">dip::SSIM</a>, <a href="https://diplib.org/diplib-docs/math_error.html#dip-MutualInformation-Image-CL-Image-CL-Image-CL-dip-uint-">dip::MutualInformation</a>,
+%  <a href="https://diplib.org/diplib-docs/math_statistics.html#dip-PearsonCorrelation-Image-CL-Image-CL-Image-CL">dip::PearsonCorrelation</a>, <a href="https://diplib.org/diplib-docs/math_statistics.html#dip-SpearmanRankCorrelation-Image-CL-Image-CL-Image-CL">dip::SpearmanRankCorrelation</a>,
+%  <a href="https://diplib.org/diplib-docs/math_error.html#dip-DiceCoefficient-Image-CL-Image-CL">dip::DiceCoefficient</a>, <a href="https://diplib.org/diplib-docs/math_error.html#dip-JaccardIndex-Image-CL-Image-CL">dip::JaccardIndex</a>, <a href="https://diplib.org/diplib-docs/math_error.html#dip-Specificity-Image-CL-Image-CL">dip::Specificity</a>, <a href="https://diplib.org/diplib-docs/math_error.html#dip-Sensitivity-Image-CL-Image-CL">dip::Sensitivity</a>,
+%  <a href="https://diplib.org/diplib-docs/math_error.html#dip-Accuracy-Image-CL-Image-CL">dip::Accuracy</a>, <a href="https://diplib.org/diplib-docs/math_error.html#dip-Precision-Image-CL-Image-CL">dip::Precision</a>, <a href="https://diplib.org/diplib-docs/math_error.html#dip-HausdorffDistance-Image-CL-Image-CL">dip::HausdorffDistance</a>,
+%  <a href="https://diplib.org/diplib-docs/math_error.html#dip-ModifiedHausdorffDistance-Image-CL-Image-CL">dip::ModifiedHausdorffDistance</a>, <a href="https://diplib.org/diplib-docs/math_error.html#dip-SumOfMinimalDistances-Image-CL-Image-CL">dip::SumOfMinimalDistances</a>,
+%  <a href="https://diplib.org/diplib-docs/math_error.html#dip-ComplementWeightedSumOfMinimalDistances-Image-CL-Image-CL">dip::ComplementWeightedSumOfMinimalDistances</a>.
 %  See the documentation of these functions for more information.
 %
 % LITERATURE:

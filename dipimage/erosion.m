@@ -26,7 +26,7 @@
 %  mirror the structuring element in one of the two operations.
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::Erosion.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/morphology.html#dip-Erosion-Image-CL-Image-L-StructuringElement-CL-StringArray-CL">dip::Erosion</a>.
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

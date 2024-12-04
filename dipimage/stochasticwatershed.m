@@ -50,7 +50,7 @@
 %    2015.
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::StochasticWatershed.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/segmentation.html#dip-StochasticWatershed-Image-CL-Image-L-Random-L-dip-uint--dip-uint--dfloat--String-CL">dip::StochasticWatershed</a>.
 
 % (c)2019, Cris Luengo.
 % Based on original code: (c)2012-2013, Cris Luengo, Karl B. Bernander, Kenneth Gustavsson.

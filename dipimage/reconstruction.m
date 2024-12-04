@@ -42,8 +42,8 @@
 %  d = reconstruction(b,a,6,1)
 %
 % DIPlib:
-%  This function calls the DIPlib functions dip::MorphologicalReconstruction
-%  and dip::LimitedMorphologicalReconstruction.
+%  This function calls the DIPlib functions <a href="https://diplib.org/diplib-docs/morphology.html#dip-MorphologicalReconstruction-Image-CL-Image-CL-Image-L-dip-uint--String-CL">dip::MorphologicalReconstruction</a>
+%  and <a href="https://diplib.org/diplib-docs/morphology.html#dip-LimitedMorphologicalReconstruction-Image-CL-Image-CL-Image-L-dfloat--dip-uint--String-CL">dip::LimitedMorphologicalReconstruction</a>.
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

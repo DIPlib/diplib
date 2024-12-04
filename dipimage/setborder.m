@@ -12,7 +12,7 @@
 %  size = 1
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::SetBorder.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/generation_drawing.html#dip-SetBorder-Image-L-Image-Pixel-CL-UnsignedArray-CL">dip::SetBorder</a>.
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

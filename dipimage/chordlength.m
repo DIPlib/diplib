@@ -19,7 +19,7 @@
 %  estimator = 'random'
 %
 % DIPlib:
-%  This function calls the DIPlib functions dip::ChordLength.
+%  This function calls the DIPlib functions <a href="https://diplib.org/diplib-docs/analysis.html#dip-ChordLength-Image-CL-Image-CL-Random-L-dip-uint--dip-uint--String-CL">dip::ChordLength</a>.
 
 % (c)2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

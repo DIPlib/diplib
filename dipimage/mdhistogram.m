@@ -64,7 +64,7 @@
 %  diphist, diphist2d, mdhistogrammap
 %
 % DIPlib:
-%  This function uses the DIPlib class dip::Histogram.
+%  This function uses the DIPlib class <a href="https://diplib.org/diplib-docs/dip-Histogram.html">dip::Histogram</a>.
 
 % TODO: I've removed some options and syntax from the original version of
 % this function. Should these be added back in?

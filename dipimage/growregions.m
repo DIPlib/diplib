@@ -38,7 +38,7 @@
 %  growregionsweighted, waterseed, bpropagation
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::GrowRegions.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/regions.html#dip-GrowRegions-Image-CL-Image-CL-Image-L-dip-sint--dip-uint-">dip::GrowRegions</a>.
 
 % (c)2020, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

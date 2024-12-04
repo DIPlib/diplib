@@ -29,7 +29,7 @@
 %  diphist, mdhistogram
 %
 % DIPlib:
-%  This function calls the DIPlib functions dip::DistanceDistribution.
+%  This function calls the DIPlib functions <a href="https://diplib.org/diplib-docs/analysis.html#dip-DistanceDistribution-Image-CL-Image-CL-dip-uint-">dip::DistanceDistribution</a>.
 
 % (c)2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

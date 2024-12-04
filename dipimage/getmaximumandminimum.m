@@ -11,7 +11,7 @@
 %  mask = [] (all pixels are examined)
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::MaximumAndMinimum.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/math_statistics.html#dip-MaximumAndMinimum-Image-CL-Image-CL">dip::MaximumAndMinimum</a>.
 
 % (c)2017-2018, Cris Luengo.
 %

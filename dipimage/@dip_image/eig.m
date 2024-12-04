@@ -15,9 +15,9 @@
 %  magnitude. Compared to the V output of the previous syntax, V1 = V{:,1}
 %  and VN = V{:,N}, with N = NDIMS(A).
 %
-%  This function calls the DIPlib functions dip::Eigenvalues,
-%  dip::EigenDecomposition, dip::LargestEigenvector and
-%  dip::SmallestEigenvector.
+%  This function calls the DIPlib functions <a href="https://diplib.org/diplib-docs/math_tensor.html#dip-Eigenvalues-Image-CL-Image-L">dip::Eigenvalues</a>,
+%  <a href="https://diplib.org/diplib-docs/math_tensor.html#dip-EigenDecomposition-Image-CL-Image-L-Image-L">dip::EigenDecomposition</a>, <a href="https://diplib.org/diplib-docs/math_tensor.html#dip-LargestEigenvector-Image-CL-Image-L">dip::LargestEigenvector</a> and
+%  <a href="https://diplib.org/diplib-docs/math_tensor.html#dip-SmallestEigenvector-Image-CL-Image-L">dip::SmallestEigenvector</a>.
 %
 %  See also: EIG_LARGEST, DIP_IMAGE/SVD
 

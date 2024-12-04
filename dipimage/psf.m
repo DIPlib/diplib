@@ -30,8 +30,8 @@
 %  If DEFOCUS is nonzero, 'Stokseth' or 'Hopkins' methods will be used.
 %
 % DIPlib:
-%  This function calls the DIPlib functions dip::IncoherentPSF and
-%  dip::IncoherentOTF.
+%  This function calls the DIPlib functions <a href="https://diplib.org/diplib-docs/microscopy.html#dip-IncoherentPSF-Image-L-dfloat--dfloat-">dip::IncoherentPSF</a> and
+%  <a href="https://diplib.org/diplib-docs/microscopy.html#dip-IncoherentOTF-Image-L-dfloat--dfloat--dfloat--String-CL">dip::IncoherentOTF</a>.
 
 % (c)2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

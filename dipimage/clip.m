@@ -17,7 +17,7 @@
 %  Set Maximum to Inf or Minimum to -Inf to do a one-sided clip.
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::Clip.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/mapping.html#dip-Clip-Image-CL-Image-L-dfloat--dfloat--String-CL">dip::Clip</a>.
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

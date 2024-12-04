@@ -32,7 +32,7 @@
 %  maxima, findminima, subpixlocation
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::SubpixelMaxima (but note that
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/analysis.html#dip-SubpixelMaxima-Image-CL-Image-CL-String-CL">dip::SubpixelMaxima</a> (but note that
 %  the names for separable/non-separable methods are different).
 
 % (c)2010, 2017, Cris Luengo.

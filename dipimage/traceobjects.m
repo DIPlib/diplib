@@ -57,7 +57,7 @@
 %  plot(ch{n}(:,1),ch{n}(:,2))
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::GetImageChainCodes.
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/measurement.html#dip-GetImageChainCodes-Image-CL-std-vector%3CLabelType%3E-CL-dip-uint-">dip::GetImageChainCodes</a>.
 
 % (c), Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
