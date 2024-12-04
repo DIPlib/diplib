@@ -397,9 +397,9 @@ void init_measurement( py::module& m ) {
              },
              "Returns the bounding box of the polygon.\n"
              "Like the C++ function, but instead of returning a `dip::BoundingBoxFloat`\n"
-             "object, returns a tuple with two tuples. The first tuple is the horizontal\n"
-             "range, the second one is the vertical range. Each of these two tuples has two\n"
-             "values representing the the lowest and highest value in the range." );
+             "object, returns a tuple with two tuples. The first tuple are the (x, y)\n"
+             "coordinates for the top-left corner, the second one are the (x, y) coordinates\n"
+             "for the bottom-right corner." );
    poly.def( "IsClockWise", &dip::Polygon::IsClockWise, doc_strings::dip·Polygon·IsClockWise·C );
    poly.def( "Area", &dip::Polygon::Area, doc_strings::dip·Polygon·Area·C );
    poly.def( "Centroid", &dip::Polygon::Centroid, doc_strings::dip·Polygon·Centroid·C );
@@ -479,9 +479,9 @@ void init_measurement( py::module& m ) {
               },
               "Finds the bounding box for the object described by the chain code.\n"
               "Like the C++ function, but instead of returning a `dip::BoundingBoxInteger`\n"
-              "object, returns a tuple with two tuples. The first tuple is the horizontal\n"
-              "range, the second one is the vertical range. Each of these two tuples has two\n"
-              "values representing the the lowest and highest value in the range." );
+              "object, returns a tuple with two tuples. The first tuple are the (x, y)\n"
+              "coordinates for the top-left corner, the second one are the (x, y) coordinates\n"
+              "for the bottom-right corner." );
    chain.def( "LongestRun", &dip::ChainCode::LongestRun, doc_strings::dip·ChainCode·LongestRun·C );
    chain.def( "Polygon", &dip::ChainCode::Polygon, doc_strings::dip·ChainCode·Polygon·C );
    chain.def( "Image", py::overload_cast<>( &dip::ChainCode::Image, py::const_ ), doc_strings::dip·ChainCode·Image·dip·Image·L·C );
