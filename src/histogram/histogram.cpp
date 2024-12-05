@@ -36,6 +36,9 @@ namespace dip {
 using CountType = Histogram::CountType;
 
 void Histogram::Configuration::Complete( bool isInteger ) {
+   if( mode == Mode::IS_COMPLETE ) {
+      return;
+   }
    DIP_THROW_IF( lowerIsPercentile || upperIsPercentile, "Cannot complete configuration without image data, bounds are percentiles" );
    // Fixup wrong values silently
    if( mode != Mode::COMPUTE_BINS ) {
@@ -120,9 +123,13 @@ void Histogram::Configuration::Complete( bool isInteger ) {
          upperBound -= 0.5;
       }
    }
+   mode = Mode::IS_COMPLETE;
 }
 
 void Histogram::Configuration::Complete( Image const& input, Image const& mask ) {
+   if( mode == Mode::IS_COMPLETE ) {
+      return;
+   }
    if( mode == Mode::ESTIMATE_BINSIZE || mode == Mode::ESTIMATE_BINSIZE_AND_LIMITS ) {
       DIP_START_STACK_TRACE
          auto quartiles = Quartiles( input, mask );

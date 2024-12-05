@@ -27,6 +27,10 @@ date: 2020-00-00
 - Added `dip::Label()` with a `dip::Graph` and a `dip::DirectedGraph` as input.
   It finds connected components in the graph.
 
+- Added `dip::Histogram::Configuration::Mode::IS_COMPLETE`, which prevents a configuration from being
+  modified when computing a histogram. It is set by `dip::Histogram::Configuration::Complete()`.
+  This option is dangerous to use!
+
 ### Changed functionality
 
 - `dip::AlignedAllocInterface` now aligns each of the scanlines (rows of the image), not just the first one.

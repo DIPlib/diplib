@@ -50,6 +50,7 @@ class type_caster< dip::Histogram::Configuration::Mode > {
             else if( mode == "COMPUTE_UPPER" ) { value = dip::Histogram::Configuration::Mode::COMPUTE_UPPER; }
             else if( mode == "ESTIMATE_BINSIZE" ) { value = dip::Histogram::Configuration::Mode::ESTIMATE_BINSIZE; }
             else if( mode == "ESTIMATE_BINSIZE_AND_LIMITS" ) { value = dip::Histogram::Configuration::Mode::ESTIMATE_BINSIZE_AND_LIMITS; }
+            else if( mode == "IS_COMPLETE" ) { value = dip::Histogram::Configuration::Mode::IS_COMPLETE; }
             else { return false; }
             return true;
          }
@@ -70,6 +71,8 @@ class type_caster< dip::Histogram::Configuration::Mode > {
                return py::cast( "ESTIMATE_BINSIZE" ).release();
             case dip::Histogram::Configuration::Mode::ESTIMATE_BINSIZE_AND_LIMITS:
                return py::cast( "ESTIMATE_BINSIZE_AND_LIMITS" ).release();
+            case dip::Histogram::Configuration::Mode::IS_COMPLETE:
+               return py::cast( "IS_COMPLETE" ).release();
          }
          return py::cast( "Unrecognized configuration mode!?" ).release();
       }
@@ -115,6 +118,11 @@ dip::String ConfigRepr( dip::Histogram::Configuration const& s ) {
          break;
       case dip::Histogram::Configuration::Mode::ESTIMATE_BINSIZE_AND_LIMITS:
          os << "bin width estimated with Freedman-Diaconis rule, limits adjusted to exclude outliers";
+         break;
+      case dip::Histogram::Configuration::Mode::IS_COMPLETE:
+         os << '[' << s.lowerBound << ',' << s.upperBound
+            << "], " << s.nBins << " bins, bin width " << s.binSize
+            << " (complete)";
          break;
    }
    os << '>';

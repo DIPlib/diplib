@@ -119,10 +119,13 @@ class DIP_NO_EXPORT Histogram {
                COMPUTE_UPPER,       ///< Compute `upperBound` from the other three values
                ESTIMATE_BINSIZE,    ///< Choose `binSize` using the Freedman--Diaconis rule, then compute `nBins`.
                                     /// If the data is not available to estimate `binSize`, 256 bins will be made.
-               ESTIMATE_BINSIZE_AND_LIMITS ///< Like `ESTIMATE_BINSIZE`, but also determines the lower and upper limits
+               ESTIMATE_BINSIZE_AND_LIMITS,///< Like `ESTIMATE_BINSIZE`, but also determines the lower and upper limits
                                            /// to exclude outliers, defined as samples below three interquartile ranges
                                            /// from the lower quartile, and above three interquartile ranges above the
                                            /// upper quartile. Ignores all configuration values.
+               IS_COMPLETE          ///< The configuration values will be taken as-is. `lowerIsPercentile` and
+                                    /// `upperIsPercentile` will be ignored. Weird things will happen if the configuration
+                                    /// is not correct, we might even end up writing out of bounds!
          };
          Mode mode = Mode::COMPUTE_BINSIZE;     ///< The given value is ignored and replaced by the computed value.
          bool lowerIsPercentile = false;        ///< If set, `lowerBound` is replaced by the given percentile pixel value.
