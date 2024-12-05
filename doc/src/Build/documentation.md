@@ -23,7 +23,7 @@ the documentation on Windows, if you manage to get that done, please write down 
 instructions below.
 
 
-\section apidoc_dependencies Installing the dependencies
+\section builddoc_dependencies Installing the dependencies
 
 *Python 3* can be installed on Ubuntu with
 ```bash
@@ -61,7 +61,7 @@ tlmgr install standalone preview ucs xkeyval currfile filehook newtx fontaxes xs
 ```
 
 
-\section apidoc_doxpp Installing *dox++*
+\section builddoc_doxpp Installing *dox++*
 
 This tool can be installed anywhere. For the purposes of these instructions, we will put it into `/opt/`,
 but you can put it in your home directory as well. All that is needed is cloning the repository:
@@ -73,7 +73,7 @@ This will create the directory `/opt/doxpp/`, containing the two executables `do
 We will need to tell *CMake* where to find these tools.
 
 
-\section apidoc_cmake Configuring *CMake*
+\section builddoc_cmake Configuring *CMake*
 
 To set up *CMake* to build the documentation, we need to tell it where the *dox++* programs are. From
 your *DIPlib* build directory,
@@ -89,11 +89,11 @@ Documentation installed to /usr/local/share/doc/DIPlib
 (or something similar, depending on the chosen installation path.)
 
 
-\section apidoc_building Building the documentation
+\section builddoc_building Building the documentation
 
 Once everything is set up, the documentation is build with
 ```bash
-make apidoc
+make doc
 ```
 from the *DIPlib* build directory.
 
@@ -114,7 +114,7 @@ members. If Clang produces an error while parsing a header file, the contents of
 not make it into the documentation.
 
 
-\section apidoc_official Building the official documentation
+\section builddoc_official Building the official documentation
 
 The official documentation at [`diplib.org/diplib-docs/`](https://diplib.org/diplib-docs/) is uploaded
 to [the `diplib-docs` GitHub repository](https://github.com/DIPlib/diplib-docs).

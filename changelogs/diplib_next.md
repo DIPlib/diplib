@@ -55,12 +55,18 @@ date: 2020-00-00
 
 ### Build changes
 
+- The documentation building target was renamed to "doc" (as "apidoc"). This target builds much more documentation
+  than just the DIPlib API documentation (the DIPimage and PyDIP user manuals, build instructions, etc.).
+
 
 
 
 ## Changes to *DIPimage*
 
 ### New functionality
+
+- The function documentation now has links to the online DIPlib documentation. Instead of only
+  naming the DIPlib functions used, the function names are now hyperlinks.
 
 ### Changed functionality
 

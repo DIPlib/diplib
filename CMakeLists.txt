@@ -385,7 +385,7 @@ if(CMAKE_GENERATOR MATCHES "Unix Makefiles")
       message("Next, type 'make; make install'")
    endif()
    if(DOXPP_FOUND)
-      message("Type 'make apidoc' to build the documentation")
+      message("Type 'make doc' to build the documentation")
    endif()
 endif()
 

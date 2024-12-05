@@ -72,7 +72,7 @@ if(DOXPP_FOUND)
    endif()
    configure_file("${CMAKE_CURRENT_LIST_DIR}/dox++config.in" "${CMAKE_CURRENT_BINARY_DIR}/dox++config" @ONLY)
    add_custom_target(
-         apidoc
+         doc
          COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_INSTALL_PREFIX}/${DOCUMENTATION_OUTPUT}"
          COMMAND "${DOXPP_PARSE_EXECUTABLE}"
          COMMAND "${DOXPP_HTML_EXECUTABLE}"

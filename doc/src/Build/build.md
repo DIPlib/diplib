@@ -100,14 +100,14 @@ Also define `DIP_CONFIG_HAS_DIPJAVAIO` for the function `dip::ImageRead` to be a
 - `install`:       builds `all` and installs everything except *PyDIP*
 - `check`:         builds the `unit_tests` program and runs it
 - `check_memory`:  builds the `unit_tests` program and runs it under `valgrind`
-- `apidoc`:        builds all the HTML documentation
+- `doc`:           builds all the HTML documentation
 - `examples`:      builds the example programs
 - `package`:       creates a distributable package for `install` [note: not fully functional]
 - `bdist_wheel`:   builds a *Python* wheel for *PyDIP*
 - `pip_install`:   builds and installs a *Python* wheel for *PyDIP*
 - `pip_uninstall`: uninstalls *PyDIP*
 
-The `apidoc` target requires that [*dox++*](https://crisluengo.github.io/doxpp/) is available,
+The `doc` target requires that [*dox++*](https://crisluengo.github.io/doxpp/) is available,
 the target will not be available if it is not; this target will fail to build if additional tools are not installed.
 See \ref building_documentation for details.
 
