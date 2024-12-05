@@ -20,6 +20,7 @@
 #include <cmath>
 #include <complex>
 #include <limits>
+#include <mutex>
 #include <vector>
 
 #include "diplib.h"
@@ -91,6 +92,8 @@ using RPlan = pocketfft::pocketfft_r< T >;
 
 namespace {
 
+std::mutex planCacheMutex;
+
 // This is a container that holds plans, and maintains a use count. Plans in use cannot be
 // deleted.
 //
@@ -99,6 +102,8 @@ namespace {
 // PlanType is CPlan< T > or RPlan< T >, T is dip::sfloat or dip::dfloat. There are 4 caches.
 template< typename PlanType >
 PlanType* PlanCache( dip::uint length, bool free = false ) {
+   std::lock_guard< std::mutex > guard( planCacheMutex );
+
    struct Data {
       dip::uint use_count;
       dip::uint last_access;

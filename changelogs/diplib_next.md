@@ -55,6 +55,10 @@ date: 2020-00-00
   This would throw an exception if the image was protected, but was always a bad thing to do.
   See [issue #170](https://github.com/DIPlib/diplib/issues/170).
 
+- The Fourier Transform, when using the default PocketFFT, used a plan cache that was not thread safe. When calling
+  any function using a Fourier Transform from multiple threads, a race condition could occur. We've added a mutex
+  to the function that maintains the cache to avoid this.
+
 ### Updated dependencies
 
 ### Build changes
