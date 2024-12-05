@@ -1016,13 +1016,24 @@ ChainCodeArray DIP_EXPORT GetImageChainCodes(
 [[ deprecated( "objectIDs should be a std::vector< LabelType >." ) ]]
 inline ChainCodeArray GetImageChainCodes(
       Image const& labels,
-      UnsignedArray const& objectIDs = {},
+      UnsignedArray const& objectIDs,
       dip::uint connectivity = 2
 ) {
    std::vector< LabelType > ids( objectIDs.size() );
    std::transform( objectIDs.begin(), objectIDs.end(), ids.begin(), []( dip::uint v ){ return CastLabelType( v ); } );
    return GetImageChainCodes( labels, ids, connectivity );
 }
+// An another version to disambiguate when we call `GetImageChainCodes(labels, {1})`.
+inline ChainCodeArray GetImageChainCodes(
+      Image const& labels,
+      std::initializer_list< dip::LabelType > const& initializerList,
+      dip::uint connectivity = 2
+) {
+   std::vector< LabelType > ids( initializerList.size() );
+   std::copy( initializerList.begin(), initializerList.end(), ids.begin() );
+   return GetImageChainCodes( labels, ids, connectivity );
+}
+
 
 /// \brief Returns the chain codes sequence that encodes the contour of one object in a binary or labeled image.
 ///

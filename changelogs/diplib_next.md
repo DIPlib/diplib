@@ -59,6 +59,11 @@ date: 2020-00-00
   any function using a Fourier Transform from multiple threads, a race condition could occur. We've added a mutex
   to the function that maintains the cache to avoid this.
 
+- In 3.5.0, the original version of `dip::GetImageChainCodes()` was deprecated in favor of a new one that takes
+  a `std::vector< dip::LabelType >` as input, as opposed to a `dip::UnsignedArray`. This caused code that called
+  the function with an initializer array (`dip::GetImageChainCodes( image, { 1 } )`) to become ambiguous. A new
+  overload that takes an initializer list as input fixes this ambiguity.
+
 ### Updated dependencies
 
 ### Build changes
