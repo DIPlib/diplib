@@ -15,11 +15,34 @@
  * limitations under the License.
  */
 
+#include <array>
+#include <cstddef>
 #include <sstream>
 
 #include "pydip.h"
 #include "diplib/statistics.h"
 #include "diplib/accumulators.h"
+
+namespace {
+
+class MinMaxAccIterator {
+   public:
+      MinMaxAccIterator( dip::MinMaxAccumulator const& acc ) {
+         values[0] = acc.Minimum();
+         values[1] = acc.Maximum();
+      }
+      double next() {
+         if( index > 1 ) {
+             throw py::stop_iteration();
+         }
+         return values[ index++ ];
+      }
+   private:
+      std::array< double, 2 > values;
+      std::size_t index = 0;
+};
+
+} // namespace
 
 void init_statistics( py::module& m ) {
 
@@ -30,13 +53,8 @@ void init_statistics( py::module& m ) {
           "in"_a, "mask"_a = dip::Image{}, "process"_a = dip::BooleanArray{}, doc_strings::dip·CumulativeSum·Image·CL·Image·CL·Image·L·BooleanArray·CL );
    m.def( "CumulativeSum", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image&, dip::BooleanArray const& >( &dip::CumulativeSum ),
           "in"_a, "mask"_a = dip::Image{}, py::kw_only(), "out"_a, "process"_a = dip::BooleanArray{}, doc_strings::dip·CumulativeSum·Image·CL·Image·CL·Image·L·BooleanArray·CL );
-   m.def( "MaximumAndMinimum", []( dip::Image const& in, dip::Image const& mask ) {
-             dip::MinMaxAccumulator acc = dip::MaximumAndMinimum( in, mask );
-             return py::make_tuple( acc.Minimum(), acc.Maximum() );
-          }, "in"_a, "mask"_a = dip::Image{},
-          "Finds the largest and smallest value in the image, within an optional mask.\n"
-          "Like the C++ function, but instead of returning a `dip::MinMaxAccumulator`"
-          "object, returns a tuple with the minimum and maximum values." );
+   m.def( "MaximumAndMinimum", py::overload_cast< dip::Image const&, dip::Image const& >( dip::MaximumAndMinimum ),
+          "in"_a, "mask"_a = dip::Image{}, doc_strings::dip·MaximumAndMinimum·Image·CL·Image·CL );
    m.def( "Quartiles", py::overload_cast< dip::Image const&, dip::Image const& >( &dip::Quartiles ), "in"_a, "mask"_a = dip::Image{}, doc_strings::dip·Quartiles·Image·CL·Image·CL );
    m.def( "SampleStatistics", py::overload_cast< dip::Image const&, dip::Image const& >( &dip::SampleStatistics ),
           "in"_a, "mask"_a = dip::Image{}, doc_strings::dip·SampleStatistics·Image·CL·Image·CL );
@@ -257,6 +275,29 @@ void init_statistics( py::module& m ) {
    covAcc.def_property_readonly( "Covariance", &dip::CovarianceAccumulator::Covariance, doc_strings::dip·CovarianceAccumulator·Covariance·C );
    covAcc.def_property_readonly( "Correlation", &dip::CovarianceAccumulator::Correlation, doc_strings::dip·CovarianceAccumulator·Correlation·C );
    covAcc.def_property_readonly( "Slope", &dip::CovarianceAccumulator::Slope, doc_strings::dip·CovarianceAccumulator·Slope·C );
+
+   // dip::MinMaxAccumulator
+   auto minmaxAcc = py::class_< dip::MinMaxAccumulator >( m, "MinMaxValues", doc_strings::dip·MinMaxAccumulator );
+   minmaxAcc.def( "__repr__", []( dip::MinMaxAccumulator const& s ) {
+      std::ostringstream os;
+      os << "<MinMaxValues: "
+         << "minimum=" << s.Minimum()
+         << ", maximum=" << s.Maximum()
+         << '>';
+      return os.str();
+   } );
+   minmaxAcc.def_property_readonly( "minimum", &dip::MinMaxAccumulator::Minimum, doc_strings::dip·MinMaxAccumulator·Minimum·C );
+   minmaxAcc.def_property_readonly( "maximum", &dip::MinMaxAccumulator::Maximum, doc_strings::dip·MinMaxAccumulator·Maximum·C );
+   minmaxAcc.def( "__getitem__", []( dip::MinMaxAccumulator const& s, int index ) {
+      if(( index == 0 ) || ( index == -2 )) { return s.Minimum(); };
+      if(( index == 1 ) || ( index == -1 )) { return s.Maximum(); };
+      DIP_THROW( dip::E::INDEX_OUT_OF_RANGE );
+   }, "Indexing for backwards compatibility only." );
+   minmaxAcc.def( "__len__", []( dip::MinMaxAccumulator const& ) { return 2; } );
+   minmaxAcc.def( "__iter__", []( dip::MinMaxAccumulator const& s ) { return MinMaxAccIterator( s ); } );
+   auto minmaxAccIter = py::class_< MinMaxAccIterator >( m, "MinMaxValueIterator" );
+   minmaxAccIter.def( "__iter__", []( MinMaxAccIterator& s ) { return s; } );
+   minmaxAccIter.def( "__next__", []( MinMaxAccIterator& s ) { return s.next(); } );
 
    // dip::MomentAccumulator
    auto momentAcc = py::class_< dip::MomentAccumulator >( m, "MomentValues", doc_strings::dip·MomentAccumulator );

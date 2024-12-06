@@ -356,13 +356,7 @@ void init_measurement( py::module& m ) {
    m.def( "Percentile", py::overload_cast< dip::Measurement::IteratorFeature const&, dip::dfloat >( &dip::Percentile ), "featureValues"_a, "percentile"_a, doc_strings::dip·Percentile·Measurement·IteratorFeature·CL·dfloat· );
    m.def( "Median", py::overload_cast< dip::Measurement::IteratorFeature const& >( &dip::Median ), "featureValues"_a, doc_strings::dip·Median·Measurement·IteratorFeature·CL );
    m.def( "Mean", py::overload_cast< dip::Measurement::IteratorFeature const& >( &dip::Mean ), "featureValues"_a, doc_strings::dip·Mean·Measurement·IteratorFeature·CL );
-   m.def( "MaximumAndMinimum", []( dip::Measurement::IteratorFeature const& featureValues ) {
-             dip::MinMaxAccumulator acc = dip::MaximumAndMinimum( featureValues );
-             return py::make_tuple( acc.Minimum(), acc.Maximum() );
-          }, "featureValues"_a,
-          "Returns the maximum and minimum feature values in the first column of\n`featureValues`.\n"
-          "Like the C++ function, but instead of returning a `dip::MinMaxAccumulator`\n"
-          "object, returns a tuple with the minimum and maximum values." );
+   m.def( "MaximumAndMinimum", py::overload_cast< dip::Measurement::IteratorFeature const& >( &dip::MaximumAndMinimum ), "featureValues"_a, doc_strings::dip·MaximumAndMinimum·Measurement·IteratorFeature·CL );
    m.def( "Quartiles", &dip::Quartiles, "featureValues"_a, doc_strings::dip·Quartiles·Measurement·IteratorFeature·CL );
    m.def( "SampleStatistics", &dip::SampleStatistics, "featureValues"_a, doc_strings::dip·SampleStatistics·Measurement·IteratorFeature·CL );
    m.def( "ObjectMinimum", &dip::ObjectMinimum, "featureValues"_a, doc_strings::dip·ObjectMinimum·Measurement·IteratorFeature·CL );
