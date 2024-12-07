@@ -82,6 +82,8 @@ dip::Random& RandomNumberGenerator() {
    return generator;
 }
 
+tsl::robin_map< std::string, py::object > map;
+
 PYBIND11_MODULE( PyDIP_bin, m ) {
    m.doc() = "The portion of the PyDIP module that contains the C++ DIPlib bindings.";
 
@@ -105,23 +107,6 @@ PYBIND11_MODULE( PyDIP_bin, m ) {
    py::register_exception< dip::AssertionError >( m, "AssertionError", error );
    py::register_exception< dip::ParameterError >( m, "ParameterError", error );
    py::register_exception< dip::RunTimeError >( m, "RunTimeError", error );
-
-   // diplib/library/types.h
-   // dip::RegressionParameters defined in histogram.cpp
-
-   auto quartiles = py::class_< dip::QuartilesResult >( m, "QuartilesResult", doc_strings::dip·QuartilesResult );
-   quartiles.def( "__repr__", []( dip::QuartilesResult const& s ) {
-      std::ostringstream os;
-      os << "<QuartilesResult: minimum=" << s.minimum << ", lowerQuartile=" << s.lowerQuartile
-         << ", median=" << s.median << ", upperQuartile=" << s.upperQuartile << ", maximum=" << s.maximum << '>';
-      return os.str();
-   } );
-   quartiles.def_readonly( "minimum", &dip::QuartilesResult::minimum );
-   quartiles.def_readonly( "lowerQuartile", &dip::QuartilesResult::lowerQuartile );
-   quartiles.def_readonly( "median", &dip::QuartilesResult::median );
-   quartiles.def_readonly( "upperQuartile", &dip::QuartilesResult::upperQuartile );
-   quartiles.def_readonly( "maximum", &dip::QuartilesResult::maximum );
-
 
    // diplib/library/tensor.h
    auto tensor = py::class_< dip::Tensor >( m, "Tensor", doc_strings::dip·Tensor );

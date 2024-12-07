@@ -80,6 +80,9 @@ class type_caster< dip::Histogram::Configuration::Mode > {
       PYBIND11_TYPE_CASTER( type, _( "Mode" ));
 };
 
+DIP_OUTPUT_TYPE_CASTER( RegressionParameters, "RegressionParameters", "intercept slope", src.intercept, src.slope )
+DIP_OUTPUT_TYPE_CASTER( GaussianParameters, "GaussianParameters", "position amplitude sigma", src.position, src.amplitude, src.sigma )
+
 } // namespace detail
 } // namespace pybind11
 
@@ -276,29 +279,6 @@ void init_histogram( py::module& m ) {
 
    m.def( "PerObjectHistogram", &dip::PerObjectHistogram,
           "grey"_a, "label"_a, "mask"_a = dip::Image{}, "configuration"_a = dip::Histogram::Configuration{}, "mode"_a = dip::S::FRACTION, "background"_a = dip::S::EXCLUDE, doc_strings::dip·PerObjectHistogram·Image·CL·Image·CL·Image·CL·Histogram·Configuration··String·CL·String·CL );
-
-   auto regParams = py::class_< dip::RegressionParameters >( m, "RegressionParameters", doc_strings::dip·RegressionParameters );
-   regParams.def( "__repr__", []( dip::RegressionParameters const& s ) {
-      std::ostringstream os;
-      os << "<RegressionParameters: intercept=" << s.intercept << ", slope=" << s.slope << '>';
-      return os.str();
-   } );
-   regParams.def_readonly( "intercept", &dip::RegressionParameters::intercept, doc_strings::dip·RegressionParameters·intercept );
-   regParams.def_readonly( "slope", &dip::RegressionParameters::slope, doc_strings::dip·RegressionParameters·slope );
-
-   auto gaussParams = py::class_< dip::GaussianParameters >( m, "GaussianParameters", doc_strings::dip·GaussianParameters );
-   gaussParams.def( "__repr__", []( dip::GaussianParameters const& s ) {
-      std::ostringstream os;
-      os << "<GaussianParameters: "
-         << "position=" << s.position
-         << ", amplitude=" << s.amplitude
-         << ", sigma=" << s.sigma
-         << '>';
-      return os.str();
-   } );
-   gaussParams.def_readonly( "position", &dip::GaussianParameters::position, doc_strings::dip·GaussianParameters·position );
-   gaussParams.def_readonly( "amplitude", &dip::GaussianParameters::amplitude, doc_strings::dip·GaussianParameters·amplitude );
-   gaussParams.def_readonly( "sigma", &dip::GaussianParameters::sigma, doc_strings::dip·GaussianParameters·sigma );
 
    // These next two functions are the old implementation of `dip.Histogram`, which we keep
    // here for backwards compatibility. Setting `dip.Histogram = dip.Histogram_old` in Python

@@ -21,6 +21,7 @@
 #include "diplib.h" // IWYU pragma: export
 #include "diplib/random.h"
 #include "diplib/file_io.h"  // for dip::FileInformation
+#include "diplib/private/robin_map.h"
 
 // IWYU pragma: begin_exports
 #include <pybind11/pybind11.h>
@@ -76,6 +77,36 @@ inline void ReverseDimensions( dip::FileInformation& fi ) {
    fi.pixelSize.Reverse( fi.sizes.size() );
    fi.origin.reverse(); // let's hope this array has the right number of elements...
 }
+
+
+// Mapping namedtuple type name to type object. This avoids creating multiple namedtuple types with the same name.
+// Multiple calls to the same function returning a namedtuple will return an object of the same type.
+// It also probably speeds up stuff a tiny bit.
+extern tsl::robin_map< std::string, py::object > map;
+
+// This function creates a named tuple. This is a type in Python that behaves like a tuple but also like
+// a struct with member names.
+template< typename... Args >
+inline py::object CreateNamedTuple( char const* tuple_name, char const* member_names, Args&& ...values ) {
+   if( !map.contains( tuple_name )) {
+      py::object namedtuple = py::module::import( "collections" ).attr( "namedtuple" );
+      py::object type = namedtuple( tuple_name, member_names );
+      map[ tuple_name ] = type;
+   }
+   return map[ tuple_name ]( std::forward< Args >( values )... );
+}
+
+// Note that this macro must be used inside the pybind11::detail namespace
+// `diptype` is the DIPlib type without the `dip::` in front. `name` is the name for the type in Python,
+// which doesn't need to be the same. We call `CreateNamedTuple( name, values, ... )`.
+#define DIP_OUTPUT_TYPE_CASTER( diptype, name, values, ... ) \
+template<> class type_caster< dip:: diptype > { public: \
+using type = dip:: diptype; \
+bool load( handle /*src*/, bool /*convert*/ ) { return false; } \
+static handle cast( dip:: diptype const& src, return_value_policy /*policy*/, handle /*parent*/ ) { \
+return CreateNamedTuple( name, values, __VA_ARGS__ ).release(); } \
+PYBIND11_TYPE_CASTER( type, _( name )); };
+
 
 namespace pybind11 {
 

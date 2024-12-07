@@ -29,6 +29,17 @@
 #include "diplib/microscopy.h"
 #include "diplib/neighborlist.h"
 
+namespace pybind11 {
+namespace detail {
+
+DIP_OUTPUT_TYPE_CASTER( SubpixelLocationResult, "SubpixelLocationResult", "coordinates value", src.coordinates, src.value )
+DIP_OUTPUT_TYPE_CASTER( ColocalizationCoefficients, "ColocalizationCoefficients", "M1 M2", src.M1, src.M2 )
+DIP_OUTPUT_TYPE_CASTER( RadonCircleParameters, "RadonCircleParameters", "origin radius", src.origin, src.radius )
+
+} // namespace detail
+} // namespace pybind11
+
+
 void init_analysis( py::module& m ) {
 
    // diplib/distribution.h
@@ -68,15 +79,6 @@ void init_analysis( py::module& m ) {
    distr.def( "MaximumLikelihood", &dip::Distribution::MaximumLikelihood, doc_strings::dip·Distribution·MaximumLikelihood );
 
    // diplib/analysis.h
-   auto loc = py::class_< dip::SubpixelLocationResult >( m, "SubpixelLocationResult", doc_strings::dip·SubpixelLocationResult );
-   loc.def_readonly( "coordinates", &dip::SubpixelLocationResult::coordinates, doc_strings::dip·SubpixelLocationResult·coordinates );
-   loc.def_readonly( "value", &dip::SubpixelLocationResult::value, doc_strings::dip·SubpixelLocationResult·value );
-   loc.def( "__repr__", []( dip::SubpixelLocationResult const& self ) {
-               std::ostringstream os;
-               os << "<SubpixelLocationResult: coordinates=" << self.coordinates << ", value=" << self.value << '>';
-               return os.str();
-            } );
-
    m.def( "Find", &dip::Find, "in"_a, "mask"_a = dip::Image{}, doc_strings::dip·Find·Image·CL·Image·CL );
    m.def( "SubpixelLocation", &dip::SubpixelLocation,
           "in"_a, "position"_a, "polarity"_a = dip::S::MAXIMUM, "method"_a = dip::S::PARABOLIC_SEPARABLE, doc_strings::dip·SubpixelLocation·Image·CL·UnsignedArray·CL·String·CL·String·CL );
@@ -202,15 +204,6 @@ void init_analysis( py::module& m ) {
           "marker"_a, "condition"_a, py::kw_only(), "out"_a, doc_strings::dip·GeodesicDistanceTransform·Image·CL·Image·CL·Image·L );
 
    // diplib/detection.h
-   auto rcp = py::class_< dip::RadonCircleParameters >( m, "RadonCircleParameters", doc_strings::dip·RadonCircleParameters );
-   rcp.def_readonly( "origin", &dip::RadonCircleParameters::origin, doc_strings::dip·RadonCircleParameters·origin );
-   rcp.def_readonly( "radius", &dip::RadonCircleParameters::radius, doc_strings::dip·RadonCircleParameters·radius );
-   rcp.def( "__repr__", []( dip::RadonCircleParameters const& self ) {
-          std::ostringstream os;
-          os << "<RadonCircleParameters: origin=" << self.origin << ", radius=" << self.radius << '>';
-          return os.str();
-   } );
-
    m.def( "HoughTransformCircleCenters", py::overload_cast< dip::Image const&, dip::Image const&, dip::UnsignedArray const& >( &dip::HoughTransformCircleCenters ),
           "in"_a, "gv"_a, "range"_a = dip::UnsignedArray{}, doc_strings::dip·HoughTransformCircleCenters·Image·CL·Image·CL·Image·L·UnsignedArray·CL );
    m.def( "HoughTransformCircleCenters", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image&, dip::UnsignedArray const& >( &dip::HoughTransformCircleCenters ),
@@ -227,7 +220,7 @@ void init_analysis( py::module& m ) {
                  dip::RadonCircleParametersArray params = dip::RadonTransformCircles( in, out, radii, sigma, threshold, mode, options );
                  return py::make_tuple( out, params );
           }, "in"_a, "radii"_a = dip::Range{ 10, 30 }, "sigma"_a = 1.0, "threshold"_a = 1.0, "mode"_a = dip::S::FULL, "options"_a = dip::StringSet{ dip::S::NORMALIZE, dip::S::CORRECT },
-          "Detects hyperspheres (circles, spheres) using the generalized Radon transform."
+          "Detects hyperspheres (circles, spheres) using the generalized Radon transform.\n"
           "Returns a tuple, the first element is the parameter space (the `out` image),\n"
           "the second element is a list of `dip.RadonCircleParameters` containing the\n"
           "parameters of the detected circles." );
@@ -291,20 +284,10 @@ void init_analysis( py::module& m ) {
           "channel1"_a, "channel2"_a, "mask"_a = dip::Image{}, doc_strings::dip·MandersOverlapCoefficient·Image·CL·Image·CL·Image·CL );
    m.def( "IntensityCorrelationQuotient", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const& >( &dip::IntensityCorrelationQuotient ),
           "channel1"_a, "channel2"_a, "mask"_a = dip::Image{}, doc_strings::dip·IntensityCorrelationQuotient·Image·CL·Image·CL·Image·CL );
-   m.def( "MandersColocalizationCoefficients", []( dip::Image const& channel1, dip::Image const& channel2, dip::Image const& mask, dip::dfloat threshold1, dip::dfloat threshold2 ) {
-                 auto out = dip::MandersColocalizationCoefficients( channel1, channel2, mask, threshold1, threshold2 );
-                 return py::make_tuple( out.M1, out.M2 );
-          }, "channel1"_a, "channel2"_a, "mask"_a = dip::Image{}, "threshold1"_a = 0.0, "threshold2"_a = 0.0,
-          "Computes Manders' Colocalization Coefficients.\n"
-          "Instead of a `dip::ColocalizationCoefficients` object, returns a tuple with\n"
-          "the `M1` and `M2` values." );
-   m.def( "CostesColocalizationCoefficients", []( dip::Image const& channel1, dip::Image const& channel2, dip::Image const& mask ) {
-                 auto out = dip::CostesColocalizationCoefficients( channel1, channel2, mask );
-                 return py::make_tuple( out.M1, out.M2 );
-          }, "channel1"_a, "channel2"_a, "mask"_a = dip::Image{},
-          "Computes Costes' colocalization coefficients.\n"
-          "Instead of a `dip::ColocalizationCoefficients` object, returns a tuple with\n"
-          "the `M1` and `M2` values." );
+   m.def( "MandersColocalizationCoefficients", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const&, dip::dfloat, dip::dfloat >( &dip::MandersColocalizationCoefficients ),
+          "channel1"_a, "channel2"_a, "mask"_a = dip::Image{}, "threshold1"_a = 0.0, "threshold2"_a = 0.0, doc_strings::dip·MandersColocalizationCoefficients·Image·CL·Image·CL·Image·CL·dfloat··dfloat· );
+   m.def( "CostesColocalizationCoefficients", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const& >( &dip::CostesColocalizationCoefficients ),
+          "channel1"_a, "channel2"_a, "mask"_a = dip::Image{}, doc_strings::dip·CostesColocalizationCoefficients·Image·CL·Image·CL·Image·CL );
    m.def( "CostesSignificanceTest", []( dip::Image const& channel1, dip::Image const& channel2, dip::Image const& mask, dip::UnsignedArray blockSizes, dip::uint repetitions ) {
                  return dip::CostesSignificanceTest( channel1, channel2, mask, RandomNumberGenerator(), std::move( blockSizes ), repetitions );
           },

@@ -18,6 +18,7 @@
 #include <iostream>
 #include <sstream>
 #include <tuple>
+#include <type_traits>
 #include <vector>
 
 #include "pydip.h"
@@ -25,6 +26,38 @@
 #include "diplib/accumulators.h"
 #include "diplib/chain_code.h"
 #include "diplib/label_map.h"
+
+
+namespace pybind11 {
+namespace detail {
+
+DIP_OUTPUT_TYPE_CASTER( Measurement::FeatureInformation, "FeatureInformation", "name startColumn numberValues", src.name, src.startColumn, src.numberValues )
+DIP_OUTPUT_TYPE_CASTER( Feature::ValueInformation, "ValueInformation", "name units", src.name, src.units )
+DIP_OUTPUT_TYPE_CASTER( CovarianceMatrix::EllipseParameters, "EllipseParameters", "majorAxis minorAxis orientation eccentricity", src.majorAxis, src.minorAxis, src.orientation, src.eccentricity )
+DIP_OUTPUT_TYPE_CASTER( FeretValues, "FeretValues", "maxDiameter minDiameter maxPerpendicular maxAngle minAngle", src.maxDiameter, src.minDiameter, src.maxPerpendicular, src.maxAngle, src.minAngle )
+DIP_OUTPUT_TYPE_CASTER( RadiusValues, "RadiusValues", "mean standardDev maximum minimum circularity", src.Mean(), src.StandardDeviation(), src.Maximum(), src.Minimum(), src.Circularity() )
+
+} // namespace detail
+} // namespace pybind11
+
+
+namespace {
+
+template< typename T >
+py::object VertexTuple( dip::Vertex< T > const& v ) {
+   char const* vertexType = std::is_same< T, dip::dfloat >::value ? "VertexFloat" : "VertexInteger";
+   return CreateNamedTuple( vertexType, "x y", v.x, v.y );
+}
+
+template< typename T >
+py::object BoundingBoxTuple( dip::BoundingBox< T > const& bb ) {
+   char const* boundingBoxType = std::is_same< T, dip::dfloat >::value ? "BoundingBoxFloat" : "BoundingBoxInteger";
+   auto topLeft = VertexTuple( bb.topLeft );
+   auto bottomRight = VertexTuple( bb.bottomRight );
+   return CreateNamedTuple( boundingBoxType, "topLeft bottomRight", topLeft, bottomRight );
+}
+
+} // namespace
 
 namespace pybind11 {
 namespace detail {
@@ -51,10 +84,69 @@ class type_caster< dip::VertexFloat > {
       }
 
       static handle cast( dip::VertexFloat const& src, return_value_policy /*policy*/, handle /*parent*/ ) {
-         return make_tuple( src.x, src.y ).release();
+         return VertexTuple( src ).release();
       }
 
       PYBIND11_TYPE_CASTER( type, _( "VertexFloat" ));
+};
+
+template<>
+class type_caster< dip::VertexInteger > {
+   public:
+      using type = dip::VertexInteger;
+
+      bool load( handle src, bool /*convert*/ ) {
+         if( !isinstance< sequence >( src )) {
+            return false;
+         }
+         auto const seq = reinterpret_borrow< sequence >( src );
+         if( seq.size() != 2 ) {
+            return false;
+         }
+         if( !PyLong_Check( seq[ 0 ].ptr() ) || !PyLong_Check( seq[ 1 ].ptr() )) {
+            return false;
+         }
+         value = { seq[ 0 ].cast< dip::sint >(), seq[ 1 ].cast< dip::sint >() };
+         return true;
+      }
+
+      static handle cast( dip::VertexInteger const& src, return_value_policy /*policy*/, handle /*parent*/ ) {
+         return VertexTuple( src ).release();
+      }
+
+      PYBIND11_TYPE_CASTER( type, _( "VertexInteger" ));
+};
+
+template<>
+class type_caster< dip::BoundingBoxFloat > {
+   public:
+      using type = dip::BoundingBoxFloat;
+
+      bool load( handle /*src*/, bool /*convert*/ ) {
+         return false;  // Disallow casting to the type, this is not an input argument anywhere
+      }
+
+      static handle cast( dip::BoundingBoxFloat const& src, return_value_policy /*policy*/, handle /*parent*/ ) {
+         return BoundingBoxTuple( src ).release();
+      }
+
+      PYBIND11_TYPE_CASTER( type, _( "BoundingBoxFloat" ));
+};
+
+template<>
+class type_caster< dip::BoundingBoxInteger > {
+   public:
+      using type = dip::BoundingBoxInteger;
+
+      bool load( handle /*src*/, bool /*convert*/ ) {
+         return false;  // Disallow casting to the type, this is not an input argument anywhere
+      }
+
+      static handle cast( dip::BoundingBoxInteger const& src, return_value_policy /*policy*/, handle /*parent*/ ) {
+         return BoundingBoxTuple( src ).release();
+      }
+
+      PYBIND11_TYPE_CASTER( type, _( "BoundingBoxInteger" ));
 };
 
 } // namespace detail
@@ -243,29 +335,6 @@ void init_measurement( py::module& m ) {
              "and its description. If the description ends with a '*' character, a gray-value\n"
              "image is required for the feature." );
 
-   // dip::Measurement::FeatureInformation
-   auto fInfo = py::class_< dip::Measurement::FeatureInformation >( tool, "FeatureInformation", doc_strings::dip·Measurement·FeatureInformation );
-   fInfo.def( "__repr__", []( dip::Measurement::FeatureInformation const& self ) {
-      std::ostringstream os;
-      os << "<FeatureInformation: name=" << self.name
-         << ", startColumn=" << self.startColumn
-         << ", numberValues=" << self.numberValues << '>';
-      return os.str();
-   } );
-   fInfo.def_readonly( "name", &dip::Measurement::FeatureInformation::name, doc_strings::dip·Measurement·FeatureInformation·name );
-   fInfo.def_readonly( "startColumn", &dip::Measurement::FeatureInformation::startColumn, doc_strings::dip·Measurement·FeatureInformation·startColumn );
-   fInfo.def_readonly( "numberValues", &dip::Measurement::FeatureInformation::numberValues, doc_strings::dip·Measurement·FeatureInformation·numberValues );
-
-   // dip::Feature::ValueInformation
-   auto vInfo = py::class_< dip::Feature::ValueInformation >( tool, "ValueInformation", doc_strings::dip·Feature·ValueInformation );
-   vInfo.def( "__repr__", []( dip::Feature::ValueInformation const& self ) {
-      std::ostringstream os;
-      os << "<ValueInformation: name=" << self.name << ", units=" << self.units << '>';
-      return os.str();
-   } );
-   vInfo.def_readonly( "name", &dip::Feature::ValueInformation::name, doc_strings::dip·Feature·ValueInformation·name );
-   vInfo.def_readonly( "units", &dip::Feature::ValueInformation::units, doc_strings::dip·Feature·ValueInformation·units );
-
    // dip::Measurement
    auto meas = py::class_< dip::Measurement >( m, "Measurement", py::buffer_protocol(), doc_strings::dip·Measurement );
    meas.def_buffer( []( dip::Measurement& self ) -> py::buffer_info { return MeasurementToBuffer( self ); } );
@@ -356,13 +425,8 @@ void init_measurement( py::module& m ) {
    m.def( "Percentile", py::overload_cast< dip::Measurement::IteratorFeature const&, dip::dfloat >( &dip::Percentile ), "featureValues"_a, "percentile"_a, doc_strings::dip·Percentile·Measurement·IteratorFeature·CL·dfloat· );
    m.def( "Median", py::overload_cast< dip::Measurement::IteratorFeature const& >( &dip::Median ), "featureValues"_a, doc_strings::dip·Median·Measurement·IteratorFeature·CL );
    m.def( "Mean", py::overload_cast< dip::Measurement::IteratorFeature const& >( &dip::Mean ), "featureValues"_a, doc_strings::dip·Mean·Measurement·IteratorFeature·CL );
-   m.def( "MaximumAndMinimum", []( dip::Measurement::IteratorFeature const& featureValues ) {
-             dip::MinMaxAccumulator acc = dip::MaximumAndMinimum( featureValues );
-             return py::make_tuple( acc.Minimum(), acc.Maximum() );
-          }, "featureValues"_a,
-          "Returns the maximum and minimum feature values in the first column of\n`featureValues`.\n"
-          "Like the C++ function, but instead of returning a `dip::MinMaxAccumulator`\n"
-          "object, returns a tuple with the minimum and maximum values." );
+   m.def( "MaximumAndMinimum", py::overload_cast< dip::Measurement::IteratorFeature const& >( &dip::MaximumAndMinimum ),
+          "featureValues"_a, doc_strings::dip·MaximumAndMinimum·Measurement·IteratorFeature·CL );
    m.def( "Quartiles", &dip::Quartiles, "featureValues"_a, doc_strings::dip·Quartiles·Measurement·IteratorFeature·CL );
    m.def( "SampleStatistics", &dip::SampleStatistics, "featureValues"_a, doc_strings::dip·SampleStatistics·Measurement·IteratorFeature·CL );
    m.def( "ObjectMinimum", &dip::ObjectMinimum, "featureValues"_a, doc_strings::dip·ObjectMinimum·Measurement·IteratorFeature·CL );
@@ -389,17 +453,7 @@ void init_measurement( py::module& m ) {
    poly.def( "__iter__", []( dip::Polygon const& self ) {
       return py::make_iterator( self.vertices.begin(), self.vertices.end() );
    }, py::keep_alive< 0, 1 >() );
-   poly.def( "BoundingBox", []( dip::Polygon const& self ) {
-                auto bb = self.BoundingBox();
-                auto topLeft = py::make_tuple( bb.topLeft.x, bb.topLeft.y );
-                auto bottomRight = py::make_tuple( bb.bottomRight.x, bb.bottomRight.y );
-                return py::make_tuple( topLeft, bottomRight );
-             },
-             "Returns the bounding box of the polygon.\n"
-             "Like the C++ function, but instead of returning a `dip::BoundingBoxFloat`\n"
-             "object, returns a tuple with two tuples. The first tuple are the (x, y)\n"
-             "coordinates for the top-left corner, the second one are the (x, y) coordinates\n"
-             "for the bottom-right corner." );
+   poly.def( "BoundingBox", &dip::Polygon::BoundingBox, doc_strings::dip·Polygon·BoundingBox·C );
    poly.def( "IsClockWise", &dip::Polygon::IsClockWise, doc_strings::dip·Polygon·IsClockWise·C );
    poly.def( "Area", &dip::Polygon::Area, doc_strings::dip·Polygon·Area·C );
    poly.def( "Centroid", &dip::Polygon::Centroid, doc_strings::dip·Polygon·Centroid·C );
@@ -463,7 +517,7 @@ void init_measurement( py::module& m ) {
          "cc.codes is the same as list(cc), and copies the chain code values to a list.\n"
          "To access individual code values, it's better to just index cc directly: cc[4],\n"
          "or use an iterator: iter(cc)." );
-   chain.def_property_readonly( "start", []( dip::ChainCode const& self ) { return py::make_tuple( self.start.x, self.start.y ); }, doc_strings::dip·ChainCode·start );
+   chain.def_readonly( "start", &dip::ChainCode::start, doc_strings::dip·ChainCode·start );
    chain.def_readonly( "objectID", &dip::ChainCode::objectID, doc_strings::dip·ChainCode·objectID );
    chain.def_readonly( "is8connected", &dip::ChainCode::is8connected, doc_strings::dip·ChainCode·is8connected );
    chain.def( "ConvertTo8Connected", &dip::ChainCode::ConvertTo8Connected, doc_strings::dip·ChainCode·ConvertTo8Connected·C );
@@ -471,17 +525,7 @@ void init_measurement( py::module& m ) {
    chain.def( "Length", &dip::ChainCode::Length, "boundaryPixels"_a = dip::S::EXCLUDE, doc_strings::dip·ChainCode·Length·String·CL·C );
    chain.def( "Feret", &dip::ChainCode::Feret, "angleStep"_a = 5.0 / 180.0 * dip::pi, doc_strings::dip·ChainCode·Feret·dfloat··C );
    chain.def( "BendingEnergy", &dip::ChainCode::BendingEnergy, doc_strings::dip·ChainCode·BendingEnergy·C );
-   chain.def( "BoundingBox", []( dip::ChainCode const& self ) {
-                 auto bb = self.BoundingBox();
-                 auto topLeft = py::make_tuple( bb.topLeft.x, bb.topLeft.y );
-                 auto bottomRight = py::make_tuple( bb.bottomRight.x, bb.bottomRight.y );
-                 return py::make_tuple( topLeft, bottomRight );
-              },
-              "Finds the bounding box for the object described by the chain code.\n"
-              "Like the C++ function, but instead of returning a `dip::BoundingBoxInteger`\n"
-              "object, returns a tuple with two tuples. The first tuple are the (x, y)\n"
-              "coordinates for the top-left corner, the second one are the (x, y) coordinates\n"
-              "for the bottom-right corner." );
+   chain.def( "BoundingBox", &dip::ChainCode::BoundingBox, doc_strings::dip·ChainCode·BoundingBox·C );
    chain.def( "LongestRun", &dip::ChainCode::LongestRun, doc_strings::dip·ChainCode·LongestRun·C );
    chain.def( "Polygon", &dip::ChainCode::Polygon, doc_strings::dip·ChainCode·Polygon·C );
    chain.def( "Image", py::overload_cast<>( &dip::ChainCode::Image, py::const_ ), doc_strings::dip·ChainCode·Image·dip·Image·L·C );
@@ -493,60 +537,5 @@ void init_measurement( py::module& m ) {
    m.def( "GetImageChainCodes", py::overload_cast< dip::Image const&, std::vector< dip::LabelType > const&, dip::uint >( &dip::GetImageChainCodes ),
           "labels"_a, "objectIDs"_a = dip::UnsignedArray{}, "connectivity"_a = 2, doc_strings::dip·GetImageChainCodes·Image·CL·std·vectorgtLabelTypelt·CL·dip·uint· );
    m.def( "GetSingleChainCode", &dip::GetSingleChainCode, "labels"_a, "startCoord"_a, "connectivity"_a = 2, doc_strings::dip·GetSingleChainCode·Image·CL·UnsignedArray·CL·dip·uint· );
-
-   // dip::CovarianceMatrix::EllipseParameters
-   auto ellipseParams = py::class_< dip::CovarianceMatrix::EllipseParameters >( m, "EllipseParameters", doc_strings::dip·CovarianceMatrix·EllipseParameters );
-   ellipseParams.def( "__repr__", []( dip::CovarianceMatrix::EllipseParameters const& s ) {
-      std::ostringstream os;
-      os << "<EllipseParameters: "
-         << "majorAxis=" << s.majorAxis
-         << ", minorAxis=" << s.minorAxis
-         << ", orientation=" << s.orientation
-         << ", eccentricity=" << s.eccentricity
-         << '>';
-      return os.str();
-   } );
-   ellipseParams.def_readonly( "majorAxis", &dip::CovarianceMatrix::EllipseParameters::majorAxis, doc_strings::dip·CovarianceMatrix·EllipseParameters·majorAxis );
-   ellipseParams.def_readonly( "minorAxis", &dip::CovarianceMatrix::EllipseParameters::minorAxis, doc_strings::dip·CovarianceMatrix·EllipseParameters·minorAxis );
-   ellipseParams.def_readonly( "orientation", &dip::CovarianceMatrix::EllipseParameters::orientation, doc_strings::dip·CovarianceMatrix·EllipseParameters·orientation );
-   ellipseParams.def_readonly( "eccentricity", &dip::CovarianceMatrix::EllipseParameters::eccentricity, doc_strings::dip·CovarianceMatrix·EllipseParameters·eccentricity );
-
-   // dip::FeretValues
-   auto feretVals = py::class_< dip::FeretValues >( m, "FeretValues", doc_strings::dip·FeretValues );
-   feretVals.def( "__repr__", []( dip::FeretValues const& s ) {
-      std::ostringstream os;
-      os << "<FeretValues: "
-         << "maxDiameter=" << s.maxDiameter
-         << ", minDiameter=" << s.minDiameter
-         << ", maxPerpendicular=" << s.maxPerpendicular
-         << ", maxAngle=" << s.maxAngle
-         << ", minAngle=" << s.minAngle
-         << '>';
-      return os.str();
-   } );
-   feretVals.def_readonly( "maxDiameter", &dip::FeretValues::maxDiameter, doc_strings::dip·FeretValues·maxDiameter );
-   feretVals.def_readonly( "minDiameter", &dip::FeretValues::minDiameter, doc_strings::dip·FeretValues·minDiameter );
-   feretVals.def_readonly( "maxPerpendicular", &dip::FeretValues::maxPerpendicular, doc_strings::dip·FeretValues·maxPerpendicular );
-   feretVals.def_readonly( "maxAngle", &dip::FeretValues::maxAngle, doc_strings::dip·FeretValues·maxAngle );
-   feretVals.def_readonly( "minAngle", &dip::FeretValues::minAngle, doc_strings::dip·FeretValues·minAngle );
-
-   // dip::RadiusValues
-   auto radiusVals = py::class_< dip::RadiusValues >( m, "RadiusValues", doc_strings::dip·RadiusValues );
-   radiusVals.def( "__repr__", []( dip::RadiusValues const& s ) {
-      std::ostringstream os;
-      os << "<RadiusValues: "
-         << "mean=" << s.Mean()
-         << ", standardDev=" << s.StandardDeviation()
-         << ", maximum=" << s.Maximum()
-         << ", minimum=" << s.Minimum()
-         << ", circularity=" << s.Circularity()
-         << '>';
-      return os.str();
-   } );
-   radiusVals.def_property_readonly( "mean", &dip::RadiusValues::Mean, doc_strings::dip·RadiusValues·Mean·C );
-   radiusVals.def_property_readonly( "standardDev", &dip::RadiusValues::StandardDeviation, doc_strings::dip·RadiusValues·StandardDeviation·C );
-   radiusVals.def_property_readonly( "maximum", &dip::RadiusValues::Maximum, doc_strings::dip·RadiusValues·Maximum·C );
-   radiusVals.def_property_readonly( "minimum", &dip::RadiusValues::Minimum, doc_strings::dip·RadiusValues·Minimum·C );
-   radiusVals.def_property_readonly( "circularity", &dip::RadiusValues::Circularity, doc_strings::dip·RadiusValues·Circularity·C );
 
 }

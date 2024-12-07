@@ -122,6 +122,31 @@ date: 2020-00-00
 
 ### Changed functionality
 
+- The function `dip.MaximumAndMinimum()` now returns a `namedtuple` of type `MinMaxValues` instead of a plain `tuple`.
+  It behaves in the same way as the previous tuple, but the two values can additionally (and preferably) be accessed
+  using the dot notation: `mm.maximum` instead of `mm[1]`.
+  See [issue #184](https://github.com/DIPlib/diplib/issues/184).
+
+- Likewise, the functions `dip.MandersColocalizationCoefficients()` and `dip.CostesColocalizationCoefficients()`
+  now return a `namedtuple` of type `ColocalizationCoefficients` instead of a plain `tuple`.
+
+- Likewise, the functions `dip.ChainCode.BoundingBox()` and `dip.Polygon.BoundingBox()` now return a `namedtuple`
+  of type `BoundingBoxInteger` and `BoundingBoxFloat` respectively, which contain two `namedtuple`s of type
+  `VertexInteger` or `VertexFloat`. Again, these types mimic the old `tuple` outputs, but are self-documenting and
+  easier to use.
+
+- Likewise, other `dip.Polygon` functions such as `dip.Polygon.Centroid()` now return a `namedtuple` of type `VertexFloat`
+  instead of a plain `tuple`.
+
+- Likewise, `dip.ChainCode.start` is now a `namedtuple` of type `VertexInteger` instead of a plain `tuple`.
+
+- The types `SubpixelLocationResult`, `RadonCircleParameters`, `RegressionParameters`, `GaussianParameters`,
+  `FeatureInformation`, `ValueInformation`, `EllipseParameters`, `FeretValues`, `RadiusValues`, `QuartilesResult`,
+  `StatisticsValues`, `CovarianceValues`, `MomentValues` and `SpatialOverlapMetrics`, all used only as outputs to
+  functions, and all simply emulating a C++ `struct`, are no longer special types in the `diplib.PyDIP_bin` namespace,
+  but `namedtuple`s. They new types behave identically, but can additionally be unpacked, for example:
+  `_, q1, _, q3, _ = dip.Quartiles(img)`.
+
 (See also changes to *DIPlib*.)
 
 ### Bug fixes

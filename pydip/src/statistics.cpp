@@ -15,11 +15,24 @@
  * limitations under the License.
  */
 
-#include <sstream>
-
 #include "pydip.h"
 #include "diplib/statistics.h"
 #include "diplib/accumulators.h"
+
+
+namespace pybind11 {
+namespace detail {
+
+DIP_OUTPUT_TYPE_CASTER( QuartilesResult, "QuartilesResult", "minimum lowerQuartile median upperQuartile maximum", src.minimum, src.lowerQuartile, src.median, src.upperQuartile, src.maximum )
+DIP_OUTPUT_TYPE_CASTER( StatisticsAccumulator, "StatisticsValues", "mean standardDev variance skewness kurtosis number", src.Mean(), src.StandardDeviation(), src.Variance(), src.Skewness(), src.ExcessKurtosis(), src.Number() )
+DIP_OUTPUT_TYPE_CASTER( CovarianceAccumulator, "CovarianceValues", "Number MeanX MeanY VarianceX VarianceY StandardDeviationX StandardDeviationY Covariance Correlation Slope", src.Number(), src.MeanX(), src.MeanY(), src.VarianceX(), src.VarianceY(), src.StandardDeviationX(), src.StandardDeviationY(), src.Covariance(), src.Correlation(), src.Slope() )
+DIP_OUTPUT_TYPE_CASTER( MinMaxAccumulator, "MinMaxValues", "minimum maximum", src.Minimum(), src.Maximum() )
+DIP_OUTPUT_TYPE_CASTER( MomentAccumulator, "MomentValues", "zerothOrder firstOrder secondOrder plainSecondOrder", src.Sum(), src.FirstOrder(), src.SecondOrder(), src.PlainSecondOrder() )
+DIP_OUTPUT_TYPE_CASTER( SpatialOverlapMetrics, "SpatialOverlapMetrics", "truePositives trueNegatives falsePositives falseNegatives diceCoefficient jaccardIndex sensitivity specificity fallout accuracy precision", src.truePositives, src.trueNegatives, src.falsePositives, src.falseNegatives, src.diceCoefficient, src.jaccardIndex, src.sensitivity, src.specificity, src.fallout, src.accuracy, src.precision )
+
+} // namespace detail
+} // namespace pybind11
+
 
 void init_statistics( py::module& m ) {
 
@@ -30,13 +43,8 @@ void init_statistics( py::module& m ) {
           "in"_a, "mask"_a = dip::Image{}, "process"_a = dip::BooleanArray{}, doc_strings::dip·CumulativeSum·Image·CL·Image·CL·Image·L·BooleanArray·CL );
    m.def( "CumulativeSum", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image&, dip::BooleanArray const& >( &dip::CumulativeSum ),
           "in"_a, "mask"_a = dip::Image{}, py::kw_only(), "out"_a, "process"_a = dip::BooleanArray{}, doc_strings::dip·CumulativeSum·Image·CL·Image·CL·Image·L·BooleanArray·CL );
-   m.def( "MaximumAndMinimum", []( dip::Image const& in, dip::Image const& mask ) {
-             dip::MinMaxAccumulator acc = dip::MaximumAndMinimum( in, mask );
-             return py::make_tuple( acc.Minimum(), acc.Maximum() );
-          }, "in"_a, "mask"_a = dip::Image{},
-          "Finds the largest and smallest value in the image, within an optional mask.\n"
-          "Like the C++ function, but instead of returning a `dip::MinMaxAccumulator`"
-          "object, returns a tuple with the minimum and maximum values." );
+   m.def( "MaximumAndMinimum", py::overload_cast< dip::Image const&, dip::Image const& >( &dip::MaximumAndMinimum ),
+          "in"_a, "mask"_a = dip::Image{}, doc_strings::dip·MaximumAndMinimum·Image·CL·Image·CL );
    m.def( "Quartiles", py::overload_cast< dip::Image const&, dip::Image const& >( &dip::Quartiles ), "in"_a, "mask"_a = dip::Image{}, doc_strings::dip·Quartiles·Image·CL·Image·CL );
    m.def( "SampleStatistics", py::overload_cast< dip::Image const&, dip::Image const& >( &dip::SampleStatistics ),
           "in"_a, "mask"_a = dip::Image{}, doc_strings::dip·SampleStatistics·Image·CL·Image·CL );
@@ -207,103 +215,5 @@ void init_statistics( py::module& m ) {
           "in"_a, "mask"_a = dip::Image{}, "nBins"_a = 256, doc_strings::dip·Entropy·Image·CL·Image·CL·dip·uint· );
    m.def( "EstimateNoiseVariance", py::overload_cast< dip::Image const&, dip::Image const& >( &dip::EstimateNoiseVariance ),
           "in"_a, "mask"_a = dip::Image{}, doc_strings::dip·EstimateNoiseVariance·Image·CL·Image·CL );
-
-   // dip::StatisticsAccumulator
-   auto statsAcc = py::class_< dip::StatisticsAccumulator >( m, "StatisticsValues", doc_strings::dip·StatisticsAccumulator );
-   statsAcc.def( "__repr__", []( dip::StatisticsAccumulator const& s ) {
-      std::ostringstream os;
-      os << "<StatisticsValues: "
-         << "mean=" << s.Mean()
-         << ", standardDev=" << s.StandardDeviation()
-         << ", variance=" << s.Variance()
-         << ", skewness=" << s.Skewness()
-         << ", kurtosis=" << s.ExcessKurtosis()
-         << ", number=" << s.Number()
-         << '>';
-      return os.str();
-   } );
-   statsAcc.def_property_readonly( "mean", &dip::StatisticsAccumulator::Mean, doc_strings::dip·StatisticsAccumulator·Mean·C );
-   statsAcc.def_property_readonly( "standardDev", &dip::StatisticsAccumulator::StandardDeviation, doc_strings::dip·StatisticsAccumulator·StandardDeviation·C );
-   statsAcc.def_property_readonly( "variance", &dip::StatisticsAccumulator::Variance, doc_strings::dip·StatisticsAccumulator·Variance·C );
-   statsAcc.def_property_readonly( "skewness", &dip::StatisticsAccumulator::Skewness, doc_strings::dip·StatisticsAccumulator·Skewness·C );
-   statsAcc.def_property_readonly( "kurtosis", &dip::StatisticsAccumulator::ExcessKurtosis, doc_strings::dip·StatisticsAccumulator·ExcessKurtosis·C );
-   statsAcc.def_property_readonly( "number", &dip::StatisticsAccumulator::Number, doc_strings::dip·StatisticsAccumulator·Number·C );
-
-   // dip::CovarianceAccumulator
-   auto covAcc = py::class_< dip::CovarianceAccumulator >( m, "CovarianceValues", doc_strings::dip·CovarianceAccumulator );
-   covAcc.def( "__repr__", []( dip::CovarianceAccumulator const& s ) {
-      std::ostringstream os;
-      os << "<CovarianceValues: "
-         << "Number=" << s.Number()
-         << ", MeanX=" << s.MeanX()
-         << ", MeanY=" << s.MeanY()
-         << ", VarianceX=" << s.VarianceX()
-         << ", VarianceY=" << s.VarianceY()
-         << ", StandardDeviationX=" << s.StandardDeviationX()
-         << ", StandardDeviationY=" << s.StandardDeviationY()
-         << ", Covariance=" << s.Covariance()
-         << ", Correlation=" << s.Correlation()
-         << ", Slope=" << s.Slope()
-         << '>';
-      return os.str();
-   } );
-   covAcc.def_property_readonly( "Number", &dip::CovarianceAccumulator::Number, doc_strings::dip·CovarianceAccumulator·Number·C );
-   covAcc.def_property_readonly( "MeanX", &dip::CovarianceAccumulator::MeanX, doc_strings::dip·CovarianceAccumulator·MeanX·C );
-   covAcc.def_property_readonly( "MeanY", &dip::CovarianceAccumulator::MeanY, doc_strings::dip·CovarianceAccumulator·MeanY·C );
-   covAcc.def_property_readonly( "VarianceX", &dip::CovarianceAccumulator::VarianceX, doc_strings::dip·CovarianceAccumulator·VarianceX·C );
-   covAcc.def_property_readonly( "VarianceY", &dip::CovarianceAccumulator::VarianceY, doc_strings::dip·CovarianceAccumulator·VarianceY·C );
-   covAcc.def_property_readonly( "StandardDeviationX", &dip::CovarianceAccumulator::StandardDeviationX, doc_strings::dip·CovarianceAccumulator·StandardDeviationX·C );
-   covAcc.def_property_readonly( "StandardDeviationY", &dip::CovarianceAccumulator::StandardDeviationY, doc_strings::dip·CovarianceAccumulator·StandardDeviationY·C );
-   covAcc.def_property_readonly( "Covariance", &dip::CovarianceAccumulator::Covariance, doc_strings::dip·CovarianceAccumulator·Covariance·C );
-   covAcc.def_property_readonly( "Correlation", &dip::CovarianceAccumulator::Correlation, doc_strings::dip·CovarianceAccumulator·Correlation·C );
-   covAcc.def_property_readonly( "Slope", &dip::CovarianceAccumulator::Slope, doc_strings::dip·CovarianceAccumulator·Slope·C );
-
-   // dip::MomentAccumulator
-   auto momentAcc = py::class_< dip::MomentAccumulator >( m, "MomentValues", doc_strings::dip·MomentAccumulator );
-   momentAcc.def( "__repr__", []( dip::MomentAccumulator const& s ) {
-      std::ostringstream os;
-      os << "<MomentValues: "
-         << "zerothOrder=" << s.Sum()
-         << ", firstOrder=" << s.FirstOrder()
-         << ", secondOrder=" << s.SecondOrder()
-         << ", plainSecondOrder=" << s.PlainSecondOrder()
-         << '>';
-      return os.str();
-   } );
-   momentAcc.def_property_readonly( "zerothOrder", &dip::MomentAccumulator::Sum, doc_strings::dip·MomentAccumulator·Sum·C );
-   momentAcc.def_property_readonly( "firstOrder", &dip::MomentAccumulator::FirstOrder, doc_strings::dip·MomentAccumulator·FirstOrder·C );
-   momentAcc.def_property_readonly( "secondOrder", &dip::MomentAccumulator::SecondOrder, doc_strings::dip·MomentAccumulator·SecondOrder·C );
-   momentAcc.def_property_readonly( "plainSecondOrder", &dip::MomentAccumulator::PlainSecondOrder, doc_strings::dip·MomentAccumulator·PlainSecondOrder·C );
-
-   // dip::SpatialOverlapMetrics
-   auto overlap = py::class_< dip::SpatialOverlapMetrics >( m, "SpatialOverlapMetrics", doc_strings::dip·SpatialOverlapMetrics );
-   overlap.def( "__repr__", []( dip::SpatialOverlapMetrics const& s ) {
-      std::ostringstream os;
-      os << "<SpatialOverlapMetrics: "
-         << "truePositives=" << s.truePositives
-         << ", trueNegatives=" << s.trueNegatives
-         << ", falsePositives=" << s.falsePositives
-         << ", falseNegatives=" << s.falseNegatives
-         << ", diceCoefficient=" << s.diceCoefficient
-         << ", jaccardIndex=" << s.jaccardIndex
-         << ", sensitivity=" << s.sensitivity
-         << ", specificity=" << s.specificity
-         << ", fallout=" << s.fallout
-         << ", accuracy=" << s.accuracy
-         << ", precision=" << s.precision
-         << '>';
-      return os.str();
-   } );
-   overlap.def_readonly( "truePositives", &dip::SpatialOverlapMetrics::truePositives, doc_strings::dip·SpatialOverlapMetrics·truePositives );
-   overlap.def_readonly( "trueNegatives", &dip::SpatialOverlapMetrics::trueNegatives, doc_strings::dip·SpatialOverlapMetrics·trueNegatives );
-   overlap.def_readonly( "falsePositives", &dip::SpatialOverlapMetrics::falsePositives, doc_strings::dip·SpatialOverlapMetrics·falsePositives );
-   overlap.def_readonly( "falseNegatives", &dip::SpatialOverlapMetrics::falseNegatives, doc_strings::dip·SpatialOverlapMetrics·falseNegatives );
-   overlap.def_readonly( "diceCoefficient", &dip::SpatialOverlapMetrics::diceCoefficient, doc_strings::dip·SpatialOverlapMetrics·diceCoefficient );
-   overlap.def_readonly( "jaccardIndex", &dip::SpatialOverlapMetrics::jaccardIndex, doc_strings::dip·SpatialOverlapMetrics·jaccardIndex );
-   overlap.def_readonly( "sensitivity", &dip::SpatialOverlapMetrics::sensitivity, doc_strings::dip·SpatialOverlapMetrics·sensitivity );
-   overlap.def_readonly( "specificity", &dip::SpatialOverlapMetrics::specificity, doc_strings::dip·SpatialOverlapMetrics·specificity );
-   overlap.def_readonly( "fallout", &dip::SpatialOverlapMetrics::fallout, doc_strings::dip·SpatialOverlapMetrics·fallout );
-   overlap.def_readonly( "accuracy", &dip::SpatialOverlapMetrics::accuracy, doc_strings::dip·SpatialOverlapMetrics·accuracy );
-   overlap.def_readonly( "precision", &dip::SpatialOverlapMetrics::precision, doc_strings::dip·SpatialOverlapMetrics·precision );
 
 }
