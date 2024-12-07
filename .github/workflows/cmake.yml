@@ -40,7 +40,7 @@ jobs:
           - os: ubuntu-latest
             n_cores: 4
             wheel_location: pydip/staging/dist
-          - os: ubuntu-latest # cross-compile 32-bit
+          - os: ubuntu-22.04 # cross-compile 32-bit -- TEMPORARILY SET TO 22.04 because LATEST is now 24.04, with GCC-13, which is broken for 32-bit compilation
             cross_compile: true
             n_cores: 4
             dip_cmake_opts: -DCMAKE_C_FLAGS="-m32" -DCMAKE_CXX_FLAGS="-m32" -DDIP_BUILD_DIPVIEWER=Off -DDIP_BUILD_JAVAIO=Off -DDIP_BUILD_PYDIP=Off
