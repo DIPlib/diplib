@@ -121,6 +121,11 @@ if(DIP_BUILD_DIPVIEWER)
    target_compile_definitions(oversegmentation PRIVATE DIP_EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
    target_link_libraries(oversegmentation DIP DIPviewer)
 
+   # An example program that demonstrates using the graph cut segmentation algorithm, it displays some images
+   # using dip::viewer::Show, and links those displays together
+   add_executable(graph_cut_segmentation cpp/graph_cut_segmentation.cpp)
+   target_link_libraries(graph_cut_segmentation DIP DIPviewer)
+
    # An example program that shows how to use dip::MeasurementTool and work with its output dip::Measurement data
    add_executable(using_measurement_tool cpp/using_measurement_tool.cpp)
    target_compile_definitions(using_measurement_tool PRIVATE DIP_EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
