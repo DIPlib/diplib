@@ -20,9 +20,7 @@
 
 #include <array>
 #include <cstdlib>
-#include <memory>
 #include <utility>
-#include <vector>
 
 #include "diplib.h"
 #include "diplib/label_map.h"
@@ -49,11 +47,9 @@ namespace dip {
 ///
 /// Vertices are identified by an index, these indices are expected to be consecutive. Each vertex contains a list
 /// of indices to edges, and has an optional value.
-/// Edges are represented by indices to two vertices, and a double precision floating-point weight.
-/// Not all edges in the list are actually used; use \ref Edge::IsValid to test this.
 ///
-/// If converting an image to a graph, each pixel is converted to a vertex. The pixel's linear index (see \ref pointers)
-/// is the vertex index.
+/// Edges are represented by indices to two vertices, and a double precision floating-point weight.
+/// Not all edges are actually used; use \ref Edge::IsValid to test this.
 class DIP_NO_EXPORT Graph {
    public:
       /// Type for indices to vertices
@@ -65,13 +61,13 @@ class DIP_NO_EXPORT Graph {
 
       /// \brief A vertex in the graph
       struct Vertex {
-         EdgeList edges;               ///< The list of indices to edges
+         EdgeList edges{};             ///< The list of indices to edges
          mutable dfloat value = 0.0;   ///< The value associated to each vertex
 
          Vertex() = default;
 
          /// \brief Construct a vertex with reserved space for the given number of edges.
-         explicit Vertex( dip::uint nEdges ) {
+         explicit Vertex( dip::uint nEdges, dfloat value = 0.0 ) : edges(), value( value ) {
             edges.reserve( nEdges );
          }
       };
@@ -98,14 +94,21 @@ class DIP_NO_EXPORT Graph {
 
       /// \brief Construct a graph for the given image.
       ///
+      /// Each pixel becomes a vertex in the graph, the vertex's index is equal to the linear index (see \ref pointers)
+      /// of the pixel in the image (that is, vertices are stored in the same order as the pixels in the image with
+      /// normal strides). Vertex values are set to the corresponding pixel value.
+      ///
+      /// An edge will connect each pixel to each of its neighbors.
+      ///
       /// `connectivity` indicates which pixels are considered neighbors. Currently, only a connectivity of 1 is
       /// allowed. This makes neighbors the pixels at a city-block distance of 1 (in 2D, there are 4 such neighbors,
       /// in 3D there are 6).
       ///
-      /// By default, the edge weights are given by the absolute difference between the two pixel values.
-      /// If `weights` is `"average"`, the edge weights are given by the average of the two pixel values.
-      ///
-      /// Vertex values are set to the corresponding pixel value.
+      /// The value of `weights` is:
+      ///  - `"difference"` (default): the edge weights are given by the absolute difference between the two pixel values.
+      ///  - `"average"`: the edge weights are given by the average of the two pixel values.
+      ///  - `"zero"`: the edge weights are all set to 0, use \ref UpdateEdgeWeights to compute weights in some other way,
+      ///     or manually set the weights.
       DIP_EXPORT explicit Graph( Image const& image, dip::uint connectivity = 1, String const& weights = "difference" );
 
       /// \brief Returns the number of vertices in the graph.
@@ -130,6 +133,7 @@ class DIP_NO_EXPORT Graph {
       };
 
       /// \brief Gets the set of edges in the graph. The weights of the edges are mutable, they can be directly modified.
+      /// Not all edges connect vertices, use \ref Edge::IsValid to test.
       DIP_NODISCARD std::vector< Edge > const& Edges() const {
          return edges_;
       }
@@ -160,49 +164,56 @@ class DIP_NO_EXPORT Graph {
          return edge < edges_.size() ? edges_[ edge ].IsValid() : false;
       }
 
-      /// \brief Get the indices to the edges that join vertex `v`.
-      DIP_NODISCARD EdgeList const& EdgeIndices( VertexIndex v ) const {
-         DIP_ASSERT( v < vertices_.size() );
-         return vertices_[ v ].edges;
+      /// \brief Get the indices to the edges that join vertex `vertex`.
+      DIP_NODISCARD EdgeList const& EdgeIndices( VertexIndex vertex ) const {
+         DIP_ASSERT( vertex < vertices_.size() );
+         return vertices_[ vertex ].edges;
       }
 
-      /// \brief Returns a reference to the value of the vertex `v`. This value is mutable even if the graph is `const`.
-      DIP_NODISCARD dfloat& VertexValue( VertexIndex v ) const {
-         DIP_ASSERT( v < vertices_.size() );
-         return vertices_[ v ].value;
+      /// \brief Returns a reference to the value of the vertex `vertex`. This value is mutable even if the graph is `const`.
+      DIP_NODISCARD dfloat& VertexValue( VertexIndex vertex ) const {
+         DIP_ASSERT( vertex < vertices_.size() );
+         return vertices_[ vertex ].value;
       }
 
-      /// \brief Add an edge between vertices `v1` and `v2`, with weight `weight`. If the edge already exists,
+      /// \brief Adds a vertex to the graph with the given weight and space reserved for the given number of edges.
+      /// Returns the index to the new vertex.
+      VertexIndex AddVertex( dip::uint nEdges = 0, dfloat weight = 0.0 ) {
+         vertices_.emplace_back( nEdges, weight );
+         return vertices_.size() - 1;
+      }
+
+      /// \brief Add an edge between vertices `vertex1` and `vertex2`, with weight `weight`. If the edge already exists,
       /// update the weight of the edge to be `weight`.
-      void AddEdge( VertexIndex v1, VertexIndex v2, dfloat weight ) {
-         DIP_THROW_IF( v1 == v2, "Cannot create an edge between a vertex and itself" );
-         EdgeIndex edge = FindEdge( v1, v2 );
+      void AddEdge( VertexIndex vertex1, VertexIndex vertex2, dfloat weight ) {
+         DIP_THROW_IF( vertex1 == vertex2, "Cannot create an edge between a vertex and itself" );
+         EdgeIndex edge = FindEdge( vertex1, vertex2 );
          if( edge == edges_.size() ) {
             // Didn't find the edge, create it.
-            AddEdgeNoCheck( v1, v2, weight );
+            AddEdgeNoCheck( vertex1, vertex2, weight );
          } else {
             // Found the edge, update the weight
             edges_[ edge ].weight = weight;
          }
       }
 
-      /// \brief Add an edge between vertices `v1` and `v2`, with weight `weight`. If the edge already exists,
+      /// \brief Add an edge between vertices `vertex1` and `vertex2`, with weight `weight`. If the edge already exists,
       /// update the weight of the edge by adding `weight` to the existing weight.
-      void AddEdgeSumWeight( VertexIndex v1, VertexIndex v2, dfloat weight ) {
-         DIP_THROW_IF( v1 == v2, "Cannot create an edge between a vertex and itself" );
-         EdgeIndex edge = FindEdge( v1, v2 );
+      void AddEdgeSumWeight( VertexIndex vertex1, VertexIndex vertex2, dfloat weight ) {
+         DIP_THROW_IF( vertex1 == vertex2, "Cannot create an edge between a vertex and itself" );
+         EdgeIndex edge = FindEdge( vertex1, vertex2 );
          if( edge == edges_.size() ) {
             // Didn't find the edge, create it.
-            AddEdgeNoCheck( v1, v2, weight );
+            AddEdgeNoCheck( vertex1, vertex2, weight );
          } else {
             // Found the edge, update the weight
             edges_[ edge ].weight += weight;
          }
       }
 
-      /// \brief Delete the edge between vertices `v1` and `v2`.
-      void DeleteEdge( VertexIndex v1, VertexIndex v2 ) {
-         EdgeIndex edge = FindEdge( v1, v2 );
+      /// \brief Delete the edge between vertices `vertex1` and `vertex2`.
+      void DeleteEdge( VertexIndex vertex1, VertexIndex vertex2 ) {
+         EdgeIndex edge = FindEdge( vertex1, vertex2 );
          if( edge < edges_.size() ) {
             DeleteEdge( edge );
          }
@@ -211,33 +222,33 @@ class DIP_NO_EXPORT Graph {
       /// \brief Delete the edge `edge`.
       void DeleteEdge( EdgeIndex edge ) {
          DIP_ASSERT( edge < edges_.size() );
-         auto& v1 = vertices_[ edges_[ edge ].vertices[ 0 ]];
-         auto it = FindEdge( v1, edge );
-         if( it != v1.edges.end() ) {
-            v1.edges.erase( it );
+         auto& vertex1 = vertices_[ edges_[ edge ].vertices[ 0 ]];
+         auto it = FindEdge( vertex1, edge );
+         if( it != vertex1.edges.end() ) {
+            vertex1.edges.erase( it );
          }
-         auto& v2 = vertices_[ edges_[ edge ].vertices[ 1 ]];
-         it = FindEdge( v2, edge );
-         if( it != v2.edges.end() ) {
-            v2.edges.erase( it );
+         auto& vertex2 = vertices_[ edges_[ edge ].vertices[ 1 ]];
+         it = FindEdge( vertex2, edge );
+         if( it != vertex2.edges.end() ) {
+            vertex2.edges.erase( it );
          }
          edges_[ edge ].vertices = { 0, 0 };
       }
 
       /// \brief Returns a list of indices to neighboring vertices. The list is created. `EdgeIndices` is
       /// a more efficient, but less convenient, function.
-      std::vector< VertexIndex > Neighbors( VertexIndex v ) {
-         DIP_ASSERT( v < vertices_.size() );
+      std::vector< VertexIndex > Neighbors( VertexIndex vertex ) {
+         DIP_ASSERT( vertex < vertices_.size() );
          std::vector< VertexIndex > neighbors;
-         neighbors.reserve( vertices_[ v ].edges.size() );
-         for( auto edge : vertices_[ v ].edges ) {
-            neighbors.push_back( OtherVertex( edge, v ));
+         neighbors.reserve( vertices_[ vertex ].edges.size() );
+         for( auto edge : vertices_[ vertex ].edges ) {
+            neighbors.push_back( OtherVertex( edge, vertex ));
          }
          return neighbors;
       }
 
       // Adds an edge. Doesn't check for duplicates. If the edge already exists, disaster ensues.
-      // And if v1 >= v2, disaster ensues.
+      // And if vertex1 >= vertex2, disaster ensues.
       void AddEdgeNoCheck( Edge edge ) {
          DIP_ASSERT( edge.vertices[ 0 ] < edge.vertices[ 1 ] );
          EdgeIndex ii = edges_.size();
@@ -245,8 +256,8 @@ class DIP_NO_EXPORT Graph {
          vertices_[ edge.vertices[ 1 ]].edges.push_back( ii );
          edges_.push_back( edge );
       }
-      void AddEdgeNoCheck( VertexIndex v1, VertexIndex v2, dfloat weight ) {
-         AddEdgeNoCheck( {{ v1, v2 }, weight } );
+      void AddEdgeNoCheck( VertexIndex vertex1, VertexIndex vertex2, dfloat weight ) {
+         AddEdgeNoCheck( {{ vertex1, vertex2 }, weight } );
       }
 
       /// \brief Re-computes edge weights using the function `func`, called as `dfloat func(dfloat val1, dfloat val2)`,
@@ -286,18 +297,18 @@ class DIP_NO_EXPORT Graph {
          return it;
       }
 
-      // Return the index to the edge that joins vertices `v1` and `v2`.
+      // Return the index to the edge that joins vertices `vertex1` and `vertex2`.
       // If the edge doesn't exist, returns edges_.size().
-      // `v1` and `v2` might be swapped by this function too.
-      EdgeIndex FindEdge( VertexIndex& v1, VertexIndex& v2 ) {
-         DIP_ASSERT( v1 < vertices_.size() );
-         DIP_ASSERT( v2 < vertices_.size() );
-         DIP_ASSERT( v1 != v2 );
-         if( v1 > v2 ) {
-            std::swap( v1, v2 );
+      // `vertex1` and `vertex2` might be swapped by this function too.
+      EdgeIndex FindEdge( VertexIndex& vertex1, VertexIndex& vertex2 ) {
+         DIP_ASSERT( vertex1 < vertices_.size() );
+         DIP_ASSERT( vertex2 < vertices_.size() );
+         DIP_ASSERT( vertex1 != vertex2 );
+         if( vertex1 > vertex2 ) {
+            std::swap( vertex1, vertex2 );
          }
-         for( auto edge : vertices_[ v1 ].edges ) {
-            if( edges_[ edge ].vertices[ 1 ] == v2 ) {
+         for( auto edge : vertices_[ vertex1 ].edges ) {
+            if( edges_[ edge ].vertices[ 1 ] == vertex2 ) {
                return edge;
             }
          }
@@ -310,12 +321,10 @@ class DIP_NO_EXPORT Graph {
 ///
 /// Vertices are identified by an index, these indices are expected to be consecutive. Each vertex contains a list
 /// of indices to outgoing edges, and has an optional value.
-/// Edges are represented by indices to two vertices, a double precision floating-point weight, and an index to
-/// the sibling edge (the one that connects the same vertices in the other direction).
-/// Not all edges in the list are actually used; use \ref Edge::IsValid to test this.
 ///
-/// If converting an image to a graph, each pixel is converted to a vertex. The pixel's linear index (see \ref pointers)
-/// is the vertex index.
+/// Edges are represented by indices to two vertices (a source and a target), a double precision floating-point weight,
+/// and an index to the sibling edge (the one that connects the same vertices in the other direction).
+/// Not all edges are actually used; use \ref Edge::IsValid to test this.
 class DIP_NO_EXPORT DirectedGraph {
    public:
       /// Type for indices to vertices
@@ -327,13 +336,13 @@ class DIP_NO_EXPORT DirectedGraph {
 
       /// \brief A vertex in the graph
       struct Vertex {
-         EdgeList edges;               ///< The list of indices to outgoing edges
+         EdgeList edges{};             ///< The list of indices to outgoing edges
          mutable dfloat value = 0.0;   ///< The value associated to each vertex
 
          Vertex() = default;
 
          /// \brief Construct a vertex with reserved space for the given number of edges.
-         explicit Vertex( dip::uint nEdges ) {
+         explicit Vertex( dip::uint nEdges, dfloat value = 0.0 ) : edges(), value( value ) {
             edges.reserve( nEdges );
          }
       };
@@ -359,21 +368,33 @@ class DIP_NO_EXPORT DirectedGraph {
       /// is in the range [0,`nVertices`]. `nEdges` is the expected number of edges for each vertex, and is used
       /// to reserve space for them.
       explicit DirectedGraph( dip::uint nVertices, dip::uint nEdges = 0 ) : vertices_( nVertices, Vertex( nEdges )) {
-         edges_.reserve( nVertices * nEdges / 2 );
+         edges_.reserve( nVertices * nEdges );
       }
 
       /// \brief Construct a directed graph for the given image.
+      ///
+      /// Each pixel becomes a vertex in the graph, the vertex's index is equal to the linear index (see \ref pointers)
+      /// of the pixel in the image (that is, vertices are stored in the same order as the pixels in the image with
+      /// normal strides). Vertex values are set to the corresponding pixel value.
+      ///
+      /// An edge will connect each pixel to each of its neighbors. Each edge is guaranteed to have a sibling.
       ///
       /// `connectivity` indicates which pixels are considered neighbors. Currently, only a connectivity of 1 is
       /// allowed. This makes neighbors the pixels at a city-block distance of 1 (in 2D, there are 4 such neighbors,
       /// in 3D there are 6).
       ///
-      /// By default, the edge weights are given by the absolute difference between the two pixel values.
-      /// If `weights` is `"average"`, the edge weights are given by the average of the two pixel values.
-      /// In the directed graph, both sets of edges connecting a pair of neighboring pixels have the same weight.
+      /// The value of `weights` is:
+      ///  - `"difference"` (default): the edge weights are given by the absolute difference between the two pixel values.
+      ///  - `"average"`: the edge weights are given by the average of the two pixel values.
+      ///  - `"zero"`: the edge weights are all set to 0, use \ref UpdateEdgeWeights to compute weights in some other way,
+      ///     or manually set the weights.
       ///
-      /// Vertex values are set to the corresponding pixel value.
-      DIP_EXPORT explicit DirectedGraph( Image const& image, dip::uint connectivity = 1, String const& weights = "difference" );
+      /// If `extraEdges` is `"graphcut"`, then space will be reserved for the additional 2 vertices and all the edges
+      /// and that the graph cut segmentation algorithm adds to the graph that this function makes.
+      /// By default, `extraEdges` is `"none"`, and the memory allocated is just enough to contain the edges and
+      /// vertices created by this function. It is always possible to add additional edges or vertices, but this
+      /// incurs a reallocation cost.
+      DIP_EXPORT explicit DirectedGraph( Image const& image, dip::uint connectivity = 1, String const& weights = "difference", String const& extraEdges = "none" );
 
       /// \brief Constructs a directed graph from an undirected graph.
       DIP_EXPORT explicit DirectedGraph( Graph const& graph );
@@ -400,6 +421,7 @@ class DIP_NO_EXPORT DirectedGraph {
       };
 
       /// \brief Gets the set of edges in the graph. The weights of the edges are mutable, they can be directly modified.
+      /// Not all edges connect vertices, use \ref Edge::IsValid to test.
       DIP_NODISCARD std::vector< Edge > const& Edges() const {
          return edges_;
       }
@@ -435,16 +457,23 @@ class DIP_NO_EXPORT DirectedGraph {
          return edge < edges_.size() ? edges_[ edge ].IsValid() : false;
       }
 
-      /// \brief Get the indices to the edges that start at vertex `v`.
-      DIP_NODISCARD EdgeList const& EdgeIndices( VertexIndex v ) const {
-         DIP_ASSERT( v < vertices_.size() );
-         return vertices_[ v ].edges;
+      /// \brief Get the indices to the edges that start at vertex `vertex`.
+      DIP_NODISCARD EdgeList const& EdgeIndices( VertexIndex vertex ) const {
+         DIP_ASSERT( vertex < vertices_.size() );
+         return vertices_[ vertex ].edges;
       }
 
-      /// \brief Returns a reference to the value of the vertex `v`. This value is mutable even if the graph is `const`.
-      DIP_NODISCARD dfloat& VertexValue( VertexIndex v ) const {
-         DIP_ASSERT( v < vertices_.size() );
-         return vertices_[ v ].value;
+      /// \brief Returns a reference to the value of the vertex `vertex`. This value is mutable even if the graph is `const`.
+      DIP_NODISCARD dfloat& VertexValue( VertexIndex vertex ) const {
+         DIP_ASSERT( vertex < vertices_.size() );
+         return vertices_[ vertex ].value;
+      }
+
+      /// \brief Adds a vertex to the graph with the given weight and space reserved for the given number of edges.
+      /// Returns the index to the new vertex.
+      VertexIndex AddVertex( dip::uint nEdges = 0, dfloat weight = 0.0 ) {
+         vertices_.emplace_back( nEdges, weight );
+         return vertices_.size() - 1;
       }
 
       /// \brief Add an edge from vertex `source` to `target`, with weight `weight`. If the edge already exists,
@@ -475,51 +504,63 @@ class DIP_NO_EXPORT DirectedGraph {
             }
          }
 
-      /// \brief Add an edge pair between vertices `v1` and `v2`, with weight `weight`. If the edges already exist,
-      /// update their weights to be `weight`.
-      void AddEdgePair( VertexIndex v1, VertexIndex v2, dfloat weight ) {
-         DIP_THROW_IF( v1 == v2, "Cannot create an edge between a vertex and itself" );
-         EdgeIndex edge1 = FindEdge( v1, v2 );
-         EdgeIndex edge2 = ( edge1 == edges_.size() ) ? FindEdge( v2, v1 ) : edges_[ edge1 ].sibling;
+      /// \brief Add an edge pair between vertices `vertex1` and `vertex2`, both with weight `weight`.
+      /// If the edges already exist, update their weights to be `weight`.
+      void AddEdgePair( VertexIndex vertex1, VertexIndex vertex2, dfloat weight ) {
+         AddEdgePair( vertex1, vertex2, weight, weight );
+      }
+
+      /// \brief Add an edge pair between vertices `vertex1` and `vertex2`, with weight `weight1` and `weight2` respectively.
+      /// If the edges already exist, update their weights to be `weight`.
+      void AddEdgePair( VertexIndex vertex1, VertexIndex vertex2, dfloat weight1, dfloat weight2 ) {
+         DIP_THROW_IF( vertex1 == vertex2, "Cannot create an edge between a vertex and itself" );
+         EdgeIndex edge1 = FindEdge( vertex1, vertex2 );
+         EdgeIndex edge2 = ( edge1 == edges_.size() ) ? FindEdge( vertex2, vertex1 ) : edges_[ edge1 ].sibling;
          if(( edge1 == edges_.size() ) && ( edge2 == edges_.size() )) {
             // Create the pair
-            AddEdgePairNoCheck( v1, v2, weight );
+            AddEdgePairNoCheck( vertex1, vertex2, weight1, weight2 );
          } else if( edge1 == edges_.size() ) {
             // edge2 exists, create edge1
-            AddEdgeNoCheck( v1, v2, weight, edge2 );
-            edges_[ edge2 ].weight = weight;
+            AddEdgeNoCheck( vertex1, vertex2, weight1, edge2 );
+            edges_[ edge2 ].weight = weight2;
          } else if( edge2 == edges_.size() ) {
             // edge1 exists, create edge2
-            AddEdgeNoCheck( v2, v1, weight, edge1 );
-            edges_[ edge1 ].weight = weight;
+            AddEdgeNoCheck( vertex2, vertex1, weight2, edge1 );
+            edges_[ edge1 ].weight = weight1;
          } else {
             // Found both edges
-            edges_[ edge1 ].weight = weight;
-            edges_[ edge2 ].weight = weight;
+            edges_[ edge1 ].weight = weight1;
+            edges_[ edge2 ].weight = weight2;
          }
       }
 
-      /// \brief Add an edge pair between vertices `v1` and `v2`, with weight `weight`. If the edges already exist,
-      /// update their weight by adding `weight` to the existing weight.
-      void AddEdgePairSumWeight( VertexIndex v1, VertexIndex v2, dfloat weight ) {
-         DIP_THROW_IF( v1 == v2, "Cannot create an edge between a vertex and itself" );
-         EdgeIndex edge1 = FindEdge( v1, v2 );
-         EdgeIndex edge2 = ( edge1 == edges_.size() ) ? FindEdge( v2, v1 ) : edges_[ edge1 ].sibling;
+      /// \brief Add an edge pair between vertices `vertex1` and `vertex2`, both with weight `weight`.
+      /// If the edges already exist, update their weight by adding the new weight to the existing weight.
+      void AddEdgePairSumWeight( VertexIndex vertex1, VertexIndex vertex2, dfloat weight ) {
+         AddEdgePairSumWeight( vertex1, vertex2, weight, weight );
+      }
+
+      /// \brief Add an edge pair between vertices `vertex1` and `vertex2`, with weight `weight1` and `weight2` respectively.
+      /// If the edges already exist, update their weight by adding the new weight to the existing weight.
+      void AddEdgePairSumWeight( VertexIndex vertex1, VertexIndex vertex2, dfloat weight1, dfloat weight2 ) {
+         DIP_THROW_IF( vertex1 == vertex2, "Cannot create an edge between a vertex and itself" );
+         EdgeIndex edge1 = FindEdge( vertex1, vertex2 );
+         EdgeIndex edge2 = ( edge1 == edges_.size() ) ? FindEdge( vertex2, vertex1 ) : edges_[ edge1 ].sibling;
          if(( edge1 == edges_.size() ) && ( edge2 == edges_.size() )) {
             // Create the pair
-            AddEdgePairNoCheck( v1, v2, weight );
+            AddEdgePairNoCheck( vertex1, vertex2, weight1, weight2 );
          } else if( edge1 == edges_.size() ) {
             // edge2 exists, create edge1
-            AddEdgeNoCheck( v1, v2, weight, edge2 );
-            edges_[ edge2 ].weight += weight;
+            AddEdgeNoCheck( vertex1, vertex2, weight1, edge2 );
+            edges_[ edge2 ].weight += weight2;
          } else if( edge2 == edges_.size() ) {
             // edge1 exists, create edge2
-            AddEdgeNoCheck( v2, v1, weight, edge1 );
-            edges_[ edge1 ].weight += weight;
+            AddEdgeNoCheck( vertex2, vertex1, weight2, edge1 );
+            edges_[ edge1 ].weight += weight1;
          } else {
             // Found both edges
-            edges_[ edge1 ].weight += weight;
-            edges_[ edge2 ].weight += weight;
+            edges_[ edge1 ].weight += weight1;
+            edges_[ edge2 ].weight += weight2;
          }
       }
 
@@ -531,13 +572,13 @@ class DIP_NO_EXPORT DirectedGraph {
          }
       }
 
-      /// \brief Delete both edges between vertex `v1` and `v2`.
-      void DeleteEdgePair( VertexIndex v1, VertexIndex v2 ) {
-         EdgeIndex edge = FindEdge( v1, v2 );
+      /// \brief Delete both edges between vertex `vertex1` and `vertex2`.
+      void DeleteEdgePair( VertexIndex vertex1, VertexIndex vertex2 ) {
+         EdgeIndex edge = FindEdge( vertex1, vertex2 );
          if( edge < edges_.size() ) {
             DeleteEdgePair( edge );
          } else {
-            edge = FindEdge( v2, v1 );
+            edge = FindEdge( vertex2, vertex1 );
             if( edge < edges_.size() ) {
                DeleteEdge( edge );
             }
@@ -547,10 +588,10 @@ class DIP_NO_EXPORT DirectedGraph {
       /// \brief Delete the edge `edge`.
       void DeleteEdge( EdgeIndex edge ) {
          DIP_ASSERT( edge < edges_.size() );
-         auto& v1 = vertices_[ edges_[ edge ].source ];
-         auto it = FindEdge( v1, edge );
-         if( it != v1.edges.end() ) {
-            v1.edges.erase( it );
+         auto& vertex1 = vertices_[ edges_[ edge ].source ];
+         auto it = FindEdge( vertex1, edge );
+         if( it != vertex1.edges.end() ) {
+            vertex1.edges.erase( it );
          }
          edges_[ edge ].target = edges_[ edge ].source;
          auto sibling = edges_[ edge ].sibling;
@@ -563,37 +604,38 @@ class DIP_NO_EXPORT DirectedGraph {
       /// \brief Delete the edge `edge` and its sibling.
       void DeleteEdgePair( EdgeIndex edge ) {
          DIP_ASSERT( edge < edges_.size() );
-         auto& v1 = vertices_[ edges_[ edge ].source ];
-         auto it = FindEdge( v1, edge );
-         if( it != v1.edges.end() ) {
-            v1.edges.erase( it );
+         auto& vertex1 = vertices_[ edges_[ edge ].source ];
+         auto it = FindEdge( vertex1, edge );
+         if( it != vertex1.edges.end() ) {
+            vertex1.edges.erase( it );
          }
          edges_[ edge ].target = edges_[ edge ].source;
          auto sibling = edges_[ edge ].sibling;
          if( sibling == edge ) {
             return;
          }
-         auto& v2 = vertices_[ edges_[ sibling ].source ];
-         it = FindEdge( v2, sibling );
-         if( it != v2.edges.end() ) {
-            v2.edges.erase( it );
+         auto& vertex2 = vertices_[ edges_[ sibling ].source ];
+         it = FindEdge( vertex2, sibling );
+         if( it != vertex2.edges.end() ) {
+            vertex2.edges.erase( it );
          }
          edges_[ sibling ].target = edges_[ sibling ].source;
       }
 
       /// \brief Returns a list of indices to neighboring vertices. The list is created. `EdgeIndices` is
       /// a more efficient, but less convenient, function.
-      std::vector< VertexIndex > Neighbors( VertexIndex v ) {
-         DIP_ASSERT( v < vertices_.size() );
+      std::vector< VertexIndex > Neighbors( VertexIndex vertex ) {
+         DIP_ASSERT( vertex < vertices_.size() );
          std::vector< VertexIndex > neighbors;
-         neighbors.reserve( vertices_[ v ].edges.size() );
-         for( auto edge : vertices_[ v ].edges ) {
+         neighbors.reserve( vertices_[ vertex ].edges.size() );
+         for( auto edge : vertices_[ vertex ].edges ) {
             neighbors.push_back( edges_[edge].target );
          }
          return neighbors;
       }
 
       // Adds an edge. Doesn't check for duplicates. If the edges already exist, disaster ensues.
+      // Not publicly documented, so don't use this.
       void AddEdgeNoCheck( VertexIndex source, VertexIndex target, dfloat weight ) {
          EdgeIndex ii = edges_.size();
          EdgeIndex sibling = FindEdge( target, source ); // Will equal ii if there's no such edge.
@@ -606,6 +648,7 @@ class DIP_NO_EXPORT DirectedGraph {
 
       // Adds an edge. Doesn't check for duplicates. If the edges already exist, disaster ensues.
       // This version doesn't search for the sibling.
+      // Not publicly documented, so don't use this.
       void AddEdgeNoCheck( VertexIndex source, VertexIndex target, dfloat weight, EdgeIndex sibling ) {
          EdgeIndex ii = edges_.size();
          edges_.push_back( { source, target, weight, sibling } );
@@ -614,20 +657,29 @@ class DIP_NO_EXPORT DirectedGraph {
       }
 
       // Adds an edge pair. Doesn't check for duplicates. If the edges already exist, disaster ensues.
-      void AddEdgePairNoCheck( VertexIndex v1, VertexIndex v2, dfloat weight ) {
+      // Not publicly documented, so don't use this.
+      void AddEdgePairNoCheck( VertexIndex vertex1, VertexIndex vertex2, dfloat weight1, dfloat weight2 ) {
          EdgeIndex ii = edges_.size();
-         edges_.push_back( { v1, v2, weight, ii + 1 } ); // This is edge ii
-         edges_.push_back( { v2, v1, weight, ii } );     // This is edge ii + 1
-         vertices_[ v1 ].edges.push_back( ii );
-         vertices_[ v2 ].edges.push_back( ii + 1 );
+         edges_.push_back( { vertex1, vertex2, weight1, ii + 1 } ); // This is edge ii
+         edges_.push_back( { vertex2, vertex1, weight2, ii } );     // This is edge ii + 1
+         vertices_[ vertex1 ].edges.push_back( ii );
+         vertices_[ vertex2 ].edges.push_back( ii + 1 );
       }
 
       /// \brief Re-computes edge weights using the function `func`, called as `dfloat func(dfloat source, dfloat target)`,
-      /// where the two inputs to `func` are the value of the two vertices.
+      /// where the two inputs to `func` are the value of the two vertices. The sibling edge, if it exists,
+      /// gets the same value, it is computed only once. So `func` has to be symmetric.
       template< typename F >
       void UpdateEdgeWeights( F func ) const {
-         for( auto& edge: edges_ ) {
-            edge.weight = func( vertices_[ edge.source ].value, vertices_[ edge.target ].value );
+         for( dip::uint ii = 0; ii < edges_.size(); ++ii ) {
+            auto& edge = edges_[ ii ];
+            if( edge.sibling >= ii ) { // else it's already filled out
+               dfloat weight = func( vertices_[ edge.source ].value, vertices_[ edge.target ].value );
+               edge.weight = func( vertices_[ edge.source ].value, vertices_[ edge.target ].value );
+               if( edge.sibling != ii ) {
+                  edges_[ edge.sibling ].weight = weight;
+               }
+            }
          }
       }
 
@@ -635,6 +687,9 @@ class DIP_NO_EXPORT DirectedGraph {
       void UpdateEdgeWeights() const {
          UpdateEdgeWeights( []( dfloat val1, dfloat val2 ) { return std::abs( val1 - val2 ); } );
       }
+
+      /// \brief Sets the vertex weight to 1 if the vertex is connected to vertex `root`, to 0 otherwise.
+      DIP_EXPORT void IsConnectedTo( VertexIndex root );
 
    private:
       std::vector< Vertex > vertices_{};

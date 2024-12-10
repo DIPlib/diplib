@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
+#include <memory>
 #include <queue>
 #include <vector>
 
@@ -39,14 +40,14 @@ void AddEdgeToGraph( Graph& graph, Graph::VertexIndex v1, Graph::VertexIndex v2,
 }
 
 void AddEdgeToGraph( DirectedGraph& graph, DirectedGraph::VertexIndex v1, DirectedGraph::VertexIndex v2, dfloat weight) {
-   graph.AddEdgePairNoCheck( v1, v2, weight );
+   graph.AddEdgePairNoCheck( v1, v2, weight, weight );
 }
 
 template< typename GraphType, typename TPI >
 class CreateGenericGraphLineFilter : public Framework::ScanLineFilter {
    public:
-      CreateGenericGraphLineFilter( GraphType& graph, UnsignedArray const& sizes, IntegerArray const& strides, bool useDifferences )
-            : graph_( graph ), sizes_( sizes ), strides_( strides ), useDifferences_( useDifferences ) {}
+      CreateGenericGraphLineFilter( GraphType& graph, UnsignedArray const& sizes, IntegerArray const& strides, bool computeEdgeWeights, bool useDifferences )
+            : graph_( graph ), sizes_( sizes ), strides_( strides ), computeEdgeWeights_( computeEdgeWeights ), useDifferences_( useDifferences ) {}
       void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          dip::sint stride = params.inBuffer[ 0 ].stride;
@@ -73,8 +74,11 @@ class CreateGenericGraphLineFilter : public Framework::ScanLineFilter {
             for( dip::uint jj = 0; jj < nDims; ++jj ) {
                if( process[ jj ] ) {
                   dip::uint neighborIndex = index + indexStrides[ jj ];
-                  dfloat neighborValue = static_cast< dfloat >( in[ strides_[ jj ]] );
-                  dfloat weight = useDifferences_ ? std::abs( value - neighborValue ) : ( value + neighborValue ) / 2;
+                  dfloat weight = 0;
+                  if( computeEdgeWeights_ ) {
+                     dfloat neighborValue = static_cast< dfloat >( in[ strides_[ jj ]] );
+                     weight = useDifferences_ ? std::abs( value - neighborValue ) : ( value + neighborValue ) / 2;
+                  }
                   AddEdgeToGraph( graph_, index, neighborIndex, weight );
                }
             }
@@ -85,8 +89,11 @@ class CreateGenericGraphLineFilter : public Framework::ScanLineFilter {
          for( dip::uint jj = 0; jj < nDims; ++jj ) {
             if( process[ jj ] ) {
                dip::uint neighborIndex = index + indexStrides[ jj ];
-               dfloat neighborValue = static_cast< dfloat >( in[ strides_[ jj ]] );
-               dfloat weight = useDifferences_ ? std::abs( value - neighborValue ) : ( value + neighborValue ) / 2;
+               dfloat weight = 0;
+               if( computeEdgeWeights_ ) {
+                  dfloat neighborValue = static_cast< dfloat >( in[ strides_[ jj ]] );
+                  weight = useDifferences_ ? std::abs( value - neighborValue ) : ( value + neighborValue ) / 2;
+               }
                AddEdgeToGraph( graph_, index, neighborIndex, weight );
             }
          }
@@ -95,6 +102,7 @@ class CreateGenericGraphLineFilter : public Framework::ScanLineFilter {
       GraphType& graph_;
       UnsignedArray const& sizes_;
       IntegerArray const& strides_;
+      bool computeEdgeWeights_;
       bool useDifferences_;
 };
 
@@ -103,6 +111,18 @@ using CreateGraphLineFilter = CreateGenericGraphLineFilter< Graph, TPI >;
 
 template< typename TPI >
 using CreateDirectedGraphLineFilter = CreateGenericGraphLineFilter< DirectedGraph, TPI >;
+
+void ParseWeightsParam( String const& weights, bool& computeEdgeWeights, bool& useDifferences ) {
+   computeEdgeWeights = true;
+   if( weights == "zero" ) {
+      computeEdgeWeights = false;
+      return;
+   }
+   useDifferences = weights == "difference";
+   if( !useDifferences && ( weights != "average" )) {
+      DIP_THROW_INVALID_FLAG( weights );
+   }
+}
 
 } // namespace
 
@@ -113,25 +133,33 @@ Graph::Graph( Image const& image, dip::uint connectivity, String const& weights 
    DIP_THROW_IF( !image.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( image.Dimensionality() < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( connectivity != 1, E::NOT_IMPLEMENTED );
+   bool computeEdgeWeights{};
    bool useDifferences{};
-   DIP_STACK_TRACE_THIS( useDifferences = BooleanFromString( weights, "difference", "average" ));
+   DIP_STACK_TRACE_THIS( ParseWeightsParam( weights, computeEdgeWeights, useDifferences ));
    std::unique_ptr< Framework::ScanLineFilter > lineFilter;
-   DIP_OVL_NEW_REAL( lineFilter, CreateGraphLineFilter, ( *this, image.Sizes(), image.Strides(), useDifferences ), image.DataType() );
+   DIP_OVL_NEW_REAL( lineFilter, CreateGraphLineFilter, ( *this, image.Sizes(), image.Strides(), computeEdgeWeights, useDifferences ), image.DataType() );
    DIP_STACK_TRACE_THIS( Framework::ScanSingleInput( image, {}, image.DataType(), *lineFilter,
          Framework::ScanOption::NoMultiThreading + Framework::ScanOption::NeedCoordinates ));
 }
 
-DirectedGraph::DirectedGraph( Image const& image, dip::uint connectivity, String const& weights )
-      : DirectedGraph( image.NumberOfPixels(), 2 * image.Dimensionality() ) {
+DirectedGraph::DirectedGraph( Image const& image, dip::uint connectivity, String const& weights, String const& extraEdges ) {
    DIP_THROW_IF( !image.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !image.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !image.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( image.Dimensionality() < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( connectivity != 1, E::NOT_IMPLEMENTED );
+   bool forGraphCut{};
+   DIP_STACK_TRACE_THIS( forGraphCut = BooleanFromString( extraEdges, "graphcut", "none" ));
+   dip::uint nVertices = image.NumberOfPixels();
+   dip::uint nEdges = 2 * image.Dimensionality();
+   vertices_.reserve( nVertices + forGraphCut ? 2 : 0 ); // 2 additional vertices for the graph cut segmentation algorithm
+   vertices_.resize( nVertices, Vertex( nEdges + forGraphCut ? 1 : 0 )); // 1 additional edges per vertex for the graph cut segmentation algorithm
+   edges_.reserve( nVertices * ( nEdges + forGraphCut ? 2 : 0 )); // 2 additional edges per vertex in the graph cut segmentation algorithm
+   bool computeEdgeWeights{};
    bool useDifferences{};
-   DIP_STACK_TRACE_THIS( useDifferences = BooleanFromString( weights, "difference", "average" ));
+   DIP_STACK_TRACE_THIS( ParseWeightsParam( weights, computeEdgeWeights, useDifferences ));
    std::unique_ptr< Framework::ScanLineFilter > lineFilter;
-   DIP_OVL_NEW_REAL( lineFilter, CreateDirectedGraphLineFilter, ( *this, image.Sizes(), image.Strides(), useDifferences ), image.DataType() );
+   DIP_OVL_NEW_REAL( lineFilter, CreateDirectedGraphLineFilter, ( *this, image.Sizes(), image.Strides(), computeEdgeWeights, useDifferences ), image.DataType() );
    DIP_STACK_TRACE_THIS( Framework::ScanSingleInput( image, {}, image.DataType(), *lineFilter,
          Framework::ScanOption::NoMultiThreading + Framework::ScanOption::NeedCoordinates ));
 }
@@ -144,7 +172,27 @@ DirectedGraph::DirectedGraph( Graph const& graph )
    auto const& e = graph.Edges();
    for( dip::uint ii = 0; ii < graph.NumberOfEdges(); ++ii ) {
       if( e[ ii ].IsValid() ) {
-         AddEdgePairNoCheck( e[ ii ].vertices[ 0 ], e[ ii ].vertices[ 1 ], e[ ii ].weight );
+         AddEdgePairNoCheck( e[ ii ].vertices[ 0 ], e[ ii ].vertices[ 1 ], e[ ii ].weight, e[ ii ].weight );
+      }
+   }
+}
+
+void DirectedGraph::IsConnectedTo( VertexIndex root ) {
+   for( auto& vertex: vertices_ ) {
+      vertex.value = 0;
+   }
+   std::vector< VertexIndex > queue;
+   vertices_[ root ].value = 1;
+   queue.push_back( root );
+   while( !queue.empty() ) {
+      VertexIndex current = queue.back();
+      queue.pop_back();
+      for( auto const& edge : vertices_[ current ].edges ) {
+         VertexIndex t = edges_[ edge ].target;
+         if( vertices_[ t ].value == 0 ) {
+            vertices_[ t ].value = 1;
+            queue.push_back( t );
+         }
       }
    }
 }
