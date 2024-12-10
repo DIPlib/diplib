@@ -137,7 +137,7 @@ for ii = 1:iterations
       [x,y] = resample(x,y,md);
       P = compute_matrix(length(x),alpha,beta,stepsz);
    end
-   
+
    % Calculate external force
    s = [x,y];
    p = get_subpixel(f,s,'linear');
@@ -164,7 +164,7 @@ for ii = 1:iterations
    x(x>maxx) = maxx;
    y(y<0) = 0;
    y(y>maxy) = maxy;
-   
+
    %if mod(ii,10)
    %   snakedraw([x,y],h);
    %   drawnow;
@@ -208,7 +208,7 @@ y = interp1(p,y,0:d:p(end-r+1),mode);
 if norm([x(end),y(end)]-[x(1),y(1)]) < d/2
    x(end) = [];
    y(end) = [];
-end`
+end
 % ensure column vectors
 x = x(:);
 y = y(:);

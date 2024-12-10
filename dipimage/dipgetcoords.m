@@ -123,7 +123,7 @@ while ~done
          dipfig_setpointer(fig,'cross');
          set(ax,'Units','pixels');
       else
-         switch get(fig,'SelectionType');
+         switch get(fig,'SelectionType')
             case 'normal' % left click
                pt = dipfig_getcurpos(ax);
             case 'alt' % right
