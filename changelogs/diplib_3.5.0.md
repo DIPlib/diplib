@@ -265,7 +265,7 @@ None, but see bugfixes to *DIPlib*.
 
 - Significantly improved the command to download *Bio-Formats*: `python -m diplib download_bioformats` now
   has an optional argument `-u` to force an update of the existing library, and another one to specify
-  which verison to download. By default, it downloads whatever the latest version is, we no longer hard-code
+  which version to download. By default, it downloads whatever the latest version is, we no longer hard-code
   a specific version number.
 
 

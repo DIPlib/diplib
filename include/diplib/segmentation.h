@@ -660,9 +660,91 @@ DIP_NODISCARD inline Image Superpixels(
    return out;
 }
 
-// TODO: Document
-// TODO: Implement
-//DIP_EXPORT void GraphCut( Image const& in, Image const& markers, Image& out );
+/// \brief Graph-cut segmentation
+///
+/// Applies the graph-cut segmentation algorithm to the image `in` as described by Boykov and Jolly (2001).
+/// Pixels in `markers` with the value 1 are determined by the called to be object pixels; pixels
+/// with the value 2 are background pixels. All other pixels will be assigned to either foreground
+/// or background by the algorithm.
+///
+/// A \ref DirectedGraph is constructed in which each pixel is a vertex. Neighboring pixels
+/// (4-connected neighborhood in 2D, 6-connected in 3D) are connected with an edge in either direction,
+/// both with a weight $w$ given by
+///
+/// $$ w = \exp( \frac{-(v_1 - v_2)^2}{2 \sigma^2} ) \; ,$$
+///
+/// where $\sigma$ is given by `sigma`, and $v_1$ and $v_2$ are the two pixel's intensities.
+///
+/// Additionally, two terminal nodes are added to the graph (the source and the sink nodes). These
+/// are joined by edges to all pixels. The weights of these edges are determined by `markers`. Pixels where
+/// `markers == 1` (the foreground marker) are connected to the source node by an edge with an infinite weight.
+/// Likewise, pixels where `markers == 2` (the background marker) are connected to the sink node by an edge
+/// with an infinite weight.
+/// The weight of edges to all other pixels is determined by intensity statistics of the pixels known
+/// to be foreground and background, and the distances to those pixels, as described next.
+///
+/// The function computes a histogram $H_1$ of all pixels marked as foreground, a histogram $H_2$ of all pixels
+/// marked as background, a distance $D_1(p)$ from each pixel $p$ to the nearest foreground pixel, and a distance
+/// $D_2(p)$ from each pixel $p$ to the nearest background pixel.
+///
+/// The histograms $H_1$ and $H_2$ are smoothed according to the Freedman–Diaconis rule for bin width,
+/// to approximate a kernel density estimate of the pixel intensities of foreground and background.
+/// We now compute $R_1 = -\ln \frac{H_1}{\sum H_1}$ and likewise for $R_2$. We denote $R_1(p)$ the value of
+/// this function at the bin corresponding to the intensity of pixel $p$.
+///
+/// The weights of the edges from the source node to all pixels $p$ (that are not in a marker) is now given by
+///
+/// $$ w = \lambda R_2(p) + \gamma D_2(p) \; .$$
+///
+/// (Indeed, the source weights are determined using the intensity statistics and distances for the background marker).
+/// $\lambda$ is given by `lambda` and $\gamma$ is given by `gamma`.
+/// The weights of the edges for the sink node are computed identically using $R_1(p)$ and $D_1(p)$.
+///
+/// `lambda` controls the relative importance of intensity information with respect to the edges in the image.
+///
+/// `gamma` controls the relative importance of distances to the markers.
+/// It is 0 by default, as Boykov and Jolly did not mention distances in their original paper.
+/// Adding in a distance is an attempt to avoid the bias towards placing the segmentation boundary tightly around
+/// the foreground or background marker. The value of `gamma` obviously must depend on the size of the image and
+/// the distances between foreground and background markers, and should always be very small to avoid these
+/// distances trumping everything. Note that the distances computed are influenced by the pixel sizes of `in`.
+///
+/// We can make some simplifications to the graph in a way that the minimal cut is not affected. This simplification
+/// allows us to have, for each pixel, either an edge to only the source or to only the sink, but never both. This
+/// saves a significant amount of memory and computation time.
+///
+/// Finally, this function calls \ref GraphCut(DirectedGraph&, DirectedGraph::VertexIndex, DirectedGraph::VertexIndex)
+/// to compute the globally optimal segmentation of the graph. All pixels connected to the source node will
+/// become object pixels in the output binary image.
+///
+/// `in` must be scalar and real-valued. `markers` must have the same sizes and be of an unsigned integer type.
+///
+/// !!! literature
+///     - Y.Y. Boykov and M.P. Jolly, "Interactive graph cuts for optimal boundary and region segmentation of objects in N-D images",
+///       Proceedings Eighth IEEE International Conference on Computer Vision (ICCV 2001) 1:105-112, 2001.
+///
+/// !!! attention
+///     This is a slow algorithm that uses a lot of memory. It is not suited for very large images.
+///     It is usually advantageous to work with superpixels if a graph-cut segmentation is needed.
+DIP_EXPORT void GraphCut(
+   Image const& in,
+   Image const& markers,
+   Image& out,
+   dfloat sigma = 30.0,
+   dfloat lambda = 1.0,
+   dfloat gamma = 0.0
+);
+DIP_NODISCARD inline Image GraphCut(
+   Image const& in,
+   Image const& markers,
+   dfloat sigma = 30.0,
+   dfloat lambda = 1.0,
+   dfloat gamma = 0.0
+) {
+   Image out;
+   GraphCut( in, markers, out, sigma, lambda, gamma );
+   return out;
+}
 
 /// \endgroup
 
