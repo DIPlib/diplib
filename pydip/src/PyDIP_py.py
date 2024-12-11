@@ -246,8 +246,8 @@ _doc_dict = {}
 root_url = 'https://diplib.org/diplib-docs/'
 
 
-def Doc(function_name):
-    """Open the online DIPlib documentation to the page for the given function."""
+def Doc(requested_name):
+    """Open the online DIPlib documentation to the page for the given function or class."""
     import urllib.parse
     import webbrowser
 
@@ -264,27 +264,41 @@ def Doc(function_name):
                 else:
                     _doc_dict[name] = [url]
 
-    if not isinstance(function_name, str):
-        # Maybe it's a function?
-        if callable(function_name):
-            function_name = function_name.__name__
+    if not isinstance(requested_name, str):
+        if callable(requested_name):
+            # It's a function or a class
+            qualname = requested_name.__qualname__
+            if qualname.startswith('PyCapsule'):
+                # .__qualname__ doesn't work in Pybind11, it puts every method in `PyCapsule.`
+                requested_name = requested_name.__module__ + "." + requested_name.__name__
+                # TODO: This works only for functions inside a submodule, it doesn't work correctly for class methods
+            else:
+                requested_name = qualname
+
+        elif requested_name.__class__.__name__ == "module":
+            # It's a module
+            requested_name = requested_name.__name__
+        elif "__module__" in dir(requested_name) and requested_name.__module__ == 'diplib.PyDIP_bin':
+            # It's an object created by a DIPlib function
+            requested_name = requested_name.__class__.__qualname__
+            # TODO: This does not always produce the right name.
         else:
-            raise RuntimeError("The input was not a function nor a function name.")
+            raise RuntimeError("The input was not a function nor a class, nor a name of one.")
 
-    function_name = function_name.removeprefix('diplib.').removeprefix('PyDIP_bin.')
-    name = function_name.casefold()
-    if not name.startswith('dip.'):
-        name = 'dip.' + name
+    requested_name = requested_name.removeprefix('diplib.').removeprefix('PyDIP_bin.')
+    lookup_name = requested_name.casefold()
+    if not lookup_name.startswith('dip.'):
+        lookup_name = 'dip.' + lookup_name
 
-    if not name in _doc_dict:
-        print (f'No function {function_name} found. Opening Google search.')
-        search_string = urllib.parse.quote(function_name)
+    if not lookup_name in _doc_dict:
+        print (f'No function or class {requested_name} found. Opening Google search.')
+        search_string = urllib.parse.quote(requested_name)
         webbrowser.open(f'https://www.google.com/search?q=site:diplib.org+{search_string}', new=0, autoraise=True)
         return
 
-    urls = _doc_dict[name]
+    urls = _doc_dict[lookup_name]
     if len(urls) > 1:
-        print(f'Found multiple matches for {function_name} (opening the first one):')
+        print(f'Found multiple matches for {requested_name} (opening the first one):')
         for u in urls:
             print(f'  - {root_url + u}')
     webbrowser.open(root_url + urls[0], new=0, autoraise=True)
