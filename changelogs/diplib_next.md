@@ -28,7 +28,7 @@ date: 2020-00-00
   It finds connected components in the graph.
 
 - Added `dip::GraphCut()`, a function that computes the grap-cut segmentation of an image.
-  
+
 - Added `dip::Histogram::Configuration::Mode::IS_COMPLETE`, which prevents a configuration from being
   modified when computing a histogram. It is set by `dip::Histogram::Configuration::Complete()`.
   This option is dangerous to use!
@@ -124,23 +124,22 @@ date: 2020-00-00
 
 ### Changed functionality
 
-- The function `dip.MaximumAndMinimum()` now returns a `namedtuple` of type `MinMaxValues` instead of a plain `tuple`.
-  It behaves in the same way as the previous tuple, but the two values can additionally (and preferably) be accessed
-  using the dot notation: `mm.maximum` instead of `mm[1]`.
-  See [issue #184](https://github.com/DIPlib/diplib/issues/184).
+- Converted several tuple output arguments to `namedtuple`. Note of these changes should affect existing code:
 
-- Likewise, the functions `dip.MandersColocalizationCoefficients()` and `dip.CostesColocalizationCoefficients()`
-  now return a `namedtuple` of type `ColocalizationCoefficients` instead of a plain `tuple`.
+    - The function `dip.MaximumAndMinimum()` now returns a `namedtuple` of type `MinMaxValues`.
+      The two values can now (and preferably) be accessed using the dot notation: `mm.maximum` instead of `mm[1]`.
+      See [issue #184](https://github.com/DIPlib/diplib/issues/184).
 
-- Likewise, the functions `dip.ChainCode.BoundingBox()` and `dip.Polygon.BoundingBox()` now return a `namedtuple`
-  of type `BoundingBoxInteger` and `BoundingBoxFloat` respectively, which contain two `namedtuple`s of type
-  `VertexInteger` or `VertexFloat`. Again, these types mimic the old `tuple` outputs, but are self-documenting and
-  easier to use.
+    - The functions `dip.MandersColocalizationCoefficients()` and `dip.CostesColocalizationCoefficients()`
+      now return a `namedtuple` of type `ColocalizationCoefficients`.
 
-- Likewise, other `dip.Polygon` functions such as `dip.Polygon.Centroid()` now return a `namedtuple` of type `VertexFloat`
-  instead of a plain `tuple`.
+    - The functions `dip.ChainCode.BoundingBox()` and `dip.Polygon.BoundingBox()` now return a `namedtuple`
+      of type `BoundingBoxInteger` and `BoundingBoxFloat` respectively, which contain two `namedtuple`s of type
+      `VertexInteger` or `VertexFloat`.
 
-- Likewise, `dip.ChainCode.start` is now a `namedtuple` of type `VertexInteger` instead of a plain `tuple`.
+    - Other `dip.Polygon` functions such as `dip.Polygon.Centroid()` now return a `namedtuple` of type `VertexFloat`.
+
+    - `dip.ChainCode.start` is now a `namedtuple` of type `VertexInteger`.
 
 - The types `SubpixelLocationResult`, `RadonCircleParameters`, `RegressionParameters`, `GaussianParameters`,
   `FeatureInformation`, `ValueInformation`, `EllipseParameters`, `FeretValues`, `RadiusValues`, `QuartilesResult`,
@@ -148,6 +147,15 @@ date: 2020-00-00
   functions, and all simply emulating a C++ `struct`, are no longer special types in the `diplib.PyDIP_bin` namespace,
   but `namedtuple`s. They new types behave identically, but can additionally be unpacked, for example:
   `_, q1, _, q3, _ = dip.Quartiles(img)`.
+
+- `dip::Measurement::IteratorFeature` was bound in Python as `dip.Measurement.MeasurementFeature`, and
+  `dip::Measurement::IteratorObject` as `dip.Measurement.MeasurementObject`. The names of these classes now
+  match the C++ name, to make `dip.Doc()` useful with these classes. But the names don't make much sense in
+  Python because these objects don't work as iterators like they do in C++.
+
+- Overloaded `len()` for `dip.Measurement` and `dip.Measurement.IteratorFeature` (where it's equal to
+  `NumberOfObjects()`), and for `dip.Measurement.IteratorObject` (where it's equal to `NumberOfValues()`).
+  `len()` thus produces the same values it does when casting these objects to a NumPy array.
 
 (See also changes to *DIPlib*.)
 

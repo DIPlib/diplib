@@ -348,6 +348,7 @@ void init_measurement( py::module& m ) {
       os << self;
       return os.str();
    } );
+   meas.def( "__len__", &dip::Measurement::NumberOfObjects, "Same as NumberOfObjects()." ),
    meas.def( "__getitem__", py::overload_cast< dip::uint >( &dip::Measurement::operator[], py::const_ ),
              "objectID"_a, py::return_value_policy::reference_internal, doc_strings::dip·Measurement·operatorsqbra·dip·uint··C );
    meas.def( "__getitem__", py::overload_cast< dip::String const& >( &dip::Measurement::operator[], py::const_ ),
@@ -369,13 +370,14 @@ void init_measurement( py::module& m ) {
    meas.def( py::self + py::self );
 
    // dip::Measurement::IteratorFeature
-   auto feat = py::class_< dip::Measurement::IteratorFeature >( meas, "MeasurementFeature", py::buffer_protocol(), doc_strings::dip·Measurement·IteratorFeature );
+   auto feat = py::class_< dip::Measurement::IteratorFeature >( meas, "IteratorFeature", py::buffer_protocol(), doc_strings::dip·Measurement·IteratorFeature );
    feat.def_buffer( []( dip::Measurement::IteratorFeature& self ) -> py::buffer_info { return MeasurementFeatureToBuffer( self ); } );
    feat.def( "__repr__", []( dip::Measurement::IteratorFeature const& self ) {
       std::ostringstream os;
-      os << "<MeasurementFeature for feature " << self.FeatureName() << " and " << self.NumberOfObjects() << " objects>";
+      os << "<IteratorFeature for feature " << self.FeatureName() << " and " << self.NumberOfObjects() << " objects>";
       return os.str();
    } );
+   feat.def( "__len__", &dip::Measurement::IteratorFeature::NumberOfObjects, "Same as NumberOfObjects()." ),
    feat.def( "__getitem__", []( dip::Measurement::IteratorFeature const& self, dip::uint objectID ) {
       return MeasurementValuesToList( self[ objectID ] );
    }, "objectID"_a, doc_strings::dip·Measurement·IteratorFeature·operatorsqbra·dip·uint··C );
@@ -394,15 +396,16 @@ void init_measurement( py::module& m ) {
    feat.def( "__le__", []( dip::Measurement::IteratorFeature const& lhs, dip::Measurement::ValueType rhs ) { return lhs <= rhs; }, py::is_operator(), doc_strings::dip·operatorlteq·Measurement·IteratorFeature·CL·Measurement·ValueType· );
 
    // dip::Measurement::IteratorObject
-   auto obj = py::class_< dip::Measurement::IteratorObject >( meas, "MeasurementObject", py::buffer_protocol(), doc_strings::dip·Measurement·IteratorObject );
+   auto obj = py::class_< dip::Measurement::IteratorObject >( meas, "IteratorObject", py::buffer_protocol(), doc_strings::dip·Measurement·IteratorObject );
    obj.def_buffer( []( dip::Measurement::IteratorObject& self ) -> py::buffer_info {
       return MeasurementObjectToBuffer( self );
    } );
    obj.def( "__repr__", []( dip::Measurement::IteratorObject const& self ) {
       std::ostringstream os;
-      os << "<MeasurementObject with " << self.NumberOfFeatures() << " features for object " << self.ObjectID() << '>';
+      os << "<IteratorObject with " << self.NumberOfFeatures() << " features for object " << self.ObjectID() << '>';
       return os.str();
    } );
+   obj.def( "__len__", py::overload_cast<>( &dip::Measurement::IteratorObject::NumberOfValues, py::const_ ), "Same as NumberOfValues()." ),
    obj.def( "__getitem__", []( dip::Measurement::IteratorObject const& self, dip::String const& name ) {
       return MeasurementValuesToList( self[ name ] );
    }, "name"_a, doc_strings::dip·Measurement·IteratorObject·operatorsqbra·String·CL·C );
