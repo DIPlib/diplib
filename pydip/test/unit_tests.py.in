@@ -26,7 +26,7 @@ for file in glob.glob(os.path.join("@CMAKE_CURRENT_LIST_DIR@", "test", "*.md")):
        file,
        module_relative=False,
        globs={"examples_dir": os.path.join("@CMAKE_CURRENT_LIST_DIR@", "..", "examples")},
-       optionflags=doctest.IGNORE_EXCEPTION_DETAIL,
+       optionflags=doctest.IGNORE_EXCEPTION_DETAIL | doctest.ELLIPSIS,
     )
     if failure_count > 0:
         sys.exit(1)

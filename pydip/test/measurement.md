@@ -10,7 +10,7 @@ Test data
 ---
 
     >>> a = dip.ImageRead(examples_dir + "/cermet.ics")
-    >>> a.SetPixelSize(1, "um")  # "um" is easier to type than "μm", but they mean the same thing
+    >>> a.SetPixelSize(1, "um")
     >>> a
     <Scalar image, UINT8, sizes {256, 256}>
     >>> b = a < 120
@@ -27,7 +27,7 @@ Printing all data
        |       Size |   Solidity |                                            Statistics | ConvexArea | 
     -- | ---------- | ---------- | ----------------------------------------------------- | ---------- | 
        |            |            |       Mean |     StdDev |   Skewness | ExcessKurtosis |            | 
-       |      (μm²) |            |            |            |            |                |      (μm²) | 
+       |      (...) |            |            |            |            |                |      (...) | 
     -- | ---------- | ---------- | ---------- | ---------- | ---------- | -------------- | ---------- | 
      6 |      262.0 |     0.9668 |      45.34 |      30.82 |     0.7216 |        -0.6831 |      271.0 | 
      7 |      63.00 |     0.9474 |      86.35 |      13.41 |     0.2313 |        -0.5471 |      66.50 | 
@@ -110,7 +110,7 @@ Finally, we can retrieve all object IDs and information about all features:
     >>> m.Features()
     [FeatureInformation(name='Size', startColumn=0, numberValues=1), FeatureInformation(name='Solidity', startColumn=1, numberValues=1), FeatureInformation(name='Statistics', startColumn=2, numberValues=4), FeatureInformation(name='ConvexArea', startColumn=6, numberValues=1)]
     >>> m.Values()
-    [ValueInformation(name='', units=μm²), ValueInformation(name='', units=), ValueInformation(name='Mean', units=), ValueInformation(name='StdDev', units=), ValueInformation(name='Skewness', units=), ValueInformation(name='ExcessKurtosis', units=), ValueInformation(name='', units=μm²)]
+    [ValueInformation(name='', units=...), ValueInformation(name='', units=), ValueInformation(name='Mean', units=), ValueInformation(name='StdDev', units=), ValueInformation(name='Skewness', units=), ValueInformation(name='ExcessKurtosis', units=), ValueInformation(name='', units=...)]
 
 Note how `m.Features()` returns information about the column groups, whereas `m.Values()`
 returns information about the columns. Combining both might be necessary to fully understand
@@ -168,7 +168,7 @@ objects can be iterated over:
     ...     print(s)
     [363.0]
     [0.9041095890410958]
-    [71.55922865013774, 22.252784082073312, -0.25412609396208286, -0.594586255044733]
+    [71.55922865013774, 22.252784082073312, -0.25412609396208..., -0.594586255044733]
     [401.5]
 
 They can also be cast to a NumPy array without copy:
@@ -189,7 +189,7 @@ it is applied to.
 
     >>> s = m['Statistics']
     >>> s[15]
-    [71.55922865013774, 22.252784082073312, -0.25412609396208286, -0.594586255044733]
+    [71.55922865013774, 22.252784082073312, -0.25412609396208..., -0.594586255044733]
     >>> s.Subset(1)
     <IteratorFeature for feature Statistics and 43 objects>
     >>> s[15]
@@ -210,9 +210,9 @@ you'd obtain with those keys, and `items()` returns a list of all the (key, valu
     >>> r.keys()
     ['Size', 'Solidity', 'Statistics', 'ConvexArea']
     >>> r.values()
-    [[363.0], [0.9041095890410958], [71.55922865013774, 22.252784082073312, -0.25412609396208286, -0.594586255044733], [401.5]]
+    [[363.0], [0.9041095890410958], [71.55922865013774, 22.252784082073312, -0.25412609396208..., -0.594586255044733], [401.5]]
     >>> r.items()
-    [('Size', [363.0]), ('Solidity', [0.9041095890410958]), ('Statistics', [71.55922865013774, 22.252784082073312, -0.25412609396208286, -0.594586255044733]), ('ConvexArea', [401.5])]
+    [('Size', [363.0]), ('Solidity', [0.9041095890410958]), ('Statistics', [71.55922865013774, 22.252784082073312, -0.25412609396208..., -0.594586255044733]), ('ConvexArea', [401.5])]
 
 Note that `len()` returns the total number of values, not the number of features. So `len(r)` is not
 the same as `len(r.keys())`. This might be problematic. TODO: Do we fix this? Do we want to?
