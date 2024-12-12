@@ -22,7 +22,12 @@ sys.modules['diplib'] = staging.diplib
 
 for file in glob.glob(os.path.join("@CMAKE_CURRENT_LIST_DIR@", "test", "*.md")):
     print("\033[35m[Python tests]\033[0m", file)
-    (failure_count, test_count) = doctest.testfile(file, module_relative=False, optionflags=doctest.IGNORE_EXCEPTION_DETAIL)
+    (failure_count, test_count) = doctest.testfile(
+       file,
+       module_relative=False,
+       globs={"examples_dir": os.path.join("@CMAKE_CURRENT_LIST_DIR@", "..", "examples")},
+       optionflags=doctest.IGNORE_EXCEPTION_DETAIL,
+    )
     if failure_count > 0:
         sys.exit(1)
 
