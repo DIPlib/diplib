@@ -122,6 +122,15 @@ date: 2020-00-00
   NOTE: We could copy the full documentation in the future, but that requires more extensive Markdown
   parsing to produce good results.
 
+- Overloaded `len()` for `dip.Measurement`. It's equal to `NumberOfObjects()` (the number of rows),
+  and thus produces the same value it does when casting the measurement objects to a NumPy array
+  (`len(measurement)` is the same as `len(np.asarray(measurement))`).
+
+- Overloaded `len()` and `iter()` for `dip.Measurement.IteratorFeature` and `dip.Measurement.IteratorObject`,
+  and added `keys()`, `values()` and `items()` class methods. Now both behave more like Python dicts.
+  But note that all three of these methods will output a list with a copy of the values, it's not a view
+  as with dicts.
+
 ### Changed functionality
 
 - Converted several tuple output arguments to `namedtuple`. Note of these changes should affect existing code:
@@ -152,10 +161,6 @@ date: 2020-00-00
   `dip::Measurement::IteratorObject` as `dip.Measurement.MeasurementObject`. The names of these classes now
   match the C++ name, to make `dip.Doc()` useful with these classes. But the names don't make much sense in
   Python because these objects don't work as iterators like they do in C++.
-
-- Overloaded `len()` for `dip.Measurement` and `dip.Measurement.IteratorFeature` (where it's equal to
-  `NumberOfObjects()`), and for `dip.Measurement.IteratorObject` (where it's equal to `NumberOfValues()`).
-  `len()` thus produces the same values it does when casting these objects to a NumPy array.
 
 (See also changes to *DIPlib*.)
 

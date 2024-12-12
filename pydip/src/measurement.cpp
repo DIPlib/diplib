@@ -377,10 +377,30 @@ void init_measurement( py::module& m ) {
       os << "<IteratorFeature for feature " << self.FeatureName() << " and " << self.NumberOfObjects() << " objects>";
       return os.str();
    } );
-   feat.def( "__len__", &dip::Measurement::IteratorFeature::NumberOfObjects, "Same as NumberOfObjects()." ),
    feat.def( "__getitem__", []( dip::Measurement::IteratorFeature const& self, dip::uint objectID ) {
       return MeasurementValuesToList( self[ objectID ] );
    }, "objectID"_a, doc_strings::dip·Measurement·IteratorFeature·operatorsqbra·dip·uint··C );
+   feat.def( "__len__", &dip::Measurement::IteratorFeature::NumberOfObjects, "Same as NumberOfObjects()." ),
+   feat.def( "__iter__", []( dip::Measurement::IteratorFeature const& self ) { return self.FirstObject(); } );
+   feat.def( "keys", &dip::Measurement::IteratorFeature::Objects, "Returns a list with all the keys (object IDs). Same as Objects()." );
+   feat.def( "values", []( dip::Measurement::IteratorFeature const& self  ) {
+      py::list list( self.NumberOfObjects() );
+      py::ssize_t index = 0;
+      auto it = self.FirstObject();
+      do {
+         PyList_SET_ITEM( list.ptr(), index++, MeasurementValuesToList( it ).release().ptr() );
+      } while( ++it );
+      return list;
+   }, "Returns a list with all the values." );
+   feat.def( "items", []( dip::Measurement::IteratorFeature const& self  ) {
+      py::list list( self.NumberOfObjects() );
+      py::ssize_t index = 0;
+      auto it = self.FirstObject();
+      do {
+         PyList_SET_ITEM( list.ptr(), index++, py::make_tuple( py::cast( it.ObjectID() ).release(), MeasurementValuesToList( it ).release() ).release().ptr() );
+      } while( ++it );
+      return list;
+   }, "Returns a list of tuples with (key, value) pairs." );
    feat.def( "Subset", &dip::Measurement::IteratorFeature::Subset, "first"_a, "number"_a = 1, doc_strings::dip·Measurement·IteratorFeature·Subset·dip·uint··dip·uint· );
    feat.def( "FeatureName", &dip::Measurement::IteratorFeature::FeatureName, doc_strings::dip·Measurement·IteratorFeature·FeatureName·C );
    feat.def( "Values", &dip::Measurement::IteratorFeature::Values, doc_strings::dip·Measurement·IteratorFeature·Values·C );
@@ -395,6 +415,14 @@ void init_measurement( py::module& m ) {
    feat.def( "__lt__", []( dip::Measurement::IteratorFeature const& lhs, dip::Measurement::ValueType rhs ) { return lhs < rhs; }, py::is_operator(), doc_strings::dip·operatorlt·Measurement·IteratorFeature·CL·Measurement·ValueType· );
    feat.def( "__le__", []( dip::Measurement::IteratorFeature const& lhs, dip::Measurement::ValueType rhs ) { return lhs <= rhs; }, py::is_operator(), doc_strings::dip·operatorlteq·Measurement·IteratorFeature·CL·Measurement·ValueType· );
 
+   // dip::Measurement::IteratorFeature::Iterator
+   auto feat_it = py::class_< dip::Measurement::IteratorFeature::Iterator >( feat, "Iterator", doc_strings::dip·Measurement·IteratorFeature·Iterator );
+   feat_it.def( "__iter__", []( dip::Measurement::IteratorFeature::Iterator& self ) { return self; } );
+   feat_it.def( "__next__", []( dip::Measurement::IteratorFeature::Iterator& self ) {
+      if( self.IsAtEnd() ) { throw py::stop_iteration(); }
+      return MeasurementValuesToList( self++ );
+   } );
+
    // dip::Measurement::IteratorObject
    auto obj = py::class_< dip::Measurement::IteratorObject >( meas, "IteratorObject", py::buffer_protocol(), doc_strings::dip·Measurement·IteratorObject );
    obj.def_buffer( []( dip::Measurement::IteratorObject& self ) -> py::buffer_info {
@@ -405,10 +433,37 @@ void init_measurement( py::module& m ) {
       os << "<IteratorObject with " << self.NumberOfFeatures() << " features for object " << self.ObjectID() << '>';
       return os.str();
    } );
-   obj.def( "__len__", py::overload_cast<>( &dip::Measurement::IteratorObject::NumberOfValues, py::const_ ), "Same as NumberOfValues()." ),
    obj.def( "__getitem__", []( dip::Measurement::IteratorObject const& self, dip::String const& name ) {
       return MeasurementValuesToList( self[ name ] );
    }, "name"_a, doc_strings::dip·Measurement·IteratorObject·operatorsqbra·String·CL·C );
+   obj.def( "__len__", py::overload_cast<>( &dip::Measurement::IteratorObject::NumberOfValues, py::const_ ), "Same as NumberOfValues()." ),
+   obj.def( "__iter__", []( dip::Measurement::IteratorObject const& self ) { return self.FirstFeature(); } );
+   obj.def( "keys", []( dip::Measurement::IteratorObject const& self ) {
+      py::list list( self.NumberOfFeatures() );
+      py::ssize_t index = 0;
+      for( auto const& f : self.Features() ) {
+         PyList_SET_ITEM( list.ptr(), index++, py::cast( f.name ).release().ptr() );
+      };
+      return list;
+   }, "Returns a list with all the keys (feature names)." );
+   obj.def( "values", []( dip::Measurement::IteratorObject const& self ) {
+      py::list list( self.NumberOfFeatures() );
+      py::ssize_t index = 0;
+      auto it = self.FirstFeature();
+      do {
+         PyList_SET_ITEM( list.ptr(), index++, MeasurementValuesToList( it ).release().ptr() );
+      } while( ++it );
+      return list;
+   }, "Returns a list with all the values." );
+   obj.def( "items", []( dip::Measurement::IteratorObject const& self ) {
+      py::list list( self.NumberOfFeatures() );
+      py::ssize_t index = 0;
+      auto it = self.FirstFeature();
+      do {
+         PyList_SET_ITEM( list.ptr(), index++, py::make_tuple( py::cast( it.FeatureName() ).release(), MeasurementValuesToList( it ).release() ).release().ptr() );
+      } while( ++it );
+      return list;
+   }, "Returns a list of tuples with (key, value) pairs." );
    obj.def( "ObjectID", &dip::Measurement::IteratorObject::ObjectID, doc_strings::dip·Measurement·IteratorObject·ObjectID·C );
    obj.def( "FeatureExists", &dip::Measurement::IteratorObject::FeatureExists, doc_strings::dip·Measurement·IteratorObject·FeatureExists·String·CL·C );
    obj.def( "Features", &dip::Measurement::IteratorObject::Features, doc_strings::dip·Measurement·IteratorObject·Features·C );
@@ -417,6 +472,14 @@ void init_measurement( py::module& m ) {
    obj.def( "Values", py::overload_cast<>( &dip::Measurement::IteratorObject::Values, py::const_ ), doc_strings::dip·Measurement·IteratorObject·Values·C );
    obj.def( "NumberOfValues", py::overload_cast< dip::String const& >( &dip::Measurement::IteratorObject::NumberOfValues, py::const_ ), "name"_a, doc_strings::dip·Measurement·IteratorObject·NumberOfValues·String·CL·C );
    obj.def( "NumberOfValues", py::overload_cast<>( &dip::Measurement::IteratorObject::NumberOfValues, py::const_ ), doc_strings::dip·Measurement·IteratorObject·NumberOfValues·C );
+
+   // dip::Measurement::IteratorObject::Iterator
+   auto obj_it = py::class_< dip::Measurement::IteratorObject::Iterator >( obj, "Iterator", doc_strings::dip·Measurement·IteratorObject·Iterator );
+   obj_it.def( "__iter__", []( dip::Measurement::IteratorObject::Iterator& self ) { return self; } );
+   obj_it.def( "__next__", []( dip::Measurement::IteratorObject::Iterator& self ) {
+      if( self.IsAtEnd() ) { throw py::stop_iteration(); }
+      return MeasurementValuesToList( self++ );
+   } );
 
    // Other functions
    m.def( "ObjectToMeasurement", py::overload_cast< dip::Image const&, dip::Measurement::IteratorFeature const& >( &dip::ObjectToMeasurement ), "label"_a, "featureValues"_a, doc_strings::dip·ObjectToMeasurement·Image·CL·Image·L·Measurement·IteratorFeature·CL );
