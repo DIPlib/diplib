@@ -29,6 +29,7 @@ These pages will get you started using *DIPlib* within Python. If you are famili
 1. \subpage pum_indexing
 1. \subpage pum_tensor_images
 1. \subpage pum_filtering
+1. \subpage pum_measurement
 1. \subpage pum_display
 1. \subpage pum_numpy
 1. \subpage pum_dipjavaio
