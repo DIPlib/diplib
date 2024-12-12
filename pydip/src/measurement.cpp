@@ -22,8 +22,8 @@
 #include <vector>
 
 #include "pydip.h"
+#include "accumulators.h" // IWYU pragma: keep
 #include "diplib/measurement.h"
-#include "diplib/accumulators.h"
 #include "diplib/chain_code.h"
 #include "diplib/label_map.h"
 

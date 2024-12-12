@@ -16,18 +16,13 @@
  */
 
 #include "pydip.h"
+#include "accumulators.h" // IWYU pragma: keep
 #include "diplib/statistics.h"
-#include "diplib/accumulators.h"
 
 
 namespace pybind11 {
 namespace detail {
 
-DIP_OUTPUT_TYPE_CASTER( QuartilesResult, "QuartilesResult", "minimum lowerQuartile median upperQuartile maximum", src.minimum, src.lowerQuartile, src.median, src.upperQuartile, src.maximum )
-DIP_OUTPUT_TYPE_CASTER( StatisticsAccumulator, "StatisticsValues", "mean standardDev variance skewness kurtosis number", src.Mean(), src.StandardDeviation(), src.Variance(), src.Skewness(), src.ExcessKurtosis(), src.Number() )
-DIP_OUTPUT_TYPE_CASTER( CovarianceAccumulator, "CovarianceValues", "Number MeanX MeanY VarianceX VarianceY StandardDeviationX StandardDeviationY Covariance Correlation Slope", src.Number(), src.MeanX(), src.MeanY(), src.VarianceX(), src.VarianceY(), src.StandardDeviationX(), src.StandardDeviationY(), src.Covariance(), src.Correlation(), src.Slope() )
-DIP_OUTPUT_TYPE_CASTER( MinMaxAccumulator, "MinMaxValues", "minimum maximum", src.Minimum(), src.Maximum() )
-DIP_OUTPUT_TYPE_CASTER( MomentAccumulator, "MomentValues", "zerothOrder firstOrder secondOrder plainSecondOrder", src.Sum(), src.FirstOrder(), src.SecondOrder(), src.PlainSecondOrder() )
 DIP_OUTPUT_TYPE_CASTER( SpatialOverlapMetrics, "SpatialOverlapMetrics", "truePositives trueNegatives falsePositives falseNegatives diceCoefficient jaccardIndex sensitivity specificity fallout accuracy precision", src.truePositives, src.trueNegatives, src.falsePositives, src.falseNegatives, src.diceCoefficient, src.jaccardIndex, src.sensitivity, src.specificity, src.fallout, src.accuracy, src.precision )
 
 } // namespace detail
