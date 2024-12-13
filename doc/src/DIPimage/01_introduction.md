@@ -63,7 +63,7 @@ This manual is meant as an introduction and reference to the *DIPimage*
 toolbox, not as a tutorial on image analysis. Although
 \ref sec_dum_gettingstarted shows some image analysis basics, it
 is not complete. We refer to
-["The Fundamentals of Image Processing"](https://qiftp.tudelft.nl/diplib/docs/FIP2.3.pdf).
+["The Fundamentals of Image Processing"](https://ftp.imphys.tudelft.nl/DIPimage/docs/FIP2.3.pdf).
 
 \section sec_dum_introduction_conventions Documentation conventions
 
