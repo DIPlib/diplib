@@ -84,7 +84,7 @@ Also the following dependencies have been downloaded:
 
 For testing the *DIPlib* images are used:
 
-- *DIPlib* images <https://qiftp.tudelft.nl/diplib/images.zip>
+- *DIPlib* images <https://ftp.imphys.tudelft.nl/DIPimage/images.zip>
 
 ### FFTW static library
 

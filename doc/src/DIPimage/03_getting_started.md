@@ -257,7 +257,7 @@ f = sz\calc
 
 If you are new to *MATLAB*, it would be a good idea to read the "Getting
 Started with *MATLAB*" manual. If you are new to image processing, you can
-read ["The Fundamentals of Image Processing"](https://qiftp.tudelft.nl/diplib/docs/FIP2.3.pdf).
+read ["The Fundamentals of Image Processing"](https://ftp.imphys.tudelft.nl/DIPimage/docs/FIP2.3.pdf).
 
 Before you start using this toolbox, we recommend that you read
 \ref "sec_dum_dip_image" (at least \ref sec_dum_dip_image_review).
