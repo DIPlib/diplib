@@ -757,7 +757,8 @@ DIP_NODISCARD inline Image QuantizedBilateralFilter(
 /// with `spatialSigma`, the size of the neighborhood and thus its computational cost.
 ///
 /// This version of the filter applies a 1D bilateral filter along each of the image dimensions, approximating
-/// the result of the bilateral filter with a much reduced computational cost.
+/// the result of the bilateral filter with a much reduced computational cost. This approximation is good with
+/// small spatial sigmas; the larger the sigma, the worse the approximation becomes.
 ///
 /// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See \ref dip::BoundaryCondition.
 ///

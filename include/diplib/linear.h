@@ -640,7 +640,7 @@ DIP_DERIVATIVE_OPERATOR( Dxy, 0, 1 )
 inline void Dxz( Image const& in, Image& out, FloatArray sigmas = { 1.0 } )
 DIP_DERIVATIVE_OPERATOR( Dxz, 0, 2 )
 
-/// \brief Computes the first derivative along y and y, see \ref dip::Derivative.
+/// \brief Computes the first derivative along y and z, see \ref dip::Derivative.
 inline void Dyz( Image const& in, Image& out, FloatArray sigmas = { 1.0 } )
 DIP_DERIVATIVE_OPERATOR( Dyz, 1, 2 )
 
@@ -688,6 +688,10 @@ DIP_NODISCARD inline Image Gradient(
 ///
 /// For non-scalar images, applies the operation to each image channel. See \ref dip::Gradient for information on the parameters.
 ///
+/// By default this function uses Gaussian derivatives in the computation. Set `method = "finitediff"` for
+/// finite difference approximations to the gradient. See \ref dip::Derivative for more information on the other
+/// parameters.
+///
 /// \see dip::Gradient, dip::Norm, dip::Derivative, dip::GradientDirection
 DIP_EXPORT void GradientMagnitude(
       Image const& in,
@@ -718,6 +722,10 @@ DIP_NODISCARD inline Image GradientMagnitude(
 /// inclination. See \ref dip::Angle for an explanation.
 ///
 /// See \ref dip::Gradient for information on the parameters.
+///
+/// By default this function uses Gaussian derivatives in the computation. Set `method = "finitediff"` for
+/// finite difference approximations to the gradient. See \ref dip::Derivative for more information on the other
+/// parameters.
 ///
 /// \see dip::Gradient, dip::Angle, dip::Derivative, dip::GradientMagnitude
 DIP_EXPORT void GradientDirection(
@@ -760,6 +768,10 @@ DIP_NODISCARD inline Image GradientDirection(
 /// However, the image can have more dimensions if they are excluded from processing through `process`.
 /// See \ref dip::Gradient for information on the parameters.
 ///
+/// By default this function uses Gaussian derivatives in the computation. Set `method = "finitediff"` for
+/// finite difference approximations to the gradient. See \ref dip::Derivative for more information on the other
+/// parameters.
+///
 /// \see dip::Gradient, dip::Divergence
 DIP_EXPORT void Curl(
       Image const& in,
@@ -796,6 +808,10 @@ DIP_NODISCARD inline Image Curl(
 /// `in` is expected to have as many dimensions as tensor components. However, the image
 /// can have more dimensions if they are excluded from processing through `process`.
 /// See \ref dip::Gradient for information on the parameters.
+///
+/// By default this function uses Gaussian derivatives in the computation. Set `method = "finitediff"` for
+/// finite difference approximations to the gradient. See \ref dip::Derivative for more information on the other
+/// parameters.
 ///
 /// \see dip::Gradient, dip::Curl
 DIP_EXPORT void Divergence(
@@ -1021,7 +1037,7 @@ DIP_NODISCARD inline Image LaplaceMinusDgg(
 /// out = in - dip::Laplace( in ) * weight;
 /// ```
 ///
-/// See \ref dip::Laplace and \ref dip::Gradient for information on the parameters.
+/// See \ref dip::Laplace and \ref dip::Derivative for information on the parameters.
 ///
 /// \see dip::Laplace, dip::UnsharpMask
 DIP_EXPORT void Sharpen(
@@ -1053,7 +1069,7 @@ DIP_NODISCARD inline Image Sharpen(
 /// out = in * ( 1+weight ) - dip::Gauss( in ) * weight;
 /// ```
 ///
-/// See \ref dip::Gauss and \ref dip::Gradient for information on the parameters.
+/// See \ref dip::Gauss for information on the parameters.
 ///
 /// \see dip::Gauss, dip::Sharpen
 DIP_EXPORT void UnsharpMask(
