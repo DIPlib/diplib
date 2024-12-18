@@ -33,6 +33,10 @@ date: 2020-00-00
   modified when computing a histogram. It is set by `dip::Histogram::Configuration::Complete()`.
   This option is dangerous to use!
 
+- Added `dip::Image::ReinterpretCastBinToUint8()` and `dip::Image::ReinterpretCastUint8ToBin()` for the specific case
+  of casting bin to uint8 and back. They don't provide any functionality that `dip::Image::ReinterpretCast()`
+  didn't already provide, but they are much safer to use.
+
 ### Changed functionality
 
 - `dip::AlignedAllocInterface` now aligns each of the scanlines (rows of the image), not just the first one.
@@ -65,6 +69,10 @@ date: 2020-00-00
   a `std::vector< dip::LabelType >` as input, as opposed to a `dip::UnsignedArray`. This caused code that called
   the function with an initializer array (`dip::GetImageChainCodes( image, { 1 } )`) to become ambiguous. A new
   overload that takes an initializer list as input fixes this ambiguity.
+
+- `operator+()` for `dip::Image` (i.e. the function called for `+img`) created a new data segment and copied
+  the data over when the input was binary. In that case it now creates a new uint8 image that points to the
+  same data segment of the binary image, as intended.
 
 ### Updated dependencies
 

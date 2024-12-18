@@ -2020,7 +2020,7 @@ class DIP_NO_EXPORT Image {
       /// The image must have two tensor elements, a tensor stride of 1, and be forged.
       DIP_EXPORT Image& MergeTensorToComplex();
 
-      /// \brief Changes the data type of `this` without changing or copying the data.
+      /// \brief Changes the data type of `this` without copying or changing the data.
       ///
       /// If the target `dataType` is smaller than the source data type, then the spatial dimension
       /// that has a stride of 1 will grow (for example, casting from 32-bit integer to 8-bit integer
@@ -2053,7 +2053,7 @@ class DIP_NO_EXPORT Image {
       /// \see dip::Image::Convert, dip::Image::ReinterpretCastToSignedInteger, dip::Image::ReinterpretCastToUnsignedInteger
       DIP_EXPORT Image& ReinterpretCast( dip::DataType dataType );
 
-      /// \brief Changes the data type of `this` to a signed integer of the same size, without changing the data.
+      /// \brief Changes the data type of `this` to a signed integer of the same size, without copying or changing the data.
       ///
       /// If the image shares data with other images, the other images will still view the pixels in
       /// their original data type. Interpreting data as a different type is inherently dangerous,
@@ -2085,7 +2085,7 @@ class DIP_NO_EXPORT Image {
          return *this;
       }
 
-      /// \brief Changes the data type of `this` to an unsigned integer of the same size, without changing the data.
+      /// \brief Changes the data type of `this` to an unsigned integer of the same size, without copying or changing the data.
       ///
       /// If the image shares data with other images, the other images will still view the pixels in
       /// their original data type. Interpreting data as a different type is inherently dangerous,
@@ -2114,6 +2114,36 @@ class DIP_NO_EXPORT Image {
             default:
                break;
          }
+         return *this;
+      }
+
+      /// \brief Changes the data type of the binary image to \ref dip::uint8 without copying or changing the data.
+      ///
+      /// `img.Convert( dip::DT_UINT8 )` does the same thing if `img` is binary, as does `+img`.
+      ///
+      /// This function is always fast. The image must be forged and binary.
+      ///
+      /// \see dip::Image::Convert, dip::Image::ReinterpretCast, operator+(Image const&)
+      Image& ReinterpretCastBinToUint8() {
+         DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+         DIP_THROW_IF( !dataType_.IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
+         dataType_ = DT_UINT8;
+         return *this;
+      }
+
+      /// \brief Changes the data type of the uint8 image to \ref dip::bin without copying or changing the data.
+      ///
+      /// Does not modify any pixel values, you need to ensure that the input image has only valid
+      /// boolean values (0 and 1). Use `img.Convert( dip::DT_BIN )` to ensure correct data
+      /// (but `Convert` might need to copy the data over).
+      ///
+      /// This function is always fast. The image must be forged and uint8.
+      ///
+      /// \see dip::Image::Convert, dip::Image::ReinterpretCast
+      Image& ReinterpretCastUint8ToBin() {
+         DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+         DIP_THROW_IF( dataType_ != DT_UINT8, E::DATA_TYPE_NOT_SUPPORTED );
+         dataType_ = DT_BIN;
          return *this;
       }
 

@@ -342,9 +342,14 @@ DIP_NODISCARD inline Image operator^( Image const& lhs, T const& rhs ) {
    return Xor( lhs, rhs );
 }
 
-/// \brief Unary operator, converts binary image to `dip::DT_UINT`, leaves other images unchanged.
+/// \brief Unary operator, converts binary image to `dip::DT_UINT` and leaves other images unchanged, does not copy data.
 DIP_NODISCARD inline Image operator+( Image const& in ) {
-   return in.DataType().IsBinary() ? dip::Convert( in, dip::DT_UINT8 ) : in;
+   if (in.DataType().IsBinary()) {
+      Image out = in;
+      out.ReinterpretCastBinToUint8();
+      return out;
+   }
+   return in;
 }
 
 /// \brief Unary operator, calls \ref dip::Invert.

@@ -578,6 +578,8 @@ doc_url_pairs = [
     ('dip.Image.ReinterpretCast', 'dip-Image.html#dip-Image-ReinterpretCast-dip-DataType-'),
     ('dip.Image.ReinterpretCastToSignedInteger', 'dip-Image.html#dip-Image-ReinterpretCastToSignedInteger'),
     ('dip.Image.ReinterpretCastToUnsignedInteger', 'dip-Image.html#dip-Image-ReinterpretCastToUnsignedInteger'),
+    ('dip.Image.ReinterpretCastBinToUint8', 'dip-Image.html#dip-Image-ReinterpretCastBinToUint8'),
+    ('dip.Image.ReinterpretCastUint8ToBin', 'dip-Image.html#dip-Image-ReinterpretCastUint8ToBin'),
     ('dip.Image.Crop', 'dip-Image.html#dip-Image-Crop-UnsignedArray-CL-Option-CropLocation-'),
     ('dip.Image.Crop', 'dip-Image.html#dip-Image-Crop-UnsignedArray-CL-String-CL'),
     ('dip.Image.CropWindow', 'dip-Image.html#dip-Image-CropWindow-UnsignedArray-CL-Option-CropLocation--C'),

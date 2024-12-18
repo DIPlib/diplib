@@ -448,6 +448,8 @@ void init_image( py::module& m ) {
    img.def( "ReinterpretCast", &dip::Image::ReinterpretCast, py::return_value_policy::reference_internal, doc_strings::dip·Image·ReinterpretCast·dip·DataType· );
    img.def( "ReinterpretCastToSignedInteger", &dip::Image::ReinterpretCastToSignedInteger, py::return_value_policy::reference_internal, doc_strings::dip·Image·ReinterpretCastToSignedInteger );
    img.def( "ReinterpretCastToUnsignedInteger", &dip::Image::ReinterpretCastToUnsignedInteger, py::return_value_policy::reference_internal, doc_strings::dip·Image·ReinterpretCastToUnsignedInteger );
+   img.def( "ReinterpretCastBinToUint8", &dip::Image::ReinterpretCastBinToUint8, py::return_value_policy::reference_internal, doc_strings::dip·Image·ReinterpretCastBinToUint8 );
+   img.def( "ReinterpretCastUint8ToBin", &dip::Image::ReinterpretCastUint8ToBin, py::return_value_policy::reference_internal, doc_strings::dip·Image·ReinterpretCastUint8ToBin );
    img.def( "Crop", py::overload_cast< dip::UnsignedArray const&, dip::String const& >( &dip::Image::Crop ), "sizes"_a, "cropLocation"_a = "center", py::return_value_policy::reference_internal, doc_strings::dip·Image·Crop·UnsignedArray·CL·String·CL );
 
    // Create a view of another image.
