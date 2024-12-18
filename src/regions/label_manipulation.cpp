@@ -243,11 +243,15 @@ void EdgeObjectsRemove( Image const& in, Image& out, dip::uint connectivity ) {
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    if( in.DataType().IsBinary() ) {
       DIP_START_STACK_TRACE
+         Image tmp_in = in.QuickCopy();
+         if( out.Aliases( tmp_in )) { // make sure we don't overwrite in
+            DIP_STACK_TRACE_THIS( out.Strip() );
+         }
          // Propagate with empty seed mask, iteration until done and treating outside the image as object
-         BinaryPropagation( Image(), in, out, static_cast< dip::sint >( connectivity ), 0, S::OBJECT );
+         BinaryPropagation( Image(), tmp_in, out, static_cast< dip::sint >( connectivity ), 0, S::OBJECT );
          // The out-image now contains the edge objects
          // Remove them by toggling these bits in the in-image and writing the result in out
-         out ^= in;
+         out ^= tmp_in;
       DIP_END_STACK_TRACE
    } else if( in.DataType().IsUInt() ) {
       DIP_START_STACK_TRACE

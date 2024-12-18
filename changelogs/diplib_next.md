@@ -74,6 +74,8 @@ date: 2020-00-00
   the data over when the input was binary. In that case it now creates a new uint8 image that points to the
   same data segment of the binary image, as intended.
 
+- `dip::EdgeObjectsRemove()` produced an empty output image when the input and output images were the same object.
+
 ### Updated dependencies
 
 ### Build changes
