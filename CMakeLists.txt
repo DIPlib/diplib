@@ -21,7 +21,7 @@ project(DIPlib)
 # The version number and latest copyright year. Update these values here, they're used all throughout the project.
 set(PROJECT_VERSION_MAJOR "3")
 set(PROJECT_VERSION_MINOR "5")
-set(PROJECT_VERSION_PATCH "1")
+set(PROJECT_VERSION_PATCH "2")
 set(PROJECT_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
 set(DIP_COPYRIGHT_YEAR "2024")
 
