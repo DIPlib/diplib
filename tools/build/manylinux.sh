@@ -6,7 +6,7 @@ yum -y install freeglut-devel java-1.8.0-openjdk-devel.x86_64
 /opt/python/cp39-cp39/bin/python -m pip install cmake auditwheel
 CMAKE=/opt/python/cp39-cp39/lib/python3.9/site-packages/cmake/data/bin/cmake
 BUILD_THREADS=4
-PYTHON_VERSIONS=(3.9 3.10 3.11 3.12)
+PYTHON_VERSIONS=(3.10 3.11 3.12 3.13)
 EXCLUDES=(libjvm.so libOpenGL.so.0 libGLX.so.0 libGLdispatch.so.0)
 
 # /io is diplib repo

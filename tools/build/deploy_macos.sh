@@ -2,7 +2,7 @@
 # set $PYPI_TOKEN to the PyPI token for the diplib project
 
 # Setup
-export PYTHON_VERSIONS=(3.9 3.10 3.11 3.12)
+export PYTHON_VERSIONS=(3.10 3.11 3.12 3.13)
 for v in ${PYTHON_VERSIONS[@]}; do
    brew install python@$v
 done;
