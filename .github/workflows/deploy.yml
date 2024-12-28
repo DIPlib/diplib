@@ -39,7 +39,6 @@ jobs:
           PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
           HOMEBREW_DIR: /usr/local
           BUILD_THREADS: 3
-          MACOSX_DEPLOYMENT_TARGET: 12.0
 
   deploy_macos_aarch64:
     runs-on: macos-14
@@ -62,7 +61,6 @@ jobs:
           PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
           HOMEBREW_DIR: /opt/homebrew
           BUILD_THREADS: 3
-          MACOSX_DEPLOYMENT_TARGET: 14.0
 
   deploy_windows:
     runs-on: windows-latest
