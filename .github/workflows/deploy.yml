@@ -24,4 +24,3 @@ jobs:
           PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
           HOMEBREW_DIR: /usr/local
           BUILD_THREADS: 3
-          MACOSX_DEPLOYMENT_TARGET: 12.0
