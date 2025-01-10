@@ -217,7 +217,7 @@ void IsotropicErosion(
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( in.DataType() != DT_BIN, E::DATA_TYPE_NOT_SUPPORTED );
-   DIP_STACK_TRACE_THIS( Greater( EuclideanDistanceTransform( in.QuickCopy(), "object", "square" ), distance * distance, out ));
+   DIP_STACK_TRACE_THIS( NotLesser( EuclideanDistanceTransform( in.QuickCopy(), "object", "square" ), distance * distance, out ));
    // See note above in IsotropicDilation().
 }
 

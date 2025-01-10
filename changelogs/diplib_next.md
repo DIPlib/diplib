@@ -12,6 +12,9 @@ date: 2020-00-00
 
 ### Bug fixes
 
+- Fixed `dip::IsotropicErosion()` to use the same structuring element size as `dip::IsotropicDilation()`.
+  See [PR #192](https://github.com/DIPlib/diplib/discussions/192).
+
 ### Updated dependencies
 
 ### Build changes
