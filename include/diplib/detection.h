@@ -231,7 +231,7 @@ DIP_NODISCARD inline Image RadonTransformCircles(
 /// The structure tensor $M$ is computed using \ref dip::StructureTensor, with `gradientSigmas` equal to 1.0 and
 /// `tensorSigmas` set through this function's `sigmas` parameter.
 ///
-/// This function generalizes the corner measure above to any number of dimensions. `in` must be scalar and real-valued.
+/// This function generalizes the Harris corner measure to any number of dimensions. `in` must be scalar and real-valued.
 ///
 /// This function is equivalent to:
 ///
@@ -273,7 +273,7 @@ DIP_NODISCARD inline Image HarrisCornerDetector(
 /// The structure tensor $M$ is computed using \ref dip::StructureTensor, with `gradientSigmas` equal to 1.0 and
 /// `tensorSigmas` set through this function's `sigmas` parameter.
 ///
-/// This function generalizes the corner measure above to any number of dimensions. `in` must be scalar and real-valued.
+/// This function generalizes the Shi-Tomasi corner measure to any number of dimensions. `in` must be scalar and real-valued.
 ///
 /// This function is equivalent to:
 ///
@@ -300,16 +300,19 @@ DIP_NODISCARD inline Image ShiTomasiCornerDetector(
    return out;
 }
 
-/// \brief Noble's corner detector
+/// \brief Noble's corner detector (also known as the Plessey detector)
 ///
-/// Noble defined a corner detector as
+/// Noble (1987) studied a corner detector that she referred to as the "Plessey Corner Finder",
+/// and defined as the inverse of
 ///
 /// $$ \text{Det}(M) / \text{Tr}(M) \; , $$
 ///
-/// This is similar to the Harris corner detector (see \ref dip::HarrisCornerDetector), except it has no parameter to tune. The ratio
-/// of the determinant to the trace is equivalent to the harmonic mean of the eigenvalues.
+/// where $M$ is the structure tensor. We're using the inverse of the original measure because this
+/// way it is large where there is a corner. Note the similarity to the Harris corner detector
+/// (see \ref dip::HarrisCornerDetector), except this one has no parameter to tune.
+/// The ratio of the determinant to the trace is equivalent to the harmonic mean of the eigenvalues.
 ///
-/// This function generalizes the corner measure above to any number of dimensions. `in` must be scalar and real-valued.
+/// This function generalizes the corner measure to any number of dimensions. `in` must be scalar and real-valued.
 ///
 /// This function is equivalent to:
 ///
@@ -318,8 +321,14 @@ DIP_NODISCARD inline Image ShiTomasiCornerDetector(
 /// Image out = dip::SafeDivide( dip::Determinant( M ), dip::Trace( M ));
 /// ```
 ///
+/// !!! par "A note on attribution"
+///     Noble attributed this detector to a 1987 paper by Harris, but the two papers from that year
+///     by that author in the reference list no not discuss any specific corner measure. I did however find
+///     a paper by Förstner (1986) that also proposes this same detector.
+///
 /// !!! literature
 ///     - J.A. Noble, "Finding corners", Proceedings of the Alvey Vision Conference, pp. 37.1-37.8, 1987.
+///     - W. Förstner, "A feature based correspondence algorithm for image matching", ISP Comm. III, 1986.
 DIP_EXPORT void NobleCornerDetector(
       Image const& in,
       Image& out,
