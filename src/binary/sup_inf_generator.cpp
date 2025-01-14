@@ -502,13 +502,16 @@ class ThickeningThinningLineFilter : public Framework::FullLineFilter {
             mask += maskStride;
          }
          if( changed ) {
-#pragma omp atomic write
+            // TODO: This is more efficient with `#pragma omp atomic write`. But MSVC support that only since 17.4 (2022).
+            //       And we'd also need CMake 3.30 or later to enable the MSVC option that enables MSVC to support it.
+            //       So for the time being we keep using this, but should update at some point in the future.
+            #pragma omp critical( SupInfGeneratingLineFilter )
             changed_ = true;
          }
       }
    private:
       DirectionMode const mode_;
-      bool& changed_;            // use atomic construct to set!
+      bool& changed_; // shared among threads, write atomically!
       Image const& mask_;
       std::vector< dip::sint > offsets_;
       std::vector< dip::bin > hitmiss_;
