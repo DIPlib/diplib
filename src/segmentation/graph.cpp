@@ -152,9 +152,9 @@ DirectedGraph::DirectedGraph( Image const& image, dip::uint connectivity, String
    DIP_STACK_TRACE_THIS( forGraphCut = BooleanFromString( extraEdges, "graphcut", "none" ));
    dip::uint nVertices = image.NumberOfPixels();
    dip::uint nEdges = 2 * image.Dimensionality();
-   vertices_.reserve( nVertices + forGraphCut ? 2 : 0 ); // 2 additional vertices for the graph cut segmentation algorithm
-   vertices_.resize( nVertices, Vertex( nEdges + forGraphCut ? 1 : 0 )); // 1 additional edges per vertex for the graph cut segmentation algorithm
-   edges_.reserve( nVertices * ( nEdges + forGraphCut ? 2 : 0 )); // 2 additional edges per vertex in the graph cut segmentation algorithm
+   vertices_.reserve( nVertices + ( forGraphCut ? 2 : 0 )); // 2 additional vertices for the graph cut segmentation algorithm
+   vertices_.resize( nVertices, Vertex( nEdges + ( forGraphCut ? 1 : 0 ))); // 1 additional edges per vertex for the graph cut segmentation algorithm
+   edges_.reserve( nVertices * ( nEdges + ( forGraphCut ? 2 : 0 ))); // 2 additional edges per vertex in the graph cut segmentation algorithm
    bool computeEdgeWeights{};
    bool useDifferences{};
    DIP_STACK_TRACE_THIS( ParseWeightsParam( weights, computeEdgeWeights, useDifferences ));
