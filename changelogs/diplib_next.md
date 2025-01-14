@@ -13,7 +13,11 @@ date: 2020-00-00
 ### Bug fixes
 
 - Fixed `dip::IsotropicErosion()` to use the same structuring element size as `dip::IsotropicDilation()`.
-  See [PR #192](https://github.com/DIPlib/diplib/discussions/192).
+  See [discussion #192](https://github.com/DIPlib/diplib/discussions/192).
+
+- Parallel processing code assumed that OpenMP would always create the requested number of threads.
+  But this is not the case if the process uses dynamic adjustment of the number of threads (by calling
+  `omp_set_dynamic(true)`). See [issue #191](https://github.com/DIPlib/diplib/issues/191).
 
 ### Updated dependencies
 

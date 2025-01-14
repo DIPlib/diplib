@@ -502,13 +502,13 @@ class ThickeningThinningLineFilter : public Framework::FullLineFilter {
             mask += maskStride;
          }
          if( changed ) {
-#pragma omp critical( SupInfGeneratingLineFilter )
+#pragma omp atomic write
             changed_ = true;
          }
       }
    private:
       DirectionMode const mode_;
-      bool& changed_;            // use critical section to set!
+      bool& changed_;            // use atomic construct to set!
       Image const& mask_;
       std::vector< dip::sint > offsets_;
       std::vector< dip::bin > hitmiss_;

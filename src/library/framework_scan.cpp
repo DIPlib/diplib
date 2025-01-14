@@ -418,30 +418,37 @@ void Scan(
 
    }
 
-   // Divide the image domain into nThreads chunks for split processing. The last chunk will have same or fewer
-   // image lines to process.
    dip::uint nLinesPerThread = div_ceil( nLines, nThreads );
-   std::vector< UnsignedArray > startCoords;
    if( scan1D ) {
       nThreads = std::min( div_ceil( sizes[ processingDim ], lineLength ), nThreads );
-      startCoords.resize( nThreads );
-      startCoords[ 0 ] = UnsignedArray( 1, 0 );
-      for( dip::uint ii = 1; ii < nThreads; ++ii ) {
-         startCoords[ ii ] = startCoords[ ii - 1 ];
-         startCoords[ ii ][ 0 ] += lineLength;        // `lineLength` in this case is the number of pixels per thread
-      }
    } else {
       nThreads = std::min( div_ceil( nLines, nLinesPerThread ), nThreads);
-      startCoords = SplitImageEvenlyForProcessing( sizes, nThreads, nLinesPerThread, processingDim );
    }
-
-   //std::cout << "Starting " << nThreads << " threads\n";
-   DIP_STACK_TRACE_THIS( lineFilter.SetNumberOfThreads( nThreads ));
+   std::vector< UnsignedArray > startCoords;
 
    // Start threads, each thread makes its own buffers
    DIP_PARALLEL_ERROR_DECLARE
    #pragma omp parallel num_threads( static_cast< int >( nThreads ))
    DIP_PARALLEL_ERROR_START
+      #pragma omp master
+      {
+         nThreads = static_cast< dip::uint >( omp_get_num_threads() ); // Get the number of threads actually created, could be fewer than the original nThreads.
+         DIP_STACK_TRACE_THIS( lineFilter.SetNumberOfThreads( nThreads ));
+         // Divide the image domain into nThreads chunks for split processing. The last chunk will have same or fewer
+         // image lines to process.
+         if( scan1D ) {
+            startCoords.resize( nThreads );
+            startCoords[ 0 ] = UnsignedArray( 1, 0 );
+            for( dip::uint ii = 1; ii < nThreads; ++ii ) {
+               startCoords[ ii ] = startCoords[ ii - 1 ];
+               startCoords[ ii ][ 0 ] += lineLength;        // `lineLength` in this case is the number of pixels per thread
+            }
+         } else {
+            startCoords = SplitImageEvenlyForProcessing( sizes, nThreads, nLinesPerThread, processingDim );
+         }
+      }
+      #pragma omp barrier
+
       dip::uint thread = static_cast< dip::uint >( omp_get_thread_num() );
       std::vector< AlignedBuffer > buffers; // The outer one here is not a DimensionArray, because it won't delete() its contents
 

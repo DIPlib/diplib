@@ -25,6 +25,7 @@
 // We don't have OpenMP, these are OpenMP function stubs to avoid conditional compilation elsewhere.
 inline int omp_get_thread_num() { return 0; }
 inline int omp_get_max_threads() { return 1; }
+inline int omp_get_num_threads() { return 1; }
 #endif
 
 #include "diplib.h"

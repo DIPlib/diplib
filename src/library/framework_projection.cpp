@@ -206,19 +206,22 @@ void Projection(
    }
    dip::uint nLoopPerThread = div_ceil( nLoop, nThreads );
    nThreads = std::min( div_ceil( nLoop, nLoopPerThread ), nThreads );
-
-   // std::cout << "Starting " << nThreads << " threads\n";
-   DIP_STACK_TRACE_THIS( projectionFunction.SetNumberOfThreads( nThreads ));
-
-   // Divide the image domain into nThreads chunks for split processing. The last chunk will have same or fewer
-   // image lines to process.
-   std::vector< UnsignedArray > startCoords =
-      SplitImageEvenlyForProcessing( outSizes, nThreads, nLoopPerThread, nDims );
+   std::vector< UnsignedArray > startCoords;
 
    // Start threads
    DIP_PARALLEL_ERROR_DECLARE
    #pragma omp parallel num_threads( static_cast< int >( nThreads ))
    DIP_PARALLEL_ERROR_START
+      #pragma omp master
+      {
+         nThreads = static_cast< dip::uint >( omp_get_num_threads() ); // Get the number of threads actually created, could be fewer than the original nThreads.
+         DIP_STACK_TRACE_THIS( projectionFunction.SetNumberOfThreads( nThreads ));
+         // Divide the image domain into nThreads chunks for split processing. The last chunk will have same or fewer
+         // image lines to process.
+         startCoords = SplitImageEvenlyForProcessing( outSizes, nThreads, nLoopPerThread, nDims );
+      }
+      #pragma omp barrier
+
       dip::uint thread = static_cast< dip::uint >( omp_get_thread_num() );
       UnsignedArray position = startCoords[ thread ];
       IntegerArray startPosition{ position };

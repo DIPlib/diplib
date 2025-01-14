@@ -83,6 +83,9 @@ void RandomPixelPairSampler(
    DIP_PARALLEL_ERROR_DECLARE
    #pragma omp parallel num_threads( static_cast< int >( nThreads ))
    DIP_PARALLEL_ERROR_START
+      #pragma omp master
+   nThreads = static_cast< dip::uint >( omp_get_num_threads() ); // Get the number of threads actually created, could be fewer than the original nThreads.
+      #pragma omp barrier
       dip::uint thread = static_cast< dip::uint >( omp_get_thread_num() );
       UniformRandomGenerator& uniformRandomGenerator = uniformRandomGeneratorArray[ thread ];
       UnsignedArray coords1( nDims );

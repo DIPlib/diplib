@@ -185,19 +185,22 @@ void Full(
    }
    dip::uint nLinesPerThread = div_ceil( nLines, nThreads );
    nThreads = std::min( div_ceil( nLines, nLinesPerThread ), nThreads );
-
-   //std::cout << "Starting " << nThreads << " threads\n";
-   DIP_STACK_TRACE_THIS( lineFilter.SetNumberOfThreads( nThreads, pixelTableOffsets ));
-
-   // Divide the image domain into nThreads chunks for split processing. The last chunk will have same or fewer
-   // image lines to process.
-   std::vector< UnsignedArray > startCoords =
-      SplitImageEvenlyForProcessing( sizes, nThreads, nLinesPerThread, processingDim );
+   std::vector< UnsignedArray > startCoords;
 
    // Start threads, each thread makes its own buffers
    DIP_PARALLEL_ERROR_DECLARE
    #pragma omp parallel num_threads( static_cast< int >( nThreads ))
    DIP_PARALLEL_ERROR_START
+      #pragma omp master
+      {
+         nThreads = static_cast< dip::uint >( omp_get_num_threads() ); // Get the number of threads actually created, could be fewer than the original nThreads.
+         DIP_STACK_TRACE_THIS( lineFilter.SetNumberOfThreads( nThreads, pixelTableOffsets ));
+         // Divide the image domain into nThreads chunks for split processing. The last chunk will have same or fewer
+         // image lines to process.
+         startCoords = SplitImageEvenlyForProcessing( sizes, nThreads, nLinesPerThread, processingDim );
+      }
+      #pragma omp barrier
+
       dip::uint thread = static_cast< dip::uint >( omp_get_thread_num() );
 
       // Create input buffer data struct

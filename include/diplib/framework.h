@@ -185,7 +185,7 @@ class DIP_CLASS_EXPORT ScanLineFilter {
       /// \brief The derived class must must define this method, this is the actual line filter.
       virtual void Filter( ScanLineFilterParameters const& params ) = 0;
       /// \brief The derived class can define this function for setting up the processing.
-      virtual void SetNumberOfThreads( dip::uint  threads ) { ( void )threads; }
+      virtual void SetNumberOfThreads( dip::uint threads ) { ( void )threads; }
       /// \brief The derived class can define this function for helping to determine whether to compute
       /// in parallel or not. It must return the number of clock cycles per input pixel. The default is valid for
       /// an arithmetic-like operation.
@@ -953,7 +953,7 @@ class ProjectionFunction {
       /// The `out` sample is of the `outImageType` type requested in the call to `Projection`.
       virtual void Project( Image const& in, Image const& mask, Image::Sample& out, dip::uint thread ) = 0;
       /// \brief The derived class can define this function if it needs this information ahead of time.
-      virtual void SetNumberOfThreads( dip::uint /*threads*/ ) {}
+      virtual void SetNumberOfThreads( dip::uint threads ) { ( void )threads; }
       /// \brief The derived class can define this function for helping to determine whether to compute
       /// in parallel or not. It must return the number of clock cycles per sub-image. The default is valid for
       /// a trivial projection operation such as max or mean.
