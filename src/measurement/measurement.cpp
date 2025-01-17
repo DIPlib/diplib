@@ -339,11 +339,11 @@ Measurement::ValueType Percentile( Measurement::IteratorFeature const& featureVa
    if( N == 0 ) {
       return 0.0;
    }
-   dip::sint rank = floor_cast( static_cast< dfloat >( N ) * percentile / 100.0 );
-   if( rank <= 0 ) {
+   dip::uint rank = RankFromPercentile( percentile, N );
+   if( rank == 0 ) {
       return Minimum( featureValues );
    }
-   if( rank >= static_cast< dip::sint >( N ) - 1 ) {
+   if( rank == N - 1 ) {
       return Maximum( featureValues );
    }
    std::vector< Measurement::ValueType > buffer( N );
@@ -363,7 +363,7 @@ Measurement::ValueType Percentile( Measurement::IteratorFeature const& featureVa
    } while( ++it );
    DIP_ASSERT( &*leftIt == &*rightIt ); // They should both be pointing to the same array element.
    *leftIt = pivot;
-   auto ourGuy = begin + rank;
+   auto ourGuy = begin + static_cast< dip::sint >( rank );
    if( ourGuy < leftIt ) {
       // our guy is to the left
       std::nth_element( begin, ourGuy, leftIt );

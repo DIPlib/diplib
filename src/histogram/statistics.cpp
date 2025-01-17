@@ -113,7 +113,7 @@ FloatArray MarginalPercentile( Histogram const& in, dfloat percentile ) {
    Histogram cum = CumulativeHistogram( in ); // we look along the last line in each direction
    Image const& cumImg = cum.GetImage();
    Histogram::CountType* pcum = static_cast< Histogram::CountType* >( cumImg.Origin() );
-   dfloat n = static_cast< dfloat >( pcum[ cumImg.NumberOfPixels() - 1 ] );
+   dip::uint rank = RankFromPercentile( percentile, pcum[ cumImg.NumberOfPixels() - 1 ] );
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
       pcum = static_cast< Histogram::CountType* >( cumImg.Origin() );
       for( dip::uint jj = 0; jj < nDims; ++jj ) {
@@ -123,7 +123,7 @@ FloatArray MarginalPercentile( Histogram const& in, dfloat percentile ) {
       }
       dip::sint stride = cumImg.Stride( ii );
       dip::sint jj = 0;
-      while( static_cast< dfloat >( *pcum ) / n < percentile / 100 ) {
+      while( *pcum < rank ) {
          ++jj;
          pcum += stride;
       }

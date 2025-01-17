@@ -665,7 +665,7 @@ class ProjectionPercentile : public Framework::ProjectionFunction {
             *static_cast< TPI* >( out.Origin() ) = TPI{};
             return;
          }
-         dip::sint rank = round_cast( static_cast< dfloat >( N - 1 ) * percentile_ / 100.0 );
+         dip::sint rank = static_cast< dip::sint >( RankFromPercentile( percentile_, N ));
          buffer_[ thread ].resize( N );
          auto outIt = buffer_[ thread ].begin();
          if( mask.IsForged() ) {
@@ -1019,7 +1019,7 @@ class ProjectionPositionPercentile : public Framework::ProjectionFunction {
       // Get the value in the buffer with rank according to percentile_
       // `buffer` must be non-empty
       TPI GetRankedValue( std::vector< TPI >& buffer ) const {
-         dip::sint rank = round_cast( static_cast< dfloat >( buffer.size() - 1 ) * percentile_ / 100.0 );
+         dip::sint rank = static_cast< dip::sint >( RankFromPercentile( percentile_, buffer.size() ));
          auto rankedElement = buffer.begin() + rank;
          std::nth_element( buffer.begin(), rankedElement, buffer.end() );
          return *rankedElement;

@@ -601,7 +601,7 @@ void PercentileFilter(
    DIP_THROW_IF(( percentile < 0.0 ) || ( percentile > 100.0 ), E::PARAMETER_OUT_OF_RANGE );
    DIP_START_STACK_TRACE
       dip::uint nPixels = kernel.NumberOfPixels( in.Dimensionality() );
-      dip::uint rank = static_cast< dip::uint >( std::round( static_cast< dfloat >( nPixels - 1 ) * percentile / 100.0 ));
+      dip::uint rank = RankFromPercentile( percentile, nPixels );
       BoundaryConditionArray bc = StringArrayToBoundaryConditionArray( boundaryCondition );
       ComputeRankFilter( in, out, kernel, rank, bc );
    DIP_END_STACK_TRACE

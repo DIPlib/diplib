@@ -8,7 +8,20 @@ date: 2020-00-00
 
 ### New functionality
 
+- Added `dip::RankFromPercentile()`, which computes the rank (or index into the sorted array) for the given
+  percentile and array size. This was a computation done in many different functions in the library.
+
 ### Changed functionality
+
+- All functions that compute a percentile (`dip::Percentile()`, `dip::PercentilePosition()`,
+  `dip::MarginalPercentile()`, `dip::Quartiles()`, and `dip::PercentileFilter()`) now use the new function
+  `dip::RankFromPercentile()` to find out which value from the sorted input set to return.
+  The computation in most cases has not changed other than using a different rounding when the percentile falls
+  exactly half-way between two values. Previously the rounding for these cases was always up.
+  The new function rounds up if the percentile is 50% or below, or down if it's larger.
+  This ensures a symmetric treatment of percentiles.
+  In the case of `dip::MarginalPercentile()`, and the case `dip::Percentile()` applied to a measurement feature,
+  the computation was not consistent with the other percentile computations.
 
 ### Bug fixes
 

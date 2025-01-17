@@ -856,11 +856,11 @@ struct RegressionParameters {
 
 /// \brief Represents the quartiles, see \ref dip::Quartiles.
 struct QuartilesResult {
-   dfloat minimum;       ///< Minimum (0th percentile).
-   dfloat lowerQuartile; ///< Lower or first quartile (25th percentile).
-   dfloat median;        ///< Median or second quartile (50th percentile).
-   dfloat upperQuartile; ///< Upper or third quartile (75th percentile).
-   dfloat maximum;       ///< Maximum (100th percentile).
+   dfloat minimum;       ///< Minimum (0^th^ percentile).
+   dfloat lowerQuartile; ///< Lower or first quartile (25^th^ percentile).
+   dfloat median;        ///< Median or second quartile (50^th^ percentile).
+   dfloat upperQuartile; ///< Upper or third quartile (75^th^ percentile).
+   dfloat maximum;       ///< Maximum (100^th^ percentile).
 };
 
 /// \brief A container used to allocate 32-byte aligned buffers.

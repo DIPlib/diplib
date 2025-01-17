@@ -598,4 +598,20 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::ApproximatelyEquals function") {
    DOCTEST_CHECK( dip::ApproximatelyEquals( 1.0, 1.0 + 1e-12 ));
 }
 
+DOCTEST_TEST_CASE("[DIPlib] testing the dip::RankFromPercentile function") {
+   DOCTEST_CHECK( dip::RankFromPercentile( 0.0, 100 ) == 0 );
+   DOCTEST_CHECK( dip::RankFromPercentile( 25.0, 100 ) == 25 );
+   DOCTEST_CHECK( dip::RankFromPercentile( 50.0, 100 ) == 50 );
+   DOCTEST_CHECK( dip::RankFromPercentile( 75.0, 100 ) == 74 );
+   DOCTEST_CHECK( dip::RankFromPercentile( 100.0, 100 ) == 99 );
+   DOCTEST_CHECK( dip::RankFromPercentile( 0.0, 101 ) == 0 );
+   DOCTEST_CHECK( dip::RankFromPercentile( 25.0, 101 ) == 25 );
+   DOCTEST_CHECK( dip::RankFromPercentile( 50.0, 101 ) == 50 );
+   DOCTEST_CHECK( dip::RankFromPercentile( 75.0, 101 ) == 75 );
+   DOCTEST_CHECK( dip::RankFromPercentile( 100.0, 101 ) == 100 );
+   DOCTEST_CHECK( dip::RankFromPercentile( 0.0, 1 ) == 0 );
+   DOCTEST_CHECK( dip::RankFromPercentile( 50.0, 1 ) == 0 );
+   DOCTEST_CHECK( dip::RankFromPercentile( 100.0, 1 ) == 0 );
+}
+
 #endif // DIP_CONFIG_ENABLE_DOCTEST

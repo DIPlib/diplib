@@ -707,6 +707,21 @@ DIP_EXPORT std::vector< GaussianParameters > GaussianMixtureModel(
       Option::Periodicity periodicity = Option::Periodicity::NOT_PERIODIC
 );
 
+/// \brief Computes the rank (index into array) for a given percentile and an array of length `n`.
+///
+/// The rank is symmetric (i.e. if the 5^th^ percentile translates to rank 14, then the 95^th^ percentile
+/// translates to rank n-1-14).
+///
+/// `percentile` is clamped to the range [0, 100], no error is produced for a percentile outside the valid range.
+constexpr inline dip::uint RankFromPercentile( dfloat percentile, dip::uint n ) {
+   DIP_THROW_IF( n < 1, E::PARAMETER_OUT_OF_RANGE );
+   if ( percentile > 50.0 ) {
+      return n - 1 - RankFromPercentile( 100.0 - percentile, n );
+   }
+   dfloat fraction = std::max( percentile, 0.0 ) / 100.0; // Only need to clamp on bottom, value is never larger than 50.
+   return static_cast< dip::uint >( std::floor( fraction * static_cast< dfloat >( n - 1 ) + 0.5 )); // Using consistent rounding.
+}
+
 /// \endgroup
 
 } // namespace dip

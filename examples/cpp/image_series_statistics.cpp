@@ -70,7 +70,7 @@ int main() {
 
    // Parameter
    dip::dfloat percentile = 30;
-   dip::sint rank = static_cast< dip::sint >( std::round( imar.size() * percentile / 100.0 ));
+   dip::sint rank = dip::RankFromPercentile( percentile, imar.size() );
 
    // Data type we'll use for processing
    dip::DataType dt = imar[ 0 ].DataType();
