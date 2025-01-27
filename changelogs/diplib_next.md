@@ -32,6 +32,13 @@ date: 2020-00-00
   But this is not the case if the process uses dynamic adjustment of the number of threads (by calling
   `omp_set_dynamic(true)`). See [issue #191](https://github.com/DIPlib/diplib/issues/191).
 
+- `dip::MinimumVariancePartitioning()` could throw an unintended exception with specific unimodal inputs.
+  This was caused by the use of the sum of variances, instead of the sum of weighted variances as required
+  with the Otsu threshold logic. See [discussion #193](https://github.com/DIPlib/diplib/discussions/193).
+
+- `dip::MinimumVariancePartitioning()` now gracefully handles the case where more clusters are requested
+  than can be generated.
+
 ### Updated dependencies
 
 ### Build changes

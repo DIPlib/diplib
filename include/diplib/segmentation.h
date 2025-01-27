@@ -86,10 +86,11 @@ DIP_NODISCARD inline Image KMeansClustering(
 /// \brief Spatially partitions an image into `nClusters` partitions iteratively, minimizing the variance
 /// of the partitions.
 ///
-/// Minimum variance partitioning builds a k-d tree, where, for each node, the orthogonal projection
-/// with the largest variance is split using the same logic as Otsu thresholding applies to a histogram.
+/// Minimum variance partitioning builds a k-d tree, where, for each node, one orthogonal projection
+/// is split using the same logic as Otsu thresholding applies to a histogram. For each successive partition,
+/// the node and the dimension where there split most reduces the sum of weighted variances is selected to be split.
 /// Note that this creates a spatial partitioning, not a partitioning of image intensities. `out` is
-/// a labeled image with `nClusters` regions tiling the image. Each region is identified by a different
+/// a labeled image with up to `nClusters` regions tiling the image. Each region is identified by a different
 /// label.
 ///
 /// Minimum variance partitioning is much faster than k-means clustering, though its result might not be
@@ -98,7 +99,8 @@ DIP_NODISCARD inline Image KMeansClustering(
 /// `in` must be scalar and real-valued.
 ///
 /// The returned \ref dip::CoordinateArray contains the centers of gravity for each cluster.
-/// Element `i` in this array corresponds to label `i+1`.
+/// Element `i` in this array corresponds to label `i+1`. It is possible that fewer than `nClusters` partitions
+/// can be made, in which case the output array has fewer elements.
 DIP_EXPORT CoordinateArray MinimumVariancePartitioning(
       Image const& in,
       Image& out,

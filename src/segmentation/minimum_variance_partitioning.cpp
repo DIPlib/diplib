@@ -30,6 +30,8 @@
 #include "diplib/iterators.h"
 #include "diplib/overload.h"
 
+#include "../histogram/threshold_algorithms.h"
+
 /* Algorithm:
   - Compute Sum() projections.
   - For each projection, compute mean, variance, optimal partition (Otsu), and variances of the two partitions.
@@ -90,8 +92,8 @@ class KDTree {
          UnsignedArray mean;        // location of the mean
          dip::uint optimalDim;      // dimension along which to split, if needed
          dip::uint threshold;       // location at which to split
-         dfloat variance;           // variance along optimalDim
-         dfloat splitVariances;     // sum of variances along optimalDim if split
+         dfloat variance;           // weighted variance along optimalDim
+         dfloat splitVariances;     // sum of weighted variances along optimalDim if split
          Image const& image;
          ComputeSumProjectionsFunction* computeSumProjections;
 
@@ -110,17 +112,22 @@ class KDTree {
          // Computes optimal split for this partition
          void FindOptimalSplit( ProjectionArray const& projections ) {
             dip::uint nDims = image.Dimensionality();
-            mean.resize( nDims );
+            mean = leftEdges;
             optimalDim = 0;
+            threshold = 0;
             variance = 0;
-            splitVariances = 1; // larger than variance, will be overwritten for sure
+            splitVariances = 1e6; // larger than variance, will be overwritten for sure
             for( dip::uint ii = 0; ii < nDims; ++ii ) {
-               ComputeVariances( ii, projections[ ii ] );
+               if( projections[ ii ].size() > 1 ) {
+                  ComputeVariances( ii, projections[ ii ] );
+               }
             }
+            // if variance == 0, we can't split this node
          }
 
          // Splits this partition along `optimalDim`, putting the right half into `other`
          void Split( Partition& other ) {
+            DIP_ASSERT( variance > 0 ); // Otherwise we don't have a possible split
             //std::cout << "Splitting along dimension " << optimalDim << ", threshold = " << threshold << '\n';
             //std::cout << "leftEdge = " << leftEdges[ optimalDim ] << ", rightEdge = " << rightEdges[ optimalDim ] << '\n';
             dip::uint n = nPixels / ( rightEdges[ optimalDim ] - leftEdges[ optimalDim ] + 1 );
@@ -142,89 +149,62 @@ class KDTree {
          void ComputeVariances( dip::uint dim, Projection const& projection ) {
             ProjectionType const* data = projection.data();
             dip::uint nBins = projection.size();
-            // w1(ii), w2(ii) are the probabilities of each of the halves of the histogram thresholded at ii (with thresholding being >)
-            dfloat w1 = 0;
-            dfloat w2 = 0;
-            // m1(ii), m2(ii) are the corresponding first order moments
-            dfloat m1 = 0;
-            dfloat m2 = 0;
-            for( dip::uint ii = 0; ii < nBins; ++ii ) {
-               w2 += static_cast< dfloat >( data[ ii ] );
-               m2 += static_cast< dfloat >( data[ ii ] ) * static_cast< dfloat >( ii );
-            }
-            if( w2 == 0 ) {
-               mean[ dim ] = threshold = leftEdges[ dim ] + nBins / 2;
-               if( variance > splitVariances ) {
-                  variance = splitVariances = 0;
-                  optimalDim = dim;
-               }
-               return;
-            }
-            mean[ dim ] = leftEdges[ dim ] + static_cast< dip::uint >( round_cast( m2 / w2 ));
-            // Here we accumulate the max.
-            dfloat ssMax = -1e6;
-            dip::uint maxInd = 0;
-            for( dip::uint ii = 0; ii < nBins - 1; ++ii ) {
-               dfloat tmp = static_cast< dfloat >( data[ ii ] );
-               w1 += tmp;
-               w2 -= tmp;
-               tmp *= static_cast< dfloat >( ii );
-               m1 += tmp;
-               m2 -= tmp;
-               // c1(ii), c2(ii) are the centers of gravity
-               dfloat c1 = m1 / w1;
-               dfloat c2 = m2 / w2;
-               dfloat c = c1 - c2;
-               // ss(ii) is Otsu's measure for inter-class variance
-               dfloat ss = w1 * w2 * c * c;
-               if( ss > ssMax ) {
-                  ssMax = ss;
-                  maxInd = ii;
-               }
+            dip::uint maxInd = OtsuThreshold( data, nBins );
+            if( maxInd == nBins ) {
+               // This is an issue! Let's try splitting half-way the range.
+               maxInd = nBins / 2;
             }
             // Find the variances for this dimension and this split
+            // w0, w1, w2 are the probabilities of the full histogram and each of the halves when thresholded between maxInd and maxInd+1
             dfloat w0 = 0;
-            w1 = 0;
-            w2 = 0;
-            // m1(ii), m2(ii) are the corresponding first order moments
+            dfloat w1 = 0;
+            dfloat w2 = 0;
+            // m0, m1, m2 are the corresponding first order moments
             dfloat m0 = 0;
-            m1 = 0;
-            m2 = 0;
-            // mm1(ii), mm2(ii) are the corresponding second order moments
+            dfloat m1 = 0;
+            dfloat m2 = 0;
+            // mm0, mm1, mm2 are the corresponding second order moments
             dfloat mm0 = 0;
             dfloat mm1 = 0;
             dfloat mm2 = 0;
             for( dip::uint ii = 0; ii < nBins; ++ii ) {
                dfloat tmp = static_cast< dfloat >( data[ ii ] );
                w0 += tmp;
-               if( ii < maxInd ) {
+               if( ii <= maxInd ) {
                   w1 += tmp;
                } else {
                   w2 += tmp;
                }
                tmp *= static_cast< dfloat >( ii );
                m0 += tmp;
-               if( ii < maxInd ) {
+               if( ii <= maxInd ) {
                   m1 += tmp;
                } else {
                   m2 += tmp;
                }
                tmp *= static_cast< dfloat >( ii );
                mm0 += tmp;
-               if( ii < maxInd ) {
+               if( ii <= maxInd ) {
                   mm1 += tmp;
                } else {
                   mm2 += tmp;
                }
             }
-            mm0 = w0 > 1 ? ( mm0 - ( m0 * m0 ) / w0 ) / ( w0 - 1 ) : 0;
-            mm1 = w1 > 1 ? ( mm1 - ( m1 * m1 ) / w1 ) / ( w1 - 1 ) : 0;
-            mm2 = w2 > 1 ? ( mm2 - ( m2 * m2 ) / w2 ) / ( w2 - 1 ) : 0;
-            if(( variance - splitVariances ) < ( mm0 - mm1 - mm2 )) {
-               variance = mm0;
-               splitVariances = mm1 + mm2;
-               optimalDim = dim;
-               threshold = leftEdges[ dim ] + maxInd;
+            // Fill in the mean value for this dimension as it is before being split
+            if( w0 > 0 ) {
+               mean[ dim ] = leftEdges[ dim ] + static_cast< dip::uint >( round_cast( m0 / w0 ));
+            }
+            // Compute weighted variances mm0 = w0 * s0^2. We use biased variances (divide by w0 instead of w0-1) because that's what Otsu does too.
+            if(( w1 > 0 ) && ( w2 > 0 )) { // If this is false, we cannot split the node along this dimension.
+               mm0 -= ( m0 * m0 ) / w0;
+               mm1 -= ( m1 * m1 ) / w1;
+               mm2 -= ( m2 * m2 ) / w2;
+               if(( variance - splitVariances ) < ( mm0 - mm1 - mm2 )) {
+                  variance = mm0;
+                  splitVariances = mm1 + mm2;
+                  optimalDim = dim;
+                  threshold = leftEdges[ dim ] + maxInd;
+               }
             }
          }
       };
@@ -243,6 +223,9 @@ class KDTree {
       dip::Image const& image;
 
       void SplitPartition( dip::uint index ) {
+         DIP_ASSERT( nodes[ index ].left == 0 );
+         DIP_ASSERT( nodes[ index ].right == 0 );
+         DIP_ASSERT( nodes[ index ].partition->variance > 0 ); // This means it can be split
          nodes[ index ].left = nodes.size();
          nodes.emplace_back( nodes[ index ].label );
          nodes[ index ].right = nodes.size();
@@ -283,6 +266,13 @@ class KDTree {
             // The best split has the largest reduction in variances; for equal reduction, the partition with the most pixels is split.
             Partition* lhs = nodes[ lhsIndex ].partition.get();
             Partition* rhs = nodes[ rhsIndex ].partition.get();
+            // Sort nodes that can't be split at the end of the queue.
+            if( lhs->variance == 0 ) {
+               return true;
+            }
+            if( rhs->variance == 0 ) {
+               return false;
+            }
             dfloat cmp = ( lhs->variance - lhs->splitVariances ) - ( rhs->variance - rhs->splitVariances );
             return cmp == 0 ? ( lhs->nPixels < rhs->nPixels ) : ( cmp < 0 );
          };
@@ -291,6 +281,10 @@ class KDTree {
          while( --nClusters ) {
             dip::uint index = queue.top();
             queue.pop();
+            if( nodes[ index ].partition->variance == 0 ) {
+               // We can no longer split partitions, we're done!
+               return;
+            }
             SplitPartition( index );
             queue.push( nodes[ index ].left );
             queue.push( nodes[ index ].right );
