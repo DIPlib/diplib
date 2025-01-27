@@ -144,6 +144,7 @@ histogram/histogram.cpp
 histogram/per_object_hist.cpp
 histogram/statistics.cpp
 histogram/threshold_algorithms.cpp
+histogram/threshold_algorithms.h
 library/boundary.cpp
 library/copy_buffer.cpp
 library/datatype.cpp
