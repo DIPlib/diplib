@@ -40,6 +40,7 @@ setup_kwargs = dict(
     author="Cris Luengo and others",
     author_email="luengo@ieee.org",
     license='Apache',
+    license_files=[],  # Leaving this empty makes it so that there's no license-file entry in the METADATA file, which causes twine to balk.
     classifiers=[
         "Development Status :: 4 - Beta",
         "License :: OSI Approved :: Apache Software License",
@@ -61,7 +62,7 @@ setup_kwargs = dict(
     ext_modules=[Extension('diplib.PyDIP_bin', [])],
     package_data={'diplib': libraries},
     entry_points={'gui_scripts': ['dipview = diplib.dipview:main']},
-    python_requires='>=3.8'
+    python_requires='>=3.8',
 )
 
 name = os.path.join("$<TARGET_FILE_DIR:PyDIP_bin>", "staging", "dist", wheel_name(**setup_kwargs))

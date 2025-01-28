@@ -11,7 +11,7 @@ jobs:
 
       - name: Install
         # Install libraries and Python packages we need
-        run: python3 -m pip install twine
+        run: python3 -m pip install -U twine
 
       - name: Deploy
         run: bash tools/build/deploy_linux.sh
