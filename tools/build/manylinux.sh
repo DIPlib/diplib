@@ -19,7 +19,7 @@ $CMAKE .. -DDIP_PYDIP_WHEEL_INCLUDE_LIBS=On
 
 # Build wheels
 for v in ${PYTHON_VERSIONS[@]}; do
-   /opt/python/cp${v/./}-cp${v/./}/bin/python -m pip install setuptools wheel
+   /opt/python/cp${v/./}-cp${v/./}/bin/python -m pip install -U setuptools wheel packaging
    $CMAKE .. -DPython_EXECUTABLE=/opt/python/cp${v/./}-cp${v/./}/bin/python
    make -j $BUILD_THREADS bdist_wheel
    auditwheel repair ${EXCLUDES[@]/#/--exclude } pydip/staging/dist/*.whl
