@@ -64,6 +64,15 @@ page there is a list of workflows. Select "deploy". On the right of the page the
 Press the button, and select the newly defined tag, then run the workflow. This will build the Python packages
 and upload them to PyPI.
 
+Note that, if one or more of the packages for one architecture didn't build for whatever reason (and there always
+seems to be some reason), the action can still be successful. It only seems to fail if one of the wheels couldn't
+be uploaded to PyPI. So it is important to check that all the wheels are available on PyPI when this action
+completes. Check the "Download files" tab for the latest version, for example https://pypi.org/project/diplib/3.5.2/#files.
+
+If any wheel is missing, update the `.github/workflows/deploy.yml` workflow and/or the build script files under
+`tools/build/` to only build and upload the missing packages (and of course fix the reason these packages were
+not build). Note that you cannot upload a package that already exists on PyPI, and the action will fail if you try.
+
 ### 6. Build the documentation
 
 Build the documentation locally. This requires a machine with LaTeX, MATLAB and a bunch of other tools.
