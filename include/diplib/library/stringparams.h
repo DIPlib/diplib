@@ -41,7 +41,6 @@ constexpr char const* FIRST = "first";
 constexpr char const* LAST = "last";
 constexpr char const* STABLE = "stable";
 constexpr char const* DIRECTIONAL = "directional";
-constexpr char const* OTSU = "otsu";
 constexpr char const* INCLUDE = "include";
 constexpr char const* EXCLUDE = "exclude";
 constexpr char const* INTERPOLATE = "interpolate";
@@ -67,6 +66,18 @@ constexpr char const* FORWARD = "forward";
 constexpr char const* INVERSE = "inverse";
 constexpr char const* OTF = "OTF";
 constexpr char const* PAD = "pad";
+
+// Thresholding/clustering
+constexpr char const* ISODATA = "isodata";
+constexpr char const* OTSU = "otsu";
+constexpr char const* MINERROR = "minerror";
+constexpr char const* GMM = "gmm";
+constexpr char const* TRIANGLE = "triangle";
+//constexpr char const* BACKGROUND = "background";
+constexpr char const* VOLUME = "volume";
+constexpr char const* FIXED = "fixed";
+constexpr char const* HYSTERESIS = "hysteresis";
+constexpr char const* KMEANS = "kmeans";
 
 // Binary processing
 constexpr char const* BACKGROUND = "background";

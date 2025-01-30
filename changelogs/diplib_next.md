@@ -25,6 +25,11 @@ date: 2020-00-00
 
 - `dip::ChainCode::Polygon()` has a new, optional argument to exclude border pixels from the polygon.
 
+- The overloads for `dip::MinimumVariancePartitioning()` and `dip::KMeansClustering()` that take a histogram
+  as input now also have a version that take the output histogram as an argument, and return the cluster centers.
+  This version of `dip::KMeansClustering()` additionally has overloads that take a `dip::Random` object as input,
+  instead of using a default-initialized one.
+
 ### Bug fixes
 
 - Fixed `dip::IsotropicErosion()` to use the same structuring element size as `dip::IsotropicDilation()`.
@@ -43,7 +48,7 @@ date: 2020-00-00
 
 - `dip::GetImageChainCodes()` and `dip::GetSingleChainCode()` marked a chain code as being on the image border
   if the end pixel was on the image border, instead of only if the step represented by the code is along the
-  image border (i.e. both the start and end pixels for the step are along the border).
+  image border.
 
 ### Updated dependencies
 

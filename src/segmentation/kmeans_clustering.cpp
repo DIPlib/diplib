@@ -220,7 +220,6 @@ CoordinateArray KMeansClustering(
    Clustering( in, out, clusters, true );
 
    // Copy over cluster centers to output array
-   // This is a small amount of work, and will often be unused. But compared to the cost of the clustering, it's negligible.
    CoordinateArray coords( clusters.size() );
    for( auto& cluster : clusters ) {
       coords[ cluster.label - 1 ] = UnsignedArray( cluster.mean );

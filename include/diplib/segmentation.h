@@ -46,7 +46,8 @@ namespace dip {
 ///
 /// K-means clustering is an iterative process with a random initialization. It is likely to get
 /// stuck in local minima. Repeating the clustering several times and picking the best result
-/// (e.g. determined by times each cluster center is found) can be necessary.
+/// (e.g. determined by times each cluster center is found) can be necessary. You can leave out
+/// the \ref dip::Random` object in this function call, a default-initialized object will be used.
 ///
 /// The returned \ref dip::CoordinateArray contains the cluster centers.
 /// Element `i` in this array corresponds to label `i+1`.
@@ -440,33 +441,33 @@ inline dfloat Threshold(
       String const& method = S::OTSU,
       dfloat parameter = infinity
 ) {
-   if( method == "isodata" ) {
+   if( method == S::ISODATA ) {
       FloatArray values = IsodataThreshold( in, mask, out, 1 );
       return values[ 0 ];
    }
    if( method == S::OTSU ) {
       return OtsuThreshold( in, mask, out );
    }
-   if( method == "minerror" ) {
+   if( method == S::MINERROR ) {
       return MinimumErrorThreshold( in, mask, out );
    }
-   if( method == "gmm" ) {
+   if( method == S::GMM ) {
       FloatArray values = GaussianMixtureModelThreshold( in, mask, out, 1 );
       return values[ 0 ];
    }
-   if( method == "triangle" ) {
+   if( method == S::TRIANGLE ) {
       return ( parameter == infinity ) ? TriangleThreshold( in, mask, out )
                                        : TriangleThreshold( in, mask, out, parameter );
    }
-   if( method == "background" ) {
+   if( method == S::BACKGROUND ) {
       return ( parameter == infinity ) ? BackgroundThreshold( in, mask, out )
                                        : BackgroundThreshold( in, mask, out, parameter );
    }
-   if( method == "volume" ) {
+   if( method == S::VOLUME ) {
       return ( parameter == infinity ) ? VolumeThreshold( in, mask, out )
                                        : VolumeThreshold( in, mask, out, parameter );
    }
-   if( method == "fixed" ) {
+   if( method == S::FIXED ) {
       if( parameter == infinity ) {
          parameter = 128.0;
       }
@@ -521,12 +522,10 @@ DIP_EXPORT void PerObjectEllipsoidFit(
       Image const& in,
       Image& out,
       PerObjectEllipsoidFitParameters const& parameters
-
 );
 DIP_NODISCARD inline Image PerObjectEllipsoidFit(
       Image const& in,
       PerObjectEllipsoidFitParameters const& parameters
-
 ) {
    Image out;
    PerObjectEllipsoidFit( in, out, parameters );

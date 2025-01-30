@@ -268,10 +268,22 @@ void init_histogram( py::module& m ) {
           "in"_a, "sigma"_a = 4.0, doc_strings::dip·TriangleThreshold·Histogram·CL·dfloat· );
    m.def( "BackgroundThreshold", py::overload_cast< dip::Histogram const&, dip::dfloat, dip::dfloat >( &dip::BackgroundThreshold ),
           "in"_a, "distance"_a = 2.0, "sigma"_a = 4.0, doc_strings::dip·BackgroundThreshold·Histogram·CL·dfloat··dfloat· );
-   m.def( "KMeansClustering", py::overload_cast< dip::Histogram const&, dip::uint >( &dip::KMeansClustering ),
-          "in"_a, "nClusters"_a = 2, doc_strings::dip·KMeansClustering·Histogram·CL·dip·uint· );
+   m.def( "KMeansClustering", []( dip::Histogram const& in, dip::uint nClusters ) {
+             return KMeansClustering( in, RandomNumberGenerator(), nClusters );
+          },
+          "in"_a, "nClusters"_a = 2,
+          "Partitions a (multi-dimensional) histogram into `nClusters` partitions using\nk-means clustering.\n"
+          "Like the C++ function, but using an internal `dip::Random` object." );
+   m.def( "KMeansClustering", []( dip::Histogram const& in, dip::Histogram& out, dip::uint nClusters ) {
+             KMeansClustering( in, out, RandomNumberGenerator(), nClusters );
+          },
+          "in"_a, py::kw_only(), "out"_a, "nClusters"_a = 2,
+          "Partitions a (multi-dimensional) histogram into `nClusters` partitions using\nk-means clustering.\n"
+          "Like the C++ function, but using an internal `dip::Random` object." );
    m.def( "MinimumVariancePartitioning", py::overload_cast< dip::Histogram const&, dip::uint >( &dip::MinimumVariancePartitioning ),
-          "in"_a, "nClusters"_a = 2, doc_strings::dip·MinimumVariancePartitioning·Histogram·CL·dip·uint· );
+          "in"_a, "nClusters"_a = 2, doc_strings::dip·MinimumVariancePartitioning·Histogram·CL·Histogram·L·dip·uint· );
+   m.def( "MinimumVariancePartitioning", py::overload_cast< dip::Histogram const&, dip::Histogram&, dip::uint >( &dip::MinimumVariancePartitioning ),
+          "in"_a, py::kw_only(), "out"_a, "nClusters"_a = 2, doc_strings::dip·MinimumVariancePartitioning·Histogram·CL·Histogram·L·dip·uint· );
    m.def( "EqualizationLookupTable", &dip::EqualizationLookupTable,
           "in"_a, doc_strings::dip·EqualizationLookupTable·Histogram·CL );
    m.def( "MatchingLookupTable", &dip::MatchingLookupTable,

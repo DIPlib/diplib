@@ -26,6 +26,7 @@
 #include "diplib/iterators.h"
 #include "diplib/lookup_table.h"
 #include "diplib/measurement.h"
+#include "diplib/random.h"
 
 
 /// \file
@@ -965,24 +966,63 @@ DIP_EXPORT dfloat BackgroundThreshold(
 ///
 /// K-means clustering partitions the histogram into compact, similarly-weighted segments. The algorithm
 /// uses a random initialization, so multiple runs might yield different results.
+/// See \ref KMeansClustering(Image const&, Image&, Random&, dip::uint).
 ///
 /// For 1D histograms, \ref dip::IsodataThreshold( Histogram const&, dip::uint ) is more efficient, and deterministic.
-DIP_EXPORT Histogram KMeansClustering(
+DIP_EXPORT FloatCoordinateArray KMeansClustering(
+      Histogram const& in,
+      Histogram& out,
+      Random& random,
+      dip::uint nClusters
+);
+inline Histogram KMeansClustering(
+      Histogram const& in,
+      Random& random,
+      dip::uint nClusters = 2
+) {
+   Histogram out;
+   KMeansClustering( in, out, random, nClusters );
+   return out;
+}
+/// \brief Like above, using a default-initialized \ref dip::Random object.
+inline FloatCoordinateArray KMeansClustering(
+      Histogram const& in,
+      Histogram& out,
+      dip::uint nClusters = 2
+) {
+   Random random;
+   return KMeansClustering( in, out, random, nClusters );
+}
+DIP_NODISCARD inline Histogram KMeansClustering(
       Histogram const& in,
       dip::uint nClusters = 2
-);
+) {
+   Histogram out;
+   KMeansClustering( in, out, nClusters );
+   return out;
+}
 
 /// \brief Partitions a (multi-dimensional) histogram into `nClusters` partitions iteratively using Otsu
 /// thresholding along individual dimensions.
 ///
 /// Minimum variance partitioning builds a k-d tree of the histogram, where, for each node, the marginal histogram
 /// with the largest variance is split using Otsu thresholding.
+/// See \ref MinimumVariancePartitioning(Image const&, Image&, dip::uint).
 ///
 /// For two clusters in a 1D histogram, use \ref dip::OtsuThreshold( Histogram const& ).
-DIP_EXPORT Histogram MinimumVariancePartitioning(
+DIP_EXPORT FloatCoordinateArray MinimumVariancePartitioning(
+      Histogram const& in,
+      Histogram& out,
+      dip::uint nClusters
+);
+inline Histogram MinimumVariancePartitioning(
       Histogram const& in,
       dip::uint nClusters = 2
-);
+) {
+   Histogram out;
+   MinimumVariancePartitioning( in, out, nClusters );
+   return out;
+}
 
 
 //

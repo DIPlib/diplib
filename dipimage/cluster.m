@@ -5,7 +5,7 @@
 % initialization, meaning the result can be different on subsequent runs.
 % Minimum variance clustering splits the image along one dimension
 % iteratively, creating a k-d-tree--like partitioning. The chosen split
-% at each iteration is the one that most reduces the sum of variances
+% at each iteration is the one that most reduces the weighted sum of variances
 % of the partitions.
 %
 % SYNOPSIS:

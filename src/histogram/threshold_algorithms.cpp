@@ -25,6 +25,7 @@
 #include "diplib.h"
 #include "diplib/analysis.h"
 #include "diplib/chain_code.h"
+#include "diplib/random.h"
 #include "diplib/segmentation.h"
 #include "diplib/statistics.h"
 
@@ -35,28 +36,53 @@ namespace dip {
 
 using CountType = Histogram::CountType;
 
-Histogram KMeansClustering(
-      Histogram const& in,
-      dip::uint nClusters
-) {
-   Image labs;
-   KMeansClustering( in.GetImage(), labs, nClusters );
-   Histogram out = in.Copy();
-   Image tmp = out.GetImage(); // Copy with shared data
-   tmp.Copy( labs );
+namespace {
+
+// Compute nD bin centers from bin indices
+FloatCoordinateArray ComputeCoordinates( Histogram const& hist, CoordinateArray const& bins ) {
+   dip::uint nDims = hist.Dimensionality();
+   FloatCoordinateArray out( bins.size(), FloatArray( nDims, 0 ) );
+   for( dip::uint ii = 0; ii < bins.size(); ++ii ) {
+      DIP_ASSERT( bins[ ii ].size() == nDims );
+      for( dip::uint jj = 0; jj < nDims; ++jj ) {
+         out[ ii ][ jj ] = hist.BinCenter( bins[ ii ][ jj ], jj );
+      }
+   }
    return out;
 }
 
-Histogram MinimumVariancePartitioning(
+} // namespace
+
+
+FloatCoordinateArray KMeansClustering(
       Histogram const& in,
+      Histogram& out,
+      Random& random,
       dip::uint nClusters
 ) {
    Image labs;
-   MinimumVariancePartitioning( in.GetImage(), labs, nClusters );
-   Histogram out = in.Copy();
+   auto centers = KMeansClustering( in.GetImage(), labs, random, nClusters );
+   if( &out != &in ) {
+      out = in.Copy();
+   }
    Image tmp = out.GetImage(); // Copy with shared data
    tmp.Copy( labs );
-   return out;
+   return ComputeCoordinates( out, centers );
+}
+
+FloatCoordinateArray MinimumVariancePartitioning(
+      Histogram const& in,
+      Histogram& out,
+      dip::uint nClusters
+) {
+   Image labs;
+   auto centers = MinimumVariancePartitioning( in.GetImage(), labs, nClusters );
+   if( &out != &in ) {
+      out = in.Copy();
+   }
+   Image tmp = out.GetImage(); // Copy with shared data
+   tmp.Copy( labs );
+   return ComputeCoordinates( out, centers );
 }
 
 FloatArray IsodataThreshold(

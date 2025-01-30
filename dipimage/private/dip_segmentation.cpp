@@ -210,7 +210,7 @@ void threshold( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    DML_MAX_ARGS( index + 1 );
    dml::MatlabInterface mi;
    dip::Image out = mi.NewImage();
-   if(( method == "double" ) || ( method == "hysteresis" )) {
+   if(( method == "double" ) || ( method == dip::S::HYSTERESIS )) {
       dip::dfloat param1{};
       dip::dfloat param2{};
       if( nrhs > index ) {
@@ -232,7 +232,7 @@ void threshold( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       if( nlhs > 1 ) {
          plhs[ 1 ] = dml::CreateDouble2Vector( param1, param2 );
       }
-   } else if(( method == "isodata" ) || ( method == "kmeans" ) || ( method == "gmm" )) {
+   } else if(( method == dip::S::ISODATA ) || ( method == dip::S::KMEANS ) || ( method == dip::S::GMM )) {
       dip::uint nThresholds = 1;
       if( nrhs > index ) {
          dip::dfloat parameter = dml::GetFloat( prhs[ index ] );
@@ -240,8 +240,8 @@ void threshold( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
             nThresholds = static_cast< dip::uint >( parameter );
          }
       }
-      dip::FloatArray thresholds = ( method == "gmm" ) ? GaussianMixtureModelThreshold( in, mask, out, nThresholds )
-                                                       : IsodataThreshold( in, mask, out, nThresholds );
+      dip::FloatArray thresholds = ( method == dip::S::GMM ) ? GaussianMixtureModelThreshold( in, mask, out, nThresholds )
+                                                             : IsodataThreshold( in, mask, out, nThresholds );
       if( nlhs > 1 ) {
          plhs[ 1 ] = dml::GetArray( thresholds );
       }
@@ -274,7 +274,7 @@ void canny( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
 void cornerdetector( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    DML_MAX_ARGS( 4 );
    dip::Image const in = dml::GetImage( prhs[ 0 ] );
-   dip::String method = ( nrhs > 1 ) ? dml::GetString( prhs[ 1 ] ) : "ShiTomasi";
+   dip::String method = ( nrhs > 1 ) ? dml::GetString( prhs[ 1 ] ) : "shitomasi";
    dip::ToLowerCase( method );
    dip::FloatArray sigmas = ( nrhs > 2 ) ? dml::GetFloatArray( prhs[ 2 ] ) : dip::FloatArray{ 2.0 };
    dml::MatlabInterface mi;
@@ -298,7 +298,7 @@ void cornerdetector( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
 void linedetector( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    DML_MAX_ARGS( 5 );
    dip::Image const in = dml::GetImage( prhs[ 0 ] );
-   dip::String method = ( nrhs > 1 ) ? dml::GetString( prhs[ 1 ] ) : "Frangi";
+   dip::String method = ( nrhs > 1 ) ? dml::GetString( prhs[ 1 ] ) : "frangi";
    dip::ToLowerCase( method );
    dip::String polarity = ( nrhs > 4 ) ? dml::GetString( prhs[ 4 ] ) : dip::S::WHITE;
    dml::MatlabInterface mi;
