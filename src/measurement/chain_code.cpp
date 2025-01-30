@@ -146,8 +146,10 @@ inline void DecrementMod4( unsigned& k ) {
 // This Algorithm to make a polygon from a chain code is home-brewed.
 // The concept of using pixel edge midpoints is from Steve Eddins:
 // http://blogs.mathworks.com/steve/2011/10/04/binary-image-convex-hull-algorithm-notes/
-dip::Polygon ChainCode::Polygon() const {
+dip::Polygon ChainCode::Polygon( String const& borderCodes ) const {
    DIP_THROW_IF( codes.size() == 1, "Received a weird chain code as input (N==1)" );
+   bool discardBorder{};
+   DIP_STACK_TRACE_THIS( discardBorder = BooleanFromString( borderCodes, S::LOSE, S::KEEP ));
 
    if( Empty() ) {
       return {}; // There's no chain code, return an empty polygon
@@ -173,28 +175,30 @@ dip::Polygon ChainCode::Polygon() const {
       vertices.push_back( pts[ 2 ] + pos );
       vertices.push_back( pts[ 1 ] + pos );
    } else {
-      unsigned m = cc.codes.back();
-      for( unsigned n : cc.codes ) {
-         unsigned k = ( m + 1 ) / 2;
-         if( k == 4 ) {
-            k = 0;
-         }
-         unsigned l = n / 2;
-         if( l < k ) {
-            l += 4;
-         }
-         l -= k;
-         vertices.push_back( pts[ k ] + pos );
-         if( l != 0 ) {
-            DecrementMod4( k );
+      Code m = cc.codes.back();
+      for( Code n : cc.codes ) {
+         if( !( discardBorder && n.IsBorder() && m.IsBorder() )) {
+            unsigned k = ( m + 1 ) / 2;
+            if( k == 4 ) {
+               k = 0;
+            }
+            unsigned l = n / 2;
+            if( l < k ) {
+               l += 4;
+            }
+            l -= k;
             vertices.push_back( pts[ k ] + pos );
-            if( l <= 2 ) {
+            if( l != 0 ) {
                DecrementMod4( k );
                vertices.push_back( pts[ k ] + pos );
-               if( l == 1 ) {
-                  // This case is only possible if n is odd and n==m+4
+               if( l <= 2 ) {
                   DecrementMod4( k );
                   vertices.push_back( pts[ k ] + pos );
+                  if( l == 1 ) {
+                     // This case is only possible if n is odd and n==m+4
+                     DecrementMod4( k );
+                     vertices.push_back( pts[ k ] + pos );
+                  }
                }
             }
          }

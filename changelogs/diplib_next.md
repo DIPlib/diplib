@@ -23,6 +23,8 @@ date: 2020-00-00
   In the case of `dip::MarginalPercentile()`, and the case `dip::Percentile()` applied to a measurement feature,
   the computation was not consistent with the other percentile computations.
 
+- `dip::ChainCode::Polygon()` has a new, optional argument to exclude border pixels from the polygon.
+
 ### Bug fixes
 
 - Fixed `dip::IsotropicErosion()` to use the same structuring element size as `dip::IsotropicDilation()`.
@@ -38,6 +40,10 @@ date: 2020-00-00
 
 - `dip::MinimumVariancePartitioning()` now gracefully handles the case where more clusters are requested
   than can be generated.
+
+- `dip::GetImageChainCodes()` and `dip::GetSingleChainCode()` marked a chain code as being on the image border
+  if the end pixel was on the image border, instead of only if the step represented by the code is along the
+  image border (i.e. both the start and end pixels for the step are along the border).
 
 ### Updated dependencies
 

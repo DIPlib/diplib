@@ -52,6 +52,12 @@ ChainCode GetOneChainCode(
    out.start = coord;
    out.objectID = label;
    out.is8connected = connectivity != 1; // 0 means 8-connected also
+   // Directions
+   unsigned right = 0;
+   unsigned up = out.is8connected ? 2 : 1;
+   unsigned left = out.is8connected ? 4 : 2;
+   unsigned down = out.is8connected ? 6 : 3;
+   unsigned last = out.is8connected ? 7 : 3;
    // Follow contour always as left as possible (i.e. ii = ii+2)
    dip::sint offset = 0;
    unsigned dir = 0; // start direction given by how we determine the start position!
@@ -64,17 +70,21 @@ ChainCode GetOneChainCode(
             break;
          }
          ++dir;
-         DIP_THROW_IF( dir == ( out.is8connected ? 8 : 4 ), "Start coordinates not on object boundary" );
+         DIP_THROW_IF( dir == last + 1, "Start coordinates not on object boundary" );
       }
    }
    unsigned startdir = dir;
    do {
       VertexInteger nc = coord + codeTable.pos[ dir ];
       dip::sint no = offset + codeTable.offset[ dir ];
-      if(( nc.x >= 0 ) && ( nc.x <= dims.x ) && ( nc.y >= 0 ) && ( nc.y <= dims.y ) && ( data[ no ] == label )) {
+      bool outOfBounds = ( nc.x < 0 ) || ( nc.x > dims.x ) || ( nc.y < 0 ) || ( nc.y > dims.y );
+      if( !outOfBounds && ( data[ no ] == label )) {
          // Add new chain
-         bool border = ( nc.x == 0 ) || ( nc.x == dims.x ) || ( nc.y == 0 ) || ( nc.y == dims.y );
-         out.Push( { dir, border } );
+         bool isBorder = (( nc.x == 0 ) && ( dir == up )) ||
+                         (( nc.x == dims.x ) && ( dir == down )) ||
+                         (( nc.y == 0 ) && ( dir == right )) ||
+                         (( nc.y == dims.y ) && ( dir == left ) );
+         out.Push( { dir, isBorder } );
          // New position
          coord = nc;
          offset = no;
@@ -83,7 +93,7 @@ ChainCode GetOneChainCode(
       } else {
          // New direction to search
          if( dir == 0 ) {
-            dir = out.is8connected ? 7 : 3;
+            dir = last;
          } else {
             dir--;
          }
@@ -224,13 +234,38 @@ DOCTEST_TEST_CASE("[DIPlib] testing chain code conversion to image and back") {
    cc.is8connected = true;
    dip::Image img = cc.Image();
    dip::ChainCode cc2 = dip::GetSingleChainCode( img, { 1, 0 }, 2 );
-   DOCTEST_CHECK( cc2.start.x == 1 );
-   DOCTEST_CHECK( cc2.start.y == 0 );
+   DOCTEST_CHECK( cc2.start == cc.start );
    DOCTEST_CHECK( cc2.is8connected );
    DOCTEST_REQUIRE( cc2.codes.size() == cc.codes.size() );
    for( dip::uint ii = 0; ii < cc2.codes.size(); ++ii ) {
       DOCTEST_CHECK( cc.codes[ ii ] == cc2.codes[ ii ] );
    }
+}
+
+DOCTEST_TEST_CASE("[DIPlib] testing chain codes on image border") {
+   dip::Image img( { 9, 9 }, 1, dip::DT_BIN );
+   img.Fill( false );
+   img.At( dip::Range( 3, -1 ), dip::Range( 2, -3 )) = true;
+   // 8-connected
+   dip::ChainCode cc = dip::GetSingleChainCode( img, { 3, 2 }, 2 );
+   dip::uint borderCodes = 0;
+   for( auto code : cc.codes ) {
+      borderCodes += code.IsBorder();
+   }
+   DOCTEST_CHECK( borderCodes == 4 );
+   dip::Polygon p1 = cc.Polygon();
+   dip::Polygon p2 = cc.Polygon( "lose" );
+   DOCTEST_CHECK( p1.vertices.size() == p2.vertices.size() + 3 );
+   // 4-connected
+   cc = dip::GetSingleChainCode( img, { 3, 2 }, 1 );
+   borderCodes = 0;
+   for( auto code : cc.codes ) {
+      borderCodes += code.IsBorder();
+   }
+   DOCTEST_CHECK( borderCodes == 4 );
+   p1 = cc.Polygon();
+   p2 = cc.Polygon( "lose" );
+   DOCTEST_CHECK( p1.vertices.size() == p2.vertices.size() + 3 );
 }
 
 #endif // DIP_CONFIG_ENABLE_DOCTEST

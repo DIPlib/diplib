@@ -593,7 +593,7 @@ void init_measurement( py::module& m ) {
    chain.def( "BendingEnergy", &dip::ChainCode::BendingEnergy, doc_strings::dip·ChainCode·BendingEnergy·C );
    chain.def( "BoundingBox", &dip::ChainCode::BoundingBox, doc_strings::dip·ChainCode·BoundingBox·C );
    chain.def( "LongestRun", &dip::ChainCode::LongestRun, doc_strings::dip·ChainCode·LongestRun·C );
-   chain.def( "Polygon", &dip::ChainCode::Polygon, doc_strings::dip·ChainCode·Polygon·C );
+   chain.def( "Polygon", &dip::ChainCode::Polygon, "borderCodes"_a = dip::S::KEEP, doc_strings::dip·ChainCode·Polygon·String·CL·C );
    chain.def( "Image", py::overload_cast<>( &dip::ChainCode::Image, py::const_ ), doc_strings::dip·ChainCode·Image·dip·Image·L·C );
    chain.def( "Image", py::overload_cast< dip::Image& >( &dip::ChainCode::Image, py::const_ ), "out"_a, doc_strings::dip·ChainCode·Image·dip·Image·L·C );
    chain.def( "Coordinates", &dip::ChainCode::Coordinates, doc_strings::dip·ChainCode·Coordinates·C );
