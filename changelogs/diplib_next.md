@@ -11,6 +11,9 @@ date: 2020-00-00
 - Added `dip::RankFromPercentile()`, which computes the rank (or index into the sorted array) for the given
   percentile and array size. This was a computation done in many different functions in the library.
 
+- Added `dip::Polygon::FitCircle()` and `dip::Polygon::FitEllipse()`. The former returns a new data structure
+  `dip::CircleParameters`.
+
 ### Changed functionality
 
 - All functions that compute a percentile (`dip::Percentile()`, `dip::PercentilePosition()`,
@@ -29,6 +32,11 @@ date: 2020-00-00
   as input now also have a version that take the output histogram as an argument, and return the cluster centers.
   This version of `dip::KMeansClustering()` additionally has overloads that take a `dip::Random` object as input,
   instead of using a default-initialized one.
+
+- `dip::CovarianceMatrix::EllipseParameters` is now `dip::EllipseParameters`, and adds a member `center` to encode
+  the coordinates of the center of the ellipse. This is the data structure returned by `dip::CovarianceMatrix::Ellipse()`,
+  which does not fill in the new `center` value. This new value is useful for the new function `dip::Polygon::FitEllipse()`.
+  An alias `dip::CovarianceMatrix::EllipseParameters` exists to avoid existing code breaking.
 
 ### Bug fixes
 

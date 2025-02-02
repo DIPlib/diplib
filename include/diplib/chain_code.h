@@ -1,5 +1,5 @@
 /*
- * (c)2016-2022, Cris Luengo.
+ * (c)2016-2025, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,52 +36,6 @@ namespace dip {
 
 
 /// \addtogroup measurement
-
-
-/// \brief Contains the various Feret diameters as returned by \ref dip::ConvexHull::Feret and \ref dip::ChainCode::Feret.
-struct DIP_NO_EXPORT FeretValues {
-   dfloat maxDiameter = 0.0;        ///< The maximum Feret diameter
-   dfloat minDiameter = 0.0;        ///< The minimum Feret diameter
-   dfloat maxPerpendicular = 0.0;   ///< The Feret diameter perpendicular to `minDiameter`
-   dfloat maxAngle = 0.0;           ///< The angle at which `maxDiameter` was measured
-   dfloat minAngle = 0.0;           ///< The angle at which `minDiameter` was measured
-};
-
-/// \brief Holds the various output values of the \ref dip::Polygon::RadiusStatistics function.
-class DIP_NO_EXPORT RadiusValues {
-   public:
-      /// Returns the mean radius.
-      dfloat Mean() const { return vacc.Mean(); }
-      /// Returns the standard deviation of radii.
-      dfloat StandardDeviation() const { return vacc.StandardDeviation(); }
-      /// Returns the variance of radii.
-      dfloat Variance() const { return vacc.Variance(); }
-      /// Returns the maximum radius.
-      dfloat Maximum() const { return macc.Maximum(); }
-      /// Returns the minimum radius.
-      dfloat Minimum() const { return macc.Minimum(); }
-
-      /// Computes a circularity measure given by the coefficient of variation of the radii of the object.
-      dfloat Circularity() const {
-         return vacc.Mean() == 0.0 ? 0.0 : vacc.StandardDeviation() / vacc.Mean();
-      }
-
-      /// Multiple `RadiusValues` objects can be added together.
-      RadiusValues& operator+=( RadiusValues const& other ) {
-         vacc += other.vacc;
-         macc += other.macc;
-         return *this;
-      }
-
-      void Push( dfloat x ) {
-         vacc.Push( x );
-         macc.Push( x );
-      }
-
-   private:
-      VarianceAccumulator vacc;
-      MinMaxAccumulator macc;
-};
 
 
 //
@@ -454,6 +408,73 @@ inline FloatArray BoundingBox< dfloat >::Size() const {
    return { res.x, res.y };
 }
 
+
+//
+// Support data structures
+//
+
+
+/// \brief Contains the various Feret diameters as returned by \ref dip::ConvexHull::Feret and \ref dip::ChainCode::Feret.
+struct DIP_NO_EXPORT FeretValues {
+   dfloat maxDiameter = 0.0;        ///< The maximum Feret diameter
+   dfloat minDiameter = 0.0;        ///< The minimum Feret diameter
+   dfloat maxPerpendicular = 0.0;   ///< The Feret diameter perpendicular to `minDiameter`
+   dfloat maxAngle = 0.0;           ///< The angle at which `maxDiameter` was measured
+   dfloat minAngle = 0.0;           ///< The angle at which `minDiameter` was measured
+};
+
+/// \brief Holds the various output values of the \ref dip::Polygon::RadiusStatistics function.
+class DIP_NO_EXPORT RadiusValues {
+   public:
+   /// Returns the mean radius.
+   dfloat Mean() const { return vacc.Mean(); }
+   /// Returns the standard deviation of radii.
+   dfloat StandardDeviation() const { return vacc.StandardDeviation(); }
+   /// Returns the variance of radii.
+   dfloat Variance() const { return vacc.Variance(); }
+   /// Returns the maximum radius.
+   dfloat Maximum() const { return macc.Maximum(); }
+   /// Returns the minimum radius.
+   dfloat Minimum() const { return macc.Minimum(); }
+
+   /// Computes a circularity measure given by the coefficient of variation of the radii of the object.
+   dfloat Circularity() const {
+      return vacc.Mean() == 0.0 ? 0.0 : vacc.StandardDeviation() / vacc.Mean();
+   }
+
+   /// Multiple `RadiusValues` objects can be added together.
+   RadiusValues& operator+=( RadiusValues const& other ) {
+      vacc += other.vacc;
+      macc += other.macc;
+      return *this;
+   }
+
+   void Push( dfloat x ) {
+      vacc.Push( x );
+      macc.Push( x );
+   }
+
+   private:
+   VarianceAccumulator vacc;
+   MinMaxAccumulator macc;
+};
+
+/// \brief Represents a circle, returned by \ref dip::Polygon::FitCircle.
+struct DIP_NO_EXPORT CircleParameters {
+   VertexFloat center = {0.0, 0.0}; ///< The center coordinates
+   dfloat diameter = 0.0;           ///< The diameter
+};
+
+/// \brief Represents an ellipse, returned by \ref dip::CovarianceMatrix::Ellipse and \ref dip::Polygon::FitEllipse.
+struct DIP_NO_EXPORT EllipseParameters {
+   VertexFloat center = {0.0, 0.0}; ///< The center coordinates
+   dfloat majorAxis = 0.0;          ///< Length of the major axis (longest diameter)
+   dfloat minorAxis = 0.0;          ///< Length of the minor axis (shortest diameter)
+   dfloat orientation = 0.0;        ///< Orientation of the major axis (in radian)
+   dfloat eccentricity = 0.0;       ///< Ellipse eccentricity, defined as $\sqrt{1 - b^2 / a^2}$, with $a$ equal to `majorAxis` and $b$ equal to `minorAxis`.
+};
+
+
 //
 // Covariance matrix
 //
@@ -538,13 +559,8 @@ class DIP_NO_EXPORT CovarianceMatrix {
          return { mmu2 + sqroot, mmu2 - sqroot };
       }
 
-      /// \brief Container for ellipse parameters.
-      struct EllipseParameters {
-         dfloat majorAxis;    ///< Major axis length
-         dfloat minorAxis;    ///< Minor axis length
-         dfloat orientation;  ///< Orientation of major axis
-         dfloat eccentricity; ///< Ellipse eccentricity
-      };
+      using EllipseParameters = dip::EllipseParameters; // for backwards compatibility
+
       /// \brief Compute parameters of ellipse with same covariance matrix.
       ///
       /// If `solid` is `false` (default), then it is assumed that the covariance matrix corresponds to an ellipse
@@ -556,6 +572,7 @@ class DIP_NO_EXPORT CovarianceMatrix {
          Eigenvalues lambda = Eig();
          double scale = solid ? 16.0 : 8.0;
          return {
+               {0.0, 0.0}, // No center coordinates are known here.
                std::sqrt( scale * lambda.largest ),
                std::sqrt( scale * lambda.smallest ),
                // eigenvector is {xy, lambda.largest - xx}, always has an angle in the range [0,pi).
@@ -691,6 +708,46 @@ struct DIP_NO_EXPORT Polygon {
    ///     - J.E. Bowie and I.T. Young, "An Analysis Technique for Biological Shape - II",
    ///       Acta Cytologica 21(5):455-464, 1977.
    DIP_EXPORT dfloat BendingEnergy() const;
+
+   /// \brief Fits a circle to the polygon vertices.
+   ///
+   /// The circle equation,
+   ///
+   /// $$
+   ///    (x-c_x)^2 + (y-c_y)^2 = r^2 \quad ,
+   /// $$
+   ///
+   /// can be linearized,
+   ///
+   /// \begin{align}
+   ///    \begin{split}
+   ///       a x + b y + c - x^2 - y^2 &= 0
+   ///       \\ a &= 2 c_x
+   ///       \\ b &= 2 c_y
+   ///       \\ c &= r^2 - c_x^2 - c_y^2
+   ///    \end{split}
+   /// \end{align}
+   ///
+   /// We find the least-squares solution to the problem of fitting the vertex coordinates
+   /// to this linear equation.
+   DIP_EXPORT CircleParameters FitCircle() const;
+
+   /// \brief Fits an ellipse to the polygon vertices.
+   ///
+   /// We find the least-squares solution to the fit of the polygon vertices to the general equation
+   /// for an ellipse,
+   ///
+   /// $$
+   ///    a x^2 + b xy + c y^2 + d x + e y - 1 = 0
+   /// $$
+   ///
+   /// From the fitted parameters we can compute the ellipse parameters. If $b^2-4ac >= 0$, the fit
+   /// does not correspond to an ellipse, and the function will return a default-initialized
+   /// \ref EllipseParameters struct (all the values in it are zero).
+   ///
+   /// !!! literature
+   ///     - Wikipedia: ["Ellipse", section "General ellipse"](https://en.wikipedia.org/wiki/Ellipse#General_ellipse).
+   DIP_EXPORT EllipseParameters FitEllipse() const;
 
    /// \brief Simplifies the polygon using the Douglas-Peucker algorithm.
    ///

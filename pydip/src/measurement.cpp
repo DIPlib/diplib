@@ -1,6 +1,6 @@
 /*
  * (c)2017-2021, Flagship Biosciences, Inc., written by Cris Luengo.
- * (c)2022-2024, Cris Luengo.
+ * (c)2022-2025, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,9 +33,10 @@ namespace detail {
 
 DIP_OUTPUT_TYPE_CASTER( Measurement::FeatureInformation, "FeatureInformation", "name startColumn numberValues", src.name, src.startColumn, src.numberValues )
 DIP_OUTPUT_TYPE_CASTER( Feature::ValueInformation, "ValueInformation", "name units", src.name, src.units )
-DIP_OUTPUT_TYPE_CASTER( CovarianceMatrix::EllipseParameters, "EllipseParameters", "majorAxis minorAxis orientation eccentricity", src.majorAxis, src.minorAxis, src.orientation, src.eccentricity )
 DIP_OUTPUT_TYPE_CASTER( FeretValues, "FeretValues", "maxDiameter minDiameter maxPerpendicular maxAngle minAngle", src.maxDiameter, src.minDiameter, src.maxPerpendicular, src.maxAngle, src.minAngle )
 DIP_OUTPUT_TYPE_CASTER( RadiusValues, "RadiusValues", "mean standardDev maximum minimum circularity", src.Mean(), src.StandardDeviation(), src.Maximum(), src.Minimum(), src.Circularity() )
+DIP_OUTPUT_TYPE_CASTER( CircleParameters, "CircleParameters", "center diameter", src.center, src.diameter )
+DIP_OUTPUT_TYPE_CASTER( EllipseParameters, "EllipseParameters", "center majorAxis minorAxis orientation eccentricity", src.center, src.majorAxis, src.minorAxis, src.orientation, src.eccentricity )
 
 } // namespace detail
 } // namespace pybind11
@@ -532,6 +533,8 @@ void init_measurement( py::module& m ) {
    poly.def( "EllipseVariance", py::overload_cast<>( &dip::Polygon::EllipseVariance, py::const_ ), doc_strings::dip·Polygon·EllipseVariance·C );
    poly.def( "FractalDimension", &dip::Polygon::FractalDimension, "length"_a = 0.0, doc_strings::dip·Polygon·FractalDimension·dfloat··C );
    poly.def( "BendingEnergy", &dip::Polygon::BendingEnergy, doc_strings::dip·Polygon·BendingEnergy·C );
+   poly.def( "FitCircle", &dip::Polygon::FitCircle, doc_strings::dip·Polygon·FitCircle·C );
+   poly.def( "FitEllipse", &dip::Polygon::FitEllipse, doc_strings::dip·Polygon·FitEllipse·C );
    poly.def( "Simplify", &dip::Polygon::Simplify, "tolerance"_a = 0.5, doc_strings::dip·Polygon·Simplify·dfloat· );
    poly.def( "Augment", &dip::Polygon::Augment, "distance"_a = 1.0, doc_strings::dip·Polygon·Augment·dfloat· );
    poly.def( "Smooth", &dip::Polygon::Smooth, "sigma"_a = 1.0, doc_strings::dip·Polygon·Smooth·dfloat· );

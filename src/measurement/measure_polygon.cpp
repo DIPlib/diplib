@@ -1,5 +1,5 @@
 /*
- * (c)2016-2019, Cris Luengo.
+ * (c)2016-2025, Cris Luengo.
  * Based on original DIPlib code: (c)2011, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,6 +24,24 @@
 
 #include "diplib.h"
 #include "diplib/accumulators.h"
+
+#if defined(__GNUG__) || defined(__clang__)
+   // For Eigen, turn off -Wsign-conversion
+   #pragma GCC diagnostic push
+   #pragma GCC diagnostic ignored "-Wsign-conversion"
+   #ifndef __clang__
+      #pragma GCC diagnostic ignored "-Wclass-memaccess"
+   #endif
+   #if ( __GNUC__ >= 11 ) && ( __GNUC__ <= 14 )
+      #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+   #endif
+#endif
+
+#include <Eigen/Eigen> // IWYU pragma: keep
+
+#if defined(__GNUG__) || defined(__clang__)
+   #pragma GCC diagnostic pop
+#endif
 
 namespace dip {
 
@@ -343,6 +361,62 @@ dfloat Polygon::BendingEnergy() const {
       be += diff * diff * 2.0 / Distance( vertices[ ii ], vertices[ 1 ] );
    }
    return be;
+}
+
+CircleParameters Polygon::FitCircle() const {
+   dip::uint n = vertices.size();
+   Eigen::MatrixXd A( n, 3 );
+   for( dip::uint ii = 0; ii < n; ++ii ) {
+      A.row( static_cast< dip::sint >( ii )) << vertices[ ii ].x, vertices[ ii ].y, 1.0;
+   }
+   Eigen::VectorXd b = A.col( 0 ).array().square() + A.col( 1 ).array().square();
+   Eigen::Vector3d sol = A.colPivHouseholderQr().solve( b );
+   dfloat cx = sol( 0 ) / 2;
+   dfloat cy = sol( 1 ) / 2;
+   dfloat r = std::sqrt( sol( 2 ) + cx * cx + cy * cy );
+   return {{ cx, cy }, 2 * r };
+}
+
+EllipseParameters Polygon::FitEllipse() const {
+   dip::uint n = vertices.size();
+   Eigen::Vector< double, 5 > sol;
+   {
+      Eigen::MatrixXd A( n, 5 );
+      for( dip::uint ii = 0; ii < n; ++ii ) {
+         dfloat x = vertices[ ii ].x;
+         dfloat y = vertices[ ii ].y;
+         A.row( static_cast< dip::sint >( ii )) << x * x, x * y, y * y, x, y;
+      }
+      Eigen::VectorXd b( n );
+      b.fill( 1.0 );
+      sol = A.colPivHouseholderQr().solve( b );
+   }
+   dfloat a = sol[ 0 ];
+   dfloat b = sol[ 1 ];
+   dfloat c = sol[ 2 ];
+   dfloat d = sol[ 3 ];
+   dfloat e = sol[ 4 ];
+   dfloat denom = b * b - 4 * a * c;
+   if( denom >= 0 ) {
+      // This is not a good fit, the result does not represent an ellipse.
+      return {};
+   }
+   dfloat pt1 = 2 * ( a * e * e + c * d * d - b * d * e - denom );
+   dfloat pt2 = a + c;
+   dfloat pt3 = std::sqrt(( a - c ) * ( a - c ) + b * b );
+   dfloat majorAxis = -std::sqrt( pt1 * ( pt2 + pt3 )) / denom;
+   dfloat minorAxis = -std::sqrt( pt1 * ( pt2 - pt3 )) / denom;
+   dfloat x = ( 2 * c * d - b * e ) / denom;
+   dfloat y = ( 2 * a * e - b * d ) / denom;
+   dfloat theta = std::atan2( -b, c - a ) / 2;
+   return {
+      {x, y},
+      2 * majorAxis,
+      2 * minorAxis,
+      theta,
+      std::sqrt(1.0 - minorAxis * minorAxis / (majorAxis * majorAxis ))
+   };
+
 }
 
 } // namespace dip
