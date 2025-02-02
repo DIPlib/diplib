@@ -35,8 +35,6 @@ DIP_OUTPUT_TYPE_CASTER( Measurement::FeatureInformation, "FeatureInformation", "
 DIP_OUTPUT_TYPE_CASTER( Feature::ValueInformation, "ValueInformation", "name units", src.name, src.units )
 DIP_OUTPUT_TYPE_CASTER( FeretValues, "FeretValues", "maxDiameter minDiameter maxPerpendicular maxAngle minAngle", src.maxDiameter, src.minDiameter, src.maxPerpendicular, src.maxAngle, src.minAngle )
 DIP_OUTPUT_TYPE_CASTER( RadiusValues, "RadiusValues", "mean standardDev maximum minimum circularity", src.Mean(), src.StandardDeviation(), src.Maximum(), src.Minimum(), src.Circularity() )
-DIP_OUTPUT_TYPE_CASTER( CircleParameters, "CircleParameters", "center diameter", src.center, src.diameter )
-DIP_OUTPUT_TYPE_CASTER( EllipseParameters, "EllipseParameters", "center majorAxis minorAxis orientation eccentricity", src.center, src.majorAxis, src.minorAxis, src.orientation, src.eccentricity )
 
 } // namespace detail
 } // namespace pybind11
@@ -148,6 +146,40 @@ class type_caster< dip::BoundingBoxInteger > {
       }
 
       PYBIND11_TYPE_CASTER( type, _( "BoundingBoxInteger" ));
+};
+
+template<>
+class type_caster< dip::CircleParameters > {
+   public:
+   using type = dip::CircleParameters;
+
+   bool load( handle /*src*/, bool /*convert*/ ) {
+      return false;  // Disallow casting to the type, this is not an input argument anywhere
+   }
+
+   static handle cast( dip::CircleParameters const& src, return_value_policy /*policy*/, handle /*parent*/ ) {
+      auto center = VertexTuple( src.center );
+      return CreateNamedTuple( "CircleParameters", "topLeft bottomRight", center, src.diameter ).release();
+   }
+
+   PYBIND11_TYPE_CASTER( type, _( "CircleParameters" ));
+};
+
+template<>
+class type_caster< dip::EllipseParameters > {
+   public:
+   using type = dip::EllipseParameters;
+
+   bool load( handle /*src*/, bool /*convert*/ ) {
+      return false;  // Disallow casting to the type, this is not an input argument anywhere
+   }
+
+   static handle cast( dip::EllipseParameters const& src, return_value_policy /*policy*/, handle /*parent*/ ) {
+      auto center = VertexTuple( src.center );
+      return CreateNamedTuple( "EllipseParameters", "center majorAxis minorAxis orientation eccentricity", center, src.majorAxis, src.minorAxis, src.orientation, src.eccentricity ).release();
+   }
+
+   PYBIND11_TYPE_CASTER( type, _( "EllipseParameters" ));
 };
 
 } // namespace detail
