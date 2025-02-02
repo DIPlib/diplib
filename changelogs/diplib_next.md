@@ -62,6 +62,9 @@ date: 2020-00-00
 
 ### Build changes
 
+- For building the documentation, it no longer is necessary to set the `DOXPP_*_EXECUTABLE` CMake variables,
+  there is now a single `DIP_DOXPP_PATH` that will tell the CMake where to find all four programs.
+
 
 
 

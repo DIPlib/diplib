@@ -69,8 +69,8 @@ but you can put it in your home directory as well. All that is needed is cloning
 cd /opt
 git clone https://github.com/crisluengo/doxpp.git
 ```
-This will create the directory `/opt/doxpp/`, containing the two executables `dox++parse` and `dox++html`.
-We will need to tell *CMake* where to find these tools.
+This will create the directory `/opt/doxpp/`, containing the two executables `dox++parse`, `dox++html`,
+`dox++brief` and `dox++urls`. We will need to tell *CMake* where to find these tools.
 
 
 \section builddoc_cmake Configuring *CMake*
@@ -78,7 +78,7 @@ We will need to tell *CMake* where to find these tools.
 To set up *CMake* to build the documentation, we need to tell it where the *dox++* programs are. From
 your *DIPlib* build directory,
 ```bash
-cmake . -DDOXPP_PARSE_EXECUTABLE=/opt/doxpp/dox++parse -DDOXPP_HTML_EXECUTABLE=/opt/doxpp/dox++html
+cmake . -DDIP_DOXPP_PATH=/opt/doxpp
 ```
 (obviously substitute your *dox++* path where it says `/opt/doxpp`).
 
