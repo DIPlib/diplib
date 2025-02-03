@@ -729,7 +729,8 @@ struct DIP_NO_EXPORT Polygon {
    /// \end{align}
    ///
    /// We find the least-squares solution to the problem of fitting the vertex coordinates
-   /// to this linear equation.
+   /// to this linear equation. This always succeeds, but will not be meaningful if the polygon
+   /// is not close to a circle.
    DIP_EXPORT CircleParameters FitCircle() const;
 
    /// \brief Fits an ellipse to the polygon vertices.
@@ -743,7 +744,9 @@ struct DIP_NO_EXPORT Polygon {
    ///
    /// From the fitted parameters we can compute the ellipse parameters. If $b^2-4ac >= 0$, the fit
    /// does not correspond to an ellipse, and the function will return a default-initialized
-   /// \ref EllipseParameters struct (all the values in it are zero).
+   /// \ref EllipseParameters struct (all the values in it are zero). But even if the fit succeeds,
+   /// if the polygon is not close to an ellipse, the result might not be meaningful.
+   /// Use \ref dip::CovarianceMatrix::Ellipse for an ellipse fit that is always meaningful.
    ///
    /// !!! literature
    ///     - Wikipedia: ["Ellipse", section "General ellipse"](https://en.wikipedia.org/wiki/Ellipse#General_ellipse).
