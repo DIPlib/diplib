@@ -29,7 +29,9 @@
    // For Eigen, turn off -Wsign-conversion
    #pragma GCC diagnostic push
    #pragma GCC diagnostic ignored "-Wsign-conversion"
-   #ifndef __clang__
+   #ifdef __clang__
+      #pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+   #else
       #pragma GCC diagnostic ignored "-Wclass-memaccess"
    #endif
    #if ( __GNUC__ >= 11 ) && ( __GNUC__ <= 14 )
