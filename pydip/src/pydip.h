@@ -199,24 +199,23 @@ class type_caster< dip::Range > {
             dip::sint stop = 0;
             dip::sint step = 1;
             // Alternative: PySlice_Unpack( src.ptr(), &start, &stop, &step );
-            // Do we need to use PYBIND11_LONG_CHECK() here?
             if( PyNone_Check( ptr->step )) {
                step = 1;
-            } else if( PYBIND11_LONG_CHECK( ptr->step )) {
+            } else if( PyLong_Check( ptr->step )) {
                step = PyLong_AsSsize_t( ptr->step );
             } else {
                return false;
             }
             if( PyNone_Check( ptr->start )) {
                start = step < 0 ? -1 : 0;
-            } else if( PYBIND11_LONG_CHECK( ptr->start )) {
+            } else if( PyLong_Check( ptr->start )) {
                start = PyLong_AsSsize_t( ptr->start );
             } else {
                return false;
             }
             if( PyNone_Check( ptr->stop )) {
                stop = step < 0 ? 0 : -1;
-            } else if( PYBIND11_LONG_CHECK( ptr->stop )) {
+            } else if( PyLong_Check( ptr->stop )) {
                stop = PyLong_AsSsize_t( ptr->stop );
             } else {
                return false;
@@ -228,7 +227,7 @@ class type_caster< dip::Range > {
             value = dip::Range( start, stop, static_cast< dip::uint >( step ));
             return true;
          }
-         if( PYBIND11_LONG_CHECK( src.ptr() )) {
+         if( PyLong_Check( src.ptr() )) {
             value = dip::Range( src.cast< dip::sint >() );
             return true;
          }
@@ -254,7 +253,7 @@ class type_caster< dip::Image::Sample > {
          if( PyBool_Check( src.ptr() )) {
             //std::cout << "   Input is bool\n";
             value.swap( dip::Image::Sample( src.cast< bool >() ));
-         } else if( PYBIND11_LONG_CHECK( src.ptr() )) {
+         } else if( PyLong_Check( src.ptr() )) {
             //std::cout << "   Input is int\n";
             value.swap( dip::Image::Sample( src.cast< dip::sint >() ));
          } else if( PyFloat_Check( src.ptr() )) {
@@ -317,7 +316,7 @@ class type_caster< dip::Image::Pixel > {
                   *it = in.cast< bool >();
                   ++it;
                }
-            } else if( PYBIND11_LONG_CHECK( list[ 0 ].ptr() )) {
+            } else if( PyLong_Check( list[ 0 ].ptr() )) {
                //std::cout << "   Input is int\n";
                value.swap( dip::Image::Pixel( dip::DT_SINT64, n ));
                auto it = value.begin();

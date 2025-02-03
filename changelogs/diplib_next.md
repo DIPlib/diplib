@@ -90,13 +90,21 @@ None, but see bugfixes to *DIPlib*.
 
 ### New functionality
 
+- Added bindings for `dip::CovarianceMatrix`.
+
+- Added bindings for some `dip::Polygon` member functions: `CovarianceMatrixVertices()`,
+  `CovarianceMatrixSolid()`, and the overloads of `RadiusStatistics()` and `EllipseVariance()`
+  that take a centroid as input argument.
+
 ### Changed functionality
 
 (See also changes to *DIPlib*.)
 
 ### Bug fixes
 
-None, but see bugfixes to *DIPlib*.
+- `dip::VertexFloat` input arguments were required to be a sequence with two float values.
+  Integer values are now also accepted.
+
 (See also bugfixes to *DIPlib*.)
 
 ### Build and installation changes
