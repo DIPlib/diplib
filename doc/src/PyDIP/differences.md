@@ -54,6 +54,13 @@ a Python binding, with the following exceptions:
 
 - `dip::StringSet`: a set of strings (`{'foo', 'bar'}`).
 
+- `dip::VertexInteger` and `dip::VertexFloat`: a tuple or other enumerable.
+
+Classes used only as output arguments, and not of the types described above, are either bound
+directly, or converted to a `namedtuple` if the class' functionality is not useful within Python.
+All simple structs used as output arguments are treated this way.
+`dip::VertexInteger` and `dip::VertexFloat` are also named tuples.
+
 By using named arguments, it is quite simple to set only needed arguments, and
 leave all others with their default values. All arguments that have a default
 value in C++ have the same default value in Python.

@@ -28,33 +28,12 @@
 #include "diplib/label_map.h"
 
 
-namespace pybind11 {
-namespace detail {
-
-DIP_OUTPUT_TYPE_CASTER( Measurement::FeatureInformation, "FeatureInformation", "name startColumn numberValues", src.name, src.startColumn, src.numberValues )
-DIP_OUTPUT_TYPE_CASTER( Feature::ValueInformation, "ValueInformation", "name units", src.name, src.units )
-DIP_OUTPUT_TYPE_CASTER( CovarianceMatrix::Eigenvalues, "Eigenvalues", "largest smallest, eccentricity", src.largest, src.smallest, src.Eccentricity() )
-DIP_OUTPUT_TYPE_CASTER( FeretValues, "FeretValues", "maxDiameter minDiameter maxPerpendicular maxAngle minAngle", src.maxDiameter, src.minDiameter, src.maxPerpendicular, src.maxAngle, src.minAngle )
-DIP_OUTPUT_TYPE_CASTER( RadiusValues, "RadiusValues", "mean standardDev maximum minimum circularity", src.Mean(), src.StandardDeviation(), src.Maximum(), src.Minimum(), src.Circularity() )
-
-} // namespace detail
-} // namespace pybind11
-
-
 namespace {
 
 template< typename T >
 py::object VertexTuple( dip::Vertex< T > const& v ) {
    char const* vertexType = std::is_same< T, dip::dfloat >::value ? "VertexFloat" : "VertexInteger";
    return CreateNamedTuple( vertexType, "x y", v.x, v.y );
-}
-
-template< typename T >
-py::object BoundingBoxTuple( dip::BoundingBox< T > const& bb ) {
-   char const* boundingBoxType = std::is_same< T, dip::dfloat >::value ? "BoundingBoxFloat" : "BoundingBoxInteger";
-   auto topLeft = VertexTuple( bb.topLeft );
-   auto bottomRight = VertexTuple( bb.bottomRight );
-   return CreateNamedTuple( boundingBoxType, "topLeft bottomRight", topLeft, bottomRight );
 }
 
 } // namespace
@@ -119,71 +98,16 @@ class type_caster< dip::VertexInteger > {
       PYBIND11_TYPE_CASTER( type, _( "VertexInteger" ));
 };
 
-template<>
-class type_caster< dip::BoundingBoxFloat > {
-   public:
-      using type = dip::BoundingBoxFloat;
+DIP_OUTPUT_TYPE_CASTER( Measurement::FeatureInformation, "FeatureInformation", "name startColumn numberValues", src.name, src.startColumn, src.numberValues )
+DIP_OUTPUT_TYPE_CASTER( Feature::ValueInformation, "ValueInformation", "name units", src.name, src.units )
 
-      bool load( handle /*src*/, bool /*convert*/ ) {
-         return false;  // Disallow casting to the type, this is not an input argument anywhere
-      }
-
-      static handle cast( dip::BoundingBoxFloat const& src, return_value_policy /*policy*/, handle /*parent*/ ) {
-         return BoundingBoxTuple( src ).release();
-      }
-
-      PYBIND11_TYPE_CASTER( type, _( "BoundingBoxFloat" ));
-};
-
-template<>
-class type_caster< dip::BoundingBoxInteger > {
-   public:
-      using type = dip::BoundingBoxInteger;
-
-      bool load( handle /*src*/, bool /*convert*/ ) {
-         return false;  // Disallow casting to the type, this is not an input argument anywhere
-      }
-
-      static handle cast( dip::BoundingBoxInteger const& src, return_value_policy /*policy*/, handle /*parent*/ ) {
-         return BoundingBoxTuple( src ).release();
-      }
-
-      PYBIND11_TYPE_CASTER( type, _( "BoundingBoxInteger" ));
-};
-
-template<>
-class type_caster< dip::CircleParameters > {
-   public:
-   using type = dip::CircleParameters;
-
-   bool load( handle /*src*/, bool /*convert*/ ) {
-      return false;  // Disallow casting to the type, this is not an input argument anywhere
-   }
-
-   static handle cast( dip::CircleParameters const& src, return_value_policy /*policy*/, handle /*parent*/ ) {
-      auto center = VertexTuple( src.center );
-      return CreateNamedTuple( "CircleParameters", "center diameter", center, src.diameter ).release();
-   }
-
-   PYBIND11_TYPE_CASTER( type, _( "CircleParameters" ));
-};
-
-template<>
-class type_caster< dip::EllipseParameters > {
-   public:
-   using type = dip::EllipseParameters;
-
-   bool load( handle /*src*/, bool /*convert*/ ) {
-      return false;  // Disallow casting to the type, this is not an input argument anywhere
-   }
-
-   static handle cast( dip::EllipseParameters const& src, return_value_policy /*policy*/, handle /*parent*/ ) {
-      auto center = VertexTuple( src.center );
-      return CreateNamedTuple( "EllipseParameters", "center majorAxis minorAxis orientation eccentricity", center, src.majorAxis, src.minorAxis, src.orientation, src.eccentricity ).release();
-   }
-
-   PYBIND11_TYPE_CASTER( type, _( "EllipseParameters" ));
-};
+DIP_OUTPUT_TYPE_CASTER( BoundingBoxFloat, "BoundingBoxFloat", "topLeft bottomRight", VertexTuple( src.topLeft ), VertexTuple( src.bottomRight ) )
+DIP_OUTPUT_TYPE_CASTER( BoundingBoxInteger, "BoundingBoxInteger", "topLeft bottomRight", VertexTuple( src.topLeft ), VertexTuple( src.bottomRight ) )
+DIP_OUTPUT_TYPE_CASTER( FeretValues, "FeretValues", "maxDiameter minDiameter maxPerpendicular maxAngle minAngle", src.maxDiameter, src.minDiameter, src.maxPerpendicular, src.maxAngle, src.minAngle )
+DIP_OUTPUT_TYPE_CASTER( RadiusValues, "RadiusValues", "mean standardDev maximum minimum circularity", src.Mean(), src.StandardDeviation(), src.Maximum(), src.Minimum(), src.Circularity() )
+DIP_OUTPUT_TYPE_CASTER( CircleParameters, "CircleParameters", "center diameter", VertexTuple( src.center ), src.diameter )
+DIP_OUTPUT_TYPE_CASTER( EllipseParameters, "EllipseParameters", "center majorAxis minorAxis orientation eccentricity", VertexTuple( src.center ), src.majorAxis, src.minorAxis, src.orientation, src.eccentricity )
+DIP_OUTPUT_TYPE_CASTER( CovarianceMatrix::Eigenvalues, "Eigenvalues", "largest smallest, eccentricity", src.largest, src.smallest, src.Eccentricity() )
 
 } // namespace detail
 } // namespace pybind11
