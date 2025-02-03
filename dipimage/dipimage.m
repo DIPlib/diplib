@@ -169,15 +169,16 @@ if strcmp(component,'DIPimage')
    strings = {info.name,info.version,info.copyright{:},info.URL};
 else
    info = libraryinformation;
-   if strncmp(info.type,'Debug',5)
-      type = 'Debug';
-   else
+   disp(info)
+   if info.isReleaseBuild
       type = 'Release';
+   else
+      type = 'Debug';
    end
-   if ~isempty(strfind(info.type,'OpenMP'))
+   if info.usingOpenMP
       type = [type ', with OpenMP'];
    end
-   if ~isempty(strfind(info.type,'FFTW'))
+   if info.usingFFTW
       type = [type ', with FFTW'];
    end
    copyright = textscan(info.copyright,'%s','delimiter',char(10));

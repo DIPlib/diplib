@@ -38,6 +38,9 @@ date: 2020-00-00
   which does not fill in the new `center` value. This new value is useful for the new function `dip::Polygon::FitEllipse()`.
   An alias `dip::CovarianceMatrix::EllipseParameters` exists to avoid existing code breaking.
 
+- The `dip::LibraryInformation` struct now has a series of boolean values that encode the compilation settings, so
+  it no longer is necessary to decode the `type` field to find out if a certain feature is available or not.
+
 ### Bug fixes
 
 - Fixed `dip::IsotropicErosion()` to use the same structuring element size as `dip::IsotropicDilation()`.
@@ -97,6 +100,9 @@ None, but see bugfixes to *DIPlib*.
   that take a centroid as input argument.
 
 ### Changed functionality
+
+- `dip.libraryInformation` is now a `namedtuple`. There should be no compatibility concerns with this change,
+  except that it prints differently.
 
 (See also changes to *DIPlib*.)
 

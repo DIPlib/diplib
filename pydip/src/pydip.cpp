@@ -32,18 +32,6 @@ static_assert( sizeof( bool ) == sizeof( dip::bin ), "bool is not one byte, how 
 
 namespace {
 
-dip::String InfoString( dip::LibraryInformation const& info ) {
-   std::ostringstream os;
-   os << "name: " << info.name << '\n'
-      << "description: " << info.description << '\n'
-      << "copyright: " << info.copyright << '\n'
-      << "URL: " << info.URL << '\n'
-      << "version: " << info.version << '\n'
-      << "date: " << info.date << '\n'
-      << "type: " << info.type << '\n';
-   return os.str();
-}
-
 dip::String TensorRepr( dip::Tensor const& tensor ) {
    std::ostringstream os;
    os << "<Tensor (" << tensor << ")>";
@@ -88,18 +76,28 @@ PYBIND11_MODULE( PyDIP_bin, m ) {
    m.doc() = "The portion of the PyDIP module that contains the C++ DIPlib bindings.";
 
    // diplib.h
-   auto info = py::class_< dip::LibraryInformation >( m, "LibraryInformation", doc_strings::dip·LibraryInformation );
-   info.def_readonly( "name", &dip::LibraryInformation::name, doc_strings::dip·LibraryInformation·name );
-   info.def_readonly( "description", &dip::LibraryInformation::description, doc_strings::dip·LibraryInformation·description );
-   info.def_readonly( "copyright", &dip::LibraryInformation::copyright, doc_strings::dip·LibraryInformation·copyright );
-   info.def_readonly( "URL", &dip::LibraryInformation::URL, doc_strings::dip·LibraryInformation·URL );
-   info.def_readonly( "version", &dip::LibraryInformation::version, doc_strings::dip·LibraryInformation·version );
-   info.def_readonly( "date", &dip::LibraryInformation::date, doc_strings::dip·LibraryInformation·date );
-   info.def_readonly( "type", &dip::LibraryInformation::type, doc_strings::dip·LibraryInformation·type );
-   info.def( "__repr__", []( dip::LibraryInformation const& ) { return "<LibraryInformation>"; } );
-   info.def( "__str__", &InfoString );
-
-   m.attr( "libraryInformation" ) = dip::libraryInformation;
+   m.attr( "libraryInformation" ) = CreateNamedTuple(
+      "LibraryInformation",
+      "name description copyright URL version date type isReleaseBuild usingOpenMP stackTracesEnabled assertsEnabled usingUnicode hasICS hasTIFF hasJPEG hasPNG usingFFTW usingFreeType",
+      dip::libraryInformation.name,
+      dip::libraryInformation.description,
+      dip::libraryInformation.copyright,
+      dip::libraryInformation.URL,
+      dip::libraryInformation.version,
+      dip::libraryInformation.date,
+      dip::libraryInformation.type,
+      dip::libraryInformation.isReleaseBuild,
+      dip::libraryInformation.usingOpenMP,
+      dip::libraryInformation.stackTracesEnabled,
+      dip::libraryInformation.assertsEnabled,
+      dip::libraryInformation.usingUnicode,
+      dip::libraryInformation.hasICS,
+      dip::libraryInformation.hasTIFF,
+      dip::libraryInformation.hasJPEG,
+      dip::libraryInformation.hasPNG,
+      dip::libraryInformation.usingFFTW,
+      dip::libraryInformation.usingFreeType
+   );
    m.attr( "__version__" ) = dip::libraryInformation.version;
 
    // diplib/library/error.h

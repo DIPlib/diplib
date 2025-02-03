@@ -1,5 +1,5 @@
 /*
- * (c)2014-2017, Cris Luengo.
+ * (c)2014-2025, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -67,24 +67,37 @@ namespace dip {
 /// information (debug). Next it lists a series of compile-time options,
 /// separated by comma. The options are:
 ///
-/// - "with OpenMP": indicates multithreading is built in.
-/// - "recording stack traces": indicates that exceptions report a stack trace,
+/// - `"with OpenMP"`: indicates multithreading is enabled.
+/// - `"recording stack traces"`: indicates that exceptions report a stack trace,
 ///   rather than only show the function that threw it.
-/// - "asserts enabled": indicates additional run-time tests for consistency
+/// - `"asserts enabled"`: indicates additional run-time tests for consistency
 ///   are executed.
-/// - "Unicode support": indicates e.g. units are output using Unicode.
-/// - "ICS support": indicates ICS file reading and writing is available.
-/// - "TIFF support": indicates TIFF file reading and writing is available.
-/// - "JPEG support": indicates JPEG file reading and writing is available.
-/// - "PNG support": indicates PNG file reading and writing is available.
+/// - `"Unicode support"`: indicates e.g. units are output using Unicode.
+/// - `"ICS support"`: indicates ICS file reading and writing is available.
+/// - `"TIFF support"`: indicates TIFF file reading and writing is available.
+/// - `"JPEG support"`: indicates JPEG file reading and writing is available.
+/// - `"PNG support"`: indicates PNG file reading and writing is available.
+/// - `"using FFTW"`: indicates FFTW is used for FFTs, otherwise PocketFFT is used.
+/// - `"FreeType support"`: indicates FreeType text rendering functionality is available.
 struct DIP_NO_EXPORT LibraryInformation {
-   String name;         ///< The library name
-   String description;  ///< A short description string
-   String copyright;    ///< Copyright string for the library
+   String name;         ///< The library name, always `"DIPlib"`.
+   String description;  ///< A short description string.
+   String copyright;    ///< Copyright string for the library.
    String URL;          ///< Library website, with contact information etc.
-   String version;      ///< The library version number
-   String date;         ///< Compilation date
-   String type;         ///< Describes options enabled during compilation
+   String version;      ///< The library version number.
+   String date;         ///< Compilation date.
+   String type;         ///< Describes options enabled during compilation, providing a string representation of the boolean flags.
+   bool isReleaseBuild;      ///< If true, this is a release build; otherwise, this is a debug build.
+   bool usingOpenMP;         ///< If true, multithreading is enabled; otherwise, the library is single-threaded.
+   bool stackTracesEnabled;  ///< If true, exceptions report a stack trace, rather than only show the function that threw it.
+   bool assertsEnabled;      ///< If true, additional run-time tests for consistency are executed.
+   bool usingUnicode;        ///< If true, Unicode text is used for example to represent units.
+   bool hasICS;              ///< If true, ICS file reading and writing is available.
+   bool hasTIFF;             ///< If true, TIFF file reading and writing is available.
+   bool hasJPEG;             ///< If true, JPEG file reading and writing is available.
+   bool hasPNG;              ///< If true, PNG file reading and writing is available.
+   bool usingFFTW;           ///< If true, FFTW is used for FFTs; otherwise, PocketFFT is used.
+   bool usingFreeType;       ///< If true, FreeType text rendering functionality is available.
 };
 
 /// \brief Constant that holds information about the *DIPlib* binary.

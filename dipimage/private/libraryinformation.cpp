@@ -19,10 +19,12 @@
 
 void mexFunction( int /*nlhs*/, mxArray* plhs[], int /*nrhs*/, const mxArray* /*prhs*/[] ) {
 
-   char const* fieldNames[] = { "name", "description", "copyright", "URL", "version", "date", "type" };
+   char const* fieldNames[] = { "name", "description", "copyright", "URL", "version", "date", "type",
+                                "isReleaseBuild", "usingOpenMP", "stackTracesEnabled", "assertsEnabled", "usingUnicode",
+                                "hasICS", "hasTIFF", "hasJPEG", "hasPNG", "usingFFTW", "usingFreeType" };
    try {
 
-      plhs[ 0 ] = mxCreateStructMatrix( 1, 1, 7, fieldNames );
+      plhs[ 0 ] = mxCreateStructMatrix( 1, 1, 18, fieldNames );
       mxSetFieldByNumber( plhs[ 0 ], 0, 0, dml::GetArray( dip::libraryInformation.name ));
       mxSetFieldByNumber( plhs[ 0 ], 0, 1, dml::GetArray( dip::libraryInformation.description ));
       mxSetFieldByNumber( plhs[ 0 ], 0, 2, dml::GetArray( dip::libraryInformation.copyright ));
@@ -30,6 +32,17 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int /*nrhs*/, const mxArray* /*
       mxSetFieldByNumber( plhs[ 0 ], 0, 4, dml::GetArray( dip::libraryInformation.version ));
       mxSetFieldByNumber( plhs[ 0 ], 0, 5, dml::GetArray( dip::libraryInformation.date ));
       mxSetFieldByNumber( plhs[ 0 ], 0, 6, dml::GetArray( dip::libraryInformation.type ));
+      mxSetFieldByNumber( plhs[ 0 ], 0, 7, dml::GetArray( dip::libraryInformation.isReleaseBuild ));
+      mxSetFieldByNumber( plhs[ 0 ], 0, 8, dml::GetArray( dip::libraryInformation.usingOpenMP ));
+      mxSetFieldByNumber( plhs[ 0 ], 0, 9, dml::GetArray( dip::libraryInformation.stackTracesEnabled ));
+      mxSetFieldByNumber( plhs[ 0 ], 0, 10, dml::GetArray( dip::libraryInformation.assertsEnabled ));
+      mxSetFieldByNumber( plhs[ 0 ], 0, 11, dml::GetArray( dip::libraryInformation.usingUnicode ));
+      mxSetFieldByNumber( plhs[ 0 ], 0, 12, dml::GetArray( dip::libraryInformation.hasICS ));
+      mxSetFieldByNumber( plhs[ 0 ], 0, 13, dml::GetArray( dip::libraryInformation.hasTIFF ));
+      mxSetFieldByNumber( plhs[ 0 ], 0, 14, dml::GetArray( dip::libraryInformation.hasJPEG ));
+      mxSetFieldByNumber( plhs[ 0 ], 0, 15, dml::GetArray( dip::libraryInformation.hasPNG ));
+      mxSetFieldByNumber( plhs[ 0 ], 0, 16, dml::GetArray( dip::libraryInformation.usingFFTW ));
+      mxSetFieldByNumber( plhs[ 0 ], 0, 17, dml::GetArray( dip::libraryInformation.usingFreeType ));
 
    } DML_CATCH
 }
