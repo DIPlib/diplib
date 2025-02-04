@@ -66,7 +66,7 @@ namespace dip {
 ///
 /// Prefixes are recorded with the \ref BaseUnits::THOUSANDS value. It indicates how
 /// often to multiply by 10^3^. Thus, a value of 1 here corresponds to the 'k'
-/// prefix, 3 with 'G', and -2 with '&mu;'. Note that for 'mm^2', the
+/// prefix, 3 with 'G', and -2 with '&mu;'. Note that for 'mm^2^', the
 /// value for length is 2, and that for thousands is -2. If thousands were -1,
 /// the units would have to be formatted as '10^-3^ m^2^'. \ref dip::Units::AdjustThousands
 /// adjusts this power so that it can always be formatted with an SI prefix,

@@ -63,40 +63,10 @@ body { margin: 0; }
 .m-container-inflate:last-child, :not(.m-row) > [class*='m-col-']:last-child {
   margin-bottom: 0;
 }
-.m-container.m-nopad, [class*='m-col-'].m-nopad,
-.m-container.m-nopadx, [class*='m-col-'].m-nopadx,
-.m-container.m-nopadl, [class*='m-col-'].m-nopadl {
-  padding-left: 0;
-}
-.m-container.m-nopad, [class*='m-col-'].m-nopad,
-.m-container.m-nopadx, [class*='m-col-'].m-nopadx,
 .m-container.m-nopadr, [class*='m-col-'].m-nopadr {
   padding-right: 0;
 }
-[class*='m-col-'].m-nopad, [class*='m-col-'].m-nopady, [class*='m-col-'].m-nopadt {
-  padding-top: 0;
-}
-[class*='m-col-'].m-nopad, [class*='m-col-'].m-nopady, [class*='m-col-'].m-nopadb,
-.m-container-inflate.m-nopadb {
-  padding-bottom: 0;
-}
 [class*='m-col-t-'] { float: left; }
-.m-left-t {
-  padding-right: 1rem;
-  float: left;
-}
-.m-right-t, [class*='m-col-t-'].m-right-t {
-  padding-left: 1rem;
-  float: right;
-}
-.m-center-t, [class*='m-col-t-'].m-center-t {
-  float: none;
-}
-.m-center-t, [class*='m-col-t-'].m-center-t {
-  margin-left: auto;
-  margin-right: auto;
-  float: none;
-}
 .m-col-t-1  { width: calc(1  * 100% / 12); }
 .m-col-t-2  { width: calc(2  * 100% / 12); }
 .m-col-t-3  { width: calc(3  * 100% / 12); }
@@ -109,90 +79,13 @@ body { margin: 0; }
 .m-col-t-10 { width: calc(10 * 100% / 12); }
 .m-col-t-11 { width: calc(11 * 100% / 12); }
 .m-col-t-12 { width: calc(12 * 100% / 12); }
-.m-push-t-1  { left: calc(1  * 100% / 12); }
-.m-push-t-2  { left: calc(2  * 100% / 12); }
-.m-push-t-3  { left: calc(3  * 100% / 12); }
-.m-push-t-4  { left: calc(4  * 100% / 12); }
-.m-push-t-5  { left: calc(5  * 100% / 12); }
-.m-push-t-6  { left: calc(6  * 100% / 12); }
-.m-push-t-7  { left: calc(7  * 100% / 12); }
-.m-push-t-8  { left: calc(8  * 100% / 12); }
-.m-push-t-9  { left: calc(9  * 100% / 12); }
-.m-push-t-10 { left: calc(10 * 100% / 12); }
-.m-push-t-11 { left: calc(11 * 100% / 12); }
-.m-pull-t-1  { right: calc(1  * 100% / 12); }
-.m-pull-t-2  { right: calc(2  * 100% / 12); }
-.m-pull-t-3  { right: calc(3  * 100% / 12); }
-.m-pull-t-4  { right: calc(4  * 100% / 12); }
-.m-pull-t-5  { right: calc(5  * 100% / 12); }
-.m-pull-t-6  { right: calc(6  * 100% / 12); }
-.m-pull-t-7  { right: calc(7  * 100% / 12); }
-.m-pull-t-8  { right: calc(8  * 100% / 12); }
-.m-pull-t-9  { right: calc(9  * 100% / 12); }
-.m-pull-t-10 { right: calc(10 * 100% / 12); }
-.m-pull-t-11 { right: calc(11 * 100% / 12); }
 @media screen and (min-width: 576px) {
   .m-container { width: 560px; }
   .m-container-inflatable .m-col-s-10 .m-container-inflate:not([class*='m-left-']):not([class*='m-right-']) {
     margin-left: -10%;
     margin-right: -10%;
   }
-  .m-container-inflatable .m-col-s-10 .m-container-inflate.m-left-s {
-    margin-left: -10%;
-  }
-  .m-container-inflatable .m-col-s-10 .m-container-inflate.m-right-s {
-    margin-right: -10%;
-  }
   [class*='m-col-s-'] { float: left; }
-  .m-left-s {
-    padding-right: 1rem;
-    float: left;
-  }
-  .m-right-s, [class*='m-col-s-'].m-right-s {
-    padding-left: 1rem;
-    float: right;
-  }
-  .m-center-s, [class*='m-col-s-'].m-center-s {
-    margin-left: auto;
-    margin-right: auto;
-    float: none;
-  }
-  .m-col-s-1  { width: calc(1  * 100% / 12); }
-  .m-col-s-2  { width: calc(2  * 100% / 12); }
-  .m-col-s-3  { width: calc(3  * 100% / 12); }
-  .m-col-s-4  { width: calc(4  * 100% / 12); }
-  .m-col-s-5  { width: calc(5  * 100% / 12); }
-  .m-col-s-6  { width: calc(6  * 100% / 12); }
-  .m-col-s-7  { width: calc(7  * 100% / 12); }
-  .m-col-s-8  { width: calc(8  * 100% / 12); }
-  .m-col-s-9  { width: calc(9  * 100% / 12); }
-  .m-col-s-10 { width: calc(10 * 100% / 12); }
-  .m-col-s-11 { width: calc(11 * 100% / 12); }
-  .m-col-s-12 { width: calc(12 * 100% / 12); }
-  .m-push-s-0  { left: calc(0  * 100% / 12); }
-  .m-push-s-1  { left: calc(1  * 100% / 12); }
-  .m-push-s-2  { left: calc(2  * 100% / 12); }
-  .m-push-s-3  { left: calc(3  * 100% / 12); }
-  .m-push-s-4  { left: calc(4  * 100% / 12); }
-  .m-push-s-5  { left: calc(5  * 100% / 12); }
-  .m-push-s-6  { left: calc(6  * 100% / 12); }
-  .m-push-s-7  { left: calc(7  * 100% / 12); }
-  .m-push-s-8  { left: calc(8  * 100% / 12); }
-  .m-push-s-9  { left: calc(9  * 100% / 12); }
-  .m-push-s-10 { left: calc(10 * 100% / 12); }
-  .m-push-s-11 { left: calc(11 * 100% / 12); }
-  .m-pull-s-0  { right: calc(0  * 100% / 12); }
-  .m-pull-s-1  { right: calc(1  * 100% / 12); }
-  .m-pull-s-2  { right: calc(2  * 100% / 12); }
-  .m-pull-s-3  { right: calc(3  * 100% / 12); }
-  .m-pull-s-4  { right: calc(4  * 100% / 12); }
-  .m-pull-s-5  { right: calc(5  * 100% / 12); }
-  .m-pull-s-6  { right: calc(6  * 100% / 12); }
-  .m-pull-s-7  { right: calc(7  * 100% / 12); }
-  .m-pull-s-8  { right: calc(8  * 100% / 12); }
-  .m-pull-s-9  { right: calc(9  * 100% / 12); }
-  .m-pull-s-10 { right: calc(10 * 100% / 12); }
-  .m-pull-s-11 { right: calc(11 * 100% / 12); }
   .m-clearfix-t::after { display: none; }
   .m-hide-s { display: none; }
   .m-show-s { display: block; }
@@ -251,18 +144,6 @@ body { margin: 0; }
   .m-push-m-9  { left: calc(9  * 100% / 12); }
   .m-push-m-10 { left: calc(10 * 100% / 12); }
   .m-push-m-11 { left: calc(11 * 100% / 12); }
-  .m-pull-m-0  { right: calc(0  * 100% / 12); }
-  .m-pull-m-1  { right: calc(1  * 100% / 12); }
-  .m-pull-m-2  { right: calc(2  * 100% / 12); }
-  .m-pull-m-3  { right: calc(3  * 100% / 12); }
-  .m-pull-m-4  { right: calc(4  * 100% / 12); }
-  .m-pull-m-5  { right: calc(5  * 100% / 12); }
-  .m-pull-m-6  { right: calc(6  * 100% / 12); }
-  .m-pull-m-7  { right: calc(7  * 100% / 12); }
-  .m-pull-m-8  { right: calc(8  * 100% / 12); }
-  .m-pull-m-9  { right: calc(9  * 100% / 12); }
-  .m-pull-m-10 { right: calc(10 * 100% / 12); }
-  .m-pull-m-11 { right: calc(11 * 100% / 12); }
   .m-clearfix-s::after { display: none; }
   .m-hide-m { display: none; }
   .m-show-m { display: block; }
@@ -321,18 +202,6 @@ body { margin: 0; }
   .m-push-l-9  { left: calc(9  * 100% / 12); }
   .m-push-l-10 { left: calc(10 * 100% / 12); }
   .m-push-l-11 { left: calc(11 * 100% / 12); }
-  .m-pull-l-0  { right: calc(0  * 100% / 12); }
-  .m-pull-l-1  { right: calc(1  * 100% / 12); }
-  .m-pull-l-2  { right: calc(2  * 100% / 12); }
-  .m-pull-l-3  { right: calc(3  * 100% / 12); }
-  .m-pull-l-4  { right: calc(4  * 100% / 12); }
-  .m-pull-l-5  { right: calc(5  * 100% / 12); }
-  .m-pull-l-6  { right: calc(6  * 100% / 12); }
-  .m-pull-l-7  { right: calc(7  * 100% / 12); }
-  .m-pull-l-8  { right: calc(8  * 100% / 12); }
-  .m-pull-l-9  { right: calc(9  * 100% / 12); }
-  .m-pull-l-10 { right: calc(10 * 100% / 12); }
-  .m-pull-l-11 { right: calc(11 * 100% / 12); }
   .m-clearfix-m::after { display: none; }
   .m-hide-l { display: none; }
   .m-show-l { display: block; }
@@ -477,10 +346,6 @@ a > code {
    color: inherit;
 }
 *:focus { outline-color: #00b3b3; }
-div.m-scroll {
-  max-width: 100%;
-  overflow-x: auto;
-}
 .m-fullwidth {
   width: 100%;
 }
@@ -512,102 +377,6 @@ h1 .m-thin, h2 .m-thin, h3 .m-thin, h4 .m-thin, h5 .m-thin, h6 .m-thin {
   font-weight: normal;
   color: #666666
 }
-ul.m-unstyled, ol.m-unstyled {
-  list-style-type: none;
-  padding-left: 0;
-}
-ul[class*='m-block-'], ol[class*='m-block-'] {
-  padding-left: 0;
-}
-ul[class*='m-block-'] li, ol[class*='m-block-'] li {
-  display: inline;
-}
-ul[class*='m-block-bar-'] li:not(:last-child)::after, ol[class*='m-block-bar-'] li:not(:last-child)::after {
-  content: " | ";
-}
-ul[class*='m-block-dot-'] li:not(:last-child)::after, ol[class*='m-block-dot-'] li:not(:last-child)::after {
-  content: " • ";
-}
-@media screen and (min-width: 576px) {
-  ul.m-block-bar-s, ol.m-block-bar-s,
-  ul.m-block-dot-s, ol.m-block-dot-s { padding-left: 2rem; }
-  ul.m-block-bar-s li, ol.m-block-bar-s li,
-  ul.m-block-dot-s li, ol.m-block-dot-s li { display: list-item; }
-  ul.m-block-bar-s li:not(:last-child)::after, ol.m-block-bar-s li:not(:last-child)::after,
-  ul.m-block-dot-s li:not(:last-child)::after, ol.m-block-dot-s li:not(:last-child)::after { content: ""; }
-}
-@media screen and (min-width: 768px) {
-  ul.m-block-bar-m, ol.m-block-bar-m,
-  ul.m-block-dot-m, ol.m-block-dot-m { padding-left: 2rem; }
-  ul.m-block-bar-m li, ol.m-block-bar-m li,
-  ul.m-block-dot-m li, ol.m-block-dot-m li { display: list-item; }
-  ul.m-block-bar-m li:not(:last-child)::after, ol.m-block-bar-m li:not(:last-child)::after,
-  ul.m-block-dot-m li:not(:last-child)::after, ol.m-block-dot-m li:not(:last-child)::after { content: ""; }
-}
-@media screen and (min-width: 992px) {
-  ul.m-block-bar-l, ol.m-block-bar-l,
-  ul.m-block-dot-l, ol.m-block-dot-l { padding-left: 2rem; }
-  ul.m-block-bar-l li, ol.m-block-bar-l li,
-  ul.m-block-dot-l li, ol.m-block-dot-l li { display: list-item; }
-  ul.m-block-bar-l li:not(:last-child)::after, ol.m-block-bar-l li:not(:last-child)::after,
-  ul.m-block-dot-l li:not(:last-child)::after, ol.m-block-dot-l li:not(:last-child)::after { content: ""; }
-}
-p.m-poem {
-  text-indent: 0;
-  text-align: left;
-  margin-left: 0;
-}
-p.m-transition {
-  color: #ff7400;
-  text-indent: 0;
-  text-align: center;
-  font-size: 2rem;
-}
-dl.m-diary {
-  margin-bottom: 1.25rem;
-}
-dl.m-diary:last-child {
-  margin-bottom: 0.25rem;
-}
-dl.m-diary dt {
-  font-weight: bold;
-  width: 6rem;
-  float: left;
-  clear: both;
-  padding-top: 0.25rem;
-}
-dl.m-diary dd {
-  padding-top: 0.25rem;
-  padding-left: 6rem;
-  margin-left: 0;
-}
-a.m-footnote, dl.m-footnote dd span.m-footnote {
-  top: -0.35rem;
-  font-size: 0.75rem;
-  line-height: 0;
-  position: relative;
-  vertical-align: baseline;
-}
-a.m-footnote, dl.m-footnote dd span.m-footnote a {
-  text-decoration: none;
-}
-a.m-footnote::before { content: '['; }
-a.m-footnote::after { content: ']'; }
-dl.m-footnote dt {
-  width: 1.5rem;
-  float: left;
-  clear: both;
-}
-dl.m-footnote dd {
-  margin-left: 1.5rem;
-}
-dl.m-footnote {
-  font-size: 85.4%;
-}
-dl.m-footnote dd span.m-footnote a {
-  font-weight: bold;
-  font-style: italic;
-}
 .m-note {
   border-radius: 0.3rem;
   padding: 1rem;
@@ -627,49 +396,6 @@ dl.m-footnote dd span.m-footnote a {
   border-radius: 0.3rem;
   border-color: #ff7400;
   padding: 0.9375rem 0.9375rem 0.9375rem 0.75rem;
-}
-.m-block.m-badge::after {
-  content: ' ';
-  display: block;
-  clear: both;
-}
-.m-block.m-badge h3 {
-  margin-left: 5rem;
-}
-.m-block.m-badge p {
-  margin-left: 5rem;
-  text-indent: 0;
-}
-.m-block.m-badge img {
-  width: 4rem;
-  height: 4rem;
-  border-radius: 2rem;
-  float: left;
-}
-div.m-button {
-  text-align: center;
-}
-div.m-button a {
-  display: inline-block;
-  border-radius: 0.3rem;
-  padding-top: 0.75rem;
-  padding-bottom: 0.75rem;
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
-  text-decoration: none;
-  font-size: 1.17rem;
-}
-div.m-button.m-fullwidth a {
-  display: block;
-  padding-left: 0.5rem;
-  padding-right: 0.5rem;
-}
-div.m-button a .m-big:first-child {
-  font-size: 1.37rem;
-  font-weight: bold;
-}
-div.m-button a .m-small:last-child {
-  font-size: 0.854rem;
 }
 .m-label {
   border-radius: 0.3rem;
@@ -696,9 +422,6 @@ table.m-table {
 }
 table.m-table.m-big {
   margin-top: 1.75rem;
-}
-div.m-scroll > table.m-table:last-child {
-  margin-bottom: 0.0625rem;
 }
 table.m-table th, table.m-table td {
   vertical-align: top;
@@ -828,254 +551,30 @@ img.m-image, svg.m-image, div.m-image img, div.m-image svg {
 div.m-image.m-fullwidth img, div.m-image.m-fullwidth svg {
   width: 100%;
 }
-img.m-image.m-badge, div.m-image.m-badge img {
-  border-radius: 50%;
-}
-figure.m-figure {
-  max-width: 100%;
-  margin-top: 0;
-  margin-left: auto;
-  margin-right: auto;
-  position: relative;
-  display: table;
-}
-figure.m-figure:before {
-  position: absolute;
-  content: ' ';
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: -1;
-  border-style: solid;
-  border-width: 0.125rem;
-  border-radius: 0.3rem;
-  border-color: #ff7400;
-}
-figure.m-figure.m-flat:before {
-  border-color: transparent;
-}
-figure.m-figure > * {
-  margin-left: 1rem;
-  margin-right: 1rem;
-  display: table-caption;
-  caption-side: bottom;
-}
-figure.m-figure > *:first-child {
-  display: inline;
-}
-figure.m-figure > *:last-child {
-  margin-bottom: 1rem !important;
-}
-figure.m-figure img, figure.m-figure svg {
-  position: relative;
-  margin-left: 0;
-  margin-right: 0;
-  margin-bottom: 0;
-  border-top-left-radius: 0.3rem;
-  border-top-right-radius: 0.3rem;
-  max-width: 100%;
-}
-figure.m-figure.m-flat img, figure.m-figure.m-flat svg {
-  border-bottom-left-radius: 0.3rem;
-  border-bottom-right-radius: 0.3rem;
-}
-figure.m-figure a img, figure.m-figure a svg {
-  margin-left: -1rem;
-  margin-right: -1rem;
-}
-figure.m-figure.m-fullwidth, figure.m-figure.m-fullwidth > * {
-  display: block;
-}
-figure.m-figure.m-fullwidth > *:first-child {
-  display: inline;
-}
-figure.m-figure.m-fullwidth img, figure.m-figure.m-fullwidth svg {
-  width: 100%;
-}
-figure.m-figure.m-fullwidth:after {
-  content: ' ';
-  display: block;
-  margin-top: 1rem;
-  height: 1px;
-}
-.m-code-figure, .m-console-figure {
-  margin-top: 0;
-  margin-left: 0;
-  margin-right: 0;
-  position: relative;
-  padding: 1rem;
-}
-.m-code-figure:before, .m-console-figure:before {
-  position: absolute;
-  content: ' ';
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: -1;
-  border-style: solid;
-  border-width: 0.125rem;
-  border-radius: 0.3rem;
-}
-.m-code-figure:before {
-  border-color: #f7f7f7;
-}
-.m-console-figure:before {
-  border-color: #ffffff;
-}
-.m-code-figure.m-flat:before, .m-console-figure.m-flat:before {
-  border-color: transparent;
-}
-.m-code-figure > pre:first-child, .m-console-figure > pre:first-child {
-  position: relative;
-  margin: -1rem -1rem 1rem -1rem;
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-}
-.m-code-figure > pre.m-nopad, .m-console-figure > pre.m-nopad {
-  margin-left: -0.875rem;
-  margin-right: -0.875rem;
-  margin-top: -1rem;
-  margin-bottom: -0.875rem;
-  padding-left: 0.875rem;
-}
-figure.m-figure figcaption, .m-code-figure figcaption, .m-console-figure figcaption {
-  margin-top: 0.5rem;
-  margin-bottom: 0.5rem;
-  font-weight: normal;
-  font-style: italic;
-  font-size: 1rem;
-  text-align: justify;
-  text-align-last: center;
-}
-figure.m-figure figcaption a, .m-code-figure figcaption a, .m-console-figure figcaption a {
-  text-decoration: none;
-}
-.m-imagegrid > div {
-  background-color: #ffffff;
-}
-.m-imagegrid > div > figure {
-  display: block;
-  float: left;
-  position: relative;
-  margin: 0;
-}
-.m-imagegrid > div > figure > div,
-.m-imagegrid > div > figure > figcaption,
-.m-imagegrid > div > figure > a > div,
-.m-imagegrid > div > figure > a > figcaption {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border-color: #ffffff;
-  border-style: solid;
-  border-width: 0.25rem;
-  padding: 0.5rem;
-}
-.m-imagegrid > div > figure:first-child > div,
-.m-imagegrid > div > figure:first-child > figcaption,
-.m-imagegrid > div > figure:first-child > a > div,
-.m-imagegrid > div > figure:first-child > a > figcaption {
-  border-left-width: 0;
-}
-.m-imagegrid > div > figure:last-child > div,
-.m-imagegrid > div > figure:last-child > figcaption,
-.m-imagegrid > div > figure:last-child > a > div,
-.m-imagegrid > div > figure:last-child > a > figcaption {
-  border-right-width: 0;
-}
-.m-imagegrid > div > figure > figcaption,
-.m-imagegrid > div > figure > a > figcaption {
-  color: transparent;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 0.75rem;
-}
-.m-imagegrid > div > figure > div::before,
-.m-imagegrid > div > figure > figcaption::before,
-.m-imagegrid > div > figure > a > div::before,
-.m-imagegrid > div > figure > a > figcaption::before {
-  content: '';
-  display: inline-block;
-  height: 100%;
-  vertical-align: bottom;
-  width: 0;
-}
-.m-imagegrid > div > figure:hover > figcaption,
-.m-imagegrid > div > figure:hover > a > figcaption {
-  background: linear-gradient(transparent 0%, transparent 75%, rgba(0, 0, 0, 0.85) 100%);
-  color: #ffffff;
-}
-.m-imagegrid > div > figure > img,
-.m-imagegrid > div > figure > a > img {
-  width: 100%;
-  height: 100%;
-}
-.m-imagegrid > div::after {
-  display: block;
-  content: ' ';
-  clear: both;
-}
-@media screen and (max-width: 767px) {
-  .m-imagegrid > div > figure {
-    float: none;
-    width: 100% !important;
-  }
-  .m-imagegrid > div > figure > div,
-  .m-imagegrid > div > figure > figcaption,
-  .m-imagegrid > div > figure > a > div,
-  .m-imagegrid > div > figure > a > figcaption {
-    border-left-width: 0;
-    border-right-width: 0;
-  }
-}
 .m-container-inflatable > .m-row > [class*='m-col-'] > .m-note,
 .m-container-inflatable > .m-row > [class*='m-col-'] > .m-frame,
 .m-container-inflatable > .m-row > [class*='m-col-'] > .m-block,
-.m-container-inflatable > .m-row > [class*='m-col-'] > .m-imagegrid,
 .m-container-inflatable > .m-row > [class*='m-col-'] > pre,
-.m-container-inflatable > .m-row > [class*='m-col-'] > .m-code-figure,
-.m-container-inflatable > .m-row > [class*='m-col-'] > .m-console-figure,
 .m-container-inflatable > .m-row > [class*='m-col-'] section > .m-note,
 .m-container-inflatable > .m-row > [class*='m-col-'] section > .m-frame,
 .m-container-inflatable > .m-row > [class*='m-col-'] section > .m-block,
-.m-container-inflatable > .m-row > [class*='m-col-'] section > .m-imagegrid,
 .m-container-inflatable > .m-row > [class*='m-col-'] section > pre,
-.m-container-inflatable > .m-row > [class*='m-col-'] section > .m-code-figure,
-.m-container-inflatable > .m-row > [class*='m-col-'] section > .m-console-figure,
 .m-container-inflatable [class*='m-center-'] > .m-note,
 .m-container-inflatable [class*='m-center-'] > .m-frame,
 .m-container-inflatable [class*='m-center-'] > .m-block,
-.m-container-inflatable [class*='m-center-'] > .m-imagegrid,
 .m-container-inflatable [class*='m-center-'] > pre,
-.m-container-inflatable [class*='m-center-'] > .m-code-figure,
-.m-container-inflatable [class*='m-center-'] > .m-console-figure,
 .m-container-inflatable [class*='m-left-'] > .m-note,
 .m-container-inflatable [class*='m-left-'] > .m-frame,
 .m-container-inflatable [class*='m-left-'] > .m-block,
-.m-container-inflatable [class*='m-left-'] > .m-imagegrid,
 .m-container-inflatable [class*='m-left-'] > pre,
-.m-container-inflatable [class*='m-left-'] > .m-code-figure,
-.m-container-inflatable [class*='m-left-'] > .m-console-figure,
 .m-container-inflatable [class*='m-right-'] > .m-note,
 .m-container-inflatable [class*='m-right-'] > .m-frame,
 .m-container-inflatable [class*='m-right-'] > .m-block,
-.m-container-inflatable [class*='m-right-'] > .m-imagegrid,
 .m-container-inflatable [class*='m-right-'] > pre,
-.m-container-inflatable [class*='m-right-'] > .m-code-figure,
-.m-container-inflatable [class*='m-right-'] > .m-console-figure,
 .m-container-inflatable .m-container-inflate > .m-note,
 .m-container-inflatable .m-container-inflate > .m-frame,
 .m-container-inflatable .m-container-inflate > .m-block,
-.m-container-inflatable .m-container-inflate > .m-imagegrid,
-.m-container-inflatable .m-container-inflate > pre,
-.m-container-inflatable .m-container-inflate > .m-code-figure,
-.m-container-inflatable .m-container-inflate > .m-console-figure
-{
+.m-container-inflatable .m-container-inflate > pre {
   margin-left: -1rem;
   margin-right: -1rem;
 }
@@ -1083,111 +582,69 @@ figure.m-figure figcaption a, .m-code-figure figcaption a, .m-console-figure fig
   .m-container-inflatable .m-center-s > .m-note,
   .m-container-inflatable .m-center-s > .m-frame,
   .m-container-inflatable .m-center-s > .m-block,
-  .m-container-inflatable .m-center-s > .m-imagegrid,
-  .m-container-inflatable .m-center-s > pre,
-  .m-container-inflatable .m-center-s > .m-code-figure,
-  .m-container-inflatable .m-center-s > .m-console-figure {
+  .m-container-inflatable .m-center-s > pre {
     margin-left: -1rem;
     margin-right: -1rem;
   }
   .m-container-inflatable .m-left-s > .m-note,
   .m-container-inflatable .m-left-s > .m-frame,
   .m-container-inflatable .m-left-s > .m-block,
-  .m-container-inflatable .m-left-s > .m-imagegrid,
-  .m-container-inflatable .m-left-s > pre,
-  .m-container-inflatable .m-left-s > .m-code-figure,
-  .m-container-inflatable .m-left-s > .m-console-figure {
+  .m-container-inflatable .m-left-s > pre {
     margin-left: -1rem;
     margin-right: 0;
   }
   .m-container-inflatable .m-right-s > .m-note,
   .m-container-inflatable .m-right-s > .m-frame,
   .m-container-inflatable .m-right-s > .m-block,
-  .m-container-inflatable .m-right-s > .m-imagegrid,
-  .m-container-inflatable .m-right-s > pre,
-  .m-container-inflatable .m-right-s > .m-code-figure,
-  .m-container-inflatable .m-right-s > .m-console-figure {
+  .m-container-inflatable .m-right-s > pre {
     margin-left: 0;
     margin-right: -1rem;
-  }
-  .m-container-inflatable > .m-row > .m-col-s-10 > .m-imagegrid.m-container-inflate,
-  .m-container-inflatable > .m-row > .m-col-s-10 section > .m-imagegrid.m-container-inflate {
-    margin-left: -10%;
-    margin-right: -10%;
   }
 }
 @media screen and (min-width: 768px) {
   .m-container-inflatable .m-center-m > .m-note,
   .m-container-inflatable .m-center-m > .m-frame,
   .m-container-inflatable .m-center-m > .m-block,
-  .m-container-inflatable .m-center-m > .m-imagegrid,
-  .m-container-inflatable .m-center-m > pre,
-  .m-container-inflatable .m-center-m > .m-code-figure,
-  .m-container-inflatable .m-center-m > .m-console-figure {
+  .m-container-inflatable .m-center-m > pre {
     margin-left: -1rem;
     margin-right: -1rem;
   }
   .m-container-inflatable .m-left-m > .m-note,
   .m-container-inflatable .m-left-m > .m-frame,
   .m-container-inflatable .m-left-m > .m-block,
-  .m-container-inflatable .m-left-m > .m-imagegrid,
-  .m-container-inflatable .m-left-m > pre,
-  .m-container-inflatable .m-left-m > .m-code-figure,
-  .m-container-inflatable .m-left-m > .m-console-figure {
+  .m-container-inflatable .m-left-m > pre {
     margin-left: -1rem;
     margin-right: 0;
   }
   .m-container-inflatable .m-right-m > .m-note,
   .m-container-inflatable .m-right-m > .m-frame,
   .m-container-inflatable .m-right-m > .m-block,
-  .m-container-inflatable .m-right-m > .m-imagegrid,
-  .m-container-inflatable .m-right-m > pre,
-  .m-container-inflatable .m-right-m > .m-code-figure,
-  .m-container-inflatable .m-right-m > .m-console-figure {
+  .m-container-inflatable .m-right-m > pre {
     margin-left: 0;
     margin-right: -1rem;
-  }
-  .m-container-inflatable > .m-row > .m-col-m-10 > .m-imagegrid.m-container-inflate,
-  .m-container-inflatable > .m-row > .m-col-m-10 section > .m-imagegrid.m-container-inflate {
-    margin-left: -10%;
-    margin-right: -10%;
   }
 }
 @media screen and (min-width: 992px) {
   .m-container-inflatable .m-center-l > .m-note,
   .m-container-inflatable .m-center-l > .m-frame,
   .m-container-inflatable .m-center-l > .m-block,
-  .m-container-inflatable .m-center-l > .m-imagegrid,
-  .m-container-inflatable .m-center-l > pre,
-  .m-container-inflatable .m-center-l > .m-code-figure,
-  .m-container-inflatable .m-center-l > .m-console-figure {
+  .m-container-inflatable .m-center-l > pre {
     margin-left: -1rem;
     margin-right: -1rem;
   }
   .m-container-inflatable .m-left-l > .m-note,
   .m-container-inflatable .m-left-l > .m-frame,
   .m-container-inflatable .m-left-l > .m-block,
-  .m-container-inflatable .m-left-l > .m-imagegrid,
-  .m-container-inflatable .m-left-l > pre,
-  .m-container-inflatable .m-left-l > .m-code-figure,
-  .m-container-inflatable .m-left-l > .m-console-figure {
+  .m-container-inflatable .m-left-l > pre {
     margin-left: -1rem;
     margin-right: 0;
   }
   .m-container-inflatable .m-right-l > .m-note,
   .m-container-inflatable .m-right-l > .m-frame,
   .m-container-inflatable .m-right-l > .m-block,
-  .m-container-inflatable .m-right-l > .m-imagegrid,
-  .m-container-inflatable .m-right-l > pre,
-  .m-container-inflatable .m-right-l > .m-code-figure,
-  .m-container-inflatable .m-right-l > .m-console-figure {
+  .m-container-inflatable .m-right-l > pre {
     margin-left: 0;
     margin-right: -1rem;
-  }
-  .m-container-inflatable > .m-row > .m-col-l-10 > .m-imagegrid.m-container-inflate,
-  .m-container-inflatable > .m-row > .m-col-l-10 section > .m-imagegrid.m-container-inflate {
-    margin-left: -10%;
-    margin-right: -10%;
   }
 }
 pre.m-code span.hll, div.m-code > span.hll {
@@ -1224,49 +681,6 @@ div.m-math svg {
 }
 .m-math svg {
   overflow: visible;
-}
-div.m-button a svg.m-math { fill: #ffffff; }
-div.m-button.m-flat a svg.m-math { fill: #000000; }
-div.m-button.m-flat a:hover svg.m-math, div.m-button.m-default a:focus svg.m-math,
-div.m-button.m-default a:active svg.m-math {
-  fill: #00b3b3;
-}
-.m-graph { font-size: 13px; }
-div.m-plot svg, div.m-graph svg {
-  max-width: 100%;
-  margin-left: auto;
-  margin-right: auto;
-  display: block;
-}
-div.m-plot .m-background { fill: #ffe3cc; }
-div.m-plot svg .m-label { font-size: 11px; }
-div.m-plot svg .m-title { font-size: 13px; }
-div.m-plot svg .m-label, div.m-plot svg .m-title { fill: #000000; }
-div.m-plot svg .m-line {
-  stroke: #000000;
-  stroke-width: 0.8;
-}
-div.m-plot svg .m-error {
-  stroke: #000000;
-  stroke-width: 1.5;
-}
-div.m-plot svg .m-label.m-dim { fill: #000000; }
-.m-graph g.m-edge path, .m-graph g.m-cluster polygon,
-.m-graph g.m-node.m-flat ellipse,
-.m-graph g.m-node.m-flat polygon {
-  fill: none;
-}
-.m-graph g.m-node:not(.m-flat) text {
-  fill: #ffffff;
-}
-figure.m-figure > svg.m-math:first-child,
-figure.m-figure > svg.m-graph:first-child {
-  padding: 1rem;
-  box-sizing: content-box;
-}
-figure.m-figure:not(.m-flat) > svg.m-math:first-child,
-figure.m-figure:not(.m-flat) > svg.m-graph:first-child {
-  background-color: #ff7400;
 }
 .m-block.m-default { border-left-color: #ff7400; }
 .m-block.m-default h3, .m-block.m-default h4, .m-block.m-default h5, .m-block.m-default h6,
@@ -1362,41 +776,9 @@ figure.m-figure:not(.m-flat) > svg.m-graph:first-child {
 .m-block.m-info h6 a:hover, .m-block.m-info h6 a:focus, .m-block.m-info h6 a:active {
   color: #00b3b3;
 }
-div.m-button a, .m-label {
+.m-label {
   color: #ffffff;
   border-color: #ffffff;
-}
-div.m-button.m-flat a { color: #000000; }
-div.m-button.m-flat a:hover, div.m-button.m-default a:focus, div.m-button.m-default a:active {
-  color: #00b3b3;
-}
-div.m-button.m-default a, .m-label:not(.m-flat).m-default { background-color: #000000; }
-div.m-button.m-primary a, .m-label:not(.m-flat).m-primary { background-color: #000000; }
-div.m-button.m-success a, .m-label:not(.m-flat).m-success { background-color: #000000; }
-div.m-button.m-warning a, .m-label:not(.m-flat).m-warning { background-color: #59d9d9; }
-div.m-button.m-danger a, .m-label:not(.m-flat).m-danger { background-color: #1d7373; }
-div.m-button.m-info a, .m-label:not(.m-flat).m-info { background-color: #000000; }
-div.m-button.m-dim a, .m-label:not(.m-flat).m-dim { background-color: #000000; }
-div.m-button.m-default a:hover, div.m-button.m-default a:focus, div.m-button.m-default a:active {
-  background-color: #ff7400;
-}
-div.m-button.m-primary a:hover, div.m-button.m-primary a:focus, div.m-button.m-primary a:active {
-  background-color: #ff7400;
-}
-div.m-button.m-success a:hover, div.m-button.m-success a:focus, div.m-button.m-success a:active {
-  background-color: #ff7400;
-}
-div.m-button.m-warning a:hover, div.m-button.m-warning a:focus, div.m-button.m-warning a:active {
-  background-color: #1d7373;
-}
-div.m-button.m-danger a:hover, div.m-button.m-danger a:focus, div.m-button.m-danger a:active {
-  background-color: #006666;
-}
-div.m-button.m-info a:hover, div.m-button.m-info a:focus, div.m-button.m-info a:active {
-  background-color: #00b3b3;
-}
-div.m-button.m-dim a:hover, div.m-button.m-dim a:focus, div.m-button.m-dim a:active {
-  background-color: #c0c0c0;
 }
 .m-note.m-default,
 table.m-table tr.m-default td, table.m-table td.m-default,
@@ -1601,336 +983,40 @@ table.m-table tr.m-dim td a:active, table.m-table td.m-dim a:active,
 table.m-table tr.m-dim th a:active, table.m-table th.m-dim a:active {
   color: #00b3b3;
 }
-figure.m-figure.m-default:before { border-color: #ffe3cc; }
-figure.m-figure.m-default figcaption { color: #000000; }
-figure.m-figure.m-primary:before { border-color: #ffe3cc; }
-figure.m-figure.m-primary figcaption { color: #000000; }
-figure.m-figure.m-success:before { border-color: #ffe3cc; }
-figure.m-figure.m-success figcaption { color: #000000; }
-figure.m-figure.m-warning:before { border-color: #59d9d9; }
-figure.m-figure.m-warning figcaption { color: #59d9d9; }
-figure.m-figure.m-danger:before { border-color: #1d7373; }
-figure.m-figure.m-danger figcaption { color: #1d7373; }
-figure.m-figure.m-info:before { border-color: #add9d9; }
-figure.m-figure.m-info figcaption { color: #000000; }
-figure.m-figure.m-dim:before { border-color: #e6e6e6; }
-figure.m-figure.m-dim { color: #000000; }
-figure.m-figure.m-dim a { color: #ffa866; }
-figure.m-figure.m-dim a:hover, figure.m-figure.m-dim a:focus, figure.m-figure.m-dim a:active {
-  color: #ff7400;
-}
 .m-math { fill: #000000; }
-.m-math.m-default, .m-math g.m-default, .m-math rect.m-default,
-div.m-plot svg .m-bar.m-default,
-.m-graph g.m-edge polygon,
-.m-graph g.m-node:not(.m-flat) ellipse,
-.m-graph g.m-node:not(.m-flat) polygon,
-.m-graph g.m-edge text,
-.m-graph g.m-node.m-flat text,
-.m-graph g.m-cluster text,
-.m-graph.m-default g.m-edge polygon,
-.m-graph.m-default g.m-node:not(.m-flat) ellipse,
-.m-graph.m-default g.m-node:not(.m-flat) polygon,
-.m-graph.m-default g.m-edge text,
-.m-graph.m-default g.m-node.m-flat text,
-.m-graph.m-default g.m-cluster text {
+.m-math.m-default, .m-math g.m-default, .m-math rect.m-default {
   fill: #000000;
 }
-.m-graph g.m-edge polygon,
-.m-graph g.m-edge path,
-.m-graph g.m-node ellipse,
-.m-graph g.m-node polygon,
-.m-graph g.m-node polyline,
-.m-graph g.m-cluster polygon,
-.m-graph.m-default g.m-edge polygon,
-.m-graph.m-default g.m-edge path,
-.m-graph.m-default g.m-node ellipse,
-.m-graph.m-default g.m-node polygon,
-.m-graph.m-default g.m-node polyline,
-.m-graph.m-default g.m-cluster polygon {
-  stroke: #000000;
-}
-.m-math.m-primary, .m-math g.m-primary, .m-math rect.m-primary,
-div.m-plot svg .m-bar.m-primary,
-.m-graph.m-primary g.m-edge polygon,
-.m-graph.m-primary g.m-node:not(.m-flat) ellipse,
-.m-graph.m-primary g.m-node:not(.m-flat) polygon,
-.m-graph.m-primary g.m-edge text,
-.m-graph.m-primary g.m-node.m-flat text,
-.m-graph.m-primary g.m-cluster text {
+.m-math.m-primary, .m-math g.m-primary, .m-math rect.m-primary {
   fill: #000000;
 }
-.m-graph.m-primary g.m-edge polygon,
-.m-graph.m-primary g.m-edge path,
-.m-graph.m-primary g.m-node ellipse,
-.m-graph.m-primary g.m-node polygon,
-.m-graph.m-primary g.m-node polyline,
-.m-graph.m-primary g.m-cluster polygon {
-  stroke: #000000;
-}
-.m-math.m-success, .m-math g.m-success, .m-math rect.m-success,
-div.m-plot svg .m-bar.m-success,
-.m-graph.m-success g.m-edge polygon,
-.m-graph.m-success g.m-node:not(.m-flat) ellipse,
-.m-graph.m-success g.m-node:not(.m-flat) polygon,
-.m-graph.m-success g.m-edge text,
-.m-graph.m-success g.m-node.m-flat text,
-.m-graph.m-success g.m-cluster text {
+.m-math.m-success, .m-math g.m-success, .m-math rect.m-success {
   fill: #000000;
 }
-.m-graph.m-success g.m-edge polygon,
-.m-graph.m-success g.m-edge path,
-.m-graph.m-success g.m-node ellipse,
-.m-graph.m-success g.m-node polygon,
-.m-graph.m-success g.m-node polyline,
-.m-graph.m-success g.m-cluster polygon {
-  stroke: #000000;
-}
-.m-math.m-warning, .m-math g.m-warning, .m-math rect.m-warning,
-div.m-plot svg .m-bar.m-warning,
-.m-graph.m-warning g.m-edge polygon,
-.m-graph.m-warning g.m-node:not(.m-flat) ellipse,
-.m-graph.m-warning g.m-node:not(.m-flat) polygon,
-.m-graph.m-warning g.m-edge text,
-.m-graph.m-warning g.m-node.m-flat text,
-.m-graph.m-warning g.m-cluster text {
+.m-math.m-warning, .m-math g.m-warning, .m-math rect.m-warning {
   fill: #59d9d9;
 }
-.m-graph.m-warning g.m-edge polygon,
-.m-graph.m-warning g.m-edge path,
-.m-graph.m-warning g.m-node ellipse,
-.m-graph.m-warning g.m-node polygon,
-.m-graph.m-warning g.m-node polyline,
-.m-graph.m-warning g.m-cluster polygon {
-  stroke: #59d9d9;
-}
-.m-math.m-danger, .m-math g.m-danger, .m-math rect.m-danger,
-div.m-plot svg .m-bar.m-danger,
-.m-graph.m-danger g.m-edge polygon,
-.m-graph.m-danger g.m-node:not(.m-flat) ellipse,
-.m-graph.m-danger g.m-node:not(.m-flat) polygon,
-.m-graph.m-danger g.m-edge text,
-.m-graph.m-danger g.m-node.m-flat text,
-.m-graph.m-danger g.m-cluster text {
+.m-math.m-danger, .m-math g.m-danger, .m-math rect.m-danger {
   fill: #1d7373;
 }
-.m-graph.m-danger g.m-edge polygon,
-.m-graph.m-danger g.m-edge path,
-.m-graph.m-danger g.m-node ellipse,
-.m-graph.m-danger g.m-node polygon,
-.m-graph.m-danger g.m-node polyline,
-.m-graph.m-danger g.m-cluster polygon {
-  stroke: #1d7373;
-}
-.m-math.m-info, .m-math g.m-info, .m-math rect.m-info,
-div.m-plot svg .m-bar.m-info,
-.m-graph.m-info g.m-edge polygon,
-.m-graph.m-info g.m-node:not(.m-flat) ellipse,
-.m-graph.m-info g.m-node:not(.m-flat) polygon,
-.m-graph.m-info g.m-edge text,
-.m-graph.m-info g.m-node.m-flat text,
-.m-graph.m-info g.m-cluster text {
+.m-math.m-info, .m-math g.m-info, .m-math rect.m-info {
   fill: #000000;
 }
-.m-graph.m-info g.m-edge polygon,
-.m-graph.m-info g.m-edge path,
-.m-graph.m-info g.m-node ellipse,
-.m-graph.m-info g.m-node polygon,
-.m-graph.m-info g.m-node polyline,
-.m-graph.m-info g.m-cluster polygon {
-  stroke: #000000;
-}
-.m-math.m-dim, .m-math g.m-dim, .m-math rect.m-dim,
-div.m-plot svg .m-bar.m-dim,
-.m-graph.m-dim g.m-edge polygon,
-.m-graph.m-dim g.m-node:not(.m-flat) ellipse,
-.m-graph.m-dim g.m-node:not(.m-flat) polygon,
-.m-graph.m-dim g.m-edge text,
-.m-graph.m-dim g.m-node.m-flat text,
-.m-graph.m-dim g.m-cluster text {
+.m-math.m-dim, .m-math g.m-dim, .m-math rect.m-dim {
   fill: #000000;
 }
-.m-graph.m-dim g.m-edge polygon,
-.m-graph.m-dim g.m-edge path,
-.m-graph.m-dim g.m-node ellipse,
-.m-graph.m-dim g.m-node polygon,
-.m-graph.m-dim g.m-node polyline,
-.m-graph.m-dim g.m-cluster polygon {
-  stroke: #000000;
-}
-.m-graph g.m-edge.m-default polygon,
-.m-graph g.m-node.m-default:not(.m-flat) ellipse,
-.m-graph g.m-node.m-default:not(.m-flat) polygon,
-.m-graph g.m-edge.m-default text,
-.m-graph g.m-node.m-default.m-flat text,
-.m-graph g.m-cluster.m-default text {
-  fill: #000000;
-}
-.m-graph g.m-edge.m-default polygon,
-.m-graph g.m-edge.m-default path,
-.m-graph g.m-node.m-default ellipse,
-.m-graph g.m-node.m-default polygon,
-.m-graph g.m-node.m-default polyline,
-.m-graph g.m-cluster.m-default polygon {
-  stroke: #000000;
-}
-.m-graph g.m-edge.m-primary polygon,
-.m-graph g.m-node.m-primary:not(.m-flat) ellipse,
-.m-graph g.m-node.m-primary:not(.m-flat) polygon,
-.m-graph g.m-edge.m-primary text,
-.m-graph g.m-node.m-primary.m-flat text,
-.m-graph g.m-cluster.m-primary text {
-  fill: #000000;
-}
-.m-graph g.m-edge.m-primary polygon,
-.m-graph g.m-edge.m-primary path,
-.m-graph g.m-node.m-primary ellipse,
-.m-graph g.m-node.m-primary polygon,
-.m-graph g.m-node.m-primary polyline,
-.m-graph g.m-cluster.m-primary polygon {
-  stroke: #000000;
-}
-.m-graph g.m-edge.m-success polygon,
-.m-graph g.m-node.m-success:not(.m-flat) ellipse,
-.m-graph g.m-node.m-success:not(.m-flat) polygon,
-.m-graph g.m-edge.m-success text,
-.m-graph g.m-node.m-success.m-flat text,
-.m-graph g.m-cluster.m-success text {
-  fill: #000000;
-}
-.m-graph g.m-edge.m-success polygon,
-.m-graph g.m-edge.m-success path,
-.m-graph g.m-node.m-success ellipse,
-.m-graph g.m-node.m-success polygon,
-.m-graph g.m-node.m-success polyline,
-.m-graph g.m-cluster.m-success polygon {
-  stroke: #000000;
-}
-.m-graph g.m-edge.m-warning polygon,
-.m-graph g.m-node.m-warning:not(.m-flat) ellipse,
-.m-graph g.m-node.m-warning:not(.m-flat) polygon,
-.m-graph g.m-edge.m-warning text,
-.m-graph g.m-node.m-warning.m-flat text,
-.m-graph g.m-cluster.m-warning text {
-  fill: #59d9d9;
-}
-.m-graph g.m-edge.m-warning polygon,
-.m-graph g.m-edge.m-warning path,
-.m-graph g.m-node.m-warning ellipse,
-.m-graph g.m-node.m-warning polygon,
-.m-graph g.m-node.m-warning polyline,
-.m-graph g.m-cluster.m-warning polygon {
-  stroke: #59d9d9;
-}
-.m-graph g.m-edge.m-danger polygon,
-.m-graph g.m-node.m-danger:not(.m-flat) ellipse,
-.m-graph g.m-node.m-danger:not(.m-flat) polygon,
-.m-graph g.m-edge.m-danger text,
-.m-graph g.m-node.m-danger.m-flat text,
-.m-graph g.m-cluster.m-danger text {
-  fill: #1d7373;
-}
-.m-graph g.m-edge.m-danger polygon,
-.m-graph g.m-edge.m-danger path,
-.m-graph g.m-node.m-danger ellipse,
-.m-graph g.m-node.m-danger polygon,
-.m-graph g.m-node.m-danger polyline,
-.m-graph g.m-cluster.m-danger polygon {
-  stroke: #1d7373;
-}
-.m-graph g.m-edge.m-info polygon,
-.m-graph g.m-node.m-info:not(.m-flat) ellipse,
-.m-graph g.m-node.m-info:not(.m-flat) polygon,
-.m-graph g.m-edge.m-info text,
-.m-graph g.m-node.m-info.m-flat text,
-.m-graph g.m-cluster.m-info text {
-  fill: #000000;
-}
-.m-graph g.m-edge.m-info polygon,
-.m-graph g.m-edge.m-info path,
-.m-graph g.m-node.m-info ellipse,
-.m-graph g.m-node.m-info polygon,
-.m-graph g.m-node.m-info polyline,
-.m-graph g.m-cluster.m-info polygon {
-  stroke: #000000;
-}
-.m-graph g.m-edge.m-dim polygon,
-.m-graph g.m-node.m-dim:not(.m-flat) ellipse,
-.m-graph g.m-node.m-dim:not(.m-flat) polygon,
-.m-graph g.m-edge.m-dim text,
-.m-graph g.m-node.m-dim.m-flat text,
-.m-graph g.m-cluster.m-dim text {
-  fill: #000000;
-}
-.m-graph g.m-edge.m-dim polygon,
-.m-graph g.m-edge.m-dim path,
-.m-graph g.m-node.m-dim ellipse,
-.m-graph g.m-node.m-dim polygon,
-.m-graph g.m-node.m-dim polyline,
-.m-graph g.m-cluster.m-dim polygon {
-  stroke: #000000;
-}
-p, ul, ol, dl, blockquote, pre, .m-code-figure, .m-console-figure, hr, .m-note,
-.m-frame, .m-block, div.m-button, div.m-scroll, table.m-table, div.m-image,
-img.m-image, svg.m-image, figure.m-figure, .m-imagegrid, div.m-math,
-div.m-graph, div.m-plot, div.m-code {
+p, ul, ol, dl, blockquote, pre, hr, .m-note,
+.m-frame, .m-block, table.m-table, div.m-image,
+img.m-image, svg.m-image, div.m-math, div.m-code {
   margin-bottom: 1rem;
-}
-p:last-child, p.m-nopadb, ul:last-child, ul.m-nopadb,
-ol:last-child, ol.m-nopadb, dl:last-child, dl.m-nopadb,
-blockquote:last-child, blockquote.m-nopadb, pre:last-child, pre.m-nopadb,
-.m-code-figure:last-child, .m-code-figure.m-nopadb,
-.m-console-figure:last-child, .m-console-figure.m-nopadb,
-hr:last-child, hr.m-nopadb, .m-note:last-child, .m-note.m-nopadb,
-.m-frame:last-child, .m-frame.m-nopadb, .m-block:last-child, .m-block.m-nopadb,
-div.m-button:last-child, div.m-button.m-nopadb,
-div.m-scroll:last-child, div.m-scroll.m-nopadb,
-table.m-table:last-child, table.m-table.m-nopadb,
-img.m-image:last-child, img.m-image.m-nopadb,
-svg.m-image:last-child, svg.m-image.m-nopadb,
-div.m-image:last-child, div.m-image.m-nopadb,
-figure.m-figure:last-child, figure.m-figure.m-nopadb,
-.m-imagegrid:last-child, .m-imagegrid.m-nopadb,
-div.m-math:last-child, div.m-math.m-nopadb,
-div.m-graph:last-child, div.m-graph.m-nopadb,
-div.m-plot:last-child, div.m-plot.m-nopadb,
-div.m-code:last-child, div.m-plot.m-nopadb {
-  margin-bottom: 0;
 }
 li > p:last-child, li > ul:last-child, li > ol:last-child,
 li > dl:last-child, li > blockquote:last-child, li > pre:last-child,
-li > .m-code-figure:last-child, li > .m-console-figure:last-child,
 li > .m-note:last-child, li > .m-frame:last-child, li > .m-block:last-child,
-li > div.m-button:last-child, li > div.m-scroll:last-child, li > table.m-table:last-child,
+li > table.m-table:last-child,
 li > img.m-image:last-child, li > svg.m-image:last-child, li > div.m-image:last-child,
-li > figure.m-figure:last-child, li > div.m-math:last-child,
-li > div.m-graph:last-child, li > div.m-plot:last-child,
-li > div.m-code:last-child {
+li > div.m-math:last-child, li > div.m-code:last-child {
   margin-bottom: 1rem;
-}
-li:last-child > p:last-child, li:last-child > p.m-nopadb,
-li:last-child > ul:last-child, li:last-child > ul.m-nopadb,
-li:last-child > ol:last-child, li:last-child > ol.m-nopadb,
-li:last-child > dl:last-child, li:last-child > dl.m-nopadb,
-li:last-child > blockquote:last-child, li:last-child > blockquote.m-nopadb,
-li:last-child > pre:last-child, li:last-child > pre.m-nopadb,
-li:last-child > .m-code-figure:last-child, li:last-child > .m-code-figure.m-nopadb,
-li:last-child > .m-console-figure:last-child, li:last-child > .m-console-figure.m-nopadb,
-li:last-child > .m-note:last-child, li:last-child > .m-note.m-nopadb,
-li:last-child > .m-frame:last-child, li:last-child > .m-frame.m-nopadb,
-li:last-child > .m-block:last-child, li:last-child > .m-block.m-nopadb,
-li:last-child > div.m-button:last-child, li:last-child > div.m-button.m-nopadb,
-li:last-child > div.m-scroll:last-child, li:last-child > div.m-scroll.m-nopadb,
-li:last-child > table.m-table:last-child, li:last-child > table.m-table.m-nopadb,
-li:last-child > img.m-image:last-child, li:last-child > img.m-image.m-nopadb,
-li:last-child > svg.m-image:last-child, li:last-child > svg.m-image.m-nopadb,
-li:last-child > div.m-image:last-child, li:last-child > div.m-image.m-nopadb,
-li:last-child > figure.m-figure:last-child, li:last-child > figure.m-figure.m-nopadb,
-li:last-child > div.m-math:last-child, li:last-child > div.m-math.m-nopadb,
-li:last-child > div.m-graph:last-child, li:last-child > div.m-graph.m-nopadb,
-li:last-child > div.m-plot:last-child, li:last-child > div.m-plot.m-nopadb,
-li:last-child > div.m-code:last-child, li:last-child > div.m-code.m-nopadb {
-  margin-bottom: 0;
 }
 
 body > header > nav {
@@ -2239,165 +1325,32 @@ article h1 a, article > header h1 a, article section > h2 a, article section > h
 article section > h4 a, article section > h5 a, article section > h6 a {
   text-decoration: none;
 }
-#m-landing-image, #m-cover-image, article#m-jumbo > header #m-jumbo-image {
-  background-size: cover;
-  background-color: #666666;
-  background-position: center center;
-  background-repeat: no-repeat;
-  margin-top: -4rem;
-  padding-top: 5rem;
-}
-#m-landing-image {
-  color: #ffffff;
-}
-#m-cover-image {
-  height: 30rem;
-  margin-bottom: -26rem;
-}
-#m-landing-cover h1 {
-  font-size: 2.8rem;
-  margin-top: -0.5rem;
-  padding-left: 0;
-  padding-bottom: 1rem;
-  text-transform: lowercase;
-}
-#m-landing-cover {
-  padding-bottom: 10rem;
-  margin-bottom: -6rem;
-}
-article#m-jumbo {
-  margin-top: -1rem;
-}
-#m-landing-cover, #m-cover-image > div, article#m-jumbo > header #m-jumbo-cover {
-  background: linear-gradient(transparent 0%, transparent 50%, #ffffff 100%);
-  width: 100%;
-  height: 100%;
-}
-article#m-jumbo > header h1, article#m-jumbo > header h2 {
-  text-align: center;
-  font-weight: bold;
-}
-article#m-jumbo > header a {
-  text-decoration: none;
-}
-article#m-jumbo > header #m-jumbo-cover {
-  padding-bottom: 5rem;
-}
-article#m-jumbo > header #m-jumbo-image {
-  font-size: 2.5vmin;
-  margin-bottom: -3rem;
-}
-article#m-jumbo > header h1 {
-  font-size: 10vmin;
-}
-article#m-jumbo > header h2 {
-  font-size: 3vmin;
-}
-@media screen and (max-height: 640px) , screen and (max-width: 640px) {
-  article#m-jumbo > header h1 {
-    font-size: 3rem;
-  }
-  article#m-jumbo > header #m-jumbo-image, article#m-jumbo > header h2 {
-    font-size: 1rem;
-  }
-}
-article#m-jumbo > header, article#m-jumbo > header h1, article#m-jumbo > header a {
-  color: #ffffff;
-}
-article#m-jumbo > header a:hover, article#m-jumbo > header a:focus, article#m-jumbo > header a:active {
-  color: #f0f0f0;
-}
-article#m-jumbo.m-inverted > header, article#m-jumbo.m-inverted > header h1, article#m-jumbo.m-inverted > header a {
-  color: #000000;
-}
-article#m-jumbo.m-inverted > header a:hover, article#m-jumbo.m-inverted > header a:focus, article#m-jumbo.m-inverted > header a:active {
-  color: #0f0f0f;
-}
-.m-landing-news h3 a {
-  color: #000000;
-  text-decoration: none;
-  text-transform: uppercase;
-}
-.m-landing-news h3 a:hover, .m-landing-news h3 a:hover, .m-landing-news h3 a:focus, .m-landing-news h3 a:active {
-  color: #ff7400;
-}
-.m-landing-news time {
-  display: inline-block;
-  margin-left: 1rem;
-  float: right;
-}
-.m-article-pagination {
-  text-align: center;
-  padding: 1rem;
-}
-nav.m-navpanel {
-  text-align: center;
-}
-nav.m-navpanel h3 {
-  text-transform: uppercase;
-  font-weight: normal;
-}
-nav.m-navpanel ol {
-  text-transform: lowercase;
-}
-nav.m-navpanel ol, nav.m-navpanel ul {
-  list-style-type: none;
-  padding: 0;
-}
-nav.m-navpanel a {
-  color: #292929;
-  text-decoration: none;
-}
-nav.m-navpanel a:hover, nav.m-navpanel a:focus, nav.m-navpanel a:active {
-  color: #ff7400;
-}
-ul.m-tagcloud li { display: inline; }
-ul.m-tagcloud li.m-tag-1 { font-size: 0.75rem; }
-ul.m-tagcloud li.m-tag-2 { font-size: 0.825rem; }
-ul.m-tagcloud li.m-tag-3 { font-size: 1rem; }
-ul.m-tagcloud li.m-tag-4 { font-size: 1.25rem; }
-ul.m-tagcloud li.m-tag-5 { font-size: 1.5rem; }
-article section:target figure.m-code-figure, article section:target figure.m-console-figure {
-  z-index: 1;
-}
 article, article > header, article section { margin-bottom: 1rem; }
 article:last-child, article section:last-child { margin-bottom: 0; }
 .m-container-inflatable section:target > .m-note,
 .m-container-inflatable section:target > .m-frame,
 .m-container-inflatable section:target > .m-block,
 .m-container-inflatable section:target > pre,
-.m-container-inflatable section:target > .m-code-figure > pre:first-child,
-.m-container-inflatable section:target > .m-console-figure > pre:first-child,
 .m-container-inflatable section:target section > .m-note,
 .m-container-inflatable section:target section > .m-frame,
 .m-container-inflatable section:target section > .m-block,
 .m-container-inflatable section:target section > pre,
-.m-container-inflatable section:target section > .m-code-figure > pre:first-child,
-.m-container-inflatable section:target section > .m-console-figure > pre:first-child,
 .m-container-inflatable section:target [class*='m-center-'] > .m-note,
 .m-container-inflatable section:target [class*='m-center-'] > .m-frame,
 .m-container-inflatable section:target [class*='m-center-'] > .m-block,
 .m-container-inflatable section:target [class*='m-center-'] > pre,
-.m-container-inflatable section:target [class*='m-center-'] > .m-code-figure > pre:first-child,
-.m-container-inflatable section:target [class*='m-center-'] > .m-console-figure > pre:first-child,
 .m-container-inflatable section:target [class*='m-left-'] > .m-note,
 .m-container-inflatable section:target [class*='m-left-'] > .m-frame,
 .m-container-inflatable section:target [class*='m-left-'] > .m-block,
 .m-container-inflatable section:target [class*='m-left-'] > pre,
-.m-container-inflatable section:target [class*='m-left-'] > .m-code-figure > pre:first-child,
-.m-container-inflatable section:target [class*='m-left-'] > .m-console-figure > pre:first-child,
 .m-container-inflatable section:target [class*='m-right-'] > .m-note,
 .m-container-inflatable section:target [class*='m-right-'] > .m-frame,
 .m-container-inflatable section:target [class*='m-right-'] > .m-block,
 .m-container-inflatable section:target [class*='m-right-'] > pre,
-.m-container-inflatable section:target [class*='m-right-'] > .m-code-figure > pre:first-child,
-.m-container-inflatable section:target [class*='m-right-'] > .m-console-figure > pre:first-child,
 .m-container-inflatable section:target .m-container-inflate > .m-note,
 .m-container-inflatable section:target .m-container-inflate > .m-frame,
 .m-container-inflatable section:target .m-container-inflate > .m-block,
-.m-container-inflatable section:target .m-container-inflate > pre,
-.m-container-inflatable section:target .m-container-inflate > .m-code-figure > pre:first-child,
-.m-container-inflatable section:target .m-container-inflate > .m-console-figure > pre:first-child {
+.m-container-inflatable section:target .m-container-inflate > pre {
   margin-left: -1.0rem;
   border-left-style: solid;
   border-left-width: 0.25rem;
@@ -2405,34 +1358,9 @@ article:last-child, article section:last-child { margin-bottom: 0; }
   border-bottom-left-radius: 0;
   padding-left: 0.75rem;
 }
-.m-container-inflatable section:target > .m-code-figure::before,
-.m-container-inflatable section:target > .m-console-figure::before,
-.m-container-inflatable section:target section > .m-code-figure::before,
-.m-container-inflatable section:target section > .m-console-figure::before,
-.m-container-inflatable section:target [class*='m-center-'] > .m-code-figure::before,
-.m-container-inflatable section:target [class*='m-center-'] > .m-console-figure::before,
-.m-container-inflatable section:target [class*='m-left-'] > .m-code-figure::before,
-.m-container-inflatable section:target [class*='m-left-'] > .m-console-figure::before,
-.m-container-inflatable section:target [class*='m-right-'] > .m-code-figure::before,
-.m-container-inflatable section:target [class*='m-right-'] > .m-console-figure::before,
-.m-container-inflatable section:target .m-container-inflate > .m-code-figure::before,
-.m-container-inflatable section:target .m-container-inflate > .m-console-figure::before {
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
-  border-left-width: 0.25rem;
-}
-.m-container-inflatable section:target > .m-code-figure > pre.m-nopad,
-.m-container-inflatable section:target > .m-console-figure > pre.m-nopad {
-  margin-left: -0.75rem;
-  padding-left: -0.75rem;
-}
 @media screen and (min-width: 576px) {
   .m-container-inflatable section:target .m-center-s > .m-note,
-  .m-container-inflatable section:target .m-center-s > pre,
-  .m-container-inflatable section:target .m-center-s > figure.m-code-figure > pre:first-child,
-  .m-container-inflatable section:target .m-center-s > figure.m-console-figure > pre:first-child,
-  .m-container-inflatable section:target .m-right-s > figure.m-code-figure > pre:first-child,
-  .m-container-inflatable section:target .m-right-s > figure.m-console-figure > pre:first-child {
+  .m-container-inflatable section:target .m-center-s > pre {
     border-left-width: 0;
     border-top-left-radius: 0.3rem;
     border-bottom-left-radius: 0.3rem;
@@ -2462,22 +1390,10 @@ article:last-child, article section:last-child { margin-bottom: 0; }
     border-left-width: 0;
     padding-left: 1rem;
   }
-  .m-container-inflatable section:target .m-center-s > figure.m-code-figure::before,
-  .m-container-inflatable section:target .m-center-s > figure.m-console-figure::before,
-  .m-container-inflatable section:target .m-right-s > figure.m-code-figure::before,
-  .m-container-inflatable section:target .m-right-s > figure.m-console-figure::before {
-    border-top-left-radius: 0.3rem;
-    border-bottom-left-radius: 0.3rem;
-    border-left-width: 0.125rem;
-  }
 }
 @media screen and (min-width: 768px) {
   .m-container-inflatable section:target .m-center-m > .m-note,
-  .m-container-inflatable section:target .m-center-m > pre,
-  .m-container-inflatable section:target .m-center-m > figure.m-code-figure > pre:first-child,
-  .m-container-inflatable section:target .m-center-m > figure.m-console-figure > pre:first-child,
-  .m-container-inflatable section:target .m-right-m > figure.m-code-figure > pre:first-child,
-  .m-container-inflatable section:target .m-right-m > figure.m-console-figure > pre:first-child {
+  .m-container-inflatable section:target .m-center-m > pre {
     border-left-width: 0;
     border-top-left-radius: 0.3rem;
     border-bottom-left-radius: 0.3rem;
@@ -2507,22 +1423,10 @@ article:last-child, article section:last-child { margin-bottom: 0; }
     border-left-width: 0;
     padding-left: 1rem;
   }
-  .m-container-inflatable section:target .m-center-m > figure.m-code-figure::before,
-  .m-container-inflatable section:target .m-center-m > figure.m-console-figure::before,
-  .m-container-inflatable section:target .m-right-m > figure.m-code-figure::before,
-  .m-container-inflatable section:target .m-right-m > figure.m-console-figure::before {
-    border-top-left-radius: 0.3rem;
-    border-bottom-left-radius: 0.3rem;
-    border-left-width: 0.125rem;
-  }
 }
 @media screen and (min-width: 992px) {
   .m-container-inflatable section:target .m-center-l > .m-note,
-  .m-container-inflatable section:target .m-center-l > pre,
-  .m-container-inflatable section:target .m-center-l > figure.m-code-figure > pre:first-child,
-  .m-container-inflatable section:target .m-center-l > figure.m-console-figure > pre:first-child,
-  .m-container-inflatable section:target .m-right-l > figure.m-code-figure > pre:first-child,
-  .m-container-inflatable section:target .m-right-l > figure.m-console-figure > pre:first-child {
+  .m-container-inflatable section:target .m-center-l > pre {
     border-left-width: 0;
     border-top-left-radius: 0.3rem;
     border-bottom-left-radius: 0.3rem;
@@ -2552,62 +1456,8 @@ article:last-child, article section:last-child { margin-bottom: 0; }
     border-left-width: 0;
     padding-left: 1rem;
   }
-  .m-container-inflatable section:target .m-center-l > figure.m-code-figure::before,
-  .m-container-inflatable section:target .m-center-l > figure.m-console-figure::before,
-  .m-container-inflatable section:target .m-right-l > figure.m-code-figure::before,
-  .m-container-inflatable section:target .m-right-l > figure.m-console-figure::before {
-    border-top-left-radius: 0.3rem;
-    border-bottom-left-radius: 0.3rem;
-    border-left-width: 0.125rem;
-  }
 }
-.m-container-inflatable section:target > figure.m-code-figure::before,
-.m-container-inflatable section:target > figure.m-console-figure::before,
-.m-container-inflatable section:target section > figure.m-code-figure::before,
-.m-container-inflatable section:target section > figure.m-console-figure::before,
-.m-container-inflatable section:target [class*='m-center-'] > figure.m-code-figure::before,
-.m-container-inflatable section:target [class*='m-center-'] > figure.m-console-figure::before,
-.m-container-inflatable section:target [class*='m-left-'] > figure.m-code-figure::before,
-.m-container-inflatable section:target [class*='m-left-'] > figure.m-console-figure::before,
-.m-container-inflatable section:target [class*='m-right-'] > figure.m-code-figure::before,
-.m-container-inflatable section:target [class*='m-right-'] > figure.m-console-figure::before,
-.m-container-inflatable section:target .m-container-inflatable > figure.m-code-figure::before,
-.m-container-inflatable section:target .m-container-inflatable > figure.m-console-figure::before {
-  border-left-color: #ff7400;
-}
-@media screen and (min-width: 576px) {
-  .m-container-inflatable section:target .m-center-s > figure.m-code-figure::before,
-  .m-container-inflatable section:target .m-right-s > figure.m-code-figure::before {
-    border-color: #f7f7f7;
-  }
-  .m-container-inflatable section:target .m-center-s > figure.m-console-figure::before,
-  .m-container-inflatable section:target .m-right-s > figure.m-console-figure::before {
-    border-color: #ffffff;
-  }
-}
-@media screen and (min-width: 768px) {
-  .m-container-inflatable section:target .m-center-m > figure.m-code-figure::before,
-  .m-container-inflatable section:target .m-right-m > figure.m-code-figure::before {
-    border-color: #f7f7f7;
-  }
-  .m-container-inflatable section:target .m-center-m > figure.m-console-figure::before,
-  .m-container-inflatable section:target .m-right-m > figure.m-console-figure::before {
-    border-color: #ffffff;
-  }
-}
-@media screen and (min-width: 992px) {
-  .m-container-inflatable section:target .m-center-l > figure.m-code-figure::before,
-  .m-container-inflatable section:target .m-right-l > figure.m-code-figure::before {
-    border-color: #f7f7f7;
-  }
-  .m-container-inflatable section:target .m-center-l > figure.m-console-figure::before,
-  .m-container-inflatable section:target .m-right-l > figure.m-console-figure::before {
-    border-color: #ffffff;
-  }
-}
-.m-container-inflatable section:target pre,
-.m-container-inflatable section:target figure.m-code-figure > pre:first-child,
-.m-container-inflatable section:target figure.m-console-figure > pre:first-child {
+.m-container-inflatable section:target pre {
   border-color: #ff7400;
 }
 .m-container-inflatable section:target .m-note.m-default {
