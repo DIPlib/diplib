@@ -60,22 +60,43 @@ endif()
 set(DOXPP_FOUND ${DOXPP_FOUND} PARENT_SCOPE)
 
 if(DOXPP_FOUND)
+
    find_package(OpenCV QUIET COMPONENTS core)
    if(NOT OpenCV_FOUND)
       set(OpenCV_INCLUDE_DIRS "")
    endif()
+
    find_package(Vigra QUIET)
    if(NOT Vigra_FOUND)
       set(Vigra_INCLUDE_DIRS "")
    endif()
+
    configure_file("${CMAKE_CURRENT_LIST_DIR}/dox++config.in" "${CMAKE_CURRENT_BINARY_DIR}/dox++config" @ONLY)
+
+   file(GLOB DOC_SOURCES
+        "${PROJECT_SOURCE_DIR}/include/*.h"
+        "${PROJECT_SOURCE_DIR}/include/diplib/library/*.h"
+        "${PROJECT_SOURCE_DIR}/include/diplib/*.h"
+        "${PROJECT_SOURCE_DIR}/include/diplib/viewer/*.h"
+        "${CMAKE_CURRENT_LIST_DIR}/src/*.md"
+        "${CMAKE_CURRENT_LIST_DIR}/src/*/*.md"
+   )
+
+   add_custom_command(
+         OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/diplib_docs.json"
+         COMMAND "${DOXPP_PARSE_EXECUTABLE}"
+         DEPENDS ${DOC_SOURCES}
+         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+   )
+
    add_custom_target(
       doc
+      DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/diplib_docs.json"
       COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_INSTALL_PREFIX}/${DOCUMENTATION_OUTPUT}"
-      COMMAND "${DOXPP_PARSE_EXECUTABLE}"
       COMMAND "${DOXPP_BRIEF_EXECUTABLE}"
       COMMAND "${DOXPP_URLS_EXECUTABLE}"
       COMMAND "${DOXPP_HTML_EXECUTABLE}"
       WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
    )
+
 endif()
