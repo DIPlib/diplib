@@ -1197,7 +1197,7 @@ class DIP_NO_EXPORT Image {
       /// if `acceptDataTypeChange` is \ref dip::Option::AcceptDataTypeChange::DO_ALLOW,
       /// a protected image will keep its
       /// old data type, and no exception will be thrown if this data type
-      /// is different from `dt`. Note that other properties much still match
+      /// is different from `dt`. Note that other properties must still match
       /// if `this` was forged. Thus, this flag allows `this` to control the
       /// data type of the image, ignoring any requested data type here.
       ///
@@ -1225,7 +1225,7 @@ class DIP_NO_EXPORT Image {
       /// if `acceptDataTypeChange` is \ref dip::Option::AcceptDataTypeChange::DO_ALLOW,
       /// a protected image will keep its
       /// old data type, and no exception will be thrown if this data type
-      /// is different from `dt`. Note that other properties much still match
+      /// is different from `dt`. Note that other properties must still match
       /// if `this` was forged. Thus, this flag allows `this` to control the
       /// data type of the image, ignoring any requested data type here.
       ///
@@ -1259,7 +1259,7 @@ class DIP_NO_EXPORT Image {
       /// if `acceptDataTypeChange` is \ref dip::Option::AcceptDataTypeChange::DO_ALLOW,
       /// a protected image will keep its
       /// old data type, and no exception will be thrown if this data type
-      /// is different from `dt`. Note that other properties much still match
+      /// is different from `dt`. Note that other properties must still match
       /// if `this` was forged. Thus, this flag allows `this` to control the
       /// data type of the image, ignoring any requested data type here.
       ///
