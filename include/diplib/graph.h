@@ -275,7 +275,7 @@ class DIP_NO_EXPORT Graph {
       }
 
       /// \brief Computes the minimum spanning forest (MSF) using Prim's algorithm.
-      /// See \ref dip::MinimumSpanningForest for details. Does not modify `*this*.
+      /// See \ref dip::MinimumSpanningForest for details. Does not modify `this`.
       // NOTE: We're keeping this for backwards-compatibility.
       DIP_NODISCARD Graph MinimumSpanningForest( std::vector< VertexIndex > const& roots = {} ) const;
 
