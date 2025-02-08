@@ -1,0 +1,37 @@
+          <section class="m-doc-details" id="{{ function.id }}"><div>
+            <h3>
+              {% if function.include %}
+              <div class="m-doc-include m-right-m m-text-right">#include <a href="{{ function.include[1] }}">{{ function.include[0] }}</a></div>
+              {% endif %}
+              {% if compound.templated or function.templated %}
+              <div class="m-doc-template">
+                {% if compound.templated %}
+                {% set j = joiner(', ') %}
+                template&lt;{% for t in compound.template_parameters %}{{ j() }}{{ t.type }} {% if t.name %}{{ t.name }}{% else %}_{{ loop.index }}{% endif %}{% endfor %}&gt;
+                {% if function.templated %}<br>{% endif %}
+                {% endif %}
+                {% if function.templated %}
+                {% set j = joiner(', ') %}
+                template&lt;{% for t in function.template_parameters %}{{ j() }}{{ t.type }}{% if t.name %} {{ t.name }}{% endif %}{% if t.default %} = {{ t.default }}{% endif %}{% endfor %}&gt;
+                {% endif %}
+              </div>
+              {% endif %}
+              <span class="m-doc-return">{% if function.static %}static {% endif %}{{ function.return_type.type }}</span>
+              <span class="m-doc-name"><a href="#{{ function.id }}" class="m-doc-self">{{ function.fully_qualified_name if show_full_name else function.name }}</a></span>(
+              {% for param in function.arguments %}<span class="m-doc-arg">{{ param.type }} {{ param.name }}{% if param.default %} = {{ param.default }}{% endif %}{% if not loop.last %},{% endif %}</span>{% endfor %}){% if function.const %} const{% endif %}
+              {%- if function.access == 'protected' %} <span class="m-label m-warning">protected</span>{% elif function.access == 'private' %} <span class="m-label m-danger">private</span>{% endif %}
+              {% if function.defaulted %} <span class="m-label m-info">defaulted</span>{% endif %}
+              {% if function.deleted %} <span class="m-label m-danger">deleted</span>{% endif %}
+              {% if function.explicit %} <span class="m-label m-info">explicit</span>{% endif %}
+              {% if function.final %} <span class="m-label m-warning">final</span>{% elif function.override %} <span class="m-label m-warning">override</span>{% elif function.pure_virtual %} <span class="m-label m-warning">pure virtual</span>{% elif function.virtual %} <span class="m-label m-warning">virtual</span>{% endif %}
+              {% if function.constexpr %} <span class="m-label m-primary">constexpr</span>{% endif %}
+              {% if function.noexcept %} <span class="m-label m-flat m-success">noexcept</span>{% endif %}
+              {% if function.since %} {{ function.since }}{% endif %}
+            </h3>
+            {% if function.brief %}
+            <p>{{ function.brief }}</p>
+            {% endif %}
+            {% if function.doc %}
+{{ function.doc }}
+            {% endif %}
+          </div></section>

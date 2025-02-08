@@ -1,0 +1,33 @@
+          <section class="m-doc-details" id="{{ alias.id }}"><div>
+            <h3>
+              {% if alias.include %}
+              <div class="m-doc-include m-right-m m-text-right">#include <a href="{{ alias.include[1] }}">{{ alias.include[0] }}</a></div>
+              {% endif %}
+              {% if compound.templated or alias.templated %}
+              <div class="m-doc-template">
+                {% if compound.templated %}
+                {% set j = joiner(', ') %}
+                template&lt;{% for t in compound.template_parameters %}{{ j() }}{{ t.type }} {% if t.name %}{{ t.name }}{% else %}_{{ loop.index }}{% endif %}{% endfor %}&gt;
+                {% if alias.templated %}<br>{% endif %}
+                {% endif %}
+                {% if alias.templated %}
+                {% set j = joiner(', ') %}
+                template&lt;{% for t in alias.template_parameters %}{{ j() }}{{ t.type }}{% if t.name %} {{ t.name }}{% endif %}{% if t.default %} = {{ t.default }}{% endif %}{% endfor %}&gt;
+                {% endif %}
+              </div>
+              {% endif %}
+              {% if alias.oldfashioned %}
+              typedef {{ alias.type.type }} <span class="m-doc-name"><a href="#{{ alias.id }}" class="m-doc-self">{{ alias.fully_qualified_name if show_full_name else alias.name }}</a></span>
+              {% else %}
+              using <span class="m-doc-name"><a href="#{{ alias.id }}" class="m-doc-self">{{ alias.fully_qualified_name if show_full_name else alias.name }}</a></span> = {{ alias.type.type }}
+              {% endif %}
+              {%- if alias.access == 'protected' %} <span class="m-label m-warning">protected</span>{% elif alias.access == 'private' %} <span class="m-label m-danger">private</span>{% endif %}
+              {% if alias.since %} {{ alias.since }}{% endif %}
+            </h3>
+            {% if alias.brief %}
+            <p>{{ alias.brief }}</p>
+            {% endif %}
+            {% if alias.doc %}
+{{ alias.doc }}
+            {% endif %}
+          </div></section>

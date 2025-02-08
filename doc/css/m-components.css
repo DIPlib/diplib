@@ -142,10 +142,6 @@ pre, code {
   color: var(--code-color);
   background-color: var(--code-background-color);
 }
-pre.m-console, code.m-console {
-  color: var(--console-color);
-  background-color: var(--console-background-color);
-}
 pre {
   padding: 0.5rem 1rem;
   border-radius: var(--border-radius);
@@ -154,10 +150,6 @@ pre {
   border-color: var(--line-color);
   overflow-x: auto;
   margin-top: 0; /* stupid defaults */
-}
-pre.m-console-wrap {
-  white-space: pre-wrap;
-  word-break: break-all;
 }
 code {
   padding: 0.125rem;
@@ -199,10 +191,13 @@ a > code {
 .m-text.m-tiny { font-size: 50.0%; }
 .m-text.m-small { font-size: 85.4%; }
 .m-text.m-big { font-size: 117%; }
+.m-smaller-font{ font-size: 75%; }
+/*
 h1 .m-thin, h2 .m-thin, h3 .m-thin, h4 .m-thin, h5 .m-thin, h6 .m-thin {
   font-weight: normal;
   color: var(--muted-color)
 }
+*/
 
 /* Note, frame, block */
 .m-note {
@@ -498,20 +493,6 @@ pre.m-code span.hll, div.m-code > span.hll {
   padding-left: 1.0rem;
 }
 
-/* Inverted code block / inline code */
-.m-code.m-inverted > span, .m-console.m-inverted > span {
-  opacity: 0.667;
-}
-.m-code.m-inverted > span.hll, .m-console.m-inverted > span.hll {
-  opacity: 1;
-  background-color: transparent; /* TODO: handle this in pygments directly */
-  border-color: transparent;
-}
-.m-code.m-inverted { color: var(--code-inverted-color); }
-.m-console.m-inverted { color: var(--console-inverted-color); }
-.m-code.m-inverted > span.hll { color: var(--code-color); }
-.m-cosole.m-inverted > span.hll { color: var(--console-color); }
-
 /* Code color swatch */
 .m-code-color {
   display: inline-block;
@@ -537,7 +518,7 @@ div.m-math svg {
 /* Colored block, header links in a colored block, colored text, flat label */
 .m-block.m-default { border-left-color: var(--line-color); }
 .m-block.m-default h3, .m-block.m-default h4, .m-block.m-default h5, .m-block.m-default h6,
-.m-text.m-default, .m-label.m-flat.m-default {
+.m-text.m-default {
   color: var(--default-color);
   border-color: var(--default-color);
 }
@@ -547,40 +528,40 @@ div.m-math svg {
 .m-block.m-primary { border-left-color: var(--primary-color); }
 .m-block.m-primary h3, .m-block.m-primary h4, .m-block.m-primary h5, .m-block.m-primary h6,
 .m-block.m-primary h3 a, .m-block.m-primary h4 a, .m-block.m-primary h5 a, .m-block.m-primary h6 a,
-.m-text.m-primary, .m-label.m-flat.m-primary {
+.m-text.m-primary {
   color: var(--primary-color);
   border-color: var(--primary-color);
 }
 .m-block.m-success { border-left-color: var(--success-color); }
 .m-block.m-success h3, .m-block.m-success h4, .m-block.m-success h5, .m-block.m-success h6,
 .m-block.m-success h3 a, .m-block.m-success h4 a, .m-block.m-success h5 a, .m-block.m-success h6 a,
-.m-text.m-success, .m-label.m-flat.m-success {
+.m-text.m-success {
   color: var(--success-color);
   border-color: var(--success-color);
 }
 .m-block.m-warning { border-left-color: var(--warning-color); }
 .m-block.m-warning h3, .m-block.m-warning h4, .m-block.m-warning h5, .m-block.m-warning h6,
 .m-block.m-warning h3 a, .m-block.m-warning h4 a, .m-block.m-warning h5 a, .m-block.m-warning h6 a,
-.m-text.m-warning, .m-label.m-flat.m-warning {
+.m-text.m-warning {
   color: var(--warning-color);
   border-color: var(--warning-color);
 }
 .m-block.m-danger { border-left-color: var(--danger-color); }
 .m-block.m-danger h3, .m-block.m-danger h4, .m-block.m-danger h5, .m-block.m-danger h6,
 .m-block.m-danger h3 a, .m-block.m-danger h4 a, .m-block.m-danger h5 a, .m-block.m-danger h6 a,
-.m-text.m-danger, .m-label.m-flat.m-danger {
+.m-text.m-danger {
   color: var(--danger-color);
   border-color: var(--danger-color);
 }
 .m-block.m-info { border-left-color: var(--info-color); }
 .m-block.m-info h3, .m-block.m-info h4, .m-block.m-info h5, .m-block.m-info h6,
 .m-block.m-info h3 a, .m-block.m-info h4 a, .m-block.m-info h5 a, .m-block.m-info h6 a,
-.m-text.m-info, .m-label.m-flat.m-info {
+.m-text.m-info {
   color: var(--info-color);
   border-color: var(--info-color);
 }
 .m-block.m-dim { border-left-color: var(--dim-color); }
-.m-block.m-dim, .m-text.m-dim, .m-label.m-flat.m-dim {
+.m-block.m-dim, .m-text.m-dim {
   color: var(--dim-color);
   border-color: var(--dim-color);
 }
@@ -633,10 +614,59 @@ div.m-math svg {
   color: var(--info-link-active-color);
 }
 
-/* Colored non-flat label */
+/* Colored labels */
 .m-label {
   color: var(--button-background-color);
   border-color: var(--button-background-color);
+}
+.m-label:not(.m-flat).m-default {
+   background-color: var(--default-color);
+}
+.m-label:not(.m-flat).m-primary {
+   background-color: var(--primary-color);
+}
+.m-label:not(.m-flat).m-success {
+   background-color: var(--success-color);
+}
+.m-label:not(.m-flat).m-warning {
+   background-color: var(--warning-color);
+}
+.m-label:not(.m-flat).m-danger {
+   background-color: var(--danger-color);
+}
+.m-label:not(.m-flat).m-info {
+   background-color: var(--info-color);
+}
+.m-label:not(.m-flat).m-dim {
+   background-color: var(--dim-color);
+}
+.m-label.m-flat.m-default {
+   color: var(--default-color);
+   border-color: var(--default-color);
+}
+.m-label.m-flat.m-primary {
+   color: var(--primary-color);
+   border-color: var(--primary-color);
+}
+.m-label.m-flat.m-success {
+   color: var(--success-color);
+   border-color: var(--success-color);
+}
+.m-label.m-flat.m-warning {
+   color: var(--cs-black);
+   border-color: var(--warning-color);
+}
+.m-label.m-flat.m-danger {
+   color: var(--danger-color);
+   border-color: var(--danger-color);
+}
+.m-label.m-flat.m-info {
+   color: var(--info-color);
+   border-color: var(--info-color);
+}
+.m-label.m-flat.m-dim {
+   color: var(--dim-color);
+   border-color: var(--dim-color);
 }
 
 /* Colored note, table coloring */

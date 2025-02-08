@@ -151,13 +151,9 @@ Specifically:
   Therefore, there is no point in pulling in `diplib/pixel_table.h` for all users of
   `diplib/kernel.h`, and we forward-declare `dip::PixelTable` instead.
 
-- Some STL containers such as `std::vector` and `std::set` are defined when including
-  `diplib.h`. There is no need to explicitly include the corresponding standard headers
-  for these. The current list of headers guaranteed to be included by `diplib.h` is:
-  `<algorithm>`, `<cctype>`, `<cmath>`, `<complex>`, `<cstddef>`, `<cstdint>`, `<cstdlib>`,
-  `<cstring>`, `<exception>`, `<functional>`, `<initializer_list>`, `<iostream>`,
-  `<iterator>`, `<limits>`, `<memory>`, `<numeric>`, `<set>`, `<string>`, `<type_traits>`,
-  `<utility>`, `<vector>`.
+- Always explicitly include all header files used in a translation unit, even hose
+  that are already included by another header file. Clang-tidy is very helpful with
+  pointing out missing header files.
 
 \section documentation Documentation
 
@@ -172,12 +168,12 @@ Specifically:
 
 - Use `!!! literatue` to add a literature list. Put it at the end of a documentation block.
 
-- Use `!!! note` or `!!! note "Title` to add an info box that
-  stands out slightly. It is rendered the same as the see also and literature blocks.
+- Use `!!! note` or `!!! note "Title"` to add an info box that
+  stands out slightly. It is rendered the same as the "see also" and "literature" blocks.
 
 - Use `!!! par "Title"` for an info box that is less attention-grabbing.
 
 - Use `!!! attention`, `!!! warning` and `!!! bug` for info boxes with three levels of attention-grabbiness.
-  These are rendered with a background of different shades of the secondary color (highly contrasting!).
+  These are rendered with a colored background: light orange, light green, and dark green respectively.
 
 - Don't use `!!! aside`, or any of the other boxes.

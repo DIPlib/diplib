@@ -1,0 +1,31 @@
+          <section class="m-doc-details" id="{{ variable.id }}"><div>
+            <h3>
+              {% if variable.include %}
+              <div class="m-doc-include m-right-m m-text-right">#include <a href="{{ variable.include[1] }}">{{ variable.include[0] }}</a></div>
+              {% endif %}
+              {% if compound.templated or variable.templated  %}
+              <div class="m-doc-template">
+                {% if compound.templated %}
+                {% set j = joiner(', ') %}
+                template&lt;{% for t in compound.template_parameters %}{{ j() }}{{ t.type }} {% if t.name %}{{ t.name }}{% else %}_{{ loop.index }}{% endif %}{% endfor %}&gt;
+                {% if variable.templated %}<br>{% endif %}
+                {% endif %}
+                {% if variable.templated %}
+                {% set j = joiner(', ') %}
+                template&lt;{% for t in variable.template_parameters %}{{ j() }}{{ t.type }}{% if t.name %} {{ t.name }}{% endif %}{% if t.default %} = {{ t.default }}{% endif %}{% endfor %}&gt;
+                {% endif %}
+              </div>
+              {% endif %}
+              {%+ if variable.static %}static {% elif variable.mutable %}mutable {% endif %}{{ variable.type.type }} <span class="m-doc-name"><a href="#{{ variable.id }}" class="m-doc-self">{{ variable.fully_qualified_name if show_full_name else variable.name }}</a></span>
+              {% if variable.value %} = {{ variable.value }}{% endif %}
+              {%- if variable.access == 'protected' %} <span class="m-label m-warning">protected</span>{% elif variable.access == 'private' %} <span class="m-label m-danger">private</span>{% endif %}
+              {% if variable.constexpr %} <span class="m-label m-primary">constexpr</span>{% endif %}
+              {% if variable.since %} {{ variable.since }}{% endif %}
+            </h3>
+            {% if variable.brief %}
+            <p>{{ variable.brief }}</p>
+            {% endif %}
+            {% if variable.doc %}
+{{ variable.doc }}
+            {% endif %}
+          </div></section>

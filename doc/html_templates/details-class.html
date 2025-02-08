@@ -1,0 +1,52 @@
+          <section class="m-doc-details" id="{{ class.id }}"><div>
+            <h3>
+              {% if class.include %}
+              <div class="m-doc-include m-right-m m-text-right">#include <a href="{{ class.include[1] }}">{{ class.include[0] }}</a></div>
+              {% endif %}
+              {% if compound.templated %}
+              <div class="m-doc-template">
+                {% set j = joiner(', ') %}
+                template&lt;{% for t in compound.template_parameters %}{{ j() }}{{ t.type }} {% if t.name %}{{ t.name }}{% else %}_{{ loop.index }}{% endif %}{% endfor %}&gt;
+              </div>
+              {% endif %}
+              {{ class.member_type }} <span class="m-doc-name"><a href="#{{ class.id }}" class="m-doc-self">{{ class.fully_qualified_name if show_full_name else class.name }}</a></span>
+              {%- if class.access == 'protected' %} <span class="m-label m-warning">protected</span>{% elif class.access == 'private' %} <span class="m-label m-danger">private</span>{% endif %}
+              {% if class.since %} {{ class.since }}{% endif %}
+            </h3>
+            {% if class.brief %}
+            <p>{{ class.brief }}</p>
+            {% endif %}
+            {% if class.doc %}
+{{ class.doc }}
+            {% endif %}
+            {% if class.variables %}
+            <table class="m-table m-fullwidth m-first-tight m-flat m-doc">
+              <thead><tr><th>Variables</th><th></th></tr></thead>
+              <tbody>
+                {% for variable in class.variables %}
+                <tr>
+                  <td>
+                  {% if variable.templated %}
+                  {% set j = joiner(', ') %}
+                  template&lt;{% for t in variable.template_parameters %}{{ j() }}{{ t.type }}{% if t.name %} {{ t.name }}{% endif %}{% if t.default %} = {{ t.default }}{% endif%}{% endfor %}&gt;
+                  {% endif %}
+                  {%+ if variable.static %}static {% elif variable.mutable %}mutable {% endif %}{{ variable.type.type }} <span class="m-doc-name"><a href="#{{ variable.id }}" class="m-doc-self" id="{{ variable.id }}">{{ variable.name }}</a></span>
+                  {%- if variable.deprecated %} <span class="m-label m-danger">deprecated</span>{% endif %}
+                  {% if variable.access == 'protected' %} <span class="m-label m-warning">protected</span>{% elif variable.access == 'private' %} <span class="m-label m-danger">private</span>{% endif %}
+                  {% if variable.constexpr %} <span class="m-label m-primary">constexpr</span>{% endif %}
+                  {% if variable.since %} {{ variable.since }}{% endif %}
+                  </td>
+                  <td>
+                  {% if variable.doc %}
+                  <p>{{ variable.brief }}</p>
+{{ variable.doc }}
+                  {% elif variable.brief %}
+                  {{ variable.brief }}
+                  {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            {% endif %}
+          </div></section>

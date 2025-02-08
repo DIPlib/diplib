@@ -242,8 +242,8 @@ body > footer > nav ul {
   margin: 0;
 }
 body > footer > nav a {
-  text-decoration: var(--link-decoration-nav);
-  text-transform: var(--nav-menu-case);
+  text-decoration: underline;
+  font-weight: bold;
   color: var(--footer-link-color);
 }
 body > footer > nav a:hover, body > footer > nav a:focus, body > footer > nav a:active {
@@ -268,6 +268,7 @@ body > main {
 
 /* Page heading (not in <header>), breadcrumb navigation on pages */
 article h1 {
+  color: var(--article-heading-color);
   font-size: 1.75rem;
 }
 article h1 .m-breadcrumb {
@@ -275,10 +276,10 @@ article h1 .m-breadcrumb {
   font-weight: normal;
 }
 article h1 .m-breadcrumb a {
-  color: var(--article-heading-color);
+  color: var(--header-breadcrumb-link-color);
 }
 article h1 .m-breadcrumb a:hover, article h1 a:focus, article h1 a:active {
-  color: var(--article-heading-active-color);
+  color: var(--link-active-color);
 }
 
 /* Article elements */
@@ -287,34 +288,10 @@ article > header h1 {
   margin-bottom: 0.5rem;
 }
 article h1 a, article > header h1, article > header h1 a {
-  color: var(--article-heading-color);
+  color: var(--link-color);
 }
 article h1 a:hover, article > header h1 a:hover, article > header h1 a:focus, article > header h1 a:active {
-  color: var(--article-heading-active-color);
-}
-article > header .m-date {
-  display: block;
-  width: 2.5rem;
-  float: left;
-  text-align: center;
-  line-height: 95%;
-  font-size: 0.75rem;
-  font-weight: normal;
-  white-space: nowrap;
-  border-right-style: solid;
-  border-right-width: 0.125rem;
-  border-color: var(--article-heading-color);
-  padding-right: 0.75rem;
-  margin-top: -0.1rem;
-  margin-right: 0.75rem;
-  margin-bottom: 0.25rem;
-}
-article > header .m-date-day {
-  display: block;
-  font-weight: bold;
-  padding-top: 0.2rem;
-  padding-bottom: 0.15rem;
-  font-size: 1.25rem;
+  color: var(--link-active-color);
 }
 article > header p {
   color: var(--article-header-color);

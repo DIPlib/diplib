@@ -44,7 +44,12 @@ Secondary color (blue): 009999  1d7373  006363  33cccc  5ccccc
   --cs-secondary-darkest: #006666;
   --cs-secondary-lighter: #59d9d9;
   --cs-secondary-lightest: #add9d9;
-
+  --cs-black: #000000;
+  --cs-dark-gray:  #666666;
+  --cs-mid-gray:  #7a7a7a;
+  --cs-light-gray:  #e6e6e6;
+  --cs-subtle-gray:  #f7f7f7;
+  --cs-white: #ffffff;
 
   /* Text properties */
   --font: 'Libre Baskerville', serif;
@@ -53,7 +58,7 @@ Secondary color (blue): 009999  1d7373  006363  33cccc  5ccccc
   --code-font-size: 0.95em; /* *not* rem, so it follows surrounding font size */
   --line-height: 1.5;
   --paragraph-indent: 0;
-  --paragraph-align: justify;
+  --paragraph-align: left;
   --link-decoration: underline;
   --link-decoration-nav: none;
   --link-decoration-heading: none;
@@ -68,39 +73,36 @@ Secondary color (blue): 009999  1d7373  006363  33cccc  5ccccc
   --border-radius: 0.3rem;
 
   /* Basics */
-  --background-color: #ffffff;
-  --color: #000000;
-  --muted-color: #666666;
+  --background-color: var(--cs-white);
+  --color: var(--cs-black);
+  --muted-color: var(--cs-primary-darker);
   --line-color: var(--cs-primary-base);
-  --link-color: var(--cs-primary-base);
-  --link-active-color: var(--cs-secondary-base);
-  --link-self-color: var(--cs-primary-darker);
+  --link-color: var(--cs-primary-darker);
+  --link-active-color: var(--cs-secondary-darker);
+  --link-self-color: var(--cs-black);
   --link-self-active-color: var(--cs-secondary-darker);
-  --mark-color: #000000;
+  --mark-color: var(--cs-black);
   --mark-background-color: var(--cs-secondary-lightest);
-  --code-color: var(--cs-primary-darkest);
-  --code-inverted-color: var(--cs-primary-lightest);
-  --code-background-color: #f7f7f7;
+  --code-color: inherit;
+  --code-background-color: var(--cs-subtle-gray);
   --code-header-background-color: var(--cs-primary-lighter);
-  --code-header-link-color: var(--cs-primary-darkest);
-  --code-header-link-active-color: var(--cs-secondary-darkest);
-  --code-header-self-color: #ffffff;
-  --code-header-self-active-color: var(--cs-primary-lightest);
+  --code-header-link-color: var(--cs-secondary-darker);
+  --code-header-link-active-color: var(--cs-primary-darkest);
+  --code-header-self-color: var(--cs-black);
+  --code-header-self-active-color: var(--cs-secondary-base);
   --code-note-color: inherit;
   --code-note-background-color: inherit;
-  --console-color: var(--code-color);
-  --console-inverted-color: var(--code-inverted-color);
-  --console-background-color: #ffffff;
-  --button-background-color: #ffffff;
+  --button-background-color: var(--cs-white);
 
   /* Header */
   --header-border-width: 0.25rem 0 0 0;
-  --header-color: #000000;
+  --header-color: var(--cs-black);
   --header-breadcrumb-color: var(--muted-color);
+  --header-breadcrumb-link-color: var(--cs-primary-darker);
   --header-background-color: var(--cs-primary-lighter);
   --header-background-color-landing: rgba(255, 255, 255, 0.75);
   --header-background-color-jumbo: rgba(255, 255, 255, 0.25);
-  --header-link-color: #000000;
+  --header-link-color: var(--cs-black);
   --header-link-active-color: var(--cs-secondary-base);
   --header-link-active-background-color: var(--cs-primary-lighter);
   --header-link-active-background-color-semi: rgba(255, 255, 255, 0.5);
@@ -109,13 +111,10 @@ Secondary color (blue): 009999  1d7373  006363  33cccc  5ccccc
 
   /* Footer */
   --footer-font-size: 0.85rem;
-  --footer-color: var(--cs-primary-lightest);
+  --footer-color: var(--cs-white);
   --footer-background-color: var(--cs-primary-lighter);
-  --footer-link-color: #ffffff;
-  --footer-link-active-color: var(--cs-secondary-lighter);
-
-  /* Cover image */
-  --cover-image-background-color: #666666;
+  --footer-link-color: var(--cs-white);
+  --footer-link-active-color: var(--cs-secondary-lightest);
 
   /* Search (used only by m-documentation.css) */
   --search-overlay-color: var(--header-background-color-landing);
@@ -123,7 +122,7 @@ Secondary color (blue): 009999  1d7373  006363  33cccc  5ccccc
   --search-border-color: var(--header-background-color);
 
   /* Article */
-  --article-header-color: #7a7a7a;
+  --article-header-color: var(--cs-mid-gray);
   --article-footer-color: #969696;
   --article-heading-color: var(--cs-primary-base);
   --article-heading-active-color: var(--cs-primary-darker);
@@ -132,19 +131,15 @@ Secondary color (blue): 009999  1d7373  006363  33cccc  5ccccc
   --navpanel-link-color: #292929;
   --navpanel-link-active-color: var(--cs-primary-base);
 
-  /* Plots */
-  --plot-background-color: var(--cs-primary-lightest);
-  --plot-error-color: #000000;
-
   /* Colored components -- Many of these use the same colors to avoid the rainbow effect. */
-  --default-color: #000000;
-  --default-link-active-color: var(--cs-primary-base);
-  --default-filled-color: #000000;
-  --default-filled-background-color: var(--cs-primary-lightest);
-  --default-filled-link-color: var(--cs-primary-darker);
-  --default-filled-link-active-color: var(--cs-secondary-darker);
-  --default-filled-code-color: var(--cs-primary-darkest);
-  --default-filled-code-background-color: var(--cs-primary-lightest);
+  --default-color: var(--cs-black);
+  --default-link-active-color: var(--cs-secondary-darkest);
+  --default-filled-color: var(--cs-secondary-darker);
+  --default-filled-background-color: var(--cs-subtle-gray);
+  --default-filled-link-color: var(--cs-secondary-base);
+  --default-filled-link-active-color: var(--cs-primary-darker);
+  --default-filled-code-color: var(--cs-secondary-darker);
+  --default-filled-code-background-color: var(--cs-light-gray);
 
   --primary-color:  var(--default-color);
   --primary-link-active-color: var(--default-link-active-color);
@@ -164,45 +159,41 @@ Secondary color (blue): 009999  1d7373  006363  33cccc  5ccccc
   --success-filled-code-color: var(--default-filled-code-color);
   --success-filled-code-background-color: var(--default-filled-code-background-color);
 
-  --info-color: #000000;
-  --info-link-active-color: var(--cs-secondary-base);
-  --info-filled-color: #000000;
-  --info-filled-background-color: var(--cs-secondary-lightest);
-  --info-filled-link-color: var(--cs-secondary-darkest);
-  --info-filled-link-active-color: var(--cs-primary-darkest);
-  --info-filled-code-color: var(--cs-secondary-darkest);
-  --info-filled-code-background-color: var(--cs-secondary-lightest);
+  --info-color: var(--cs-black);
+  --info-link-active-color: var(--cs-primary-base);
+  --info-filled-color: var(--cs-black);
+  --info-filled-background-color: var(--cs-primary-lightest);
+  --info-filled-link-color: var(--cs-primary-darker);
+  --info-filled-link-active-color: var(--cs-secondary-darker);
+  --info-filled-code-color: var(--cs-primary-darkest);
+  --info-filled-code-background-color: var(--cs-primary-lightest);
 
   --warning-color: var(--cs-secondary-lighter);
   --warning-link-active-color: var(--cs-secondary-darker);
-  --warning-filled-color: #000000;
-  --warning-filled-background-color: var(--cs-secondary-lighter);
+  --warning-filled-color: var(--cs-black);
+  --warning-filled-background-color: var(--cs-secondary-lightest);
   --warning-filled-link-color: var(--cs-secondary-darkest);
   --warning-filled-link-active-color: var(--cs-primary-darkest);
   --warning-filled-code-color: var(--cs-secondary-darkest);
-  --warning-filled-code-background-color: var(--cs-secondary-lighter);
+  --warning-filled-code-background-color: var(--cs-secondary-lightest);
 
   --danger-color: var(--cs-secondary-darker);
   --danger-link-active-color: var(--cs-secondary-darkest);
-  --danger-filled-color: #ffffff;
+  --danger-filled-color: var(--cs-white);
   --danger-filled-background-color: var(--cs-secondary-darker);
   --danger-filled-link-color: var(--cs-secondary-lightest);
   --danger-filled-link-active-color: var(--cs-primary-lightest);
-  --danger-filled-code-color: #e6e6e6;
+  --danger-filled-code-color: var(--cs-light-gray);
   --danger-filled-code-background-color: var(--cs-secondary-darker);
 
-  --dim-color: #000000;
-  --dim-link-color: var(--cs-primary-lighter);
-  --dim-link-active-color: var(--cs-primary-base);
-  --dim-filled-color: #000000;
-  --dim-filled-background-color: #e6e6e6;
-  --dim-filled-link-color: var(--cs-primary-base);
-  --dim-filled-link-active-color: var(--cs-secondary-base);
+  --dim-color: var(--cs-black);
+  --dim-link-color: var(--link-color);
+  --dim-link-active-color: var(--link-active-color);
+  --dim-filled-color: var(--cs-black);
+  --dim-filled-background-color: var(--cs-light-gray);
+  --dim-filled-link-color: var(--link-color);
+  --dim-filled-link-active-color: var(--link-active-color);
   --dim-button-active-color: #c0c0c0;
   --dim-filled-code-color: var(--cs-primary-darker);
-  --dim-filled-code-background-color: #e6e6e6;
-}
-
-.m-smaller-font{
-  font-size: 75%;
+  --dim-filled-code-background-color: var(--cs-light-gray);
 }

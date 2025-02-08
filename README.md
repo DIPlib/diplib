@@ -179,8 +179,9 @@ limitations under the License.
   see [`javaio/java/bioformats/readme.md`](javaio/java/bioformats/readme.md)  
   (the full *Bio-Formats* library needs to be installed to use *DIPjavaio*)
 
-- Modified CSS files from *dox++*, which originally came from *m.css* (for documentation)  
-  Copyright 2017, 2018, 2019 Vladimír Vondruš  
+- Modified HTML templates and CSS files from *dox++*, which originally came from *m.css* (for documentation)  
+  Copyright 2020-2021, Cris Luengo  
+  Copyright 2017-2020 Vladimír Vondruš  
   MIT License
 
 Note that all of these have permissive open-source licenses similar in spirit

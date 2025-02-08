@@ -24,7 +24,7 @@
 
 a.m-doc, a.m-doc-self, a.m-doc-external,
 ul.m-doc li.m-doc-expansible > a:first-child, ul.m-doc li.m-doc-collapsible > a:first-child,
-.m-code.m-inverted.m-doc-include > a {
+.m-doc-include > a {
   text-decoration: none;
 }
 ul.m-doc li.m-doc-expansible > a:first-child,
@@ -65,12 +65,24 @@ span.m-doc-wrap {
   white-space: pre-line;
   max-width: 100%; /* otherwise horizontal scrollbars, wtf */
 }
+span.m-doc-return {
+   display: block;
+}
+span.m-doc-name {
+   display: inline;
+   font-size: 125%;
+}
+span.m-doc-arg {
+   margin-left: 4rem;
+   display: block;
+}
 
 /* Highlight the doc entries the same way as sections */
-dl.m-doc dd {
-  margin-bottom: 0.5rem;
+dl.m-doc dt {
+   margin-bottom: 0.25rem;
 }
 dl.m-doc dd {
+  margin-bottom: 1.0rem;
   margin-left: 0;
   padding-left: 2.5rem;
 }
@@ -125,9 +137,15 @@ h1 .m-doc-template, h1 .m-doc-include {
 h1 .m-doc-include:last-child {
   margin-bottom: -0.5rem;
 }
+.m-doc-details h3 {
+   font-size: 1rem;
+   font-weight: normal;
+}
 h3 .m-doc-template, h3 .m-doc-include {
-  font-size: 1rem;
-  font-weight: normal;
+  font-size: 0.9rem;
+}
+h3 .m-doc-name {
+   font-size: 1.25rem;
 }
 .m-doc-template, dl.m-doc dd, ul.m-doc li > span.m-doc {
    font-size: 0.9rem;
@@ -140,6 +158,15 @@ dl.m-doc dd a:hover, dl.m-doc dd a:focus, dl.m-doc dd a:active,
 ul.m-doc li > span.m-doc a:hover, ul.m-doc li > span.m-doc a:focus, ul.m-doc li > span.m-doc a:active {
   color: var(--dim-link-active-color);
 }
+h1 .m-doc-template, h1 .m-doc-include {
+   color: var(--color);
+}
+h1 .m-doc-template a, h1 .m-doc-include a {
+  color: var(--link-color);
+}
+h1 .m-doc-template a:hover, h1 .m-doc-include a:hover {
+  color: var(--link-active-color);
+}
 h3 .m-doc-template, h3 .m-doc-include {
   color: var(--dim-filled-color);
 }
@@ -148,17 +175,6 @@ h3 .m-doc-template a, h3 .m-doc-include a {
 }
 h3 .m-doc-template a:hover, h3 .m-doc-include a:hover {
   color: var(--dim-filled-link-active-color);
-}
-
-/* So the link gets highlighted on hover */
-.m-code.m-inverted.m-doc-include > a:link,
-.m-code.m-inverted.m-doc-include > a:visited {
-  opacity: 0.667; /* Same as .m-code.m-inverted > span */
-}
-.m-code.m-inverted.m-doc-include > a:hover,
-.m-code.m-inverted.m-doc-include > a:focus,
-.m-code.m-inverted.m-doc-include > a:active {
-  opacity: 1;
 }
 
 article section.m-doc-details > div {
