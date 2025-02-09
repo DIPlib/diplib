@@ -251,7 +251,7 @@ table.m-table.m-big {
   margin-top: 1.75rem;
 }
 table.m-table th, table.m-table td {
-  vertical-align: top;
+  vertical-align: baseline;
   border-style: solid;
   border-width: 0;
   border-color: var(--line-color);

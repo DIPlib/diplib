@@ -41,7 +41,6 @@ modify include statement = def modify_include_statement(id): return 'file--dipli
 theme color = #ffffff
 favicon = @CMAKE_CURRENT_LIST_DIR@/DIPlib_logo_32.png
 stylesheets = @CMAKE_CURRENT_LIST_DIR@/css/m-dip+documentation.compiled.css
-templates = @CMAKE_CURRENT_LIST_DIR@/html_templates
 fine print = [default]
 navigation bar 1 = [('', '#pages', []),('', '#modules', [])]
 navigation bar 2 = [('', '#classes', []),('', '#files', [])]

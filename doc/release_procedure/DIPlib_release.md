@@ -77,7 +77,8 @@ not build). Note that you cannot upload a package that already exists on PyPI, a
 
 Build the documentation locally. This requires a machine with LaTeX, MATLAB and a bunch of other tools.
 See [documentation.md](doc/src/Build/documentation.md) for detailed instructions.
-Ensure the documentation built correctly and is complete.
+Ensure that you have the latest version of *dox++* from its GitHub repo, and that the documentation built
+correctly and is complete.
 
 Update the [`diplib-docs` repo](https://github.com/DIPlib/diplib-docs) with the new documentation.
 Ensure none of the old files stick around.

@@ -26,24 +26,24 @@
 
 /* Colors based on a basic complimentary color scheme.
 
-                         base   darker  darkest lighter lightest
-Primary color (orange): ff7400  bf7130  a64b00  ff9640  ffb273
-Secondary color (blue): 009999  1d7373  006363  33cccc  5ccccc
-
+darkest:  60% color + 40% black
+darker:   80% color + 20% black
+lighter:  60% color + 40% white
+lightest: 20% color + 80% white
 */
 
 :root {
   /* Color scheme */
+  --cs-primary-darkest: #994500;
+  --cs-primary-darker: #cc5c00;
   --cs-primary-base: #ff7400;
-  --cs-primary-darker: #bf7130;
-  --cs-primary-darkest: #a64b00;
-  --cs-primary-lighter: #ffa866;
-  --cs-primary-lightest: #ffe3cc;
+  --cs-primary-lighter: #ffac66;
+  --cs-primary-lightest: #ffe4cc;
+  --cs-secondary-darkest: #006b6b;
+  --cs-secondary-darker: #008f8f;
   --cs-secondary-base: #00b3b3;
-  --cs-secondary-darker: #1d7373;
-  --cs-secondary-darkest: #006666;
-  --cs-secondary-lighter: #59d9d9;
-  --cs-secondary-lightest: #add9d9;
+  --cs-secondary-lighter: #66d2d2;
+  --cs-secondary-lightest: #ccf0f0;
   --cs-black: #000000;
   --cs-dark-gray:  #666666;
   --cs-mid-gray:  #7a7a7a;
@@ -77,7 +77,7 @@ Secondary color (blue): 009999  1d7373  006363  33cccc  5ccccc
   --color: var(--cs-black);
   --muted-color: var(--cs-primary-darker);
   --line-color: var(--cs-primary-base);
-  --link-color: var(--cs-primary-darker);
+  --link-color: var(--cs-primary-darkest);
   --link-active-color: var(--cs-secondary-darker);
   --link-self-color: var(--cs-black);
   --link-self-active-color: var(--cs-secondary-darker);
@@ -86,8 +86,8 @@ Secondary color (blue): 009999  1d7373  006363  33cccc  5ccccc
   --code-color: inherit;
   --code-background-color: var(--cs-subtle-gray);
   --code-header-background-color: var(--cs-primary-lighter);
-  --code-header-link-color: var(--cs-secondary-darker);
-  --code-header-link-active-color: var(--cs-primary-darkest);
+  --code-header-link-color: var(--cs-secondary-darkest);
+  --code-header-link-active-color: var(--cs-primary-darker);
   --code-header-self-color: var(--cs-black);
   --code-header-self-active-color: var(--cs-secondary-base);
   --code-note-color: inherit;
@@ -163,7 +163,7 @@ Secondary color (blue): 009999  1d7373  006363  33cccc  5ccccc
   --info-link-active-color: var(--cs-primary-base);
   --info-filled-color: var(--cs-black);
   --info-filled-background-color: var(--cs-primary-lightest);
-  --info-filled-link-color: var(--cs-primary-darker);
+  --info-filled-link-color: var(--cs-primary-darkest);
   --info-filled-link-active-color: var(--cs-secondary-darker);
   --info-filled-code-color: var(--cs-primary-darkest);
   --info-filled-code-background-color: var(--cs-primary-lightest);
