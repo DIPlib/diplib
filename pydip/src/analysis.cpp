@@ -131,7 +131,7 @@ void init_analysis( py::module& m ) {
           "in"_a, py::kw_only(), "out"_a, "outputs"_a, doc_strings::dip·StructureTensorAnalysis·Image·CL·ImageRefArray·L·StringArray·CL );
    m.def( "StructureAnalysis", &dip::StructureAnalysis,
           "in"_a, "mask"_a = dip::Image{}, "scales"_a = std::vector< dip::dfloat >{}, "feature"_a = "energy",
-          "gradientSigmas"_a = dip::FloatArray{ 1.0 }, "method"_a = dip::S::BEST, "boundaryCondition"_a = dip::StringArray{}, "truncation"_a = 3.0, doc_strings::dip·StructureAnalysis·Image·CL·Image·CL·std·vectorgtdfloatlt·CL·String·CL·FloatArray·CL·String·CL·StringArray·CL·dfloat· );
+          "gradientSigmas"_a = dip::FloatArray{ 1.0 }, "method"_a = dip::S::BEST, "boundaryCondition"_a = dip::StringArray{}, "truncation"_a = 3.0, doc_strings::dip·StructureAnalysis·Image·CL·Image·CL·std·vectorltdfloatgt·CL·String·CL·FloatArray·CL·String·CL·StringArray·CL·dfloat· );
    m.def( "MonogenicSignal", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::dfloat, dip::String const&, dip::String const& >( &dip::MonogenicSignal ),
           "in"_a, "wavelengths"_a = dip::FloatArray{ 3.0, 24.0 }, "bandwidth"_a = 0.41, "inRepresentation"_a = dip::S::SPATIAL, "outRepresentation"_a = dip::S::SPATIAL, doc_strings::dip·MonogenicSignal·Image·CL·Image·L·FloatArray·CL·dfloat··String·CL·String·CL );
    m.def( "MonogenicSignal", py::overload_cast< dip::Image const&, dip::Image&, dip::FloatArray const&, dip::dfloat, dip::String const&, dip::String const& >( &dip::MonogenicSignal ),
@@ -159,7 +159,7 @@ void init_analysis( py::module& m ) {
    m.def( "DistanceDistribution", &dip::DistanceDistribution,
           "object"_a, "region"_a, "length"_a = 100, doc_strings::dip·DistanceDistribution·Image·CL·Image·CL·dip·uint· );
    m.def( "Granulometry", &dip::Granulometry,
-          "in"_a, "mask"_a = dip::Image{}, "scales"_a = std::vector< dip::dfloat >{}, "type"_a = "isotropic", "polarity"_a = dip::S::OPENING, "options"_a = dip::StringSet{}, doc_strings::dip·Granulometry·Image·CL·Image·CL·std·vectorgtdfloatlt·CL·String·CL·String·CL·StringSet·CL );
+          "in"_a, "mask"_a = dip::Image{}, "scales"_a = std::vector< dip::dfloat >{}, "type"_a = "isotropic", "polarity"_a = dip::S::OPENING, "options"_a = dip::StringSet{}, doc_strings::dip·Granulometry·Image·CL·Image·CL·std·vectorltdfloatgt·CL·String·CL·String·CL·StringSet·CL );
    m.def( "FractalDimension", &dip::FractalDimension, "in"_a, "eta"_a = 0.5, doc_strings::dip·FractalDimension·Image·CL·dfloat· );
 
    // diplib/transform.h
@@ -272,13 +272,13 @@ void init_analysis( py::module& m ) {
    m.def( "InverseBeerLambertMapping", py::overload_cast< dip::Image const&, dip::Image&, dip::Image::Pixel const& >( &dip::InverseBeerLambertMapping ),
           "in"_a, py::kw_only(), "out"_a, "background"_a = dip::Image::Pixel{ 255 }, doc_strings::dip·InverseBeerLambertMapping·Image·CL·Image·L·Image·Pixel·CL );
    m.def( "UnmixStains", py::overload_cast< dip::Image const&, std::vector< dip::Image::Pixel > const& >( &dip::UnmixStains ),
-          "in"_a, "stains"_a, doc_strings::dip·UnmixStains·Image·CL·Image·L·std·vectorgtImage·Pixellt·CL );
+          "in"_a, "stains"_a, doc_strings::dip·UnmixStains·Image·CL·Image·L·std·vectorltImage·Pixelgt·CL );
    m.def( "UnmixStains", py::overload_cast< dip::Image const&, dip::Image&, std::vector< dip::Image::Pixel > const& >( &dip::UnmixStains ),
-          "in"_a, py::kw_only(), "out"_a, "stains"_a, doc_strings::dip·UnmixStains·Image·CL·Image·L·std·vectorgtImage·Pixellt·CL );
+          "in"_a, py::kw_only(), "out"_a, "stains"_a, doc_strings::dip·UnmixStains·Image·CL·Image·L·std·vectorltImage·Pixelgt·CL );
    m.def( "MixStains", py::overload_cast< dip::Image const&, std::vector< dip::Image::Pixel > const& >( &dip::MixStains ),
-          "in"_a, "stains"_a, doc_strings::dip·MixStains·Image·CL·Image·L·std·vectorgtImage·Pixellt·CL );
+          "in"_a, "stains"_a, doc_strings::dip·MixStains·Image·CL·Image·L·std·vectorltImage·Pixelgt·CL );
    m.def( "MixStains", py::overload_cast< dip::Image const&, dip::Image&, std::vector< dip::Image::Pixel > const& >( &dip::MixStains ),
-          "in"_a, py::kw_only(), "out"_a, "stains"_a, doc_strings::dip·MixStains·Image·CL·Image·L·std·vectorgtImage·Pixellt·CL );
+          "in"_a, py::kw_only(), "out"_a, "stains"_a, doc_strings::dip·MixStains·Image·CL·Image·L·std·vectorltImage·Pixelgt·CL );
 
    m.def( "MandersOverlapCoefficient", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const& >( &dip::MandersOverlapCoefficient ),
           "channel1"_a, "channel2"_a, "mask"_a = dip::Image{}, doc_strings::dip·MandersOverlapCoefficient·Image·CL·Image·CL·Image·CL );

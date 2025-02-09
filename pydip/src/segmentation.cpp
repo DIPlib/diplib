@@ -160,7 +160,7 @@ void init_segmentation( py::module& m ) {
    graph.def( "Neighbors", &dip::Graph::Neighbors, "vertex"_a, doc_strings::dip·Graph·Neighbors·VertexIndex· );
    // graph.def( "UpdateEdgeWeights", &dip::Graph::UpdateEdgeWeights, doc_strings::dip·Graph·UpdateEdgeWeights·C );
    graph.def( "UpdateEdgeWeights", static_cast< void ( dip::Graph::* )() const >( &dip::Graph::UpdateEdgeWeights ), doc_strings::dip·Graph·UpdateEdgeWeights·C );
-   graph.def( "MinimumSpanningForest", &dip::Graph::MinimumSpanningForest, "roots"_a = std::vector< dip::Graph::VertexIndex >{}, doc_strings::dip·Graph·MinimumSpanningForest·std·vectorgtVertexIndexlt·CL·C );
+   graph.def( "MinimumSpanningForest", &dip::Graph::MinimumSpanningForest, "roots"_a = std::vector< dip::Graph::VertexIndex >{}, doc_strings::dip·Graph·MinimumSpanningForest·std·vectorltVertexIndexgt·CL·C );
    graph.def( "RemoveLargestEdges", &dip::Graph::RemoveLargestEdges, "number"_a, doc_strings::dip·Graph·RemoveLargestEdges·dip·uint· );
 
    auto dgraph = py::class_< dip::DirectedGraph >( m, "DirectedGraph", doc_strings::dip·DirectedGraph );
@@ -197,7 +197,7 @@ void init_segmentation( py::module& m ) {
    dgraph.def( "UpdateEdgeWeights", static_cast< void ( dip::DirectedGraph::* )() const >( &dip::DirectedGraph::UpdateEdgeWeights ), doc_strings::dip·DirectedGraph·UpdateEdgeWeights·C );
    dgraph.def( "IsConnectedTo", &dip::DirectedGraph::IsConnectedTo, "root"_a, doc_strings::dip·DirectedGraph·IsConnectedTo·VertexIndex· );
 
-   m.def( "MinimumSpanningForest", &dip::MinimumSpanningForest, "graph"_a, "roots"_a, doc_strings::dip·MinimumSpanningForest·Graph·CL·std·vectorgtGraph·VertexIndexlt·CL );
+   m.def( "MinimumSpanningForest", &dip::MinimumSpanningForest, "graph"_a, "roots"_a, doc_strings::dip·MinimumSpanningForest·Graph·CL·std·vectorltGraph·VertexIndexgt·CL );
    m.def( "GraphCut", py::overload_cast< dip::DirectedGraph&, dip::DirectedGraph::VertexIndex, dip::DirectedGraph::VertexIndex >( &dip::GraphCut ), "graph"_a, "sourceIndex"_a, "sinkIndex"_a, doc_strings::dip·GraphCut·DirectedGraph·L·DirectedGraph·VertexIndex··DirectedGraph·VertexIndex· );
    m.def( "Label", py::overload_cast< dip::Graph const& >( &dip::Label ), "graph"_a, doc_strings::dip·Label·Graph·CL );
    m.def( "Label", py::overload_cast< dip::DirectedGraph const& >( &dip::Label ), "graph"_a, doc_strings::dip·Label·DirectedGraph·CL );
@@ -265,7 +265,7 @@ void init_segmentation( py::module& m ) {
    // diplib/label_map.h
    auto lmap = py::class_< dip::LabelMap >( m, "LabelMap", doc_strings::dip·LabelMap );
    lmap.def( py::init< dip::LabelType >(), "maxLabel"_a, doc_strings::dip·LabelMap·LabelMap·LabelType· );
-   lmap.def( py::init< std::vector< dip::LabelType > const& >(), "labels"_a, doc_strings::dip·LabelMap·LabelMap·T·std·vectorgtUnsignedIntegerTypelt·CL );
+   lmap.def( py::init< std::vector< dip::LabelType > const& >(), "labels"_a, doc_strings::dip·LabelMap·LabelMap·T·std·vectorltUnsignedIntegerTypegt·CL );
    lmap.def( "__repr__", []( dip::LabelMap const& self ) {
       std::ostringstream os;
       os << "<LabelMap with " << self.Size() << " labels>";
