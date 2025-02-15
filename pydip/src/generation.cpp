@@ -20,7 +20,7 @@
 #include "pydip.h"
 #include "diplib/boundary.h"
 #include "diplib/generation.h"
-#include "diplib/chain_code.h" // IWYU pragma: keep
+#include "diplib/polygon.h" // IWYU pragma: keep
 
 void init_generation( py::module& m ) {
 

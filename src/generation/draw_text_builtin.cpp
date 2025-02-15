@@ -19,8 +19,8 @@
 #include <cmath>
 
 #include "diplib.h"
-#include "diplib/chain_code.h"
 #include "diplib/geometry.h"
+#include "diplib/polygon.h"
 
 namespace dip {
 

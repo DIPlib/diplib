@@ -22,6 +22,7 @@
 #include "diplib/analysis.h"
 #include "diplib/chain_code.h"
 #include "diplib/detection.h"
+#include "diplib/polygon.h"
 #include "diplib/regions.h"
 #include "diplib/segmentation.h"
 #include "diplib/statistics.h"

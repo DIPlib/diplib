@@ -25,6 +25,7 @@
 #include "diplib/chain_code.h"
 #include "diplib/framework.h"
 #include "diplib/iterators.h"
+#include "diplib/polygon.h"
 #include "diplib/regions.h"
 
 // FEATURES:

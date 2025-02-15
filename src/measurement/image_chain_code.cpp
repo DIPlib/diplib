@@ -21,6 +21,7 @@
 
 #include "diplib.h"
 #include "diplib/overload.h"
+#include "diplib/polygon.h"
 #include "diplib/private/robin_map.h"
 #include "diplib/regions.h"
 

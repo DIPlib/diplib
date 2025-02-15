@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-#include "diplib/chain_code.h"
+#include "diplib/polygon.h"
 
 #include <algorithm>
 #include <cmath>
@@ -426,6 +426,7 @@ EllipseParameters Polygon::FitEllipse() const {
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
+#include "diplib/chain_code.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing chain code polygons") {
    dip::ChainCode cc;

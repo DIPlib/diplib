@@ -41,6 +41,9 @@ date: 2020-00-00
 - The `dip::LibraryInformation` struct now has a series of boolean values that encode the compilation settings, so
   it no longer is necessary to decode the `type` field to find out if a certain feature is available or not.
 
+- `dip::Polygon`, `dip::ConvexHull`, and the support structs that they depend on are now declared in `diplib/polygon.h`.
+  `diplib/chain_code.h` includes this new file, so old code will continue to work.
+
 ### Bug fixes
 
 - Fixed `dip::IsotropicErosion()` to use the same structuring element size as `dip::IsotropicDilation()`.

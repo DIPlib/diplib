@@ -27,7 +27,6 @@
 
 #include "diplib.h"
 #include "diplib/binary.h"
-#include "diplib/chain_code.h"
 #include "diplib/framework.h"
 #include "diplib/generation.h"
 #include "diplib/iterators.h"
@@ -35,6 +34,7 @@
 #include "diplib/measurement.h"
 #include "diplib/neighborlist.h"
 #include "diplib/overload.h"
+#include "diplib/polygon.h"
 #include "diplib/private/robin_map.h"
 #include "diplib/private/robin_set.h"
 

@@ -136,7 +136,7 @@ DIP_EXPORT void DrawLines(
 /// Pixels in `out` on the polygon (and within the polygon for filled polygons) are set to `value`, other pixels
 /// are not touched.
 ///
-/// The \ref dip::Polygon struct is defined in \ref "diplib/chain_code.h", which you'll need to include to use this function.
+/// The \ref dip::Polygon struct is defined in \ref "diplib/polygon.h", which you'll need to include to use this function.
 ///
 /// `out` must have two dimensions.
 DIP_EXPORT void DrawPolygon2D(

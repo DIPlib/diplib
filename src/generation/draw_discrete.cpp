@@ -26,11 +26,11 @@
 #include <vector>
 
 #include "diplib.h"
-#include "diplib/chain_code.h" // Polygon
 #include "diplib/framework.h"
 #include "diplib/generic_iterators.h"
 #include "diplib/iterators.h"
 #include "diplib/overload.h"
+#include "diplib/polygon.h"
 #include "diplib/random.h"
 #include "diplib/saturated_arithmetic.h"
 

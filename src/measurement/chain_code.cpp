@@ -20,6 +20,7 @@
 #include <array>
 
 #include "diplib.h"
+#include "diplib/polygon.h"
 
 namespace dip {
 

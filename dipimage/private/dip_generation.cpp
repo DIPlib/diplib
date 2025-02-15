@@ -22,8 +22,8 @@
 
 #include "dip_matlab_interface.h"
 #include "diplib/boundary.h"
-#include "diplib/chain_code.h"
 #include "diplib/generation.h"
+#include "diplib/polygon.h"
 #include "diplib/random.h"
 
 namespace {

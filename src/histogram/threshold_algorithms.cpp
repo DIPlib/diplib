@@ -24,7 +24,7 @@
 
 #include "diplib.h"
 #include "diplib/analysis.h"
-#include "diplib/chain_code.h"
+#include "diplib/polygon.h"
 #include "diplib/random.h"
 #include "diplib/segmentation.h"
 #include "diplib/statistics.h"

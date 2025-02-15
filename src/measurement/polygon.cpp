@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-#include "diplib/chain_code.h"
+#include "diplib/polygon.h"
 
 #include <algorithm>
 #include <cmath>

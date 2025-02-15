@@ -18,12 +18,12 @@
 #include <iostream>
 #include <sstream>
 #include <tuple>
-#include <type_traits>
 #include <vector>
 
 #include "pydip.h"
 #include "accumulators.h" // IWYU pragma: keep
 #include "diplib/measurement.h"
+#include "diplib/polygon.h"
 #include "diplib/chain_code.h"
 #include "diplib/label_map.h"
 

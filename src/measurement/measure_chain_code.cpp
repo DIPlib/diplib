@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "diplib.h"
+#include "diplib/polygon.h"
 
 namespace dip {
 
