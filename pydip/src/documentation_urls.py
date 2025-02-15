@@ -1650,6 +1650,7 @@ doc_url_pairs = [
     ('dip.Polygon.Scale', 'dip-Polygon.html#dip-Polygon-Scale-dfloat--dfloat-'),
     ('dip.Polygon.Translate', 'dip-Polygon.html#dip-Polygon-Translate-VertexFloat-'),
     ('dip.Polygon.ConvexHull', 'dip-Polygon.html#dip-Polygon-ConvexHull-C'),
+    ('dip.Polygon.Contains', 'dip-Polygon.html#dip-Polygon-Contains-VertexFloat--C'),
     ('dip.ConvexHull', 'dip-ConvexHull.html'),
     ('dip.ConvexHull.ConvexHull', 'dip-ConvexHull.html#dip-ConvexHull-ConvexHull'),
     ('dip.ConvexHull.ConvexHull', 'dip-ConvexHull.html#dip-ConvexHull-ConvexHull-dip-Polygon-CL'),

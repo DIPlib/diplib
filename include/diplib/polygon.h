@@ -794,6 +794,15 @@ struct DIP_NO_EXPORT Polygon {
 
    /// \brief Returns the convex hull of the polygon. The polygon must be simple.
    DIP_EXPORT dip::ConvexHull ConvexHull() const;
+
+   /// \brief Tests if the `point` is contained in the polygon.
+   ///
+   /// If the point lies within numerical precision to the boundary of the polygon, the algorithm
+   /// will also return true.
+   ///
+   /// Note that, when testing for mutliple points, it likely is more efficient to render the
+   /// polygon (\ref dip::DrawPolygon2D) and test points by indexing into that image.
+   DIP_EXPORT bool Contains( VertexFloat point ) const;
 };
 
 /// \brief A convex hull is a convex polygon. It can be constructed from a simple \ref dip::Polygon,

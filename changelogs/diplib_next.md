@@ -14,6 +14,8 @@ date: 2020-00-00
 - Added `dip::Polygon::FitCircle()` and `dip::Polygon::FitEllipse()`. The former returns a new data structure
   `dip::CircleParameters`.
 
+- Added `dip::Polygon::Contains()` to test if a point is inside the polygon.
+
 ### Changed functionality
 
 - All functions that compute a percentile (`dip::Percentile()`, `dip::PercentilePosition()`,

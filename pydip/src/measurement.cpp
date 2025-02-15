@@ -539,7 +539,7 @@ void init_measurement( py::module& m ) {
    poly.def( "Feret", []( dip::Polygon const& self ) { return self.ConvexHull().Feret(); },
              "Returns the Feret diameters of the convex hull.\n"
              "Corresponds to `dip::Polygon::ConvexHull().Feret()`." );
-
+   poly.def( "Contains", &dip::Polygon::Contains, "point"_a, doc_strings::dip·Polygon·Contains·VertexFloat··C );
    // dip::ChainCode
    auto chain = py::class_< dip::ChainCode >( m, "ChainCode", doc_strings::dip·ChainCode );
    chain.def( "__repr__", []( dip::ChainCode const& self ) {

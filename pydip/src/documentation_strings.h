@@ -1608,6 +1608,7 @@ constexpr char const* dip·Polygon·Scale·dfloat· = "Scales the polygon isotro
 constexpr char const* dip·Polygon·Scale·dfloat··dfloat· = "Scales the polygon anisotropically by multiplying each vertex coordinate by\n`scaleX` and `scaleY`.";
 constexpr char const* dip·Polygon·Translate·VertexFloat· = "Translates the polygon by `shift`.";
 constexpr char const* dip·Polygon·ConvexHull·C = "Returns the convex hull of the polygon. The polygon must be simple.";
+constexpr char const* dip·Polygon·Contains·VertexFloat··C = "Tests if the `point` is contained in the polygon.";
 constexpr char const* dip·ConvexHull = "A convex hull is a convex polygon. It can be constructed from a simple\n`dip::Polygon`, and is guaranteed clockwise.";
 constexpr char const* dip·ConvexHull·ConvexHull = "Default-constructed ConvexHull (without vertices).";
 constexpr char const* dip·ConvexHull·ConvexHull·dip·Polygon·CL = "Constructs a convex hull of a polygon. The polygon must be simple (not self\nintersect).";

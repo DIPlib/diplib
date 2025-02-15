@@ -287,6 +287,38 @@ ConvexHull::ConvexHull( dip::Polygon const& polygon ) {
    }
 }
 
+bool Polygon::Contains( VertexFloat point ) const {
+   // Ray casting algorithm. We count how often the polygon crosses a horizontal line from -infinity to `point`.
+   // Each edge can only cross the line once. If the bottom vertex of an edge is on the line, it doesn't count
+   // as a crossing, but the top vertex does.
+   // Finally, the algorithm returns true if the point is on a vertex or edge (within numerical precision).
+   dip::uint count = 0;
+   dip::VertexFloat prev = vertices.back();
+   for( auto cur : vertices ) {
+      if( cur.x == point.x && cur.y == point.y ) {
+         return true;
+      }
+      if(( prev.y <= point.y && cur.y > point.y ) || ( cur.y <= point.y && prev.y > point.y )) {
+         if( cur.x <= point.x && prev.x <= point.x ) {
+            ++count;
+         } else if( !( cur.x > point.x && prev.x > point.x )) {
+            VertexFloat edge = cur - prev;
+            edge /= Norm(edge);
+            edge *= point.y - prev.y;
+            edge += prev;
+            if( edge.x == point.x ) {
+               return true;
+            }
+            if( edge.x < point.x ) {
+               ++count;
+            }
+         }
+      }
+      prev = cur;
+   }
+   return count & 1u;
+}
+
 } // namespace dip
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
@@ -329,6 +361,26 @@ DOCTEST_TEST_CASE("[DIPlib] testing polygon manipulation") {
    DOCTEST_CHECK( p5.Length() == doctest::Approx( 35.0511 ));
    p2.Reverse();
    DOCTEST_CHECK( p.IsClockWise() != p2.IsClockWise() );
+}
+
+DOCTEST_TEST_CASE("[DIPlib] testing point-in-polygon algorithm") {
+   dip::Polygon p;
+   p.vertices = {{ 0.2,  2 },
+                 { 0,    0 },
+                 { 5,    0.2 },
+                 { 10,   0 },
+                 { 10.2, 6 },
+                 { 10,   10 },
+                 { 5,    9.8 },
+                 { 0,    10 },
+                 { -0.2, 6 }}; // a noisy square, 10x10
+   DOCTEST_CHECK( !p.Contains( { -1.0, 5.0 } ));
+   DOCTEST_CHECK( !p.Contains( { 5.0, -1.0 } ));
+   DOCTEST_CHECK( !p.Contains( { 5.0, 11.0 } ));
+   DOCTEST_CHECK( p.Contains( { 0.0, 0.0 } ));
+   DOCTEST_CHECK( p.Contains( { 10.0, 10.0 } ));
+   DOCTEST_CHECK( p.Contains( { 5.0, 5.0 } ));
+   DOCTEST_CHECK( p.Contains( { 1.0, 0.2 } ));
 }
 
 #endif // DIP_CONFIG_ENABLE_DOCTEST
