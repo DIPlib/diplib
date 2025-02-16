@@ -343,12 +343,12 @@ void init_histogram( py::module& m ) {
             "lowerValue"_a, "upperValue"_a, doc_strings::dip·LookupTable·SetOutOfBoundsValue·dfloat··dfloat· );
    lut.def( "KeepInputValueOnOutOfBounds", &dip::LookupTable::KeepInputValueOnOutOfBounds, doc_strings::dip·LookupTable·KeepInputValueOnOutOfBounds );
    lut.def( "ClampOutOfBoundsValues", &dip::LookupTable::ClampOutOfBoundsValues, doc_strings::dip·LookupTable·ClampOutOfBoundsValues );
+   lut.def( "Apply", py::overload_cast< dip::dfloat, dip::String const& >( &dip::LookupTable::Apply, py::const_ ),
+            "value"_a, "interpolation"_a = dip::S::LINEAR, doc_strings::dip·LookupTable·Apply·dfloat··String·CL·C );
    lut.def( "Apply", py::overload_cast< dip::Image const&, dip::String const& >( &dip::LookupTable::Apply, py::const_ ),
             "in"_a, "interpolation"_a = dip::S::LINEAR, doc_strings::dip·LookupTable·Apply·Image·CL·Image·L·String·CL·C );
    lut.def( "Apply", py::overload_cast< dip::Image const&, dip::Image&, dip::String const& >( &dip::LookupTable::Apply, py::const_ ),
             "in"_a, py::kw_only(), "out"_a, "interpolation"_a = dip::S::LINEAR, doc_strings::dip·LookupTable·Apply·Image·CL·Image·L·String·CL·C );
-   lut.def( "Apply", py::overload_cast< dip::dfloat, dip::String const& >( &dip::LookupTable::Apply, py::const_ ),
-            "value"_a, "interpolation"_a = dip::S::LINEAR, doc_strings::dip·LookupTable·Apply·dfloat··String·CL·C );
    lut.def( "Convert", &dip::LookupTable::Convert,
             "dataType"_a, doc_strings::dip·LookupTable·Convert·dip·DataType· );
 

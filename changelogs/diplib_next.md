@@ -16,6 +16,8 @@ date: 2020-00-00
 
 - Added `dip::Polygon::Contains()` to test if a point is inside the polygon.
 
+- Added `dip::ColorMapLut()`, expanding the functionality of `dip::ApplyColorMap()`.
+
 ### Changed functionality
 
 - All functions that compute a percentile (`dip::Percentile()`, `dip::PercentilePosition()`,
@@ -115,6 +117,8 @@ None, but see bugfixes to *DIPlib*.
 
 - `dip::VertexFloat` input arguments were required to be a sequence with two float values.
   Integer values are now also accepted.
+
+- `dip.LookupTable.Apply()` overload resolution fixed so that a scalar input is not converted to an image.
 
 (See also bugfixes to *DIPlib*.)
 

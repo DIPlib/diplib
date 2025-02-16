@@ -20,6 +20,7 @@
 #include "pydip.h"
 #include "diplib/color.h"
 #include "diplib/display.h"
+#include "diplib/lookup_table.h" // IWYU pragma: keep
 #include "diplib/file_io.h"
 #undef DIP_CONFIG_HAS_DIPJAVAIO  // We want the version of dip::ImageRead() here to not use DIPjavaio.
 #include "diplib/simple_file_io.h"
@@ -130,6 +131,7 @@ void init_assorted( py::module& m ) {
           }, "in"_a, "mappingMode"_a, "complexMode"_a = "abs", "projectionMode"_a = "mean", "coordinates"_a = dip::UnsignedArray{}, "dim1"_a = 0, "dim2"_a = 1,
           "Overload of the above that allows a `mappingMode` to be given instead of\n"
           "a `range`." );
+   m.def( "ColorMapLut", &dip::ColorMapLut, "colorMap"_a = "grey", doc_strings::dip·ColorMapLut·String·CL );
    m.def( "ApplyColorMap", py::overload_cast< dip::Image const&, dip::String const& >( &dip::ApplyColorMap ),
           "in"_a, "colorMap"_a = "grey", doc_strings::dip·ApplyColorMap·Image·CL·Image·L·String·CL );
    m.def( "ApplyColorMap", py::overload_cast< dip::Image const&, dip::Image&, dip::String const& >( &dip::ApplyColorMap ),

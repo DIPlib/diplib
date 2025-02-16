@@ -1,5 +1,5 @@
 /*
- * (c)2017, Cris Luengo.
+ * (c)2017-2025, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -1656,11 +1656,7 @@ constexpr std::array< uint8, colorMapLength * nRGB > cyclicColorMap =
  * End of colormaps from colorcet.
  */
 
-void ApplyColorMap(
-      Image const& in,
-      Image& out,
-      String const& colorMap
-) {
+LookupTable ColorMapLut( String const& colorMap ) {
    uint8 const* values = nullptr;
    if(( colorMap == "grey" ) || ( colorMap == "gray" )) {
       values = greyColorMap.data();
@@ -1678,9 +1674,19 @@ void ApplyColorMap(
       DIP_THROW_INVALID_FLAG( colorMap );
    }
    Image im( values, { colorMapLength }, nRGB );
-   LookupTable lut( im );
-   DIP_STACK_TRACE_THIS( lut.Apply( in, out ));
+   return LookupTable( im );
+}
+
+void ApplyColorMap(
+      Image const& in,
+      Image& out,
+      String const& colorMap
+) {
+   DIP_START_STACK_TRACE
+   LookupTable lut = ColorMapLut( colorMap );
+   lut.Apply( in, out );
    out.SetColorSpace( "sRGB" );
+   DIP_END_STACK_TRACE
 }
 
 void Overlay(

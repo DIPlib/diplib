@@ -1827,6 +1827,7 @@ doc_url_pairs = [
     ('dip.ImageDisplay.GetRange', 'dip-ImageDisplay.html#dip-ImageDisplay-GetRange-C'),
     ('dip.ImageDisplay.GetLimits', 'dip-ImageDisplay.html#dip-ImageDisplay-GetLimits-bool-'),
     ('dip.ImageDisplay.GetGlobalStretch', 'dip-ImageDisplay.html#dip-ImageDisplay-GetGlobalStretch-C'),
+    ('dip.ColorMapLut', 'display.html#dip-ColorMapLut-String-CL'),
     ('dip.ApplyColorMap', 'display.html#dip-ApplyColorMap-Image-CL-Image-L-String-CL'),
     ('dip.Overlay', 'display.html#dip-Overlay-Image-CL-Image-CL-Image-L-Image-Pixel-CL'),
     ('dip.MarkLabelEdges', 'display.html#dip-MarkLabelEdges-Image-CL-Image-L-dip-uint-'),

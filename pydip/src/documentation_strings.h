@@ -1785,6 +1785,7 @@ constexpr char const* dip·ImageDisplay·GetMappingMode·C = "Get the current in
 constexpr char const* dip·ImageDisplay·GetRange·C = "Get the current intensity range.";
 constexpr char const* dip·ImageDisplay·GetLimits·bool· = "Gets the image intensity range (that selected with `\"lin\"`) for the current\nslicing and complex mapping modes. If `compute` is true, it computes them if\nthey're not yet computed.";
 constexpr char const* dip·ImageDisplay·GetGlobalStretch·C = "Get the current global stretch mode.";
+constexpr char const* dip·ColorMapLut·String·CL = "Creates a `dip::LookupTable` with a pre-computed sRGB color map.";
 constexpr char const* dip·ApplyColorMap·Image·CL·Image·L·String·CL = "Applies a color map to an image prepared for display using\n`dip::ImageDisplay`.";
 constexpr char const* dip·Overlay·Image·CL·Image·CL·Image·L·Image·Pixel·CL = "Adds a colored overlay to the image `in`, yielding an RGB image.";
 constexpr char const* dip·MarkLabelEdges·Image·CL·Image·L·dip·uint· = "Upscales a labeled image and outlines each region with the background label.";

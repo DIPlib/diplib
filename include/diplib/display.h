@@ -1,5 +1,5 @@
 /*
- * (c)2017-2021, Cris Luengo.
+ * (c)2017-2025, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -594,10 +594,12 @@ class DIP_NO_EXPORT ImageDisplay {
       }
 };
 
-/// \brief Applies a color map to an image prepared for display using \ref dip::ImageDisplay.
+class LookupTable;  // forward declaration
+
+/// \brief Creates a \ref LookupTable with a pre-computed sRGB color map.
 ///
-/// `in` is a scalar, 8-bit unsigned image. `out` will be an image of the same size and type
-/// but with three tensor components, and in the "sRGB" color space.
+/// All color maps have 256 values, and should be applied to images normalized to the range [0, 255].
+/// You will need to include \ref diplib/lookup_table.h where the output class is defined.
 ///
 /// `colorMap` can currently be one of the following color maps:
 ///
@@ -616,12 +618,20 @@ class DIP_NO_EXPORT ImageDisplay {
 ///   that of nearby grey values. 16 different colors are used. The 0 grey value is considered background
 ///   and colored black. Use with the `"modulo"` range mode of \ref dip::ImageDisplay.
 ///
-/// For more information regarding the range modes of \ref dip::ImageDisplay, see \ref dip::ImageDisplay::SetRange.
-///
 /// The `"linear"`, `"diverging"` and `"cyclic"` are by [Peter Kovesi](https://colorcet.com).
 ///
 /// !!! literature
 ///     - Peter Kovesi, "Good Colour Maps: How to Design Them", [arXiv:1509.03700](https://arxiv.org/abs/1509.03700) [cs.GR], 2015.
+DIP_EXPORT LookupTable ColorMapLut(
+      String const& colorMap = "grey"
+);
+
+/// \brief Applies a color map to an image prepared for display using \ref dip::ImageDisplay.
+///
+/// `in` is a scalar, 8-bit unsigned image. `out` will be an image of the same size and type
+/// but with three tensor components, and in the "sRGB" color space.
+///
+/// See \ref ColorMapLut for possible values for `colorMap`.
 DIP_EXPORT void ApplyColorMap(
       Image const& in,
       Image& out,
