@@ -30,7 +30,7 @@
 
 namespace dip {
 
-class Measurement; // Defined in "diplib/measurement.h"
+class DIP_NO_EXPORT Measurement; // Defined in "diplib/measurement.h"
 
 /// \addtogroup regions
 

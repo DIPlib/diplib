@@ -52,6 +52,7 @@ set(DIPlib_sources_bogus
 ../include/diplib/nonlinear.h
 ../include/diplib/overload.h
 ../include/diplib/pixel_table.h
+../include/diplib/polygon.h
 ../include/diplib/private/constfor.h
 ../include/diplib/private/robin_growth_policy.h
 ../include/diplib/private/robin_hash.h

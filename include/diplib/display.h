@@ -594,12 +594,12 @@ class DIP_NO_EXPORT ImageDisplay {
       }
 };
 
-class LookupTable;  // forward declaration
+class DIP_NO_EXPORT LookupTable;  // forward declaration
 
 /// \brief Creates a \ref LookupTable with a pre-computed sRGB color map.
 ///
 /// All color maps have 256 values, and should be applied to images normalized to the range [0, 255].
-/// You will need to include \ref diplib/lookup_table.h where the output class is defined.
+/// You will need to include \ref "diplib/lookup_table.h" where the output class is defined.
 ///
 /// `colorMap` can currently be one of the following color maps:
 ///

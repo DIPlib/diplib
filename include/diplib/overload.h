@@ -62,7 +62,7 @@
 /// result of `new` is cast to the declaration type of the variable being
 /// assigned to, so that one can assign e.g. into a `std::unique_ptr`.
 ///
-/// There are four groups of macros defined in `diplib/overload.h`:
+/// There are four groups of macros defined in \ref "diplib/overload.h":
 ///
 /// - `DIP_OVL_CALL_xxx` calls a function, discarding any return value.
 /// - `DIP_OVL_CALL_ASSIGN_xxx` calls a function, assigning the return
