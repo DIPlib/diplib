@@ -73,7 +73,7 @@ void Histogram::Configuration::Complete( bool isInteger ) {
    switch( mode ) {
       case Mode::COMPUTE_BINSIZE:
          if( isInteger ) {
-            // We've aready computed the bin size earlier
+            // We've already computed the bin size earlier
             upperBound = lowerBound + static_cast< dfloat >( nBins ) * binSize;
          } else {
             binSize = ( upperBound - lowerBound ) / static_cast< dfloat >( nBins );
