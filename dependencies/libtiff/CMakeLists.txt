@@ -25,8 +25,6 @@
 
 cmake_minimum_required(VERSION 3.5...3.28)
 
-message("~~~Configuring LibTIFF~~~")
-
 # Read version information from configure.ac.
 set(LIBTIFF_MAJOR_VERSION 4)
 set(LIBTIFF_MINOR_VERSION 0)
@@ -394,19 +392,19 @@ if(TARGET jpeg)
 endif()
 set(OJPEG_SUPPORT ${JPEG_SUPPORT})
 
-# TODO: 8/12-bit jpeg mode
-option(jpeg12 "enable libjpeg 8/12-bit dual mode (requires separate 12-bit libjpeg build)" ON)
-set(JPEG12_INCLUDE_DIR JPEG12_INCLUDE_DIR-NOTFOUND CACHE PATH "Include directory for 12-bit libjpeg")
-set(JPEG12_LIBRARY JPEG12_LIBRARY-NOTFOUND CACHE FILEPATH "12-bit libjpeg library")
-set(JPEG12_FOUND FALSE)
-if (JPEG12_INCLUDE_DIR AND JPEG12_LIBRARY)
-  set(JPEG12_LIBRARIES ${JPEG12_LIBRARY})
-  set(JPEG12_FOUND TRUE)
-endif()
-if (JPEG12_FOUND)
-  set(JPEG_DUAL_MODE_8_12 1)
-  set(LIBJPEG_12_PATH "${JPEG12_INCLUDE_DIR}/jpeglib.h")
-endif()
+# TODO: 8/12-bit jpeg mode -- We currently cannot support the 12-bit mode too, don't let the user turn this on
+#option(jpeg12 "enable libjpeg 8/12-bit dual mode (requires separate 12-bit libjpeg build)" ON)
+#set(JPEG12_INCLUDE_DIR JPEG12_INCLUDE_DIR-NOTFOUND CACHE PATH "Include directory for 12-bit libjpeg")
+#set(JPEG12_LIBRARY JPEG12_LIBRARY-NOTFOUND CACHE FILEPATH "12-bit libjpeg library")
+#set(JPEG12_FOUND FALSE)
+#if (JPEG12_INCLUDE_DIR AND JPEG12_LIBRARY)
+#  set(JPEG12_LIBRARIES ${JPEG12_LIBRARY})
+#  set(JPEG12_FOUND TRUE)
+#endif()
+#if (JPEG12_FOUND)
+#  set(JPEG_DUAL_MODE_8_12 1)
+#  set(LIBJPEG_12_PATH "${JPEG12_INCLUDE_DIR}/jpeglib.h")
+#endif()
 
 # Win32 IO
 set(WIN32_IO FALSE)
@@ -485,6 +483,4 @@ add_subdirectory(libtiff)
 #message(STATUS "EXTRA_DIST: ${EXTRA_DIST}")
 
 message(STATUS "LibTIFF uses win32 IO: ${USE_WIN32_FILEIO}")
-message(STATUS "LibTIFF has JPEG 8/12 bit dual mode: ${JPEG12_FOUND}")
-
-message("~~~")
+#message(STATUS "LibTIFF has JPEG 8/12 bit dual mode: ${JPEG12_FOUND}")

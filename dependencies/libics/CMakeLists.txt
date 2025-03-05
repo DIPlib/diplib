@@ -15,8 +15,6 @@
 ##############################################################################
 cmake_minimum_required(VERSION 3.5...3.28)
 
-message("~~~Configuring libics~~~")
-
 project(libics VERSION 1.6.2)
 
 # Note: the version number above is not yet used anywhere.

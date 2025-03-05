@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 2.4.4...3.15.0)
 set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS ON)
 
-message("~~~Configuring Zlib~~~")
-
 project(zlib C)
 
 set(VERSION "1.3.1")
@@ -221,5 +219,3 @@ set_target_properties(zlibstatic PROPERTIES C_VISIBILITY_PRESET hidden POSITION_
 #         set_target_properties(minigzip64 PROPERTIES COMPILE_FLAGS "-D_FILE_OFFSET_BITS=64")
 #     endif()
 # endif()
-
-message("~~~")

@@ -118,6 +118,7 @@ target_compile_definitions(DIP PRIVATE
 # zlib (for use in libics and libtiff)
 set(DIP_ENABLE_ZLIB ON CACHE BOOL "Enable zlib compression in ICS and TIFF (deflate), required for PNG")
 if(DIP_ENABLE_ZLIB)
+   message("~~~Configuring Zlib~~~")
    add_subdirectory("${PROJECT_SOURCE_DIR}/dependencies/zlib" "${PROJECT_BINARY_DIR}/zlib" EXCLUDE_FROM_ALL)
 endif()
 
@@ -133,6 +134,7 @@ endif()
 # libics
 set(DIP_ENABLE_ICS ON CACHE BOOL "Enable ICS file support")
 if(DIP_ENABLE_ICS)
+   message("~~~Configuring libics~~~")
    set(LIBICS_INCLUDE_CPP Off) # TODO: we should start using the C++ interface
    add_subdirectory("${PROJECT_SOURCE_DIR}/dependencies/libics" "${PROJECT_BINARY_DIR}/libics" EXCLUDE_FROM_ALL)
    target_link_libraries(DIP PRIVATE libics)
@@ -143,7 +145,17 @@ endif()
 # libtiff
 set(DIP_ENABLE_TIFF ON CACHE BOOL "Enable TIFF file support")
 if(DIP_ENABLE_TIFF)
+   message("~~~Configuring LibTIFF~~~")
    add_subdirectory("${PROJECT_SOURCE_DIR}/dependencies/libtiff" "${PROJECT_BINARY_DIR}/libtiff" EXCLUDE_FROM_ALL)
+   mark_as_advanced(FORCE TIFF_DEFAULT_STRIP_SIZE)
+   mark_as_advanced(FORCE extra-warnings)
+   mark_as_advanced(FORCE fatal-warnings)
+   mark_as_advanced(FORCE strip-chopping)
+   mark_as_advanced(FORCE defer-strile-load)
+   mark_as_advanced(FORCE chunky-strip-read)
+   mark_as_advanced(FORCE extrasample-as-alpha)
+   mark_as_advanced(FORCE check-ycbcr-subsampling)
+   mark_as_advanced(FORCE M_LIBRARY)
    target_link_libraries(DIP PRIVATE tiff)
    target_include_directories(DIP PRIVATE $<TARGET_PROPERTY:tiff,INTERFACE_INCLUDE_DIRECTORIES>) # these need to come before system include directories
    target_compile_definitions(DIP PRIVATE DIP_CONFIG_HAS_TIFF)
@@ -165,6 +177,7 @@ endif()
 
 # FFTW or PocketFFT for Fourier transforms
 find_package(FFTW3)
+mark_as_advanced(FORCE FFTW3_PRECISIONS)
 if(FFTW3_FOUND)
    set(DIP_ENABLE_FFTW OFF CACHE BOOL "Enable linking against the FFTW library (GPL license) for Fourier transforms")
 endif()
