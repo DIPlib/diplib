@@ -207,7 +207,7 @@ class DIP_NO_EXPORT Histogram {
 
          // Complete the configuration, computing the value given by `mode`, as well as percentiles if
          // required.
-         DIP_EXPORT void Complete( Measurement::IteratorFeature const& featureValues ) {
+         void Complete( Measurement::IteratorFeature const& featureValues ) {
             Complete( featureValues.AsScalarImage() );
          }
       };
