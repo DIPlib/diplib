@@ -1030,6 +1030,8 @@ void SliceViewer::calculateTextures()
   }
 }
 
+SliceViewer::~SliceViewer() = default;
+
 void SliceViewer::updateLinkedViewers()
 {
   Guard guard(*this);

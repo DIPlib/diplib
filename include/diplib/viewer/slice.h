@@ -106,6 +106,7 @@ class DIPVIEWER_CLASS_EXPORT SliceViewer : public Viewer {
       SliceViewer( SliceViewer&& ) = delete;
       SliceViewer& operator=( SliceViewer const& ) = delete;
       SliceViewer& operator=( SliceViewer&& ) = delete;
+      ~SliceViewer() override;
 
       void release() override {
          if( continue_ ) {
