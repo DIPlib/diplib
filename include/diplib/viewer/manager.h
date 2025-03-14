@@ -78,7 +78,7 @@ class DIPVIEWER_CLASS_EXPORT Window {
       /// \brief Draw a string onto the window.
       ///
       /// Must be called from a callback.
-      dip::uint drawString( const char* string );
+      DIPVIEWER_EXPORT dip::uint drawString( const char* string );
 
       /// \brief Returns the window's width.
       int width() const { return width_; }
@@ -102,12 +102,12 @@ class DIPVIEWER_CLASS_EXPORT Window {
       /// \brief Sets the window's title.
       ///
       /// Must be called from a callback.
-      void title( const char* name );
+      DIPVIEWER_EXPORT void title( const char* name );
 
       /// \brief Swaps display buffers.
       ///
       /// Must be called from a callback.
-      void swap();
+      DIPVIEWER_EXPORT void swap();
 
       /// \brief Suggests a window's size.
       ///
@@ -120,7 +120,7 @@ class DIPVIEWER_CLASS_EXPORT Window {
       }
 
       /// \brief Release any resources held or referenced by this window.
-      virtual void release() { }
+      virtual void release() {}
 
       /// Overridable callback that draws the visualization.
       virtual void draw() {}
@@ -141,7 +141,7 @@ class DIPVIEWER_CLASS_EXPORT Window {
       virtual void close() {}
 
       /// Overridable callback that is called when a key is pressed.
-      virtual void key( unsigned char k, int x, int y, int mods );
+      DIPVIEWER_EXPORT virtual void key( unsigned char k, int x, int y, int mods );
 
       /// Overridable callback that is called when a mouse button is clicked.
       virtual void click( int /*button*/, int /*state*/, int /*x*/, int /*y*/, int /*mods*/ ) {}

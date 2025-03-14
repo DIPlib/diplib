@@ -78,7 +78,7 @@ class DIPVIEWER_CLASS_EXPORT GLFWManager : public Manager {
       DIPVIEWER_EXPORT void setWindowPosition( Window* window, int x, int y ) override;
       DIPVIEWER_EXPORT void setWindowSize( Window* window, int x, int y ) override;
 
-      DIPVIEWER_EXPORT void run();
+      //DIPVIEWER_EXPORT void run();
       DIPVIEWER_EXPORT WindowPtr getWindow( GLFWwindow* window );
       DIPVIEWER_EXPORT void getCursorPos( Window* window, int* x, int* y );
       DIPVIEWER_EXPORT void makeCurrent( Window* window );
