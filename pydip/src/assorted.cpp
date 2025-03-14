@@ -474,7 +474,7 @@ void init_assorted( py::module& m ) {
    m.attr( "infinity" ) = dip::infinity;
    auto tps = py::class_< dip::ThinPlateSpline >( m, "ThinPlateSpline", doc_strings::dip·ThinPlateSpline );
    tps.def( py::init< dip::FloatCoordinateArray, dip::FloatCoordinateArray const&, dip::dfloat >(),
-      "coordinate"_a, "value"_a, "lambda"_a = 0, doc_strings::dip·ThinPlateSpline·ThinPlateSpline·FloatCoordinateArray··FloatCoordinateArray·CL·dfloat· );
+      "coordinate"_a, "value"_a, "tLambda"_a = 0, doc_strings::dip·ThinPlateSpline·ThinPlateSpline·FloatCoordinateArray··FloatCoordinateArray·CL·dfloat· );
    tps.def( "__repr__", []( dip::ThinPlateSpline const& self ) {
       std::ostringstream os;
       os << "<ThinPlateSpline (" << self.Dimensionality() << " dimensions, " << self.NumberOfControlPoints() << " control points)>";
