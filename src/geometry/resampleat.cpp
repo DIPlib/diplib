@@ -558,20 +558,16 @@ void WarpControlPoints(
    DIP_THROW_IF( nDims == 0, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( inCoordinates.empty(), E::ARRAY_PARAMETER_EMPTY );
    DIP_THROW_IF( outCoordinates.size() != inCoordinates.size(), E::ARRAY_PARAMETER_WRONG_LENGTH );
-   for( auto& c : inCoordinates ) {
-      DIP_THROW_IF( c.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
-   }
-   for( auto& c : outCoordinates ) {
-      DIP_THROW_IF( c.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
-   }
-   DIP_THROW_IF( lambda < 0, E::PARAMETER_OUT_OF_RANGE );
+   DIP_THROW_IF( inCoordinates[0].size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
+   // The ThinPlateSpline constructor checks that the coordinates all have consistent size
+
+   DIP_START_STACK_TRACE
 
    // Build thin plate spline function
    ThinPlateSpline thinPlateSpline( outCoordinates, inCoordinates, lambda );
 
    // Find interpolator
-   InterpolationFunctionPointer function{};
-   DIP_STACK_TRACE_THIS( function = GetInterpFunctionPtr( interpolationMethod, c_in.DataType() ));
+   InterpolationFunctionPointer function = GetInterpFunctionPtr( interpolationMethod, c_in.DataType() );
 
    // Preserve input
    Image in = c_in;
@@ -588,13 +584,15 @@ void WarpControlPoints(
    GenericImageIterator<> it( out );
    do {
       FloatArray coord( it.Coordinates() );
-      coord = thinPlateSpline.Evaluate( coord );
+      coord = thinPlateSpline.EvaluateUnsafe( coord );
       if( in.IsInside( coord )) {
          function( in, *it, coord );
       } else {
          *it = 0;
       }
    } while( ++it );
+
+   DIP_END_STACK_TRACE
 }
 
 

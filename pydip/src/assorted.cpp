@@ -1,6 +1,6 @@
 /*
  * (c)2017-2021, Flagship Biosciences, Inc., written by Cris Luengo.
- * (c)2022-2024, Cris Luengo.
+ * (c)2022-2025, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -468,4 +468,19 @@ void init_assorted( py::module& m ) {
    timer.def( "CpuResolution", &dip::testing::Timer::CpuResolution, doc_strings::dip·testing·Timer·CpuResolution );
    timer.def( "WallResolution", &dip::testing::Timer::WallResolution, doc_strings::dip·testing·Timer·WallResolution );
 
+   // diplib/library/numeric.h
+   m.attr( "pi" ) = dip::pi;
+   m.attr( "nan" ) = dip::nan;
+   m.attr( "infinity" ) = dip::infinity;
+   auto tps = py::class_< dip::ThinPlateSpline >( m, "ThinPlateSpline", doc_strings::dip·ThinPlateSpline );
+   tps.def( py::init< dip::FloatCoordinateArray, dip::FloatCoordinateArray const&, dip::dfloat >(),
+      "coordinate"_a, "value"_a, "lambda"_a = 0, doc_strings::dip·ThinPlateSpline·ThinPlateSpline·FloatCoordinateArray··FloatCoordinateArray·CL·dfloat· );
+   tps.def( "__repr__", []( dip::ThinPlateSpline const& self ) {
+      std::ostringstream os;
+      os << "<ThinPlateSpline (" << self.Dimensionality() << " dimensions, " << self.NumberOfControlPoints() << " control points)>";
+      return os.str();
+   } );
+   tps.def( "Evaluate", &dip::ThinPlateSpline::Evaluate, "pt"_a, doc_strings::dip·ThinPlateSpline·Evaluate·FloatArray·CL·C );
+   tps.def( "Dimensionality", &dip::ThinPlateSpline::Dimensionality, doc_strings::dip·ThinPlateSpline·Dimensionality·C );
+   tps.def( "NumberOfControlPoints", &dip::ThinPlateSpline::NumberOfControlPoints, doc_strings::dip·ThinPlateSpline·NumberOfControlPoints·C );
 }

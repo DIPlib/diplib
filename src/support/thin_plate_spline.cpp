@@ -55,12 +55,21 @@ ThinPlateSpline::ThinPlateSpline(
       FloatCoordinateArray const& value,  // correspondence points
       dfloat lambda
 ) : c_( std::move( coordinate )) {
-   // NOTE: `source` and `destination` are already checked for sizes
-   dip::sint nPoints = static_cast< dip::sint >( c_.size() );
-   dip::sint nDims = static_cast< dip::sint >( c_[ 0 ].size() );
+   // Check arrays for sizes
+   DIP_THROW_IF( c_.empty(), E::ARRAY_PARAMETER_EMPTY );
+   DIP_THROW_IF( value.size() != NumberOfControlPoints(), E::ARRAY_PARAMETER_WRONG_LENGTH );
+   dip::uint dims = Dimensionality();
+   for( auto& p : c_ ) {
+      DIP_THROW_IF( p.size() != dims, E::ARRAY_PARAMETER_WRONG_LENGTH );
+   }
+   for( auto& p : value ) {
+      DIP_THROW_IF( p.size() != dims, E::ARRAY_PARAMETER_WRONG_LENGTH );
+   }
+   DIP_THROW_IF( lambda < 0, E::PARAMETER_OUT_OF_RANGE );
 
    // Create matrices L and b
-   DIP_ASSERT( value.size() == c_.size() );
+   dip::sint nPoints = static_cast< dip::sint >( NumberOfControlPoints() );
+   dip::sint nDims = static_cast< dip::sint >( dims );
    dip::sint N = nPoints + nDims + 1;
    Eigen::MatrixXd L( N, N );
    L.fill( 0 );
@@ -103,12 +112,11 @@ ThinPlateSpline::ThinPlateSpline(
    Eigen::Map< Eigen::MatrixXd >( x_.data(), N, nDims ) = decomposition.solve( b );
 }
 
-// Evaluates the thin plate spline function at point `pt`.
-FloatArray ThinPlateSpline::Evaluate( FloatArray const& pt ) {
+FloatArray ThinPlateSpline::EvaluateUnsafe( FloatArray const& pt ) const {
    dip::sint nPoints = static_cast< dip::sint >( c_.size() );
-   dip::sint nDims = static_cast< dip::sint >( c_[ 0 ].size() );
+   dip::sint nDims = static_cast< dip::sint >( Dimensionality() );
    dip::sint N = nPoints + nDims + 1;
-   Eigen::Map< Eigen::MatrixXd > x( x_.data(), N, nDims );
+   Eigen::Map< const Eigen::MatrixXd > x( x_.data(), N, nDims );
    // Note: w( ii, jj ) = x( ii, jj ), and a( ii, jj ) = x( nPoints + ii, jj )
    FloatArray res = pt;
    for( dip::sint ii = 0; ii < nPoints; ++ii ) {

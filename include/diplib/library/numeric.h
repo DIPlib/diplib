@@ -636,7 +636,7 @@ class DIP_NO_EXPORT ThinPlateSpline {
       /// they both represent spatial coordinates in the same image. Internally, the function maps
       /// `coordinate` to `value - coordinate`, `Evaluate( pt )` adds `pt` to the interpolated
       /// value at `pt`, and thus it looks externally as if the function maps to `value` rather than
-      /// `value-coordinate`. This improves extrapolation.
+      /// `value - coordinate`. This improves extrapolation.
       ///
       /// To use this class for warping, set `coordinate` to control points in the fixed image, and `value`
       /// to corresponding points in the floating image. Then, for each point in the fixed image,
@@ -645,8 +645,8 @@ class DIP_NO_EXPORT ThinPlateSpline {
       ///
       /// If `lambda` is larger than 0, the mapping is not exact, leading to a smoother function.
       ///
-      /// When applied with a large coordinates array, this constructor can take quite a long time. It is
-      /// worth while to split up such a problem into blocks.
+      /// When applied with a large coordinates array, this constructor can take quite a long time.
+      /// It is worthwhile to split up such a problem into blocks.
       ///
       /// The first input argument, `coordinate`, is taken by value and stored inside the object. Use
       /// `std::move` to pass this argument if you no longer use it later.
@@ -656,8 +656,21 @@ class DIP_NO_EXPORT ThinPlateSpline {
             dfloat lambda = 0
       );
 
-      /// \brief Evaluates the thin plate spline function at point `pt`.
-      DIP_EXPORT FloatArray Evaluate( FloatArray const& pt );
+      /// \brief Evaluates the thin plate spline function at point `pt`, which must have \ref Dimensionality elements.
+      FloatArray Evaluate( FloatArray const& pt ) const {
+         DIP_THROW_IF( pt.size() != Dimensionality(), E::ARRAY_PARAMETER_WRONG_LENGTH );
+         return EvaluateUnsafe( pt );
+      }
+
+      /// \brief Like \ref Evaluate, but doesn't check the input sizes. Use with caution.
+      DIP_EXPORT FloatArray EvaluateUnsafe( FloatArray const& pt ) const;
+
+      /// \brief Returns the dimensionality of the spline. This is the dimensionality of both the input
+      /// and the output to \ref Evaluate.
+      dip::uint Dimensionality() const { return c_[ 0 ].size(); }
+
+      /// \brief Returns the number of control points that define the spline.
+      dip::uint NumberOfControlPoints() const { return c_.size(); }
 
    private:
       std::vector< dfloat > x_;

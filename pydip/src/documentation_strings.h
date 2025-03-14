@@ -845,7 +845,10 @@ constexpr char const* dip·Rank·dip·uint··dip·uint··ConstSampleIteratorlt
 constexpr char const* dip·Solve·dip·uint··dip·uint··ConstSampleIteratorltdfloatgt··ConstSampleIteratorltdfloatgt··SampleIteratorltdfloatgt· = "Solves a system of real-valued equations, using the Jacobi SVD decomposition.";
 constexpr char const* dip·ThinPlateSpline = "Fits a thin plate spline function to a set of points. Useful for interpolation\nof scattered points.";
 constexpr char const* dip·ThinPlateSpline·ThinPlateSpline·FloatCoordinateArray··FloatCoordinateArray·CL·dfloat· = "Creates a function that maps `coordinate` to `value`.";
-constexpr char const* dip·ThinPlateSpline·Evaluate·FloatArray·CL = "Evaluates the thin plate spline function at point `pt`.";
+constexpr char const* dip·ThinPlateSpline·Evaluate·FloatArray·CL·C = "Evaluates the thin plate spline function at point `pt`, which must have\n`dip::ThinPlateSpline::Dimensionality` elements.";
+constexpr char const* dip·ThinPlateSpline·EvaluateUnsafe·FloatArray·CL·C = "Like `dip::ThinPlateSpline::Evaluate`, but doesn't check the input sizes. Use\nwith caution.";
+constexpr char const* dip·ThinPlateSpline·Dimensionality·C = "Returns the dimensionality of the spline. This is the dimensionality of both\nthe input and the output to `dip::ThinPlateSpline::Evaluate`.";
+constexpr char const* dip·ThinPlateSpline·NumberOfControlPoints·C = "Returns the number of control points that define the spline.";
 constexpr char const* dip·Option = "Enumerated options are defined in the namespace `dip::Option`, unless they are\nspecific to some other sub-namespace.";
 constexpr char const* dip·Option·Periodicity = "Select if the operation is periodic or not. Used in\n`dip::GaussianMixtureModel`.";
 constexpr char const* dip·Option·Periodicity·NOT_PERIODIC = "The operation is not periodic";

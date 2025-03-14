@@ -18,6 +18,9 @@ date: 2020-00-00
 
 - Added `dip::ColorMapLut()`, expanding the functionality of `dip::ApplyColorMap()`.
 
+- Added `dip::ThinPlateSpline::Dimensionality()` and `dip::ThinPlateSpline::NumberOfControlPoints()` to provide
+  some information about the `dip::ThinPlateSpline` object.
+
 ### Changed functionality
 
 - All functions that compute a percentile (`dip::Percentile()`, `dip::PercentilePosition()`,
@@ -47,6 +50,10 @@ date: 2020-00-00
 
 - `dip::Polygon`, `dip::ConvexHull`, and the support structs that they depend on are now declared in `diplib/polygon.h`.
   `diplib/chain_code.h` includes this new file, so old code will continue to work.
+
+- `dip::ThinPlateSpline` functions now check their input, so that this tool can be used in other contexts outside
+  `dip::WarpControlPoints()`. A new function `dip::ThinPlateSpline::EvaluateUnsafe()` provides the old unchecked,
+  slightly faster evaluation. `dip::ThinPlateSpline::Evaluate()` is now marked `const`.
 
 ### Bug fixes
 
@@ -105,6 +112,11 @@ None, but see bugfixes to *DIPlib*.
 - Added bindings for some `dip::Polygon` member functions: `CovarianceMatrixVertices()`,
   `CovarianceMatrixSolid()`, and the overloads of `RadiusStatistics()` and `EllipseVariance()`
   that take a centroid as input argument.
+
+- Added bindings for `dip::ThinPlateSpline`.
+
+- Added bindings for `dip::pi`, `dip::nan` and `dip::infinity`. These constants are available in other
+  packages in Python, but might be convenient to have here too.
 
 ### Changed functionality
 
