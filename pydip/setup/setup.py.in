@@ -39,14 +39,11 @@ setup_kwargs = dict(
     url="https://github.com/DIPlib/diplib",
     author="Cris Luengo and others",
     author_email="luengo@ieee.org",
-    license="Apache",
-    license_files=[
-        os.path.join("${CMAKE_CURRENT_LIST_DIR}", "..", "LICENSE.txt"),
-        os.path.join("${CMAKE_CURRENT_LIST_DIR}", "..", "README.md"),
-    ],
+    license="Apache-2.0",
+    license_files=["LICENSE.txt", "README.md"],
     classifiers=[
         "Development Status :: 5 - Production/Stable",
-        "License :: OSI Approved :: Apache Software License",
+        # "License :: OSI Approved :: Apache Software License",  # deprecated
         "Operating System :: POSIX :: Linux",
         "Operating System :: MacOS :: MacOS X",
         "Operating System :: Microsoft :: Windows",
