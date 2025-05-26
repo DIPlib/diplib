@@ -107,7 +107,7 @@ public class Viewer extends JFrame implements GLEventListener, WindowListener, M
           System.out.println(e.toString());
         }
 
-        proxy_ = Native.loadLibrary("DIPviewer", Proxy.class);
+        proxy_ = (Proxy) Native.loadLibrary("DIPviewer", Proxy.class);
 
         pointer_ = new Pointer(pointer);
 
