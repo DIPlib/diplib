@@ -59,6 +59,19 @@ namespace dip {
 /// `THIRD_ORDER_EXTRAPOLATE`    | "third order"       | A cubic function is defined based on the two values closest to the border, the function reaches zero with a zero derivative at the end of the extended boundary.
 /// `DEFAULT`                    | "default" or ""     | The default value, currently equal to `SYMMETRIC_MIRROR`.
 /// `ALREADY_EXPANDED`           | "already expanded"  | The dangerous option. The image is an ROI of a larger image, the filter should read existing data outside of the image. The user must be sure that there exists sufficient data to satisfy the filter, for this she must understand how far the filter will read data outside of the image bounds. Not supported by all functions, and cannot always be combined with other options.
+///
+/// To impose a boundary condition that is a constant other than 0, min or max,
+/// subtract the desired value from the image, apply the operation with the boundary
+/// condition `"add zeros"`, then add that value back to the image. This might
+/// require converting the image to a signed type for the initial subtraction to
+/// do the right thing. For example, to use a value of 100 as the constant boundary
+/// condition:
+/// ```cpp
+/// int bc = 100;
+/// dip::Image img = dip::ImageRead("examples/cameraman.tif");
+/// dip::Image rotated = dip::Rotation2D(img - bc, dip::pi/4, "", "add zeros") + bc;
+/// rotated.Convert(dip::DT_UINT8);
+/// ```
 enum class DIP_NO_EXPORT BoundaryCondition : uint8 {
    SYMMETRIC_MIRROR,
    DEFAULT = SYMMETRIC_MIRROR,
