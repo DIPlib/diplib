@@ -485,7 +485,12 @@ DIP_NODISCARD inline Image Skew(
 /// \brief Rotates an image in one orthogonal plane, over the center of the image.
 ///
 /// Rotates an image in the plane defined by `dimension1` and `dimension2`, over an angle `angle`, in radian.
-/// The origin of the rotation is the central pixel (see \ref coordinates_origin).
+/// The origin of the rotation is the central pixel of the plane (see \ref coordinates_origin). This pixel
+/// will still be the central pixel in the output image, and the image grows to accommodate all the input
+/// pixels. This is necessary for rotating in frequency space.
+/// For an even-sized image and a rotation of 90, 180 or 270 degrees, keeping the central pixel in the center
+/// means that the image will have to grow by one pixel along one or two axes.
+/// Using \ref dip::Image::Rotation90 will avoid this effect.
 ///
 /// !!! attention
 ///     The function implements the rotation in the mathematical sense, but the y-axis is positive downwards.
