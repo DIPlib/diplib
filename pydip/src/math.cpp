@@ -183,6 +183,14 @@ void init_math( py::module& m ) {
           "a"_a, "b"_a, "aWeight"_a, "bWeight"_a, doc_strings::dip·LinearCombination·Image·CL·Image·CL·Image·L·dcomplex··dcomplex· );
    m.def( "LinearCombination", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image&, dip::dcomplex, dip::dcomplex >( &dip::LinearCombination ),
           "a"_a, "b"_a, py::kw_only(), "out"_a, "aWeight"_a, "bWeight"_a, doc_strings::dip·LinearCombination·Image·CL·Image·CL·Image·L·dcomplex··dcomplex· );
+   m.def( "AlphaBlend", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const& >( &dip::AlphaBlend ),
+          "in"_a, "overlay"_a, "alpha"_a, doc_strings::dip·AlphaBlend·Image·CL·Image·CL·Image·CL·Image·L );
+   m.def( "AlphaBlend", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const&, dip::Image& >( &dip::AlphaBlend ),
+          "in"_a, "overlay"_a, "alpha"_a, py::kw_only(), "out"_a, doc_strings::dip·AlphaBlend·Image·CL·Image·CL·Image·CL·Image·L );
+   m.def( "AlphaMask", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image::Pixel const&, dip::dfloat >( &dip::AlphaMask ),
+          "in"_a, "alpha"_a, "background"_a = dip::Image::Pixel{ 0 }, "scaling"_a = 255, doc_strings::dip·AlphaMask·Image·CL·Image·CL·Image·L·Image·Pixel·CL·dfloat· );
+   m.def( "AlphaMask", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image&, dip::Image::Pixel const&, dip::dfloat >( &dip::AlphaMask ),
+          "in"_a, "alpha"_a, py::kw_only(), "out"_a, "background"_a = dip::Image::Pixel{ 0 }, "scaling"_a = 255, doc_strings::dip·AlphaMask·Image·CL·Image·CL·Image·L·Image·Pixel·CL·dfloat· );
 
    m.def( "Atan2", py::overload_cast< dip::Image const&, dip::Image const& >( &dip::Atan2 ), "y"_a, "x"_a, doc_strings::dip·Atan2·Image·CL·Image·CL·Image·L );
    m.def( "Atan2", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image& >( &dip::Atan2 ), "y"_a, "x"_a, py::kw_only(), "out"_a, doc_strings::dip·Atan2·Image·CL·Image·CL·Image·L );

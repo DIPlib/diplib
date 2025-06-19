@@ -1,5 +1,5 @@
 /*
- * (c)2017-2024, Cris Luengo.
+ * (c)2017-2025, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -532,6 +532,7 @@ DIP_NODISCARD inline std::vector< dip::uint8 > ImageWriteJPEG( Image const& imag
 ///
 /// PNG images are either gray-scale (scalar) or sRGB images, the color space information will be set accordingly.
 /// If the image has an alpha channel, it will be the second or fourth tensor element in `out`.
+/// Use \ref ApplyAlphaChannel to ensure the image has no alpha channel.
 ///
 /// The pixel size information, if present in the PNG file, will be used to set the pixel size of `out`.
 DIP_EXPORT FileInformation ImageReadPNG( Image& out, String const& filename );

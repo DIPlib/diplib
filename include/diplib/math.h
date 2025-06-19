@@ -1,5 +1,5 @@
 /*
- * (c)2014-2021, Cris Luengo.
+ * (c)2014-2025, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -357,6 +357,68 @@ DIP_NODISCARD inline Image LinearCombination(
    return out;
 }
 
+/// \brief Overlays an image over another, using alpha blending.
+///
+/// `in` and `overlay` are scalar or tensor images of the same size (or can be singleton-expanded to a
+/// matching size). `overlay` will be masked on top of `in`, using `alpha` as the alpha mask (also known
+/// as matte). `alpha` is a scalar image of the same size as `in`.
+///
+/// If `in` is scalar and `overlay` is not, then `in` will be replicated across the output tensor elements.
+/// If `overlay` is scalar and `in` is not, then `overlay` will be replicated across the tensor elements.
+/// If both are tensor images, they must have the same number of tensor elements.
+///
+/// `out` will be of the same data type as `in`. `overlay` will be cast to that type, rounding and clamping
+/// as usual.
+///
+/// `alpha` is expected to be in the range [0, 1]. Where `alpha` is 1, `overlay` will be opaque,
+/// and `in` will not show at all. Where `alpha` is 0, `overlay` will be completely transparent, and `in`
+/// will be fully seen. Values of `alpha` outside this range could lead to unexpected results.
+/// Note that the alpha values are not supposed to be pre-multiplied.
+DIP_EXPORT void AlphaBlend(
+      Image const& in,
+      Image const& overlay,
+      Image const& alpha,
+      Image& out
+);
+DIP_NODISCARD inline Image AlphaBlend(
+      Image const& in,
+      Image const& overlay,
+      Image const& alpha
+) {
+   Image out;
+   AlphaBlend( in, overlay, alpha, out );
+   return out;
+}
+
+/// \brief Apply the alpha mask `alpha` to the image `in`, using the background color `background`.
+///
+/// `alpha` is a scalar image of the same size as `in` (or can be singleton-expanded to a
+/// matching size). `alpha / scaling` must be in the range [0, 1], if there are values outside of
+/// that range, expect strange results.
+/// Note that the alpha values are not supposed to be pre-multiplied.
+///
+/// `out` will be of the same data type as `in`.
+inline void AlphaMask(
+      Image const& in,
+      Image const& alpha,
+      Image& out,
+      Image::Pixel const& background = { 0 },
+      dfloat scaling = 255
+) {
+   Image base{ background };
+   base.Convert( in.DataType() ); // Ensure we preserve the data type of `in` in the output.
+   DIP_STACK_TRACE_THIS( AlphaBlend( base, in, alpha / scaling, out ));
+}
+DIP_NODISCARD inline Image AlphaMask(
+      Image const& in,
+      Image const& alpha,
+      Image::Pixel const& background = { 0 },
+      dfloat scaling = 255
+) {
+   Image out;
+   AlphaMask( in, alpha, out, background, scaling );
+   return out;
+}
 
 /// \endgroup
 

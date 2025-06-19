@@ -140,6 +140,10 @@ void init_assorted( py::module& m ) {
           "in"_a, "overlay"_a, "color"_a = dip::Image::Pixel{ 255, 0, 0 }, doc_strings::dip·Overlay·Image·CL·Image·CL·Image·L·Image·Pixel·CL );
    m.def( "Overlay", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image&, dip::Image::Pixel const& >( &dip::Overlay ),
           "in"_a, "overlay"_a, py::kw_only(), "out"_a, "color"_a = dip::Image::Pixel{ 255, 0, 0 }, doc_strings::dip·Overlay·Image·CL·Image·CL·Image·L·Image·Pixel·CL );
+   m.def( "ApplyAlphaChannel", py::overload_cast< dip::Image const&, dip::Image::Pixel const&, dip::dfloat >( &dip::ApplyAlphaChannel ),
+          "in"_a, "background"_a = dip::Image::Pixel{ 0 }, "scaling"_a = 255, doc_strings::dip·ApplyAlphaChannel·Image·CL·Image·L·Image·Pixel·CL·dfloat· );
+   m.def( "ApplyAlphaChannel", py::overload_cast< dip::Image const&, dip::Image&, dip::Image::Pixel const&, dip::dfloat >( &dip::ApplyAlphaChannel ),
+          "in"_a, py::kw_only(), "out"_a, "background"_a = dip::Image::Pixel{ 0 }, "scaling"_a = 255, doc_strings::dip·ApplyAlphaChannel·Image·CL·Image·L·Image·Pixel·CL·dfloat· );
    m.def( "MarkLabelEdges", py::overload_cast< dip::Image const&, dip::uint >( &dip::MarkLabelEdges ),
           "in"_a, "factor"_a = 2, doc_strings::dip·MarkLabelEdges·Image·CL·Image·L·dip·uint· );
    m.def( "MarkLabelEdges", py::overload_cast< dip::Image const&, dip::Image&, dip::uint >( &dip::MarkLabelEdges ),

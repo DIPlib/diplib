@@ -375,6 +375,34 @@ class DIP_NO_EXPORT ColorSpaceManager {
       DIP_NO_EXPORT std::vector< dip::uint > FindPath( dip::uint start, dip::uint stop ) const;
 };
 
+/// \brief Apply the alpha channel in the sRGBA image `in`, using the background color `background`.
+///
+/// The alpha channel is expected to be in the range [0, `scaling`]. The output image is of the
+/// same data type as `in`, but will have 3 channels and be in he sRGB color space.
+///
+/// If `in` has two channels, it is assumed to be a gray-scale image with an alpha channel,
+/// and the output will be scalar. Otherwise, if `in` is not sRGBA, it is returned as-is.
+///
+/// The alpha channel is assumed to not be pre-multiplied.
+///
+/// \see AlphaMask
+// TODO: correctly handle pre-multiplied alpha (as an option) and do computations in linear RGB.
+DIP_EXPORT void ApplyAlphaChannel(
+      Image const& in,
+      Image& out,
+      Image::Pixel const& background = { 0 },
+      dfloat scaling = 255
+);
+DIP_NODISCARD inline Image ApplyAlphaChannel(
+      Image const& in,
+      Image::Pixel const& background = { 0 },
+      dfloat scaling = 255
+) {
+   Image out;
+   ApplyAlphaChannel( in, out, background, scaling );
+   return out;
+}
+
 /// \endgroup
 
 } // namespace dip

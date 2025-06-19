@@ -1,5 +1,5 @@
 /*
- * (c)2017, Cris Luengo.
+ * (c)2017-2025, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -181,6 +181,40 @@ void LinearCombination( Image const& a, Image const& b, Image& out, dcomplex aWe
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
    DIP_OVL_NEW_COMPLEX( scanLineFilter, LinearCombinationScanLineFilter, ( aWeight, bWeight ), dt );
    DIP_STACK_TRACE_THIS( Framework::ScanDyadic( a, b, out, dt, dt, dt, *scanLineFilter ));
+}
+
+void AlphaBlend(
+      Image const& c_in,
+      Image const& c_overlay,
+      Image const& c_alpha,
+      Image& out
+) {
+   DIP_THROW_IF( !c_in.IsForged() || !c_overlay.IsForged() || !c_alpha.IsForged(), E::IMAGE_NOT_FORGED );
+   dip::UnsignedArray sizes;
+   DIP_STACK_TRACE_THIS( sizes = Framework::SingletonExpandedSize( ImageConstRefArray{ c_in, c_overlay, c_alpha } ));
+   DIP_THROW_IF( !c_alpha.IsScalar(), E::MASK_NOT_SCALAR );
+   auto tensor = c_in.Tensor();
+   auto otherTensor = c_overlay.Tensor();
+   if( tensor.Elements() == 1 ) {
+      tensor = otherTensor;
+   } else {
+      DIP_THROW_IF( otherTensor.Elements() != 1 && otherTensor.Elements() != tensor.Elements(), E::NTENSORELEM_DONT_MATCH );
+   }
+   if( out.IsForged() && out.IsSingletonExpanded() ) {
+      // This could happen if &out == &c_in.
+      DIP_STACK_TRACE_THIS( out.Strip() );
+   }
+   Image in = c_in;
+   Image overlay = c_overlay.QuickCopy();
+   Image alpha = c_alpha.QuickCopy();
+   DIP_STACK_TRACE_THIS( out.ReForge( sizes, tensor.Elements(), in.DataType(), Option::AcceptDataTypeChange::DO_ALLOW ));
+   out.Copy( in.ExpandSingletonDimensions( sizes ));
+   out *= ( 1 - alpha );
+   dip::Image tmp = overlay * alpha;
+   out += tmp;
+   out.ReshapeTensor( tensor );
+   out.SetPixelSize( in.PixelSize() );
+   out.SetColorSpace( in.ColorSpace() );
 }
 
 } // namespace dip

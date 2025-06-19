@@ -24,6 +24,8 @@ date: 2020-00-00
 - Added the `"sRGBA"` color space. Converting from it simply discards the alpha channel. It is intended to allow
   4-channel PNG files to be interpreted correctly.
 
+- Added `dip::AlphaBlend()`, `dip::AlphaMask()` and `dip::ApplyAlphaChannel()`.
+
 ### Changed functionality
 
 - All functions that compute a percentile (`dip::Percentile()`, `dip::PercentilePosition()`,

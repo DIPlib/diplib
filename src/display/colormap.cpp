@@ -1700,7 +1700,7 @@ void Overlay(
    DIP_THROW_IF( !overlay.IsScalar(), E::MASK_NOT_SCALAR );
    if( out.IsForged() && out.IsSingletonExpanded() ) {
       // This could happen if &out == &c_in.
-      out.Strip();
+      DIP_STACK_TRACE_THIS( out.Strip() );
    }
    Image in = c_in;
    if( !(overlay.DataType().IsBinary() && in.IsScalar() && color.IsScalar() )) {

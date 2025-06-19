@@ -29,6 +29,7 @@
 #include "diplib.h"
 #include "diplib/framework.h"
 #include "diplib/iterators.h"
+#include "diplib/math.h"
 
 namespace dip {
 namespace {
@@ -434,6 +435,23 @@ void ColorSpaceManager::SetWhitePoint( dip::XYZ whitePoint ) {
       for ( auto& conv : cs.edges ) {
          conv.second->SetWhitePoint( whitePoint, matrix, inverseMatrix );
       }
+   }
+}
+
+void ApplyAlphaChannel(
+      Image const& in,
+      Image& out,
+      Image::Pixel const& background,
+      dfloat scaling
+) {
+   if( in.ColorSpace() == "sRGBA" ) {
+      DIP_THROW_IF( in.TensorElements() != 4, E::NTENSORELEM_DONT_MATCH );
+      AlphaMask( in[ Range( 0, 2 ) ], in[ 3 ], out, background, scaling );
+      out.SetColorSpace( "sRGB" );
+   } else if( in.TensorElements() == 2 ) {
+      AlphaMask( in[ 0 ], in[ 1 ], out, background, scaling );
+   } else {
+      out = in;
    }
 }
 
