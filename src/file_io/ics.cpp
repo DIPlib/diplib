@@ -1,5 +1,5 @@
 /*
- * (c)2017-2022, Cris Luengo.
+ * (c)2017-2025, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -62,12 +62,17 @@ dip::uint FindTensorDimension(
       CALL_ICS( IcsGetOrderF( ics, static_cast< int >( tensorDim ), &c_order, nullptr ), CANNOT_READ_ICS_FILE );
       String order = c_order;
       ToLowerCase( order );
+      // TODO: I don't like having the list of known color spaces here. There must be a better way of doing this.
       if( order == "rgb" ) {
          colorSpace = "RGB";
          break;
       }
       if( order == "srgb" ) {
          colorSpace = "sRGB";
+         break;
+      }
+      if( order == "srgba" ) {
+         colorSpace = "sRGBA";
          break;
       }
       if( order == "lab" ) {
@@ -116,6 +121,22 @@ dip::uint FindTensorDimension(
       }
       if( order == "hsv" ) {
          colorSpace = "HSV";
+         break;
+      }
+      if( order == "y'pbpr" ) {
+         colorSpace = "Y'PbPr";
+         break;
+      }
+      if( order == "y'cbcr" ) {
+         colorSpace = "Y'CbCr";
+         break;
+      }
+      if( order == "oklab" ) {
+         colorSpace = "Oklab";
+         break;
+      }
+      if( order == "oklch" ) {
+         colorSpace = "Oklch";
          break;
       }
       if(( order == "channel" ) || ( order == "channels" ) || ( order == "probe" ) || ( order == "probes" ) || ( order == "tensor" )) {
