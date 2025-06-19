@@ -1,5 +1,5 @@
 /*
- * (c)2016-2023, Cris Luengo.
+ * (c)2016-2025, Cris Luengo.
  * Based on original DIPimage code: (c)2014, Cris Luengo;
  *                                  (c)1999-2014, Delft University of Technology.
  *
@@ -73,6 +73,11 @@ ColorSpaceManager::ColorSpaceManager() {
    DefineAlias( "r'g'b'", sRGB_name );
    Register( std::make_shared< rgb2srgb >() );
    Register( std::make_shared< srgb2rgb >() );
+   // sRGBA
+   Define( sRGBA_name, 4 );
+   DefineAlias( "srgba", sRGBA_name );
+   Register( std::make_shared< srgba2srgb >() );
+   Register( std::make_shared< srgb2srgba >() );
    // CMY
    Define( CMY_name, 3 );
    DefineAlias( "cmy", CMY_name );

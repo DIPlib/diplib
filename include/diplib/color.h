@@ -1,5 +1,5 @@
 /*
- * (c)2016-2023, Cris Luengo.
+ * (c)2016-2025, Cris Luengo.
  * Based on original DIPimage code: (c)2014, Cris Luengo;
  *                                  (c)1999-2014, Delft University of Technology.
  *
@@ -125,6 +125,7 @@ class DIP_CLASS_EXPORT ColorSpaceConverter {
 /// `"grey"` | `"gray"`   | An empty string is also interpreted as grey. Defined to be in the range [0,255].
 /// `"RGB"`  |            | Linear RGB, defined in the range [0,255].
 /// `"sRGB"` | `"R'G'B'"` | Industry-standard non-linear, gamma-corrected RGB (average gamma is approximately 2.2, with a linear segment near 0). Values are in the range [0,255].
+/// `"sRGBA"` |           | sRGB with an alpha channel, intended mostly for use when reading 4-channel PNG image files. Conversion to sRGB simply drops the alpha channel.
 /// `"CMY"`  |            | Cyan-Magenta-Yellow. Subtractive colors, defined simply as 255-RGB. Values are in the range [0,255].
 /// `"CMYK"` |            | Cyan-Magenta-Yellow-blacK. Subtractive colors with black added. Note that printers need a more complex mapping to CMYK to work correctly.
 /// `"HSI"`  |            | Hue-Saturation-Intensity. L^1^ norm polar decomposition of the RGB cube, more suited to image analysis than HSV or HCV. S and I are in the range [0,255], H is an angle in degrees. Defined by Hanbury and Serra (2003).
@@ -150,7 +151,7 @@ class DIP_CLASS_EXPORT ColorSpaceConverter {
 ///
 /// When converting to/from gray, it is assumed that gray is linear (i.e. a weighted addition of the linear R, G and B
 /// values, the weights depending on the white point). But in the case of HSI and ISH color spaces, the I channel is the
-/// gray channel; I is a non-weighted mean of linear RGB, the conversion does not take the white point into accout.
+/// gray channel; I is a non-weighted mean of linear RGB, the conversion does not take the white point into account.
 ///
 /// # Defining a new color space
 ///

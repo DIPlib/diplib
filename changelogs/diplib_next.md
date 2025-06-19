@@ -21,6 +21,9 @@ date: 2020-00-00
 - Added `dip::ThinPlateSpline::Dimensionality()` and `dip::ThinPlateSpline::NumberOfControlPoints()` to provide
   some information about the `dip::ThinPlateSpline` object.
 
+- Added the `"sRGBA"` color space. Converting from it simply discards the alpha channel. It is intended to allow
+  4-channel PNG files to be interpreted correctly.
+
 ### Changed functionality
 
 - All functions that compute a percentile (`dip::Percentile()`, `dip::PercentilePosition()`,
@@ -74,6 +77,8 @@ date: 2020-00-00
 - `dip::GetImageChainCodes()` and `dip::GetSingleChainCode()` marked a chain code as being on the image border
   if the end pixel was on the image border, instead of only if the step represented by the code is along the
   image border.
+
+- `dip::ImageReadPNG()` reads in 4-channel images as `"sRGBA"`, not as `"sRGB"` as it did previously.
 
 ### Updated dependencies
 

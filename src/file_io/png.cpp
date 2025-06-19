@@ -1,5 +1,5 @@
 /*
- * (c)2024, Cris Luengo.
+ * (c)2024-2025, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -138,7 +138,7 @@ FileInformation GetPNGInfo( PngInput& png ) {
       fileInformation.dataType = png.Header().bit_depth == 16 ? DT_UINT16 : DT_UINT8;
    }
    fileInformation.tensorElements = nChannels;
-   fileInformation.colorSpace = nChannels >= 3 ? "sRGB" : "";
+   fileInformation.colorSpace = nChannels == 3 ? "sRGB" : ( nChannels == 4 ? "sRGBA" : "" );
    fileInformation.sizes = { png.Header().width, png.Header().height };
    spng_phys phys{ 0, 0, 0 };
    int ret = spng_get_phys( png.Context(), &phys );

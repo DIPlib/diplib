@@ -1,5 +1,5 @@
 /*
- * (c)2017, Cris Luengo.
+ * (c)2017-2025, Cris Luengo.
  * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,6 +21,7 @@ namespace {
 
 constexpr char const* RGB_name = "RGB";
 constexpr char const* sRGB_name = "sRGB";
+constexpr char const* sRGBA_name = "sRGBA";
 
 class rgb2grey : public ColorSpaceConverter {
    public:
@@ -107,6 +108,36 @@ class srgb2rgb : public ColorSpaceConverter {
             output[ 0 ] = SToLinear( input[ 0 ] / 255.0 ) * 255.0;
             output[ 1 ] = SToLinear( input[ 1 ] / 255.0 ) * 255.0;
             output[ 2 ] = SToLinear( input[ 2 ] / 255.0 ) * 255.0;
+         } while( ++input, ++output );
+      }
+};
+
+class srgba2srgb : public ColorSpaceConverter {
+   public:
+      String InputColorSpace() const override { return sRGBA_name; }
+      String OutputColorSpace() const override { return sRGB_name; }
+      dip::uint Cost() const override { return 10; }  // high cost because we're dropping the alpha channel
+      void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+         do {
+            output[ 0 ] = input[ 0 ];
+            output[ 1 ] = input[ 1 ];
+            output[ 2 ] = input[ 2 ];
+         } while( ++input, ++output );
+      }
+      // TODO: We could multiply the alpha channel instead, but what to use as the background color?
+};
+
+class srgb2srgba : public ColorSpaceConverter {
+   public:
+      String InputColorSpace() const override { return sRGB_name; }
+      String OutputColorSpace() const override { return sRGBA_name; }
+      dip::uint Cost() const override { return 1; }
+      void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+         do {
+            output[ 0 ] = input[ 0 ];
+            output[ 1 ] = input[ 1 ];
+            output[ 2 ] = input[ 2 ];
+            output[ 3 ] = 255;
          } while( ++input, ++output );
       }
 };
