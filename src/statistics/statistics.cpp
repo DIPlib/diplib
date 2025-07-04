@@ -25,6 +25,7 @@
 #include "diplib.h"
 #include "diplib/accumulators.h"
 #include "diplib/framework.h"
+#include "diplib/iterators.h"
 #include "diplib/math.h"
 #include "diplib/overload.h"
 
@@ -87,6 +88,99 @@ dip::uint Count(
    CountLineFilter scanLineFilter;
    DIP_STACK_TRACE_THIS( Framework::ScanSingleInput( in, mask, DT_BIN, scanLineFilter ));
    return scanLineFilter.GetResult();
+}
+
+namespace {
+
+template< typename TPI >
+bool ContainsValue( Image const& in, Image const& mask, bool f( TPI ) ) {
+   if( mask.IsForged() ) {
+      JointImageIterator< TPI, bin > it( { in, mask } );
+      it.OptimizeAndFlatten();
+      do {
+         if( it.template Sample< 1 >() ) {
+            if( f( it.In() )) {
+               return true;
+            }
+         }
+      } while( ++it );
+   } else {
+      ImageIterator< TPI > it( in );
+      it.OptimizeAndFlatten();
+      do {
+         if( f( *it )) {
+            return true;
+         }
+      } while( ++it );
+   }
+   return false;
+}
+
+template< typename TPI >
+bool ContainsNaN( Image const& in, Image const& mask ) {
+   return ContainsValue< TPI >( in, mask, std::isnan );
+}
+
+template< typename TPI >
+bool ContainsInf( Image const& in, Image const& mask ) {
+   return ContainsValue< TPI >( in, mask, std::isinf );
+}
+
+template< typename TPI >
+bool ContainsNonFinite( Image const& in, Image const& mask ) {
+   return ContainsValue< TPI >( in, mask, []( TPI v ){ return !std::isfinite( v ); } );
+}
+
+void PrepareImageAndMask( Image& in, Image& mask ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   if( in.TensorElements() > 1 ) {
+      in.TensorToSpatial();
+   }
+   if( in.DataType().IsComplex() ) {
+      in.SplitComplex();
+   }
+   if( mask.IsForged() ) {
+      DIP_STACK_TRACE_THIS( mask.CheckIsMask( in.Sizes(), Option::AllowSingletonExpansion::DO_ALLOW ));
+      mask.ExpandSingletonDimensions( in.Sizes() );
+   }
+}
+
+} // namespace
+
+bool ContainsNotANumber( Image const& c_in, Image const& c_mask ) {
+   Image in = c_in.QuickCopy();
+   Image mask = c_mask.QuickCopy();
+   DIP_STACK_TRACE_THIS( PrepareImageAndMask( in, mask ));
+   if( !in.DataType().IsFloat() ) {
+      return false;
+   }
+   bool result = false;
+   DIP_OVL_CALL_ASSIGN_FLOAT( result, ContainsNaN, ( in, mask ), in.DataType() );
+   return result;
+}
+
+bool ContainsInfinity( Image const& c_in, Image const& c_mask ) {
+   Image in = c_in.QuickCopy();
+   Image mask = c_mask.QuickCopy();
+   DIP_STACK_TRACE_THIS( PrepareImageAndMask( in, mask ));
+   if( !in.DataType().IsFloat() ) {
+      return false;
+   }
+   bool result = false;
+   DIP_OVL_CALL_ASSIGN_FLOAT( result, ContainsInf, ( in, mask ), in.DataType() );
+   return result;
+}
+
+bool ContainsNonFiniteValue( Image const& c_in, Image const& c_mask ) {
+   Image in = c_in.QuickCopy();
+   Image mask = c_mask.QuickCopy();
+   DIP_STACK_TRACE_THIS( PrepareImageAndMask( in, mask ));
+   if( !in.DataType().IsFloat() ) {
+      return false;
+   }
+   bool result = false;
+   DIP_OVL_CALL_ASSIGN_FLOAT( result, ContainsNonFinite, ( in, mask ), in.DataType() );
+   return result;
 }
 
 namespace {
@@ -488,6 +582,7 @@ QuartilesResult Quartiles( Image const& in, Image const& mask ) {
    } else {
       buffer.Copy( in );
    }
+   DIP_THROW_IF( Any( IsNotANumber( buffer )).As< bool >(), "Cannot compute quartiles when the data contains NaN values" );
    QuartilesResult quartiles;
    DIP_OVL_CALL_ASSIGN_NONCOMPLEX( quartiles, QuartilesInternal, ( buffer ), buffer.DataType() );
    return quartiles;

@@ -32,6 +32,9 @@ DIP_OUTPUT_TYPE_CASTER( SpatialOverlapMetrics, "SpatialOverlapMetrics", "truePos
 void init_statistics( py::module& m ) {
 
    m.def( "Count", py::overload_cast< dip::Image const&, dip::Image const& >( &dip::Count ), "in"_a, "mask"_a = dip::Image{}, doc_strings::dip·Count·Image·CL·Image·CL );
+   m.def( "ContainsNotANumber", py::overload_cast< dip::Image const&, dip::Image const& >( &dip::ContainsNotANumber ), "in"_a, "mask"_a = dip::Image{}, doc_strings::dip·ContainsNotANumber·Image·CL·Image·CL );
+   m.def( "ContainsInfinity", py::overload_cast< dip::Image const&, dip::Image const& >( &dip::ContainsInfinity ), "in"_a, "mask"_a = dip::Image{}, doc_strings::dip·ContainsInfinity·Image·CL·Image·CL );
+   m.def( "ContainsNonFiniteValue", py::overload_cast< dip::Image const&, dip::Image const& >( &dip::ContainsNonFiniteValue ), "in"_a, "mask"_a = dip::Image{}, doc_strings::dip·ContainsNonFiniteValue·Image·CL·Image·CL );
    m.def( "MaximumPixel", &dip::MaximumPixel, "in"_a, "mask"_a = dip::Image{}, "positionFlag"_a = dip::S::FIRST, doc_strings::dip·MaximumPixel·Image·CL·Image·CL·String·CL );
    m.def( "MinimumPixel", &dip::MinimumPixel, "in"_a, "mask"_a = dip::Image{}, "positionFlag"_a = dip::S::FIRST, doc_strings::dip·MinimumPixel·Image·CL·Image·CL·String·CL );
    m.def( "CumulativeSum", py::overload_cast< dip::Image const&, dip::Image const&, dip::BooleanArray const& >( &dip::CumulativeSum ),

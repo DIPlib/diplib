@@ -26,6 +26,10 @@ date: 2020-00-00
 
 - Added `dip::AlphaBlend()`, `dip::AlphaMask()` and `dip::ApplyAlphaChannel()`.
 
+- Added `dip::ContainsNotANumber()`, `dip::ContainsInfinity()` and `dip::ContainsNonFiniteValue()`, which are
+  shortcuts to (and potentially faster than) `dip::Any(dip::IsNotANumber(...)).As<bool>()`,
+  `dip::Any(dip::IsInfinite(...)).As<bool>()` and `dip::ContainsNotANumber(...) || dip::ContainsInfinity(...)`.
+
 ### Changed functionality
 
 - All functions that compute a percentile (`dip::Percentile()`, `dip::PercentilePosition()`,
@@ -81,6 +85,9 @@ date: 2020-00-00
   image border.
 
 - `dip::ImageReadPNG()` reads in 4-channel images as `"sRGBA"`, not as `"sRGB"` as it did previously.
+
+- `dip::Quantiles()` throws if an input value is NaN, some implementations of `std::nth_element()` might
+  do bad things when they are included in the input data.
 
 ### Updated dependencies
 

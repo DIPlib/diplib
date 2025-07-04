@@ -3322,6 +3322,9 @@ constexpr char const* dip·GraphCut·Image·CL·Image·CL·Image·L·dfloat··d
 constexpr char const* dip·ImageRead·Image·L·String·CL·String· = "Reads the image in a file `filename`, and puts it in `out`.";
 constexpr char const* dip·ImageWrite·Image·CL·String·CL·String··String·CL = "Writes `image` to file.";
 constexpr char const* dip·Count·Image·CL·Image·CL = "Counts the number of non-zero pixels in a scalar image.";
+constexpr char const* dip·ContainsNotANumber·Image·CL·Image·CL = "True if any pixel is NaN.";
+constexpr char const* dip·ContainsInfinity·Image·CL·Image·CL = "True if any pixel is infinite.";
+constexpr char const* dip·ContainsNonFiniteValue·Image·CL·Image·CL = "True if any pixel is non-finite (infinite or NaN).";
 constexpr char const* dip·MaximumPixel·Image·CL·Image·CL·String·CL = "Returns the coordinates of the maximum pixel in the image.";
 constexpr char const* dip·MinimumPixel·Image·CL·Image·CL·String·CL = "Returns the coordinates of the minimum pixel in the image.";
 constexpr char const* dip·CumulativeSum·Image·CL·Image·CL·Image·L·BooleanArray·CL = "Calculates the cumulative sum of the pixel values over all those dimensions\nwhich are specified by `process`.";

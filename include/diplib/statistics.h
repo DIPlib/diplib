@@ -58,6 +58,18 @@ inline ret_type name( Image::View const& in ) { \
 DIP_EXPORT dip::uint Count( Image const& in, Image const& mask = {} );
 DIP_DEFINE_VIEW_FUNCTION( Count, dip::uint )
 
+/// \brief True if any pixel is NaN.
+DIP_EXPORT bool ContainsNotANumber( Image const& in, Image const& mask = {} );
+DIP_DEFINE_VIEW_FUNCTION( ContainsNotANumber, bool )
+
+/// \brief True if any pixel is infinite.
+DIP_EXPORT bool ContainsInfinity( Image const& in, Image const& mask = {} );
+DIP_DEFINE_VIEW_FUNCTION( ContainsInfinity, bool )
+
+/// \brief True if any pixel is non-finite (infinite or NaN).
+DIP_EXPORT bool ContainsNonFiniteValue( Image const& in, Image const& mask = {} );
+DIP_DEFINE_VIEW_FUNCTION( ContainsNonFiniteValue, bool )
+
 /// \brief Returns the coordinates of the maximum pixel in the image.
 ///
 /// The image must be scalar. If `in` is complex, the modulus of its values are used.

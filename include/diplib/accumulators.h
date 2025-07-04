@@ -571,8 +571,8 @@ class DIP_NO_EXPORT MinMaxAccumulator {
 
       /// Add a sample to the accumulator
       void Push( dfloat x ) {
-         max_ = std::max( max_, x );
-         min_ = std::min( min_, x );
+         max_ = std::max( max_, x ); // NOTE: Most implementations will return the first argument if the second one is NaN.
+         min_ = std::min( min_, x ); //       But this is not guaranteed by the standard.
       }
 
       /// \brief Add two samples to the accumulator. Prefer this over adding one value at the time.
