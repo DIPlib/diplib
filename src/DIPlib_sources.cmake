@@ -281,6 +281,7 @@ segmentation/kmeans_clustering.cpp
 segmentation/minimum_variance_partitioning.cpp
 segmentation/superpixels.cpp
 segmentation/threshold.cpp
+statistics/copy_non_nan.h
 statistics/error.cpp
 statistics/projection.cpp
 statistics/radial.cpp

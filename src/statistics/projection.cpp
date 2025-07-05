@@ -1,5 +1,6 @@
 /*
- * (c)2017-2024, Cris Luengo, Erik Schuitema.
+ * (c)2017-2025, Cris Luengo.
+ * (c)2018, Erik Schuitema.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,6 +28,8 @@
 #include "diplib/iterators.h"
 #include "diplib/math.h"
 #include "diplib/overload.h"
+
+#include "copy_non_nan.h"
 
 namespace dip {
 
@@ -655,41 +658,21 @@ class ProjectionPercentile : public Framework::ProjectionFunction {
    public:
       ProjectionPercentile( dfloat percentile ) : percentile_( percentile ) {}
       void Project( Image const& in, Image const& mask, Image::Sample& out, dip::uint thread ) override {
-         dip::uint N = 0;
-         if( mask.IsForged() ) {
-            N = Count( mask );
-         } else {
-            N = in.NumberOfPixels();
-         }
-         if( N == 0 ) {
+         CopyNonNaNValues( in, mask, buffer_[ thread ] );
+         if( buffer_[ thread ].empty() ) {
             *static_cast< TPI* >( out.Origin() ) = TPI{};
-            return;
-         }
-         dip::sint rank = static_cast< dip::sint >( RankFromPercentile( percentile_, N ));
-         buffer_[ thread ].resize( N );
-         auto outIt = buffer_[ thread ].begin();
-         if( mask.IsForged() ) {
-            JointImageIterator< TPI, bin > it( { in, mask } );
-            do {
-               if( it.template Sample< 1 >() ) {
-                  *( outIt++ ) = it.template Sample< 0 >();
-               }
-            } while( ++it );
          } else {
-            ImageIterator< TPI > it( in );
-            do {
-               *( outIt++ ) = *it;
-            } while( ++it );
+            dip::sint rank = static_cast< dip::sint >( RankFromPercentile( percentile_, buffer_[ thread ].size() ));
+            auto ourGuy = buffer_[ thread ].begin() + rank;
+            std::nth_element( buffer_[ thread ].begin(), ourGuy, buffer_[ thread ].end() );
+            *static_cast< TPI* >( out.Origin() ) = *ourGuy;
          }
-         auto ourGuy = buffer_[ thread ].begin() + rank;
-         std::nth_element( buffer_[ thread ].begin(), ourGuy, buffer_[ thread ].end() );
-         *static_cast< TPI* >( out.Origin() ) = *ourGuy;
       }
       void SetNumberOfThreads( dip::uint threads ) override {
          buffer_.resize( threads );
       }
    private:
-      std::vector< std::vector< TPI >> buffer_;
+      std::vector< std::vector< TPI >> buffer_{};
       dfloat percentile_;
 };
 
@@ -952,26 +935,21 @@ class ProjectionPositionPercentile : public Framework::ProjectionFunction {
    public:
       ProjectionPositionPercentile( dfloat percentile, bool findFirst ) : percentile_( percentile ), findFirst_( findFirst ) {}
 
-      void Project( Image const& in, Image const& mask, Image::Sample& out, dip::uint /*thread*/ ) override {
+      void Project( Image const& in, Image const& mask, Image::Sample& out, dip::uint thread ) override {
          // Create a copy of the input image line (single dimension) that can be sorted to find the percentile value
-         std::vector< TPI > inBuffer;
-         dip::UnsignedArray percentileCoords( in.Dimensionality(), 0 ); // Coordinates of the pixel with min/max value
-         // With mask..
-         if( mask.IsForged() ) {
-            JointImageIterator< TPI, bin > it( { in, mask } );
-            do {
-               if( it.template Sample< 1 >() ) {
-                  inBuffer.push_back( it.template Sample< 0 >() );
-               }
-            } while( ++it );
-
-            if( !inBuffer.empty() ) {
-               TPI rankedValue = GetRankedValue( inBuffer );
-
+         dip::UnsignedArray percentileCoords( in.Dimensionality(), 0 ); // Coordinates of the pixel with the percentile value
+         CopyNonNaNValues( in, mask, buffer_[ thread ] );
+         if( buffer_[ thread ].empty() ) {
+            percentileCoords.fill( 0 );
+         } else {
+            dip::sint rank = static_cast< dip::sint >( RankFromPercentile( percentile_, buffer_[ thread ].size() ));
+            auto ourGuy = buffer_[ thread ].begin() + rank;
+            std::nth_element( buffer_[ thread ].begin(), ourGuy, buffer_[ thread ].end() );
+            if( mask.IsForged() ) {
                // Find the position of the ranked element within the masked pixels
-               it.Reset();
+               JointImageIterator< TPI, bin > it( { in, mask } );
                do {
-                  if( it.template Sample< 1 >() && ( it.template Sample< 0 >() == rankedValue )) {
+                  if( it.template Sample< 1 >() && ( it.template Sample< 0 >() == *ourGuy ) ) {
                      percentileCoords = it.Coordinates();
                      if( findFirst_ ) {
                         break;
@@ -979,52 +957,31 @@ class ProjectionPositionPercentile : public Framework::ProjectionFunction {
                   }
                } while( ++it );
             } else {
-               // No elements in the buffer; store 0
-               percentileCoords.fill( 0 );
-            }
-
-         } else {
-            // Without mask..
-            inBuffer.resize( in.NumberOfPixels() );
-            TPI* inBufferPtr = inBuffer.data();
-            ImageIterator< TPI > it( in );
-            do {
-               *inBufferPtr = *it;
-               ++inBufferPtr;
-            } while( ++it );
-
-            TPI rankedValue = GetRankedValue( inBuffer );
-
-            // Find the position of the ranked element
-            it.Reset();
-            do {
-               if( *it == rankedValue ) {
-                  percentileCoords = it.Coordinates();
-                  if( findFirst_ ) {
-                     break;
+               // Find the position of the ranked element
+               ImageIterator< TPI > it( in );
+               do {
+                  if( *it == *ourGuy ) {
+                     percentileCoords = it.Coordinates();
+                     if( findFirst_ ) {
+                        break;
+                     }
                   }
-               }
-            } while( ++it );
-
+               } while( ++it );
+            }
          }
          // Store coordinate.
          // Currently, only a single processing dim is supported, so only one coordinate is stored.
          *static_cast< dip::uint32* >( out.Origin() ) = clamp_cast< dip::uint32 >( percentileCoords.front() );
       }
 
-   protected:
-      dfloat percentile_;
-      bool findFirst_;
-
-      // Get the value in the buffer with rank according to percentile_
-      // `buffer` must be non-empty
-      TPI GetRankedValue( std::vector< TPI >& buffer ) const {
-         dip::sint rank = static_cast< dip::sint >( RankFromPercentile( percentile_, buffer.size() ));
-         auto rankedElement = buffer.begin() + rank;
-         std::nth_element( buffer.begin(), rankedElement, buffer.end() );
-         return *rankedElement;
+      void SetNumberOfThreads( dip::uint threads ) override {
+         buffer_.resize( threads );
       }
 
+   protected:
+      std::vector< std::vector< TPI >> buffer_{};
+      dfloat percentile_;
+      bool findFirst_;
 };
 
 } // namespace
@@ -1202,56 +1159,56 @@ DOCTEST_TEST_CASE("[DIPlib] testing the projection function mechanics") {
 
 DOCTEST_TEST_CASE("[DIPlib] testing the projection function computations") {
    // Testing each of the projection functions to verify they do the right thing
-   dip::Image img({ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 }, dip::DT_UINT8 );
-   img.TensorToSpatial();
+   dip::Image img( { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 }, dip::DT_UINT8 );
+   img.TensorToSpatial();  // The line above creates a single-pixel tensor image.
    DOCTEST_REQUIRE( img.Sizes() == dip::UnsignedArray{ 10 } );
    DOCTEST_CHECK( dip::Mean( img ).As< double >() == doctest::Approx( 5.5 ));
-   DOCTEST_CHECK( dip::Sum( img ).As< double >() == doctest::Approx( 55 ));
+   DOCTEST_CHECK( dip::Sum( img ).As< double >() == 55 );
    DOCTEST_CHECK( dip::GeometricMean( img ).As< double >() == doctest::Approx( 4.5287 ));
    DOCTEST_CHECK( dip::Product( img ).As< double >() == doctest::Approx( 3628800 ));
    DOCTEST_CHECK( dip::MeanSquare( img ).As< double >() == doctest::Approx( 38.5 ));
    DOCTEST_CHECK( dip::SumSquare( img ).As< double >() == doctest::Approx( 385 ));
    DOCTEST_CHECK( dip::Variance( img ).As< double >() == doctest::Approx( 9.1667 ));
    DOCTEST_CHECK( dip::StandardDeviation( img ).As< double >() == doctest::Approx( 3.02765 ));
-   DOCTEST_CHECK( dip::Maximum( img ).As< double >() == doctest::Approx( 10 ));
-   DOCTEST_CHECK( dip::Minimum( img ).As< double >() == doctest::Approx( 1 ));
-   DOCTEST_CHECK( dip::Percentile( img, {}, 70 ).As< double >() == doctest::Approx( 7 ));
+   DOCTEST_CHECK( dip::Maximum( img ).As< double >() == 10 );
+   DOCTEST_CHECK( dip::Minimum( img ).As< double >() == 1 );
+   DOCTEST_CHECK( dip::Percentile( img, {}, 70 ).As< double >() == 7 );
 
    dip::Image out = dip::MeanAbs( img );
    DOCTEST_CHECK( out.DataType() == dip::DT_SFLOAT );
    DOCTEST_CHECK( out.As< double >() == doctest::Approx( 5.5 ));
-   DOCTEST_CHECK( dip::SumAbs( img ).As< double >() == doctest::Approx( 55 ));
+   DOCTEST_CHECK( dip::SumAbs( img ).As< double >() == 55 );
    DOCTEST_CHECK( dip::MeanSquareModulus( img ).As< double >() == doctest::Approx( 38.5 ));
    DOCTEST_CHECK( dip::SumSquareModulus( img ).As< double >() == doctest::Approx( 385 ));
    out = dip::MaximumAbs( img );
    DOCTEST_CHECK( out.DataType() == dip::DT_UINT8 );
-   DOCTEST_CHECK( out.As< double >() == doctest::Approx( 10 ));
-   DOCTEST_CHECK( dip::MinimumAbs( img ).As< double >() == doctest::Approx( 1 ));
+   DOCTEST_CHECK( out.As< double >() == 10 );
+   DOCTEST_CHECK( dip::MinimumAbs( img ).As< double >() == 1 );
 
    img.Convert( dip::DT_SINT8 );
    dip::Invert( img, img );
    out = dip::MeanAbs( img );
    DOCTEST_CHECK( out.DataType() == dip::DT_SFLOAT );
    DOCTEST_CHECK( out.As< double >() == doctest::Approx( 5.5 ));
-   DOCTEST_CHECK( dip::SumAbs( img ).As< double >() == doctest::Approx( 55 ));
+   DOCTEST_CHECK( dip::SumAbs( img ).As< double >() == 55 );
    DOCTEST_CHECK( dip::MeanSquareModulus( img ).As< double >() == doctest::Approx( 38.5 ));
    DOCTEST_CHECK( dip::SumSquareModulus( img ).As< double >() == doctest::Approx( 385 ));
    out = dip::MaximumAbs( img );
    DOCTEST_CHECK( out.DataType() == dip::DT_UINT8 );
-   DOCTEST_CHECK( out.As< double >() == doctest::Approx( 10 ));
-   DOCTEST_CHECK( dip::MinimumAbs( img ).As< double >() == doctest::Approx( 1 ));
+   DOCTEST_CHECK( out.As< double >() == 10 );
+   DOCTEST_CHECK( dip::MinimumAbs( img ).As< double >() == 1 );
 
    img.Convert( dip::DT_DFLOAT );
    out = dip::MeanAbs( img );
    DOCTEST_CHECK( out.DataType() == dip::DT_DFLOAT );
    DOCTEST_CHECK( out.As< double >() == doctest::Approx( 5.5 ));
-   DOCTEST_CHECK( dip::SumAbs( img ).As< double >() == doctest::Approx( 55 ));
+   DOCTEST_CHECK( dip::SumAbs( img ).As< double >() == 55 );
    DOCTEST_CHECK( dip::MeanSquareModulus( img ).As< double >() == doctest::Approx( 38.5 ));
    DOCTEST_CHECK( dip::SumSquareModulus( img ).As< double >() == doctest::Approx( 385 ));
    out = dip::MaximumAbs( img );
    DOCTEST_CHECK( out.DataType() == dip::DT_DFLOAT );
-   DOCTEST_CHECK( out.As< double >() == doctest::Approx( 10 ));
-   DOCTEST_CHECK( dip::MinimumAbs( img ).As< double >() == doctest::Approx( 1 ));
+   DOCTEST_CHECK( out.As< double >() == 10 );
+   DOCTEST_CHECK( dip::MinimumAbs( img ).As< double >() == 1 );
 
    img.Convert( dip::DT_SCOMPLEX );
    out = dip::MeanAbs( img );
@@ -1262,8 +1219,26 @@ DOCTEST_TEST_CASE("[DIPlib] testing the projection function computations") {
    DOCTEST_CHECK( dip::SumSquareModulus( img ).As< double >() == doctest::Approx( 385 ));
    out = dip::MaximumAbs( img );
    DOCTEST_CHECK( out.DataType() == dip::DT_SFLOAT );
-   DOCTEST_CHECK( out.As< double >() == doctest::Approx( 10 ));
-   DOCTEST_CHECK( dip::MinimumAbs( img ).As< double >() == doctest::Approx( 1 ));
+   DOCTEST_CHECK( out.As< double >() == 10 );
+   DOCTEST_CHECK( dip::MinimumAbs( img ).As< double >() == 1 );
+}
+
+DOCTEST_TEST_CASE("[DIPlib] testing the Percentile and PositionPercentile functions dealing with NaNs") {
+   // Testing each of the projection functions to verify they do the right thing
+   dip::Image img( { dip::nan, 10.0, 2.0, dip::nan, dip::nan, 5.0, dip::nan, 6.0, 3.0, 7.0, 4.0, dip::nan, dip::nan }, dip::DT_DFLOAT );
+   img.TensorToSpatial();  // The line above creates a single-pixel tensor image.
+   DOCTEST_CHECK( dip::Percentile( img, {}, 0.0 ).As< double >() == 2.0 );
+   DOCTEST_CHECK( dip::Percentile( img, {}, 100.0 / 7.0 ).As< double >() == 3.0 );
+   DOCTEST_CHECK( dip::Percentile( img, {}, 200.0 / 7.0 ).As< double >() == 4.0 );
+   DOCTEST_CHECK( dip::Percentile( img, {}, 100.0 ).As< double >() == 10.0 );
+   DOCTEST_CHECK( dip::PositionPercentile( img, {}, 0.0 ).As< dip::uint >() == 2u );
+   DOCTEST_CHECK( dip::PositionPercentile( img, {}, 100.0 / 7.0 ).As< dip::uint >() == 8u );
+   DOCTEST_CHECK( dip::PositionPercentile( img, {}, 200.0 / 7.0 ).As< dip::uint >() == 10u );
+   DOCTEST_CHECK( dip::PositionPercentile( img, {}, 100.0 ).As< dip::uint >() == 1u );
+
+   img.Fill( dip::nan );
+   DOCTEST_CHECK( dip::Percentile( img, {}, 30.0 ).As< double >() == 0.0 );
+   DOCTEST_CHECK( dip::PositionPercentile( img, {}, 30.0 ).As< dip::uint >() == 0u );
 }
 
 #endif // DIP_CONFIG_ENABLE_DOCTEST

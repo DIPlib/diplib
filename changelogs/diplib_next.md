@@ -64,6 +64,9 @@ date: 2020-00-00
   `dip::WarpControlPoints()`. A new function `dip::ThinPlateSpline::EvaluateUnsafe()` provides the old unchecked,
   slightly faster evaluation. `dip::ThinPlateSpline::Evaluate()` is now marked `const`.
 
+- `dip::Percentile()`, `dip::PositionPercentile()` and `dip::Quartiles()` ignore NaN values. Note that `dip::Median()`
+  and `dip::PositionMedian()` are simple interfaces to the percentile functions, and therefore now also ignore NaN values.
+
 ### Bug fixes
 
 - Fixed `dip::IsotropicErosion()` to use the same structuring element size as `dip::IsotropicDilation()`.
@@ -85,9 +88,6 @@ date: 2020-00-00
   image border.
 
 - `dip::ImageReadPNG()` reads in 4-channel images as `"sRGBA"`, not as `"sRGB"` as it did previously.
-
-- `dip::Quantiles()` throws if an input value is NaN, some implementations of `std::nth_element()` might
-  do bad things when they are included in the input data.
 
 ### Updated dependencies
 

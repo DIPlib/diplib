@@ -1,5 +1,5 @@
 /*
- * (c)2016-2024, Cris Luengo.
+ * (c)2016-2025, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,6 +28,8 @@
 #include "diplib/iterators.h"
 #include "diplib/math.h"
 #include "diplib/overload.h"
+
+#include "copy_non_nan.h"
 
 namespace dip {
 
@@ -533,14 +535,14 @@ MinMaxAccumulator MaximumAndMinimum(
 namespace {
 
 template< typename TPI >
-QuartilesResult QuartilesInternal( Image& buffer ) {
-   DIP_ASSERT( buffer.HasContiguousData() );
-   dip::uint nSamples = buffer.NumberOfSamples();
-   TPI* begin = static_cast< TPI* >( buffer.Origin() );
-   TPI* end = begin + nSamples;
-   TPI* lower = begin + RankFromPercentile( 25.0, nSamples );
-   TPI* median = begin + RankFromPercentile( 50.0, nSamples );
-   TPI* upper = begin + RankFromPercentile( 75.0, nSamples );
+QuartilesResult QuartilesInternal( Image const& in, Image const& mask ) {
+   std::vector< TPI > buffer;
+   CopyNonNaNValues( in, mask, buffer );
+   TPI* begin = buffer.data();
+   TPI* end = begin + buffer.size();
+   TPI* lower = begin + RankFromPercentile( 25.0, buffer.size() );
+   TPI* median = begin + RankFromPercentile( 50.0, buffer.size() );
+   TPI* upper = begin + RankFromPercentile( 75.0, buffer.size() );
    std::nth_element( begin, median, end );
    if( begin >= median - 1 ) {
       lower = begin;
@@ -563,28 +565,12 @@ QuartilesResult QuartilesInternal( Image& buffer ) {
 
 } // namespace
 
-QuartilesResult Quartiles( Image const& in, Image const& mask ) {
-   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
-   if( mask.IsForged() ) {
-      DIP_STACK_TRACE_THIS( mask.CheckIsMask( in.Sizes(), Option::AllowSingletonExpansion::DONT_ALLOW ) );
-   }
-   // In case of complex images, separate them as a new dimension.
-   Image c_in = in.QuickCopy();
-   if( c_in.DataType().IsComplex() ) {
-      c_in.SplitComplex();
-      // Note that mask will be singleton-expanded, which allows adding dimensions at the end.
-   }
-   // We need a copy of the image data that we can modify, we're sorting in-place.
-   Image buffer;
-   if( mask.IsForged() ) {
-      buffer = in.At( mask ); // Always makes a copy
-      DIP_THROW_IF( !buffer.IsForged(), "Mask image selects no pixels" );
-   } else {
-      buffer.Copy( in );
-   }
-   DIP_THROW_IF( Any( IsNotANumber( buffer )).As< bool >(), "Cannot compute quartiles when the data contains NaN values" );
-   QuartilesResult quartiles;
-   DIP_OVL_CALL_ASSIGN_NONCOMPLEX( quartiles, QuartilesInternal, ( buffer ), buffer.DataType() );
+QuartilesResult Quartiles( Image const& c_in, Image const& c_mask ) {
+   Image in = c_in.QuickCopy();
+   Image mask = c_mask.QuickCopy();
+   DIP_STACK_TRACE_THIS( PrepareImageAndMask( in, mask ));
+   QuartilesResult quartiles{};
+   DIP_OVL_CALL_ASSIGN_NONCOMPLEX( quartiles, QuartilesInternal, ( in, mask ), in.DataType() );
    return quartiles;
 }
 

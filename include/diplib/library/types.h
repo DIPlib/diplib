@@ -285,6 +285,10 @@ class DIP_NO_EXPORT bin {
       uint8 v_ = 0;
 };
 
+inline bool isnan( bin ) {
+   return false;
+}
+
 /// \brief Writes the value as a `bool` to a stream.
 /// \relates dip::bin
 inline std::ostream& operator<<(
