@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#ifndef BINARY_SUPPORT_H_INCLUDED
-#define BINARY_SUPPORT_H_INCLUDED
+#ifndef BINARY_SUPPORT_H
+#define BINARY_SUPPORT_H
 
 #include <deque>
 
@@ -92,4 +92,4 @@ DIP_NO_EXPORT dip::uint GetAbsBinaryConnectivity( dip::uint dimensionality, dip:
 
 } // namespace dip
 
-#endif
+#endif // BINARY_SUPPORT_H

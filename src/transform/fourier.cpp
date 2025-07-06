@@ -1,5 +1,6 @@
 /*
- * (c)2017-2024, Cris Luengo, Erik Schuitema
+ * (c)2017, Erik Schuitema.
+ * (c)2017-2024, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
