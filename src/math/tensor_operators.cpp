@@ -661,7 +661,7 @@ class SelectEigenvalueLineFilterN : public Framework::ScanLineFilter {
          }
          // Compute
          do {
-            function_( in.begin(), buf.data(), nullptr );
+            function_( in.begin(), buf.data(), nullptr, Option::DecompositionMethod::PRECISE );
             *out = *bufPtr;
          } while( ++in, ++out );
       }
@@ -686,7 +686,7 @@ void SelectEigenvalue( Image const& in, Image& out, bool first ) {
       DataType outtype;
       std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
       if(( in.TensorShape() == Tensor::Shape::SYMMETRIC_MATRIX ) && ( !intype.IsComplex() )) {
-         using funcType0 = void ( * )( ConstSampleIterator< dfloat >, SampleIterator< dfloat >, SampleIterator< dfloat > );
+         using funcType0 = void ( * )( ConstSampleIterator< dfloat >, SampleIterator< dfloat >, SampleIterator< dfloat >, Option::DecompositionMethod );
          using funcType = void ( * )( dip::uint, ConstSampleIterator< dfloat >, SampleIterator< dfloat >, SampleIterator< dfloat > );
          switch( n ) {
             case 2:

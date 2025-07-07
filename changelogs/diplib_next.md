@@ -32,6 +32,9 @@ date: 2020-00-00
 
 - Added `dip::Histogram::Configuration::IsInRange()`.
 
+- The low-level functions `dip::SymmetricEigenDecomposition2()` and `dip::SymmetricEigenDecomposition3()` add a
+  `method` argument, allowing the caller to select a faster, but potentially less precise method.
+
 ### Changed functionality
 
 - All functions that compute a percentile (`dip::Percentile()`, `dip::PercentilePosition()`,

@@ -298,6 +298,16 @@ constexpr inline dfloat HypersphereVolume( dip::uint n, dfloat r ) {
    return HypersphereSurface( n, r ) * r / static_cast< dfloat >( n );
 }
 
+namespace Option {
+
+/// \brief Select the algorithm to use with \ref SymmetricEigenDecomposition2 and \ref SymmetricEigenDecomposition3.
+enum class DIP_NO_EXPORT DecompositionMethod : uint8 {
+   PRECISE, ///< Uses a symmetric QR algorithm.
+   FAST     ///< Uses a closed-form algorithm, which is significantly faster but might also be less accurate.
+};
+
+} // namespace Option
+
 /// \brief Finds the eigenvalues and eigenvectors of a symmetric, real-valued matrix.
 ///
 /// `input` is a pointer to `n*n` values, in column-major order; only the lower triangle will be used.
@@ -307,6 +317,8 @@ constexpr inline dfloat HypersphereVolume( dip::uint n, dfloat r ) {
 /// `vectors` is a pointer to space for `n*n` values and will receive the `n` eigenvectors. The eigenvectors
 /// can be accessed at `&vectors[ 0 ]`, `&vectors[ n ]`, `&vectors[ 2*n ]`, etc.
 /// If `vectors` is `nullptr`, no eigenvectors are computed.
+///
+/// If `n` is 2 or 3, prefer to use \ref SymmetricEigenDecomposition2 or \ref SymmetricEigenDecomposition3.
 DIP_EXPORT void SymmetricEigenDecomposition(
       dip::uint n,
       ConstSampleIterator< dfloat > input,
@@ -318,14 +330,16 @@ DIP_EXPORT void SymmetricEigenDecomposition(
 DIP_EXPORT void SymmetricEigenDecomposition2(
       ConstSampleIterator< dfloat > input,
       SampleIterator< dfloat > lambdas,
-      SampleIterator< dfloat > vectors = nullptr
+      SampleIterator< dfloat > vectors = nullptr,
+      Option::DecompositionMethod method = Option::DecompositionMethod::PRECISE
 );
 
 /// \brief Finds the eigenvalues and eigenvectors of a 3x3 symmetric, real-valued matrix.
 DIP_EXPORT void SymmetricEigenDecomposition3(
       ConstSampleIterator< dfloat > input,
       SampleIterator< dfloat > lambdas,
-      SampleIterator< dfloat > vectors = nullptr
+      SampleIterator< dfloat > vectors = nullptr,
+      Option::DecompositionMethod method = Option::DecompositionMethod::PRECISE
 );
 
 /// \brief Finds the largest eigenvector of a symmetric, real-valued matrix.
