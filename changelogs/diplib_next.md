@@ -32,8 +32,11 @@ date: 2020-00-00
 
 - Added `dip::Histogram::Configuration::IsInRange()`.
 
-- The low-level functions `dip::SymmetricEigenDecomposition2()` and `dip::SymmetricEigenDecomposition3()` add a
-  `method` argument, allowing the caller to select a faster, but potentially less precise method.
+- `dip::Eigenvalues()`, `dip::LargestEigenvalue()`, `dip::SmallestEigenvalue()` and `dip::EigenDecomposition()`
+  add a `method` argument, allowing the caller to select a faster, but potentially less precise method, when
+  computing the eigendecomposition of a real-valued, symmetric, 2x2 or 3x3 tensor image.
+  The low-level functions `dip::SymmetricEigenDecomposition2()` and `dip::SymmetricEigenDecomposition3()` add
+  the same argument, but as an enum rather than a string.
 
 ### Changed functionality
 

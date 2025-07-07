@@ -41,6 +41,9 @@ DIP_NODISCARD inline Image functionName_( Image const& in ) { Image out; functio
 #define DIP_MONADIC_OPERATOR_WITH_PARAM( functionName_, paramType_ ) \
 DIP_NODISCARD inline Image functionName_( Image const& in, paramType_ param ) { Image out; functionName_( in, out, param ); return out; }
 
+#define DIP_MONADIC_OPERATOR_WITH_DEFAULTED_PARAM( functionName_, paramType_, defaultValue_ ) \
+DIP_NODISCARD inline Image functionName_( Image const& in, paramType_ param = ( defaultValue_ )) { Image out; functionName_( in, out, param ); return out; }
+
 #define DIP_DIADIC_OPERATOR( functionName_ ) \
 DIP_NODISCARD inline Image functionName_( Image const& in1, Image const& in2 ) { Image out; functionName_( in1, in2, out ); return out; }
 
@@ -570,22 +573,28 @@ DIP_MONADIC_OPERATOR( Rank )
 /// `out` is a vector image containing the eigenvalues. If `in` is symmetric and
 /// real-valued, then `out` is real-valued, otherwise, `out` is complex-valued.
 /// The eigenvalues are sorted by magnitude, in descending order.
-DIP_EXPORT void Eigenvalues( Image const& in, Image& out );
-DIP_MONADIC_OPERATOR( Eigenvalues )
+///
+/// `method` is either `"precise"` or `"fast"`. The precise method uses an iterative QR decomposition.
+/// The fast method uses a closed-form algorithm that is much faster, but potentially less accurate.
+/// This faster algorithm is only used for real-valued, 2x2 or 3x3 symmetric tensor images.
+DIP_EXPORT void Eigenvalues( Image const& in, Image& out, String const& method = S::PRECISE );
+DIP_MONADIC_OPERATOR_WITH_DEFAULTED_PARAM( Eigenvalues, String const&, S::PRECISE )
 
 /// \brief Finds the largest eigenvalue of the square matrix at each pixel in image `in`.
 ///
 /// Computes the eigenvalues in the same way as \ref dip::Eigenvalues, but
-/// outputs only the eigenvector with the largest magnitude.
-DIP_EXPORT void LargestEigenvalue( Image const& in, Image& out );
-DIP_MONADIC_OPERATOR( LargestEigenvalue )
+/// outputs only the eigenvalue with the largest magnitude.
+/// See the linked function's documentation for a description of the `method` parameter.
+DIP_EXPORT void LargestEigenvalue( Image const& in, Image& out, String const& method = S::PRECISE );
+DIP_MONADIC_OPERATOR_WITH_DEFAULTED_PARAM( LargestEigenvalue, String const&, S::PRECISE )
 
 /// \brief Finds the smallest eigenvalue of the square matrix at each pixel in image `in`.
 ///
 /// Computes the eigenvalues in the same way as \ref dip::Eigenvalues, but
-/// outputs only the eigenvector with the smallest magnitude.
-DIP_EXPORT void SmallestEigenvalue( Image const& in, Image& out );
-DIP_MONADIC_OPERATOR( SmallestEigenvalue )
+/// outputs only the eigenvalue with the smallest magnitude.
+/// See the linked function's documentation for a description of the `method` parameter.
+DIP_EXPORT void SmallestEigenvalue( Image const& in, Image& out, String const& method = S::PRECISE );
+DIP_MONADIC_OPERATOR_WITH_DEFAULTED_PARAM( SmallestEigenvalue, String const&, S::PRECISE )
 
 /// \brief Computes the eigenvalues and eigenvectors of the square matrix at each pixel in image `in`.
 ///
@@ -597,15 +606,21 @@ DIP_MONADIC_OPERATOR( SmallestEigenvalue )
 /// real-valued, then `out` is real-valued, otherwise, `out` is complex-valued.
 /// The eigenvalues are sorted by magnitude, in descending order.
 ///
-/// The eigenvectors are the columns `eigenvectors`. It has the same data type as `out`.
-DIP_EXPORT void EigenDecomposition( Image const& in, Image& out, Image& eigenvectors );
+/// The eigenvectors are the columns of `eigenvectors`. It has the same data type as `out`.
+///
+/// `method` is either `"precise"` or `"fast"`. The precise method uses an iterative QR decomposition.
+/// The fast method uses a closed-form algorithm that is much faster, but potentially less accurate.
+/// This faster algorithm is only used for real-valued, 2x2 or 3x3 symmetric tensor images.
+DIP_EXPORT void EigenDecomposition( Image const& in, Image& out, Image& eigenvectors, String const& method = S::PRECISE );
 
 /// \brief Finds the largest eigenvector of the symmetric matrix at each pixel in image `in`.
 ///
 /// Computes the eigen decomposition in the same way as \ref dip::EigenDecomposition, but
 /// outputs only the eigenvector that corresponds to the eigenvalue with largest magnitude.
+/// Always uses the precise algorithm.
 ///
 /// `in` must be symmetric and real-valued.
+// TODO: Rewrite to allow the fast algorithm here as well.
 DIP_EXPORT void LargestEigenvector( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( LargestEigenvector )
 
@@ -615,6 +630,7 @@ DIP_MONADIC_OPERATOR( LargestEigenvector )
 /// outputs only the eigenvector that corresponds to the eigenvalue with smallest magnitude.
 ///
 /// `in` must be symmetric and real-valued.
+// TODO: Rewrite to allow the fast algorithm here as well.
 DIP_EXPORT void SmallestEigenvector( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( SmallestEigenvector )
 

@@ -66,6 +66,7 @@ constexpr char const* FORWARD = "forward";
 constexpr char const* INVERSE = "inverse";
 constexpr char const* OTF = "OTF";
 constexpr char const* PAD = "pad";
+constexpr char const* PRECISE = "precise";
 
 // Thresholding/clustering
 constexpr char const* ISODATA = "isodata";

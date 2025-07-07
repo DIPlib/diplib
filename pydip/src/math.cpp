@@ -227,20 +227,20 @@ void init_math( py::module& m ) {
           static_cast< void ( * )( dip::Image const&, dip::Image& ) >( &dip::Trace ), "in"_a, py::kw_only(), "out"_a, doc_strings::dip·Trace·Image·CL·Image·L );
    m.def( "Rank", py::overload_cast< dip::Image const& >( &dip::Rank ), "in"_a, doc_strings::dip·Rank·Image·CL·Image·L );
    m.def( "Rank", py::overload_cast< dip::Image const&, dip::Image& >( &dip::Rank ), "in"_a, py::kw_only(), "out"_a, doc_strings::dip·Rank·Image·CL·Image·L );
-   m.def( "Eigenvalues", py::overload_cast< dip::Image const& >( &dip::Eigenvalues ), "in"_a, doc_strings::dip·Eigenvalues·Image·CL·Image·L );
-   m.def( "Eigenvalues", py::overload_cast< dip::Image const&, dip::Image& >( &dip::Eigenvalues ), "in"_a, py::kw_only(), "out"_a, doc_strings::dip·Eigenvalues·Image·CL·Image·L );
-   m.def( "LargestEigenvalue", py::overload_cast< dip::Image const& >( &dip::LargestEigenvalue ), "in"_a, doc_strings::dip·LargestEigenvalue·Image·CL·Image·L );
-   m.def( "LargestEigenvalue", py::overload_cast< dip::Image const&, dip::Image& >( &dip::LargestEigenvalue ), "in"_a, py::kw_only(), "out"_a, doc_strings::dip·LargestEigenvalue·Image·CL·Image·L );
-   m.def( "SmallestEigenvalue", py::overload_cast< dip::Image const& >( &dip::SmallestEigenvalue ), "in"_a, doc_strings::dip·SmallestEigenvalue·Image·CL·Image·L );
-   m.def( "SmallestEigenvalue", py::overload_cast< dip::Image const&, dip::Image& >( &dip::SmallestEigenvalue ), "in"_a, py::kw_only(), "out"_a, doc_strings::dip·SmallestEigenvalue·Image·CL·Image·L );
-   m.def( "EigenDecomposition", []( dip::Image const& in ) {
+   m.def( "Eigenvalues", py::overload_cast< dip::Image const&, dip::String const& >( &dip::Eigenvalues ), "in"_a, "method"_a = dip::S::PRECISE, doc_strings::dip·Eigenvalues·Image·CL·Image·L·String·CL );
+   m.def( "Eigenvalues", py::overload_cast< dip::Image const&, dip::Image&, dip::String const& >( &dip::Eigenvalues ), "in"_a, py::kw_only(), "out"_a, "method"_a = dip::S::PRECISE, doc_strings::dip·Eigenvalues·Image·CL·Image·L·String·CL );
+   m.def( "LargestEigenvalue", py::overload_cast< dip::Image const&, dip::String const& >( &dip::LargestEigenvalue ), "in"_a, "method"_a = dip::S::PRECISE, doc_strings::dip·LargestEigenvalue·Image·CL·Image·L·String·CL );
+   m.def( "LargestEigenvalue", py::overload_cast< dip::Image const&, dip::Image&, dip::String const& >( &dip::LargestEigenvalue ), "in"_a, py::kw_only(), "out"_a, "method"_a = dip::S::PRECISE, doc_strings::dip·LargestEigenvalue·Image·CL·Image·L·String·CL );
+   m.def( "SmallestEigenvalue", py::overload_cast< dip::Image const&, dip::String const& >( &dip::SmallestEigenvalue ), "in"_a, "method"_a = dip::S::PRECISE, doc_strings::dip·SmallestEigenvalue·Image·CL·Image·L·String·CL );
+   m.def( "SmallestEigenvalue", py::overload_cast< dip::Image const&, dip::Image&, dip::String const& >( &dip::SmallestEigenvalue ), "in"_a, py::kw_only(), "out"_a, "method"_a = dip::S::PRECISE, doc_strings::dip·SmallestEigenvalue·Image·CL·Image·L·String·CL );
+   m.def( "EigenDecomposition", []( dip::Image const& in, dip::String const& method ) {
              dip::Image out, eigenvectors;
-             dip::EigenDecomposition( in, out, eigenvectors );
+             dip::EigenDecomposition( in, out, eigenvectors, method );
              return py::make_tuple( out, eigenvectors );
-          }, "in"_a,
+          }, "in"_a, "method"_a = dip::S::PRECISE,
           "Computes the eigenvalues and eigenvectors of the square matrix at each pixel\nin image `in`.\n"
           "Returns a tuple containing the `out` image and the `eigenvectors` image." );
-   m.def( "EigenDecomposition", py::overload_cast< dip::Image const&, dip::Image&, dip::Image& >( &dip::EigenDecomposition ), "in"_a, py::kw_only(), "out"_a, "eigenvectors"_a, doc_strings::dip·EigenDecomposition·Image·CL·Image·L·Image·L );
+   m.def( "EigenDecomposition", py::overload_cast< dip::Image const&, dip::Image&, dip::Image&, dip::String const& >( &dip::EigenDecomposition ), "in"_a, py::kw_only(), "out"_a, "eigenvectors"_a, "method"_a = dip::S::PRECISE, doc_strings::dip·EigenDecomposition·Image·CL·Image·L·Image·L·String·CL );
    m.def( "LargestEigenvector", py::overload_cast< dip::Image const& >( &dip::LargestEigenvector ), "in"_a, doc_strings::dip·LargestEigenvector·Image·CL·Image·L );
    m.def( "LargestEigenvector", py::overload_cast< dip::Image const&, dip::Image& >( &dip::LargestEigenvector ), "in"_a, py::kw_only(), "out"_a, doc_strings::dip·LargestEigenvector·Image·CL·Image·L );
    m.def( "SmallestEigenvector", py::overload_cast< dip::Image const& >( &dip::SmallestEigenvector ), "in"_a, doc_strings::dip·SmallestEigenvector·Image·CL·Image·L );
