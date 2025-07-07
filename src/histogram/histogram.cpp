@@ -230,8 +230,8 @@ class ScalarImageHistogramLineFilter : public HistogramBaseLineFilter {
             auto maskStride = params.inBuffer[ 1 ].stride;
             if( configuration_.excludeOutOfBoundValues ) {
                for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-                  if( *mask && ( static_cast< dfloat >( *in ) >= configuration_.lowerBound ) && ( static_cast< dfloat >( *in ) < configuration_.upperBound )) {
-                     ++data[ configuration_.FindBin( static_cast< dfloat >( *in )) ];
+                  if( *mask && configuration_.IsInRange( static_cast< dfloat >( *in ))) {
+                     ++data[ configuration_.FindBin( *in ) ];
                   }
                   in += inStride;
                   mask += maskStride;
@@ -239,7 +239,7 @@ class ScalarImageHistogramLineFilter : public HistogramBaseLineFilter {
             } else {
                for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
                   if( *mask ) {
-                     ++data[ configuration_.FindBin( static_cast< dfloat >( *in )) ];
+                     ++data[ configuration_.FindBin( *in ) ];
                   }
                   in += inStride;
                   mask += maskStride;
@@ -249,14 +249,14 @@ class ScalarImageHistogramLineFilter : public HistogramBaseLineFilter {
             // Otherwise we don't.
             if( configuration_.excludeOutOfBoundValues ) {
                for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-                  if(( static_cast< dfloat >( *in ) >= configuration_.lowerBound ) && ( static_cast< dfloat >( *in ) < configuration_.upperBound )) {
-                     ++data[ configuration_.FindBin( static_cast< dfloat >( *in )) ];
+                  if( configuration_.IsInRange( static_cast< dfloat >( *in ))) {
+                     ++data[ configuration_.FindBin( *in ) ];
                   }
                   in += inStride;
                }
             } else {
                for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-                  ++data[ configuration_.FindBin( static_cast< dfloat >( *in )) ];
+                  ++data[ configuration_.FindBin( *in ) ];
                   in += inStride;
                }
             }
@@ -331,7 +331,7 @@ class JointImageHistogramLineFilter : public HistogramBaseLineFilter {
                   if( include ) {
                      dip::sint offset = 0;
                      for( dip::uint jj = 0; jj < nDims; ++jj ) {
-                        offset += image_.Stride( jj ) * configuration_[ jj ].FindBin( static_cast< dfloat >( *( in[ jj ] )));
+                        offset += image_.Stride( jj ) * configuration_[ jj ].FindBin( *( in[ jj ] ));
                      }
                      ++data[ offset ];
                   }
@@ -354,7 +354,7 @@ class JointImageHistogramLineFilter : public HistogramBaseLineFilter {
                if( include ) {
                   dip::sint offset = 0;
                   for( dip::uint jj = 0; jj < nDims; ++jj ) {
-                     offset += image_.Stride( jj ) * configuration_[ jj ].FindBin( static_cast< dfloat >( *( in[ jj ] )));
+                     offset += image_.Stride( jj ) * configuration_[ jj ].FindBin( *( in[ jj ] ));
                   }
                   ++data[ offset ];
                }
@@ -505,6 +505,7 @@ void Histogram::EmptyHistogram( Histogram::ConfigurationArray configuration ) {
    UnsignedArray sizes( ndims );
    for( dip::uint ii = 0; ii < ndims; ++ii ) {
       DIP_STACK_TRACE_THIS( configuration[ ii ].Complete( false ));
+      DIP_THROW_IF( configuration[ ii ].nBins == 0, "Attempting to create a histogram of size zero" );
       lowerBounds_[ ii ] = configuration[ ii ].lowerBound;
       binSizes_[ ii ] = configuration[ ii ].binSize;
       sizes[ ii ] = configuration[ ii ].nBins;
@@ -554,7 +555,7 @@ class ReverseLookupLineFilter : public Framework::ScanLineFilter {
                dip::sint offset = 0;
                in_t = in;
                for( dip::uint jj = 0; jj < nDims; ++jj, in_t += tensorStride ) {
-                  offset += histogram_.Stride( jj ) * configuration_[ jj ].FindBin( static_cast< dfloat >( *in_t ));
+                  offset += histogram_.Stride( jj ) * configuration_[ jj ].FindBin( *in_t );
                }
                *out = data[ offset ];
             } else {
@@ -811,6 +812,63 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Histogram" ) {
    DOCTEST_CHECK( histograms[ 1 ].Count() == Count( mask ));
    DOCTEST_CHECK( histograms[ 1 ].Dimensionality() == 1 );
    DOCTEST_CHECK_THROWS( histograms[ 2 ].Count() );
+}
+
+DOCTEST_TEST_CASE( "[DIPlib] testing that dip::Histogram handles NaN values" ) {
+   dip::Image img( { dip::nan, 10.0, 2.0, dip::nan, dip::nan, 5.0, dip::nan, 6.0, 3.0, 7.0, 4.0, dip::nan, dip::nan }, dip::DT_DFLOAT );
+   img.TensorToSpatial();  // The line above creates a single-pixel tensor image.
+
+   dip::Histogram::Configuration conf( 0.5, 11.5, 1.0 );
+   conf.Complete( false );
+   DOCTEST_REQUIRE( conf.lowerBound == 0.5 );
+   DOCTEST_REQUIRE( conf.binSize == 1.0 );
+   DOCTEST_REQUIRE( conf.nBins == 11 );
+
+   conf.excludeOutOfBoundValues = true;
+   dip::Histogram hist( img, {}, conf );
+   DOCTEST_CHECK( hist.Count() == 7 );
+   DOCTEST_CHECK( hist.At( 0 ) == 0 );
+   DOCTEST_CHECK( hist.At( 1 ) == 1 );
+   DOCTEST_CHECK( hist.At( 9 ) == 1 );
+   DOCTEST_CHECK( hist.At( 10 ) == 0 );
+
+   conf.excludeOutOfBoundValues = false;
+   hist = dip::Histogram( img, {}, conf );
+   DOCTEST_CHECK( hist.Count() == 7 + 6 );
+   DOCTEST_CHECK( hist.At( 0 ) == 6 );
+   DOCTEST_CHECK( hist.At( 1 ) == 1 );
+   DOCTEST_CHECK( hist.At( 9 ) == 1 );
+   DOCTEST_CHECK( hist.At( 10 ) == 0 );
+
+   conf = dip::Histogram::OptimalConfiguration();
+   conf.excludeOutOfBoundValues = true;
+   hist = dip::Histogram( img, {}, conf );
+   DOCTEST_CHECK( hist.LowerBound() == 2.0 );
+   DOCTEST_CHECK( hist.UpperBound() == doctest::Approx( 10.0 ));
+   DOCTEST_CHECK( hist.Count() == 7 );
+
+   conf = dip::Histogram::OptimalConfigurationWithFullRange();
+   conf.excludeOutOfBoundValues = true;
+   hist = dip::Histogram( img, {}, conf );
+   DOCTEST_CHECK( hist.LowerBound() == 2.0 );
+   DOCTEST_CHECK( hist.UpperBound() == doctest::Approx( 10.0 ));
+   DOCTEST_CHECK( hist.Count() == 7 );
+
+   conf = dip::Histogram::Configuration( 0.0, 100.0, 1.0 );
+   conf.lowerIsPercentile = conf.upperIsPercentile = true;
+   conf.excludeOutOfBoundValues = true;
+   hist = dip::Histogram( img, {}, conf );
+   DOCTEST_CHECK( hist.LowerBound() == 2.0 );
+   DOCTEST_CHECK( hist.UpperBound() == doctest::Approx( 10.0 ));
+   DOCTEST_CHECK( hist.Count() == 7 );
+
+   conf = dip::Histogram::Configuration( 10.0, 90.0, 1.0 );
+   conf.lowerIsPercentile = conf.upperIsPercentile = true;
+   conf.excludeOutOfBoundValues = true;
+   hist = dip::Histogram( img, {}, conf );
+   DOCTEST_CHECK( hist.LowerBound() == 3.0 );
+   DOCTEST_CHECK( hist.UpperBound() == doctest::Approx( 7.0 ));
+   DOCTEST_CHECK( hist.Count() == 5 );
 }
 
 #endif // DIP_CONFIG_ENABLE_DOCTEST

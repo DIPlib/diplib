@@ -185,12 +185,29 @@ class DIP_NO_EXPORT Histogram {
 
          /// Returns true if the value should not be included in the histogram.
          bool IsOutOfRange( dfloat value ) const {
-            return( excludeOutOfBoundValues && (( value < lowerBound ) || ( value >= upperBound )));
+            return( excludeOutOfBoundValues && !IsInRange( value ));
          }
 
-         /// \brief Returns the bin that the value belongs in, assuming `!IsOutOfRange(value)`.
-         dip::sint FindBin( dfloat value ) const {
-            return detail::FindBin( value, lowerBound, binSize, nBins );
+         /// Returns true if the value is within the histogram range (this is not dependent on \ref excludeOutOfBoundValues).
+         bool IsInRange( dfloat value ) const {
+            return(( value >= lowerBound ) && ( value < upperBound )); // NaN value is out of range, returns false.
+         }
+
+         /// \brief Returns the bin that the value belongs in. If the value is out of range, returns the first or
+         /// last bin. If the value is NaN, returns the first bin.
+         template< typename T, std::enable_if_t< std::is_integral< T >::value, int > = 0 >
+         dip::sint FindBin( T value ) const {
+            if( std::isnan( value )) {
+               return 0;
+            }
+            return detail::FindBin( static_cast< dfloat >( value ), lowerBound, binSize, nBins );
+         }
+         template< typename T, std::enable_if_t< std::is_floating_point< T >::value, int > = 0 >
+         dip::sint FindBin( T value ) const { // integral types don't need the isnan test.
+            return detail::FindBin( static_cast< dfloat >( value ), lowerBound, binSize, nBins );
+         }
+         dip::sint FindBin( bin value ) const { // Ensure we don't use the isnan test when the input is binary.
+            return detail::FindBin( static_cast< dfloat >( value ), lowerBound, binSize, nBins );
          }
 
          // The functions below are not part of the public interface, though I need them to be available
@@ -654,6 +671,9 @@ class DIP_NO_EXPORT Histogram {
       // Lower and upper bounds are not bin centers!
 
       dip::uint FindClampedBin( dfloat value, dip::uint dim ) const {
+         if( std::isnan( value )) {
+            return 0;
+         }
          return static_cast< dip::uint >( detail::FindBin( value, lowerBounds_[ dim ], binSizes_[ dim ], data_.Size( dim )));
       }
 
