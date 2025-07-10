@@ -212,6 +212,11 @@ class DIPVIEWER_CLASS_EXPORT Manager {
       /// ```
       virtual void processEvents() = 0;
 
+      /// \brief Returns the size of the screen in pixels.
+      UnsignedArray const& screenSize() const {
+         return screenSize_;
+      }
+
    protected:
       /// \brief Swap display buffers.
       ///
@@ -231,6 +236,15 @@ class DIPVIEWER_CLASS_EXPORT Manager {
 
       /// \brief Set a Window's size.
       virtual void setWindowSize( Window* window, int width, int height ) = 0;
+
+      /// \brief Set the size of the screen, to be used by the derived constructors.
+      void setScreenSize( int width, int height ) {
+         screenSize_[ 0 ] = static_cast< dip::uint >( std::max( width, 0 ));
+         screenSize_[ 1 ] = static_cast< dip::uint >( std::max( height, 0 ));
+      }
+
+   private:
+      UnsignedArray screenSize_{ 0, 0 };
 };
 
 /// \endgroup

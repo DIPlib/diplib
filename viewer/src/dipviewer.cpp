@@ -45,17 +45,35 @@ namespace {
 std::unique_ptr< ViewerManager > manager_ = nullptr;
 dip::uint count_ = 0;
 
-String getWindowTitle( String const& title ) {
+String GetWindowTitle( String const& title ) {
    if( !title.empty()) {
       return title;
    }
-   return String( "Window " ) + std::to_string( count_ );
+   return String( "Window " ) + std::to_string( count_ + 1 );
+}
+
+void SetWindowPosition( Window* wdw ) {
+   // 512x512 are the default window sizes. To improve on this, we'd need to keep
+   // track of the windows we create, as each one could have a different size.
+   dip::uint wszx = 512;
+   dip::uint wszy = 512;
+   dip::uint nx = manager_->screenSize()[ 0 ] / wszx;
+   dip::uint ny = manager_->screenSize()[ 1 ] / wszy;
+   if( nx > 0 && ny > 0 ) {
+      dip::uint n = count_ % ( nx * ny );
+      dip::uint x = ( n % nx ) * wszx;
+      dip::uint y = ( n / nx ) * wszy;
+      DIP_STACK_TRACE_THIS( wdw->setPosition( static_cast< int >( x ), static_cast< int >( y )));
+   }
 }
 
 inline void Create() {
    if( !manager_ ) {
       manager_.reset( new ViewerManager() );
-      count_ = 1;
+   }
+   if( manager_->activeWindows() == 0 ) {
+      // If we have not created any windows yet, or the user has closed all windows, reset the window count.
+      count_ = 0;
    }
 }
 
@@ -69,8 +87,9 @@ SliceViewer::Ptr Show( Image const& image, String const& title, dip::uint width,
    DIP_THROW_IF( !image.IsForged(), E::IMAGE_NOT_FORGED );
    Create();
    SliceViewer::Ptr wdw;
-   DIP_STACK_TRACE_THIS( wdw = SliceViewer::Create( image, getWindowTitle( title ), width, height ));
+   DIP_STACK_TRACE_THIS( wdw = SliceViewer::Create( image, GetWindowTitle( title ), width, height ));
    DIP_STACK_TRACE_THIS( manager_->createWindow( wdw ));
+   DIP_STACK_TRACE_THIS( SetWindowPosition( wdw.get() ));
    ++count_;
 
    return wdw;
@@ -87,8 +106,9 @@ ImageViewer::Ptr ShowSimple( Image const& image, String const& title, dip::uint 
    }
    tmp.ForceNormalStrides();
    ImageViewer::Ptr wdw;
-   DIP_STACK_TRACE_THIS( wdw = ImageViewer::Create( tmp, getWindowTitle( title ), width, height ));
+   DIP_STACK_TRACE_THIS( wdw = ImageViewer::Create( tmp, GetWindowTitle( title ), width, height ));
    DIP_STACK_TRACE_THIS( manager_->createWindow( wdw ));
+   DIP_STACK_TRACE_THIS( SetWindowPosition( wdw.get() ));
    ++count_;
 
    return wdw;

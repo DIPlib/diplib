@@ -43,8 +43,10 @@ GLUTManager::GLUTManager()
   instance_ = this;
   continue_ = true;
   active_ = false;
-  
+
   thread_ = std::thread(&GLUTManager::run, this);
+
+  setScreenSize(glutGet(GLUT_SCREEN_WIDTH), glutGet(GLUT_SCREEN_HEIGHT));
 }
 
 GLUTManager::~GLUTManager()
@@ -54,7 +56,7 @@ GLUTManager::~GLUTManager()
     continue_ = false;
     thread_.join();
   }
-  
+
   instance_ = NULL;
 }
 
@@ -68,9 +70,9 @@ void GLUTManager::createWindow(WindowPtr window)
     mutex_.unlock();
     std::this_thread::sleep_for(std::chrono::microseconds(100));
   }
-  
+
   new_window_ = window;
-  
+
   // If called from event handler, don't wait for window to be created.
   // Note that this means only one window can be created per
   // glutMainLoopEvent() call.
@@ -79,7 +81,7 @@ void GLUTManager::createWindow(WindowPtr window)
     mutex_.unlock();
     return;
   }
-  
+
   mutex_.unlock();
 
   while (new_window_)
@@ -93,47 +95,47 @@ void GLUTManager::destroyWindows()
   for (auto it = windows_.begin(); it != windows_.end(); ++it)
     it->second->destroy();
 }
-    
+
 void GLUTManager::run()
 {
   int argc = 1;
   char argv1[256], *argv[]={argv1};
-      
+
   std::strncpy(argv1, "GLUTManager", 256);
-  
+
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
   glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
   glutIdleFunc(idle);
-  
+
   while (continue_)
   {
     mutex_.lock();
-    
+
     active_ = true;
 
     glutMainLoopEvent();
-    
+
     if (new_window_)
     {
       int width=new_window_->width(), height=new_window_->height();
 
       if (width  <= 0) width  = 512;
       if (height <= 0) height = width;
-    
+
       glutCreateWindow("");
       glutReshapeWindow(width, height);
       int id = (int)(glutGetWindow() - 1);
       glutPositionWindow((id%2)*512+(id%16)/4*16, ((id%4)/2)*512+(id % 16) / 4 * 16);
-     
+
       glutDisplayFunc(draw);
       glutReshapeFunc(reshape);
-      glutVisibilityFunc(visible);  
+      glutVisibilityFunc(visible);
       glutCloseFunc(close);
       glutKeyboardFunc(key);
       glutMouseFunc(click);
       glutMotionFunc(motion);
-    
+
       new_window_->manager(this);
       new_window_->id((void*)(intptr_t)glutGetWindow());
       windows_[new_window_->id()] = new_window_;
@@ -153,23 +155,23 @@ void GLUTManager::run()
       else
         ++it;
     }
-    
+
     idle();
-    
+
     active_ = false;
-    
+
     mutex_.unlock();
     std::this_thread::sleep_for(std::chrono::microseconds(1000));
   }
-  
+
   Guard guard(mutex_);
-  
+
   destroyWindows();
   windows_.clear();
-  
+
   glutExit();
 }
-    
+
 WindowPtr GLUTManager::getCurrentWindow()
 {
   WindowMap::iterator it = windows_.find((void*)(intptr_t)glutGetWindow());
@@ -227,7 +229,7 @@ void GLUTManager::key(unsigned char k, int x, int y)
     {
       k = (unsigned char)(k - 'a' + 'A');
     }
-  
+
     window->key(k, x, y, glutGetModifiers());
   }
 }

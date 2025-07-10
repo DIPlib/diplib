@@ -175,6 +175,10 @@ None, but see bugfixes to *DIPlib*.
 
 ### Changed functionality
 
+- Creating multiple windows with `dip::viewer::Show()` or `dip::viewer::ShowSimple()` will arrange them across
+  the screen instead of placing them all at the same location. The arrangement is simplistic, assumes a single
+  screen, and assumes default window sizes. But the result should be more user-friendly than the previous behavior.
+
 ### Bug fixes
 
 ### Build changes
