@@ -55,10 +55,11 @@ String GetWindowTitle( String const& title ) {
 void SetWindowPosition( Window* wdw ) {
    // 512x512 are the default window sizes. To improve on this, we'd need to keep
    // track of the windows we create, as each one could have a different size.
-   dip::uint wszx = 512;
-   dip::uint wszy = 512;
-   dip::uint nx = manager_->screenSize()[ 0 ] / wszx;
-   dip::uint ny = manager_->screenSize()[ 1 ] / wszy;
+   constexpr dip::uint wszx = 512;
+   constexpr dip::uint wszy = 512;
+   auto ss = manager_->screenSize();
+   dip::uint nx = ss[ 0 ] / wszx;
+   dip::uint ny = ss[ 1 ] / wszy;
    if( nx > 0 && ny > 0 ) {
       dip::uint n = count_ % ( nx * ny );
       dip::uint x = ( n % nx ) * wszx;
