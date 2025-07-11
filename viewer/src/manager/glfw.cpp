@@ -59,9 +59,6 @@ GLFWManager::GLFWManager()
   glfwInitHint(GLFW_COCOA_CHDIR_RESOURCES, GL_FALSE);
 #endif
   GLFW_THROW_IF(glfwInit() != GL_TRUE, "Failed to initialize GLFW");
-
-  auto const* data = glfwGetVideoMode(glfwGetPrimaryMonitor());
-  setScreenSize(data->width, data->height);
 }
 
 GLFWManager::~GLFWManager()
@@ -139,6 +136,14 @@ void GLFWManager::processEvents()
     else
       ++it;
   }
+}
+
+UnsignedArray GLFWManager::screenSize() const
+{
+  auto const* data = glfwGetVideoMode(glfwGetPrimaryMonitor());
+  
+  return { static_cast< dip::uint >( std::max( data->width, 0 )),
+           static_cast< dip::uint >( std::max( data->height, 0 )) };
 }
 
 WindowPtr GLFWManager::getWindow(GLFWwindow *window)

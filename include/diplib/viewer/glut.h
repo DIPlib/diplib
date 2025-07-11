@@ -63,6 +63,7 @@ class DIPVIEWER_CLASS_EXPORT GLUTManager : public Manager {
 
       DIPVIEWER_EXPORT void destroyWindows() override;
       DIPVIEWER_EXPORT void processEvents() override {}
+      DIPVIEWER_EXPORT UnsignedArray screenSize() const override;
 
    protected:
       DIPVIEWER_EXPORT void swapBuffers( Window* window ) override;

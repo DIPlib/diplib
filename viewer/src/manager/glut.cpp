@@ -45,8 +45,6 @@ GLUTManager::GLUTManager()
   active_ = false;
 
   thread_ = std::thread(&GLUTManager::run, this);
-
-  setScreenSize(glutGet(GLUT_SCREEN_WIDTH), glutGet(GLUT_SCREEN_HEIGHT));
 }
 
 GLUTManager::~GLUTManager()
@@ -94,6 +92,12 @@ void GLUTManager::destroyWindows()
 
   for (auto it = windows_.begin(); it != windows_.end(); ++it)
     it->second->destroy();
+}
+
+UnsignedArray GLUTManager::screenSize() const
+{
+  return { static_cast< dip::uint >( std::max( glutGet(GLUT_SCREEN_WIDTH), 0 )),
+           static_cast< dip::uint >( std::max( glutGet(GLUT_SCREEN_HEIGHT), 0 )) };
 }
 
 void GLUTManager::run()

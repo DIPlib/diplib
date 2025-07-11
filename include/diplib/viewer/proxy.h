@@ -132,6 +132,11 @@ class DIPVIEWER_CLASS_EXPORT ProxyManager : public Manager {
             it->second->destroy();
          }
       }
+      
+      DIPVIEWER_EXPORT UnsignedArray screenSize() const override {
+         // TODO
+         return { 0, 0 };
+      }
 
       void setWindowPosition( Window* window, int x, int y ) override {
          ( void )window;
