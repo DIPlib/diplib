@@ -105,6 +105,8 @@ date: 2020-00-00
 
 - `dip::Histogram` should no longer crash on construction when the input has NaN values.
 
+- `dip::EdgeObjectsRemove()` with a binary image as input did not preserve the pixel sizes.
+
 ### Updated dependencies
 
 ### Build changes

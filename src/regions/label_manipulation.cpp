@@ -243,7 +243,7 @@ void EdgeObjectsRemove( Image const& in, Image& out, dip::uint connectivity ) {
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    if( in.DataType().IsBinary() ) {
       DIP_START_STACK_TRACE
-         Image tmp_in = in.QuickCopy();
+         Image tmp_in = in;
          if( out.Aliases( tmp_in )) { // make sure we don't overwrite in
             DIP_STACK_TRACE_THIS( out.Strip() );
          }
