@@ -19,40 +19,26 @@ Both the default constructor and a ``None`` argument lead to an unforged image.
     >>> dip.Image(None)
     <Empty image>
 
-A single number is interpreted as a 0D image, whose data type can be set optionally.
+A single integer, or a tuple or a list of integers, is interpreted as the image size
 
     >>> dip.Image(50)
-    <Scalar image, SINT64, 0D>
-    >>> dip.Image(50, 'SFLOAT')
-    <Scalar image, SFLOAT, 0D>
-
-A tuple or list is interpreted as the image size.
-
+    <Scalar image, SFLOAT, sizes {50}>
     >>> dip.Image((50,))
     <Scalar image, SFLOAT, sizes {50}>
-
-This means there is no constructor to create a 0D tensor image. Use ``dip.Create0D`` instead.
-
-    >>> dip.Create0D([50])
-    <Scalar image, SINT64, 0D>
-    >>> dip.Create0D([10., 20., 30.])
-    <Tensor image (3x1 column vector, 3 elements), DFLOAT, 0D>
-    >>> dip.Create0D(np.asarray([10., 20., 30.], dtype=np.float32))
-    <Tensor image (3x1 column vector, 3 elements), SFLOAT, 0D>
+    >>> dip.Image((50, 60))
+    <Scalar image, SFLOAT, sizes {50, 60}>
 
 We can also set the number of tensor elements, or the data type, or both.
 
-    >>> dip.Image((50,), 2)
-    <Tensor image (2x1 column vector, 2 elements), SFLOAT, sizes {50}>
-    >>> dip.Image((50,), dt='DFLOAT')
-    <Scalar image, DFLOAT, sizes {50}>
-    >>> dip.Image((50,), 2, 'DFLOAT')
-    <Tensor image (2x1 column vector, 2 elements), DFLOAT, sizes {50}>
-
-**Note that when specifying the number of tensor elements, a single value is interpreted as the image size.**
-
     >>> dip.Image(50, 2)
     <Tensor image (2x1 column vector, 2 elements), SFLOAT, sizes {50}>
+    >>> dip.Image(50, dt='DFLOAT')
+    <Scalar image, DFLOAT, sizes {50}>
+    >>> dip.Image((50, 60), 2, 'DFLOAT')
+    <Tensor image (2x1 column vector, 2 elements), DFLOAT, sizes {50, 60}>
+
+Note that these images are forged but will have uninitialized pixel data. Use `dip.Image.Fill()` to
+fill the newly created image with a constant value.
 
 Numpy arrays (buffers in general) can be converted directly.
 **Note the reverse order of the dimensions!**
@@ -97,15 +83,25 @@ as tensor images along that dimension.
     >>> dip.Image(np.zeros((3, 10, 20)))
     <Tensor image (3x1 column vector, 3 elements), DFLOAT, sizes {20, 10}>
 
-If that is not desired, set the ``axis`` argument to ``None``.
+If that is not desired, set the ``tensor_axis`` argument to ``None``.
 
-    >>> dip.Image(np.zeros((3, 10, 20)), None)
+    >>> dip.Image(np.zeros((3, 10, 20)), tensor_axis=None)
     <Scalar image, DFLOAT, sizes {20, 10, 3}>
 
 Alternatively, ``axis`` may be used to manually specify the tensor dimension.
 
-    >>> dip.Image(np.zeros((3, 10, 20)), -1)
+    >>> dip.Image(np.zeros((3, 10, 20)), tensor_axis=-1)
     <Tensor image (20x1 column vector, 20 elements), DFLOAT, sizes {10, 3}>
+
+To create a 0D tensor image given a pixel value, use ``dip.Create0D``. The input can be either a scalar value, a
+tuple or list of values, or a NumPy array. The data type is preserved.
+
+    >>> dip.Create0D(50)
+    <Scalar image, SINT64, 0D>
+    >>> dip.Create0D([10., 20., 30.])
+    <Tensor image (3x1 column vector, 3 elements), DFLOAT, 0D>
+    >>> dip.Create0D(np.asarray([10., 20., 30.], dtype=np.float32))
+    <Tensor image (3x1 column vector, 3 elements), SFLOAT, 0D>
 
 Use as and conversion to NumPy arrays
 ---
@@ -174,15 +170,13 @@ First, indexing into an empty image is not allowed.
         ...
     staging.diplib.PyDIP_bin.ParameterError: Image is not forged
 
-Indexing an image at a single coordinate returns a ``Pixel``. As scalar images are treated as single-element
-tensors, this is a list.
+Indexing an image at a single coordinate returns a ``Pixel``, which in Python is represented as a list.
+As scalar images are treated as single-element tensors, the returned list has a single value.
 
-    >>> a = dip.Image(50)
-    >>> a[0] = 50
-    >>> a[0]
-    [50]
-    >>> a = dip.Image((50,))
+    >>> a = dip.Image(256)
     >>> a.Fill(0)
+    >>> a[0]
+    [0.0]
     >>> a[0] = 50
     >>> a[0]
     [50.0]
@@ -374,6 +368,14 @@ All standard operators are defined and behave the same as in the C++ library
     <Tensor image (2x1 column vector, 2 elements), BIN, sizes {10, 20}>
     >>> dip.All(a == b)[0]
     [True, True]
+    >>> 1 + a
+    <Tensor image (2x1 column vector, 2 elements), DFLOAT, sizes {10, 20}>
+    >>> a**2
+    <Tensor image (2x1 column vector, 2 elements), DFLOAT, sizes {10, 20}>
+    >>> 2**a
+    <Tensor image (2x1 column vector, 2 elements), DFLOAT, sizes {10, 20}>
+    >>> 5/a
+    <Tensor image (2x1 column vector, 2 elements), DFLOAT, sizes {10, 20}>
 
 except for the multiplication operator, ``*``, which applies sample-wise
 multiplication (``dip::MultiplySampleWise()``)

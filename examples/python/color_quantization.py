@@ -2,7 +2,7 @@ import diplib as dip
 import numpy as np
 
 
-input = dip.ImageRead('examples/DIP.tif')
+input = dip.ImageRead('../DIP.tif')
 dip.viewer.Show(input)
 
 # Compute histogram and cluster it

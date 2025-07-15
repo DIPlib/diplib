@@ -17,7 +17,7 @@ dip.BlendBandlimitedMask(out1, mask, image2, [195 - 126, 195 - 91])
 out1.ShowSlice("out1")
 
 out2 = image1.Copy()
-dip.BlendBandlimitedMask(out2, dip.Image(0.3), image2)
+dip.BlendBandlimitedMask(out2, dip.Create0D(0.3), image2)
 out2.ShowSlice("out2")
 
 out3 = image1.Copy()

@@ -304,17 +304,13 @@ void init_image( py::module& m ) {
 
    auto img = py::class_< dip::Image >( m, "Image", py::buffer_protocol(), doc_strings::dip·Image );
    // Constructor for raw (unforged) image, to be used e.g. when no mask input argument is needed:
-   //   None implicitly converts to an image
    img.def( py::init<>(), doc_strings::dip·Image·Image );
+   // None implicitly converts to a raw image
    img.def( py::init( []( py::none const& ) { return dip::Image{}; } ), "none"_a, doc_strings::dip·Image·Image );
    py::implicitly_convertible< py::none, dip::Image >();
-   // Constructor that takes a Sample: scalar implicitly converts to an image
-   img.def( py::init< dip::Image::Sample const& >(), "sample"_a, doc_strings::dip·Image·Image·Sample·CL );
-   img.def( py::init< dip::Image::Sample const&, dip::DataType >(), "sample"_a, "dt"_a, doc_strings::dip·Image·Image·Sample·CL·dip·DataType· );
-   py::implicitly_convertible< dip::Image::Sample, dip::Image >();
-   // Constructor that takes a Python raw buffer
+   // Constructor that takes a Python raw buffer (which is also implicitly convertible)
    img.def( py::init( []( py::buffer& buf ) { return BufferToImage( buf ); } ), "array"_a, "Creates an image around the data of a NumPy array, automatically finding the tensor dimension." );
-   img.def( py::init( []( py::buffer& buf, py::none const& ) { return BufferToImage( buf, false ); } ), "array"_a, "none"_a, "Creates a scalar image around the data of a NumPy array." );
+   img.def( py::init( []( py::buffer& buf, py::none const& ) { return BufferToImage( buf, false ); } ), "array"_a, "tensor_axis"_a, "Creates a scalar image around the data of a NumPy array." );
    img.def( py::init( []( py::buffer& buf, dip::sint tensor_axis ) { return BufferToImage( buf, tensor_axis ); } ), "array"_a, "tensor_axis"_a, "Creates an image around the data of a NumPy array, using the given axis as the tensor dimension." );
    py::implicitly_convertible< py::buffer, dip::Image >();
    // Export a Python raw buffer
