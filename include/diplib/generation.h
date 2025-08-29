@@ -679,17 +679,17 @@ DIP_EXPORT void CreateGauss(
       UnsignedArray derivativeOrder = { 0 },
       dfloat truncation = 3.0,
       UnsignedArray exponents = { 0 },
-      bool full = true
+      String const& extent = "full"
 );
 DIP_NODISCARD inline Image CreateGauss(
       FloatArray const& sigmas,
       UnsignedArray derivativeOrder = { 0 },
       dfloat truncation = 3.0,
       UnsignedArray exponents = { 0 },
-      bool full = true
+      String const& extent = "full"
 ) {
    Image out;
-   CreateGauss( out, sigmas, std::move( derivativeOrder ), truncation, std::move( exponents ), full);
+   CreateGauss( out, sigmas, std::move( derivativeOrder ), truncation, std::move( exponents ), extent );
    return out;
 }
 

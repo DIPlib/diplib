@@ -50,7 +50,7 @@ inline dip::uint HalfGaussianSize(
    return clamp_cast< dip::uint >( std::ceil( truncation * sigma ));
 }
 
-std::vector< dfloat > MakeHalfGaussian_(
+std::vector< dfloat > MakeHalfGaussianInternal(
       dfloat sigma,
       dip::uint derivativeOrder,
       dfloat truncation,
@@ -160,7 +160,7 @@ std::vector< dfloat > MakeHalfGaussian(
    }
    // Create half Gaussian
    std::vector< dfloat > gaussian;
-   DIP_STACK_TRACE_THIS( gaussian = MakeHalfGaussian_( sigma, derivativeOrder, truncation, dt ));
+   DIP_STACK_TRACE_THIS( gaussian = MakeHalfGaussianInternal( sigma, derivativeOrder, truncation, dt ));
    return gaussian;
 }
 
@@ -177,7 +177,7 @@ std::vector< dfloat > MakeGaussian(
    }
    // Create half Gaussian
    std::vector< dfloat > gaussian;
-   DIP_STACK_TRACE_THIS( gaussian = MakeHalfGaussian_( sigma, derivativeOrder, truncation, dt ));
+   DIP_STACK_TRACE_THIS( gaussian = MakeHalfGaussianInternal( sigma, derivativeOrder, truncation, dt ));
    dip::uint halfFilterSize = gaussian.size() - 1;
    // Complete the Gaussian
    gaussian.resize( halfFilterSize * 2 + 1 );
@@ -194,12 +194,15 @@ void CreateGauss(
       UnsignedArray orders,
       dfloat truncation,
       UnsignedArray exponents,
-      bool full
+      String const& extent
 ) {
    // Verify dimensionality
    dip::uint nDims = sigmas.size();
    DIP_STACK_TRACE_THIS( ArrayUseParameter( orders, nDims, dip::uint( 0 )));
    DIP_STACK_TRACE_THIS( ArrayUseParameter( exponents, nDims, dip::uint( 0 )));
+
+   bool full{};
+   DIP_STACK_TRACE_THIS( full = BooleanFromString( extent, "full", "half" ));
 
    // Create 1D gaussian for each dimension
    std::vector< std::vector< dfloat >> gaussians( nDims );
@@ -212,7 +215,7 @@ void CreateGauss(
       outSizes[ ii ] = gaussianLength;
       centers[ ii ] = full ? ( gaussianLength - 1 ) / 2 : gaussianLength - 1;
    }
-   
+
    // Create output image
    out.ReForge( outSizes, 1, DT_DFLOAT );
    ImageIterator< dfloat > itOut( out );
