@@ -36,7 +36,7 @@ using FT_Face = struct FT_FaceRec_*;
 
 namespace dip {
 
-// Forward declaration, defined in chain_code.h
+// Forward declaration, defined in polygon.h
 struct DIP_NO_EXPORT Polygon;
 
 /// \group generation Generation
