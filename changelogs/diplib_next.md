@@ -38,6 +38,9 @@ date: 2020-00-00
   The low-level functions `dip::SymmetricEigenDecomposition2()` and `dip::SymmetricEigenDecomposition3()` add
   the same argument, but as an enum rather than a string.
 
+- `dip::CreateGauss()` has a new argument, `extent`, which defaults to `"full"`. When set to `"half"`, the output
+  is the first half (in 1D) or quadrant (in 2D) of the Gaussian kernel.
+
 ### Changed functionality
 
 - All functions that compute a percentile (`dip::Percentile()`, `dip::PercentilePosition()`,

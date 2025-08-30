@@ -667,11 +667,12 @@ DIP_EXPORT std::vector< dfloat > MakeGaussian(
 /// By setting `exponents` to a positive value for each dimension, the created kernel will be multiplied by
 /// the coordinates to the power of `exponents`.
 ///
-/// Can be used to generate only the first half of the gaussian and its derivative.
+/// `extent` defaults to `"full"`. Set it to `"half"` to generate only the first half (along each dimension)
+/// of the kernel.
 /// The second half of the gaussian will need to be scaled by -1.0 for odd derivative order (ex 1, 3, ...)
 ///
 /// !!! warning
-///     Convolving an image with the result of this function is much less efficient than calling \ref Gauss. 
+///     Convolving an image with the result of this function is much less efficient than calling \ref Gauss.
 // Defined in src/linear/gauss.cpp
 DIP_EXPORT void CreateGauss(
       Image& out,
