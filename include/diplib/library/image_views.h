@@ -784,6 +784,7 @@ bool operator==( Image::Pixel const& lhs, T const& rhs ) { return operator==( lh
 
 /// \brief Comparison operator, equivalent to `!(lhs==rhs)`.
 /// \relates dip::Image::Pixel
+DIP_EXPORT inline bool operator!=( Image::Pixel const& lhs, Image::Pixel const& rhs ) { return !( lhs == rhs ); }
 template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
 bool operator!=( Image::Pixel const& lhs, T const& rhs ) { return !operator==( lhs, rhs ); }
 
