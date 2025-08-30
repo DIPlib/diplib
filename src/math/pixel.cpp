@@ -354,6 +354,10 @@ bool operator==( Image::Pixel const& lhs, Image::Pixel const& rhs ) {
    return res.All();
 }
 
+bool operator!=( Image::Pixel const& lhs, Image::Pixel const& rhs ) {
+   return !( lhs == rhs );
+}
+
 namespace {
 
 template< typename F >
