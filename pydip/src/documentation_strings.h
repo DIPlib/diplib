@@ -147,6 +147,7 @@ constexpr char const* dip·viewer·Manager·createWindow·WindowPtr· = "Create 
 constexpr char const* dip·viewer·Manager·activeWindows = "Returns the number of managed windows.";
 constexpr char const* dip·viewer·Manager·destroyWindows = "Destroys all windows.";
 constexpr char const* dip·viewer·Manager·processEvents = "Processes event queue.";
+constexpr char const* dip·viewer·Manager·screenSize·C = "Returns the size of the screen in pixels.";
 constexpr char const* dip·viewer·Manager·swapBuffers·Window·P = "Swap display buffers.";
 constexpr char const* dip·viewer·Manager·setWindowTitle·Window·P·char·CP = "Sets a Window's title.";
 constexpr char const* dip·viewer·Manager·refreshWindow·Window·P = "Refresh a Window's contents.";
@@ -1970,7 +1971,7 @@ constexpr char const* dip·GaussianLineClip·Image·CL·Image·L·Image·Pixel·
 constexpr char const* dip·FillDelta·Image·L·String·CL = "Fills an image with a delta function.";
 constexpr char const* dip·CreateDelta·Image·L·UnsignedArray·CL·String·CL = "Creates a delta function image.";
 constexpr char const* dip·CreateDelta·UnsignedArray·CL·String·CL = "Overload for the function above, which takes image sizes instead of an image.";
-constexpr char const* dip·CreateGauss·Image·L·FloatArray·CL·UnsignedArray··dfloat··UnsignedArray· = "Creates a Gaussian kernel.";
+constexpr char const* dip·CreateGauss·Image·L·FloatArray·CL·UnsignedArray··dfloat··UnsignedArray··String·CL = "Creates a Gaussian kernel.";
 constexpr char const* dip·CreateGabor·Image·L·FloatArray·CL·FloatArray·CL·dfloat· = "Creates a Gabor kernel.";
 constexpr char const* dip·FTEllipsoid·Image·L·FloatArray··dfloat· = "Generates the Fourier transform of an ellipsoid.";
 constexpr char const* dip·FTEllipsoid·UnsignedArray·CL·FloatArray··dfloat· = "Overload for the function above, which takes image sizes instead of an image.";

@@ -628,6 +628,19 @@ DIP_NODISCARD inline Image CreateDelta( UnsignedArray const& sizes, String const
    return out;
 }
 
+// Create a half Gaussian, used by MakeGaussian in linear/gauss.cpp (where it is defined)
+// Not documented because not a public function. We suggest you use `CreateGauss()` instead.
+// Length will be given by truncation and sigma, but limited to meaningful values.
+//
+// !!! warning
+//     The second half of the gaussian will need to be scaled by -1.0 for odd derivative order (ex 1, 3, ...)
+// Defined in src/linear/gauss.cpp
+DIP_EXPORT std::vector< dfloat > MakeHalfGaussian(
+      dfloat sigma,
+      dip::uint derivativeOrder = 0,
+      dfloat truncation = 3.0,
+      DataType dt = DT_DFLOAT  // if not DT_DFLOAT, assumed to be DT_SFLOAT
+);
 
 // Create 1D Gaussian, used in linear/gauss.cpp (where it is defined) and in nonlinear/bilateral.cpp
 // Not documented because not a public function. We suggest you use `CreateGauss()` instead.
@@ -654,6 +667,10 @@ DIP_EXPORT std::vector< dfloat > MakeGaussian(
 /// By setting `exponents` to a positive value for each dimension, the created kernel will be multiplied by
 /// the coordinates to the power of `exponents`.
 ///
+/// `extent` defaults to `"full"`. Set it to `"half"` to generate only the first half (along each dimension)
+/// of the kernel.
+/// The second half of the gaussian will need to be scaled by -1.0 for odd derivative order (ex 1, 3, ...)
+///
 /// !!! warning
 ///     Convolving an image with the result of this function is much less efficient than calling \ref Gauss.
 // Defined in src/linear/gauss.cpp
@@ -662,16 +679,18 @@ DIP_EXPORT void CreateGauss(
       FloatArray const& sigmas,
       UnsignedArray derivativeOrder = { 0 },
       dfloat truncation = 3.0,
-      UnsignedArray exponents = { 0 }
+      UnsignedArray exponents = { 0 },
+      String const& extent = "full"
 );
 DIP_NODISCARD inline Image CreateGauss(
       FloatArray const& sigmas,
       UnsignedArray derivativeOrder = { 0 },
       dfloat truncation = 3.0,
-      UnsignedArray exponents = { 0 }
+      UnsignedArray exponents = { 0 },
+      String const& extent = "full"
 ) {
    Image out;
-   CreateGauss( out, sigmas, std::move( derivativeOrder ), truncation, std::move( exponents ));
+   CreateGauss( out, sigmas, std::move( derivativeOrder ), truncation, std::move( exponents ), extent );
    return out;
 }
 

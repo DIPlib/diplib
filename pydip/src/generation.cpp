@@ -105,10 +105,10 @@ void init_generation( py::module& m ) {
           "sizes"_a, "origin"_a = "", doc_strings::dip·CreateDelta·UnsignedArray·CL·String·CL );
    m.def( "CreateDelta", py::overload_cast< dip::Image&, dip::UnsignedArray const&, dip::String const& >( &dip::CreateDelta ),
           py::kw_only(), "out"_a, "sizes"_a, "origin"_a = "", doc_strings::dip·CreateDelta·Image·L·UnsignedArray·CL·String·CL );
-   m.def( "CreateGauss", py::overload_cast< dip::FloatArray const&, dip::UnsignedArray, dip::dfloat, dip::UnsignedArray >( &dip::CreateGauss ),
-          "sigmas"_a, "order"_a = dip::UnsignedArray{ 0 }, "truncation"_a = 3.0, "exponents"_a = dip::UnsignedArray{ 0 }, doc_strings::dip·CreateGauss·Image·L·FloatArray·CL·UnsignedArray··dfloat··UnsignedArray· );
-   m.def( "CreateGauss", py::overload_cast< dip::Image&, dip::FloatArray const&, dip::UnsignedArray, dip::dfloat, dip::UnsignedArray >( &dip::CreateGauss ),
-          py::kw_only(), "out"_a, "sigmas"_a, "order"_a = dip::UnsignedArray{ 0 }, "truncation"_a = 3.0, "exponents"_a = dip::UnsignedArray{ 0 }, doc_strings::dip·CreateGauss·Image·L·FloatArray·CL·UnsignedArray··dfloat··UnsignedArray· );
+   m.def( "CreateGauss", py::overload_cast< dip::FloatArray const&, dip::UnsignedArray, dip::dfloat, dip::UnsignedArray, dip::String const& >( &dip::CreateGauss ),
+          "sigmas"_a, "order"_a = dip::UnsignedArray{ 0 }, "truncation"_a = 3.0, "exponents"_a = dip::UnsignedArray{ 0 }, "extent"_a = "full", doc_strings::dip·CreateGauss·Image·L·FloatArray·CL·UnsignedArray··dfloat··UnsignedArray··String·CL );
+   m.def( "CreateGauss", py::overload_cast< dip::Image&, dip::FloatArray const&, dip::UnsignedArray, dip::dfloat, dip::UnsignedArray, dip::String const& >( &dip::CreateGauss ),
+          py::kw_only(), "out"_a, "sigmas"_a, "order"_a = dip::UnsignedArray{ 0 }, "truncation"_a = 3.0, "exponents"_a = dip::UnsignedArray{ 0 }, "extent"_a = "full", doc_strings::dip·CreateGauss·Image·L·FloatArray·CL·UnsignedArray··dfloat··UnsignedArray··String·CL );
    m.def( "CreateGabor", py::overload_cast< dip::FloatArray const&, dip::FloatArray const&, dip::dfloat >( &dip::CreateGabor ),
           "sigmas"_a, "frequencies"_a, "truncation"_a = 3.0, doc_strings::dip·CreateGabor·Image·L·FloatArray·CL·FloatArray·CL·dfloat· );
    m.def( "CreateGabor", py::overload_cast< dip::Image&, dip::FloatArray const&, dip::FloatArray const&, dip::dfloat >( &dip::CreateGabor ),
