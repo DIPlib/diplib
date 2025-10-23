@@ -17,6 +17,7 @@
 
 #include "diplib/statistics.h"
 
+#include <cmath>
 #include <memory>
 #include <limits>
 #include <numeric>
