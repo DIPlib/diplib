@@ -1,4 +1,4 @@
-# (c)2015-2024, Cris Luengo, Wouter Caarls
+# (c)2015-2025, Cris Luengo, Wouter Caarls
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -158,7 +158,7 @@ endif()
 ### DIPimage toolbox for MATLAB
 
 if(DIP_SHARED_LIBRARY)
-   # We will not build DIPimage without a shared DIPlib -- technically possible, but not desireable.
+   # We will not build DIPimage without a shared DIPlib -- technically possible, but not desirable.
    # (This would also require solving linker warnings because of Doctest.)
 
    #set(MATLAB_ADDITIONAL_VERSIONS "R2018b=9.5") # You might need to add a line like this if your version of MATLAB is not recognized

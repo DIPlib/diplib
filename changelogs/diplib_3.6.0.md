@@ -163,6 +163,10 @@ None, but see changes to *DIPlib*.
 
 (See also bugfixes to *DIPlib*.)
 
+### Build and installation changes
+
+- Official packages for Python 3.14 added, support for Python 3.10 dropped.
+
 
 
 

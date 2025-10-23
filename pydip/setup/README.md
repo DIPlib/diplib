@@ -85,7 +85,7 @@ These Jupyter notebooks replicate much of what is shown in the User Manual:
 
 ## License
 
-Copyright 2014-2024 Cris Luengo and contributors  
+Copyright 2014-2025 Cris Luengo and contributors  
 Copyright 1995-2014 Delft University of Technology
 
 Licensed under the Apache License, Version 2.0 (the "License");
