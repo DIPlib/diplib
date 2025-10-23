@@ -40,7 +40,7 @@ setup_kwargs = dict(
     author="Cris Luengo and others",
     author_email="luengo@ieee.org",
     license="Apache-2.0",
-    license_files=["LICENSE.txt", "README.md"],
+    license_files=[],
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         # "License :: OSI Approved :: Apache Software License",  # deprecated
