@@ -781,7 +781,7 @@ constexpr char const* dip·operatorminus·Image·Pixel·CL = "Unary operator, el
 constexpr char const* dip·operatorneg·Image·Pixel·CL = "Bit-wise unary operator operator.";
 constexpr char const* dip·operatornot·Image·Pixel·CL = "Boolean unary operator, element-wise.";
 constexpr char const* dip·operatoreqeq·Image·Pixel·CL·Image·Pixel·CL = "Comparison operator, can only be true if the two pixels have compatible number\nof tensor elements.";
-constexpr char const* dip·operatornoteq·T·Image·Pixel·CL·T·CL = "Comparison operator, equivalent to `!(lhs==rhs)`.";
+constexpr char const* dip·operatornoteq·Image·Pixel·CL·Image·Pixel·CL = "Comparison operator, equivalent to `!(lhs==rhs)`.";
 constexpr char const* dip·operatorlt·Image·Pixel·CL·Image·Pixel·CL = "Comparison operator, can only be true if the two pixels have compatible number\nof tensor elements.";
 constexpr char const* dip·operatorgt·Image·Pixel·CL·Image·Pixel·CL = "Comparison operator, can only be true if the two pixels have compatible number\nof tensor elements.";
 constexpr char const* dip·operatorlteq·Image·Pixel·CL·Image·Pixel·CL = "Comparison operator, can only be true if the two pixels have compatible number\nof tensor elements.";

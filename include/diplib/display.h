@@ -615,13 +615,15 @@ class DIP_NO_EXPORT LookupTable;  // forward declaration
 ///   or angles to be visualised. Use in combination with the `"angle"` or `"orientation"` range mode of
 ///   \ref dip::ImageDisplay.
 /// - `"label"`: For labeled images, each grey value gets a color that can easily be distinguished from
-///   that of nearby grey values. 16 different colors are used. The 0 grey value is considered background
+///   that of nearby grey values. 60 different colors are used. The 0 grey value is considered background
 ///   and colored black. Use with the `"modulo"` range mode of \ref dip::ImageDisplay.
 ///
-/// The `"linear"`, `"diverging"` and `"cyclic"` are by [Peter Kovesi](https://colorcet.com).
+/// The `"linear"`, `"diverging"` and `"cyclic"` colormaps are by [Peter Kovesi](https://colorcet.com).
+/// The `"label"` colormap is designed using the algorithm by Blasbey et al.
 ///
 /// !!! literature
 ///     - Peter Kovesi, "Good Colour Maps: How to Design Them", [arXiv:1509.03700](https://arxiv.org/abs/1509.03700) [cs.GR], 2015.
+///     - Chris Glasbey, Gerie van der Heijden, Vivian F.K. Toh, and Alison Gray, "Colour Displays for Categorical Images", Color Research and Application 32:304-309, 2007.
 DIP_EXPORT LookupTable ColorMapLut(
       String const& colorMap = "grey"
 );

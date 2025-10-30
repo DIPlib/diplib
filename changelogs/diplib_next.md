@@ -10,6 +10,10 @@ date: 2020-00-00
 
 ### Changed functionality
 
+- The `"label"` color map produced by `dip::ColorMapLut()` and used by `dip::ApplyColorMap()` now has 60 unique colors,
+  up from 19. Only the first 6 colors are the same as before. This also affects the labeled image display in DIPviewer,
+  and in the Python and MATLAB packages.
+
 ### Bug fixes
 
 ### Updated dependencies

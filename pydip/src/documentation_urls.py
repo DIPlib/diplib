@@ -823,7 +823,7 @@ doc_url_pairs = [
     ('dip.operator~', 'dip-Image-Pixel.html#dip-operator~-Image-Pixel-CL'),
     ('dip.operator!', 'dip-Image-Pixel.html#dip-operator%21-Image-Pixel-CL'),
     ('dip.operator==', 'dip-Image-Pixel.html#dip-operator%3D%3D-Image-Pixel-CL-Image-Pixel-CL'),
-    ('dip.operator!=', 'dip-Image-Pixel.html#dip-operator%21%3D-T-Image-Pixel-CL-T-CL'),
+    ('dip.operator!=', 'dip-Image-Pixel.html#dip-operator%21%3D-Image-Pixel-CL-Image-Pixel-CL'),
     ('dip.operator<', 'dip-Image-Pixel.html#dip-operator%3C-Image-Pixel-CL-Image-Pixel-CL'),
     ('dip.operator>', 'dip-Image-Pixel.html#dip-operator%3E-Image-Pixel-CL-Image-Pixel-CL'),
     ('dip.operator<=', 'dip-Image-Pixel.html#dip-operator%3C%3D-Image-Pixel-CL-Image-Pixel-CL'),
