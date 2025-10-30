@@ -30,7 +30,7 @@ void ApplyViewerColorMapInternal( Image const& slice, Image& out, ViewingOptions
    auto lut = options.lut_;
    auto element = options.element_;
    auto color_elements = options.color_elements_;
-   
+
    dip::uint width = slice.Size( 0 );
    dip::uint height = slice.Size( 1 );
    dip::sint sliceStride0 = slice.Stride( 0 );
@@ -38,7 +38,7 @@ void ApplyViewerColorMapInternal( Image const& slice, Image& out, ViewingOptions
    dip::sint outStride0 = out.Stride( 0 );
    dip::sint outStride1 = out.Stride( 1 );
    dip::sint sliceStrideT = slice.TensorStride();
-   
+
    // These values are from
    // Peter Kovesi, "Good Colour Maps: How to Design Them", arXiv:1509.03700 [cs.GR], 2015
    dip::dfloat RGB[] = {0.9, 0.17, 0., 0.0, 0.50, 0., 0.1, 0.33, 1.};
@@ -87,7 +87,10 @@ void ApplyViewerColorMapInternal( Image const& slice, Image& out, ViewingOptions
             break;
          default:
             for( iPtr = slicePtr, oPtr = outPtr, ii = 0; ii < width; ++ii, iPtr += sliceStride0, oPtr += outStride0)
-               oPtr[0] = oPtr[1] = oPtr[2] = (dip::uint8)rangeMap((dip::sfloat)iPtr[(dip::sint)element*sliceStrideT], offset, scale, mapping);
+               oPtr[0] = oPtr[1] = oPtr[2] = (dip::uint8)( rangeMap((dip::sfloat)iPtr[(dip::sint)element*sliceStrideT], offset, scale, mapping) + 1e-6);
+               // Note: the cast to uint8 is a floor. When the input is integer, the scaling introduces a rounding error that is amplified by this
+               // floor. When scale==1/255, which should lead to the output being identical to the input, this leads to a few values being reduced by 1.
+               // This change is very noticeable when using a labeled color map. The addition of 1e-6 avoids this issue.
             break;
       }
    }

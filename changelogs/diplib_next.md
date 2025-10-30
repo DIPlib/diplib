@@ -67,6 +67,9 @@ None, but see bugfixes to *DIPlib*.
 
 ### Bug fixes
 
+- When choosing the labeled color map, a rounding error in the mapping from grayvalues to color map indices became
+  apparent, noticeable in a few objects getting the same color as the object with the previous ID. 
+
 ### Build changes
 
 
