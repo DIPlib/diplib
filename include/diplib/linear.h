@@ -1297,6 +1297,11 @@ DIP_NODISCARD inline Image LogGaborFilterBank(
 /// of the parameters. `boundaryCondition` defaults to `"add zeros"`, the normalized convolution then takes pixels
 /// outside of the image domain as missing values.
 ///
+/// Because NaN times zero is NaN, and infinity times zero is also NaN, and NaN values spread in the convolution,
+/// NaN and infinity values in `in` cannot be masked away by setting `mask` to zero at those points. You need to remove
+/// non-finite values from the input image before calling this function. Only in the case of binary `mask` (where we
+/// don't use a multiplication) does this function properly mask NaN and infinity values.
+///
 /// !!! literature
 ///     - H. Knutsson and C. F. Westin, "Normalized and differential convolution", Proceedings of IEEE Conference on
 ///       Computer Vision and Pattern Recognition, New York, NY, 1993, pp. 515-523.
@@ -1342,6 +1347,11 @@ DIP_NODISCARD inline Image NormalizedConvolution(
 ///
 /// This function uses \ref dip::Gauss. See that function for the meaning of the parameters. `boundaryCondition` defaults
 /// to `"add zeros"`, the normalized convolution then takes pixels outside of the image domain as missing values.
+///
+/// Because NaN times zero is NaN, and infinity times zero is also NaN, and NaN values spread in the convolution,
+/// NaN and infinity values in `in` cannot be masked away by setting `mask` to zero at those points. You need to remove
+/// non-finite values from the input image before calling this function. Only in the case of binary `mask` (where we
+/// don't use a multiplication) does this function properly mask NaN and infinity values.
 ///
 /// !!! literature
 ///     - H. Knutsson and C. F. Westin, "Normalized and differential convolution", Proceedings of IEEE Conference on

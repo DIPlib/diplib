@@ -18,6 +18,10 @@ date: 2020-00-00
 
 - `dip::Image::Mask` used multiplication for masking, which doesn't work to mask out NaN or Infinity values.
 
+- `dip::NormalizedConvolution` and `dip::NormalizedDifferentialConvolution` didn't handle NaN or infinity input values
+  correctly if they were masked out. This now works correctly for the case of binary mask image. For non-binary masks,
+  the user is now warned by the documentation to remove such values from the image before the convolution.
+
 ### Updated dependencies
 
 ### Build changes

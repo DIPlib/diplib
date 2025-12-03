@@ -534,7 +534,12 @@ void NormalizedConvolution(
    DIP_THROW_IF( mask.Sizes() != in.Sizes(), E::SIZES_DONT_MATCH );
    Image denominator;
    DIP_STACK_TRACE_THIS( Gauss( mask, denominator, sigmas, { 0 }, method, boundaryCondition, truncation ));
-   DIP_STACK_TRACE_THIS( MultiplySampleWise( in, mask, out ));
+   if( mask.DataType().IsBinary() ) {
+      DIP_STACK_TRACE_THIS( out.Copy( in ));
+      DIP_STACK_TRACE_THIS( out.Mask( mask ));
+   } else {
+      DIP_STACK_TRACE_THIS( MultiplySampleWise( in, mask, out ));
+   }
    DIP_STACK_TRACE_THIS( Gauss( out, out, sigmas, { 0 }, method, boundaryCondition, truncation ));
    DIP_STACK_TRACE_THIS( SafeDivide( out, denominator, out, out.DataType() ));
 }
@@ -563,7 +568,12 @@ void NormalizedDifferentialConvolution(
    Image denominator;
    DIP_STACK_TRACE_THIS( Gauss( mask, denominator, sigmas, { 0 }, method, boundaryCondition, truncation ));
    Image weighted;
-   DIP_STACK_TRACE_THIS( MultiplySampleWise( in, mask, weighted, dt ));
+   if( mask.DataType().IsBinary() ) {
+      DIP_STACK_TRACE_THIS( dip::Convert( in, weighted, dt ));
+      DIP_STACK_TRACE_THIS( weighted.Mask( mask ));
+   } else {
+      DIP_STACK_TRACE_THIS( MultiplySampleWise( in, mask, weighted, dt ));
+   }
    // NC = SafeDivide( Gauss( a * m ), Gauss( m ));
    Image NC;
    DIP_STACK_TRACE_THIS( Gauss( weighted, NC, sigmas, { 0 }, method, boundaryCondition, truncation ));
