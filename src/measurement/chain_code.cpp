@@ -32,7 +32,7 @@ ChainCode ChainCode::ConvertTo8Connected() const {
    out.objectID = objectID;
    out.start = start;
    if( codes.size() < 3 ) {
-      #if __GNUC__ >= 12 && __GNUC__ <= 14
+      #if __GNUC__ >= 12 && __GNUC__ <= 15
          // A bug in GCC 12 puts out a bogus warning here
          #pragma GCC diagnostic push
          #pragma GCC diagnostic ignored "-Wstringop-overflow="
@@ -41,7 +41,7 @@ ChainCode ChainCode::ConvertTo8Connected() const {
       for( auto& c : out.codes ) {
          c = Code( c * 2, c.IsBorder() );
       }
-      #if __GNUC__ >= 12 && __GNUC__ <= 14
+      #if __GNUC__ >= 12 && __GNUC__ <= 15
          #pragma GCC diagnostic pop
       #endif
    } else {

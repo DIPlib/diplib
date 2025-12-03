@@ -16,6 +16,8 @@ date: 2020-00-00
 
 ### Bug fixes
 
+- `dip::Image::Mask` used multiplication for masking, which doesn't work to mask out NaN or Infinity values.
+
 ### Updated dependencies
 
 ### Build changes

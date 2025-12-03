@@ -1,5 +1,5 @@
 /*
- * (c)2014-2022, Cris Luengo.
+ * (c)2014-2025, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -571,7 +571,6 @@ namespace {
 
 template< typename TPI >
 inline void InternFill( Image& dest, TPI value ) {
-   DIP_THROW_IF( !dest.IsForged(), E::IMAGE_NOT_FORGED );
    dip::sint sstride{};
    void* origin{};
    std::tie( sstride, origin ) = dest.GetSimpleStrideAndOrigin();
@@ -612,6 +611,7 @@ void Image::Fill( Image::Pixel const& pixel ) {
 }
 
 void Image::Fill( Image::Sample const& sample ) {
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    switch( dataType_ ) {
       case DT_BIN:      InternFill( *this, sample.As< bin      >() ); break;
       case DT_UINT8:    InternFill( *this, sample.As< uint8    >() ); break;
@@ -631,10 +631,31 @@ void Image::Fill( Image::Sample const& sample ) {
    }
 }
 
+namespace {
+
+template< typename TPI >
+inline void InternMask( Image& image, Image const& mask ) {
+   JointImageIterator< TPI, dip::bin > it( { image, mask } );
+   it.OptimizeAndFlatten();
+   do {
+      if( !it.template Sample< 1 >() ) {
+         it.template Sample< 0 >() = 0;
+      }
+   } while( ++it );
+}
+
+} // namespace
+
 void Image::Mask( dip::Image const& mask ) {
    DIP_THROW_IF( !IsForged() || !mask.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_STACK_TRACE_THIS( mask.CheckIsMask( Sizes(), Option::AllowSingletonExpansion::DO_ALLOW, Option::ThrowException::DO_THROW ));
-   DIP_STACK_TRACE_THIS( *this *= mask );
+   DIP_START_STACK_TRACE
+      mask.CheckIsMask( Sizes(), Option::AllowSingletonExpansion::DO_ALLOW, Option::ThrowException::DO_THROW );
+      Image expImg = QuickCopy();
+      expImg.TensorToSpatial();
+      Image expMask = mask.QuickCopy();
+      expMask.ExpandSingletonDimensions( expImg.Sizes() );
+      DIP_OVL_CALL_ALL( InternMask, ( expImg, expMask ), expImg.DataType() );
+   DIP_END_STACK_TRACE
 }
 
 } // namespace dip
@@ -662,6 +683,27 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::SwapBytesInSample" ) {
    DOCTEST_CHECK( img.At( 4, 2 )[ 0 ].As< dip::sfloat >() == v2 );
    img.SwapBytesInSample();
    DOCTEST_CHECK( img.At( 4, 2 )[ 0 ].As< dip::sfloat >() == v1 );
+}
+
+DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::Mask" ) {
+   dip::Image img( { 5, 8 }, 3, dip::DT_SCOMPLEX );
+   img.Fill( 1 );
+   img.At( 2, 3 ) = dip::scomplex( 4, dip::nan );
+   img.At( 3, 7 ) = dip::scomplex( 3, dip::infinity );
+   img.At( 4, 4 ) = 2;
+   dip::Image mask( { 5, 8 }, 3, dip::DT_BIN );
+   DOCTEST_CHECK_THROWS( img.Mask( mask )); // the mask is not legal
+   mask = dip::Image( { 5, 1 }, 1, dip::DT_BIN );
+   mask.Fill( 1 );
+   img.Mask( mask );
+   DOCTEST_CHECK( !dip::Any( mask == 0 ).As< bool >() );
+   mask.At( 0, 0 ) = 0;
+   mask.At( 2, 0 ) = 0;
+   img.Mask( mask );
+   DOCTEST_CHECK( img.At( 0, 0 ).As< dip::scomplex >() == 0.f );
+   DOCTEST_CHECK( img.At( 2, 3 ).As< dip::scomplex >() == 0.f );
+   DOCTEST_CHECK( img.At( 3, 7 ).As< dip::scomplex >() == dip::scomplex( 3, dip::infinity ));
+   DOCTEST_CHECK( img.At( 1, 1 ).As< dip::scomplex >() == 1.f );
 }
 
 #endif // DIP_CONFIG_ENABLE_DOCTEST
