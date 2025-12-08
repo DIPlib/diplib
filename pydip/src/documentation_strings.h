@@ -605,7 +605,7 @@ constexpr char const* dip·Image·operatoreq·Pixel·CL = "Sets all pixels in th
 constexpr char const* dip·Image·operatoreq·Sample·CL = "Sets all samples in the image to the value `sample`.";
 constexpr char const* dip·Image·As·T·C = "Returns the value of the first sample in the first pixel in the image as the\ngiven numeric type.";
 constexpr char const* dip·Image·operator_FloatArray·C = "Returns a FloatArray containing the sample values of the first pixel in the\nimage. For a complex-valued image, the modulus (absolute value) is returned.";
-constexpr char const* dip·Image·Mask·dip·Image·CL = "Sets all pixels not in `mask` to zero. `img.Mask(mask)` is equivalent to\n`img.At(~mask).Fill(0)`, but without creating an intermediate copy of `mask`.\nCan also be expressed as `img *= mask`.";
+constexpr char const* dip·Image·Mask·dip·Image·CL = "Sets all pixels not in `mask` to zero. `img.Mask(mask)` is equivalent to\n`img.At(~mask).Fill(0)`, but without creating an intermediate copy of `mask`.\nCan also be expressed as `img *= mask`, unless `img` contains non-finite\nvalues.";
 constexpr char const* dip·Image·CopyDataToNewDataSegment = "Allocates a new data segment and copies the data over. The image will be the\nsame as before, but have Normal strides and not share data with another image.";
 constexpr char const* dip·Image·Sample = "A sample represents a single numeric value in an image, see Image\nrepresentation.";
 constexpr char const* dip·Image·Sample·Sample·dip·DataType· = "Construct a new `Sample` by giving the data type. Initialized to 0.";
