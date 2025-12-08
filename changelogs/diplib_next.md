@@ -51,7 +51,14 @@ None, but see bugfixes to *DIPlib*.
 
 ### New functionality
 
+- Added bindings for three functions that manipulate the image's data segment: `dip.Image.ForceNormalStrides()`,
+  `dip.Image.ForceContiguousData()` and `dip.Image.Separate()`.
+
 ### Changed functionality
+
+- Regular indexing (such as `img[10:40:2, :]`), which creates a new image that shares data with the original image,
+  now has the output image protected. This allows the user to write into the sub-image with confidence.
+  See [issue #204](https://github.com/DIPlib/diplib/issues/204).
 
 (See also changes to *DIPlib*.)
 

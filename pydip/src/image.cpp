@@ -494,6 +494,9 @@ void init_image( py::module& m ) {
    img.def( "Convert", &dip::Image::Convert, "dataType"_a, doc_strings::dip·Image·Convert·dip·DataType· );
    img.def( "SwapBytesInSample", &dip::Image::SwapBytesInSample, doc_strings::dip·Image·SwapBytesInSample );
    img.def( "ExpandTensor", &dip::Image::ExpandTensor, doc_strings::dip·Image·ExpandTensor );
+   img.def( "ForceNormalStrides", &dip::Image::ForceNormalStrides, doc_strings::dip·Image·ForceNormalStrides );
+   img.def( "ForceContiguousData", &dip::Image::ForceContiguousData, doc_strings::dip·Image·ForceContiguousData );
+   img.def( "Separate", &dip::Image::Separate, doc_strings::dip·Image·Separate );
    img.def( "Fill", py::overload_cast< dip::Image::Pixel const& >( &dip::Image::Fill ), "pixel"_a, doc_strings::dip·Image·Fill·Pixel·CL );
    img.def( "Mask", &dip::Image::Mask, "mask"_a, doc_strings::dip·Image·Mask·dip·Image·CL );
 
@@ -501,9 +504,9 @@ void init_image( py::module& m ) {
    img.def( "__getitem__", []( dip::Image const& self, dip::uint index ) -> dip::Image::Pixel { return self.At( index ); }, doc_strings::dip·Image·At·dip·uint··C );
    img.def( "__getitem__", []( dip::Image const& self, dip::UnsignedArray const& coords ) -> dip::Image::Pixel { return self.At( coords ); }, doc_strings::dip·Image·At·UnsignedArray·CL·C );
    // Indexing into slice for 1D image
-   img.def( "__getitem__", []( dip::Image const& self, dip::Range const& range ) -> dip::Image { return self.At( range ); }, doc_strings::dip·Image·At·Range·CL·C );
+   img.def( "__getitem__", []( dip::Image const& self, dip::Range const& range ) -> dip::Image { dip::Image img = self.At( range ); img.Protect(); return img; }, doc_strings::dip·Image·At·Range·CL·C );
    // Indexing into slice for nD image
-   img.def( "__getitem__", []( dip::Image const& self, dip::RangeArray rangeArray ) -> dip::Image { return self.At( std::move( rangeArray )); }, doc_strings::dip·Image·At·RangeArray··C );
+   img.def( "__getitem__", []( dip::Image const& self, dip::RangeArray rangeArray ) -> dip::Image { dip::Image img = self.At( std::move( rangeArray )); img.Protect(); return img; }, doc_strings::dip·Image·At·RangeArray··C );
    // Indexing using a mask image
    img.def( "__getitem__", []( dip::Image const& self, dip::Image mask ) -> dip::Image { return self.At( std::move( mask )); }, doc_strings::dip·Image·At·Image··C );
    // Indexing using a list of coordinates
