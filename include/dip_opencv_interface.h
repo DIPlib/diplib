@@ -459,6 +459,12 @@ class ExternalInterface : public dip::ExternalInterface {
          out.SetExternalInterface( this );
          return out;
       }
+
+      /// \brief Overriding the `Name` function allows the user to find out what the external interface attached
+      /// to an image is.
+      dip::String Name() const override {
+         return "dip_opencv::ExternalInterface";
+      }
 };
 
 

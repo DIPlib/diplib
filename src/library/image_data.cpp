@@ -342,7 +342,6 @@ void Image::MatchStrideOrder( Image const& src ) {
 // Normal strides are the default ones:
 // increasing in value, and with contiguous data.
 bool Image::HasNormalStrides() const {
-   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    if (( tensor_.Elements() > 1 ) && ( tensorStride_ != 1 )) {
       return false;
    }

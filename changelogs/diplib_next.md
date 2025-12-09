@@ -14,6 +14,15 @@ date: 2020-00-00
   up from 19. Only the first 6 colors are the same as before. This also affects the labeled image display in DIPviewer,
   and in the Python and MATLAB packages.
 
+- The stream insertion operator (`<<`) for `dip::Image` now also notes if the image is protected, if the data is external,
+  if it has an `ExternalInterface` attached, and if the data is contiguous.
+
+- `dip::Image::HasContiguousData()` and `dip::Image::HasNormalStrides()` no longer check if the image is forged or not.
+  These functions only check the sizes and strides of the image, which can be set before the image is forged.
+
+- `dip::ExternalInterface` has a new virtual member function `Name()` that derived classes can overload to give
+  themselves a name.
+
 ### Bug fixes
 
 - `dip::Image::Mask` used multiplication for masking, which doesn't work to mask out NaN or Infinity values.

@@ -128,6 +128,10 @@ class MatlabInterfaceUInt8 : public dip::ExternalInterface {
          mxArray* mat = static_cast< mxArray* >( img.Data() );
          return mxCreateSharedDataCopy( mat );
       }
+
+      dip::String Name() const override {
+         return "MatlabInterfaceUInt8";
+      }
 };
 
 constexpr char const* className = "dip_imagedisplay";

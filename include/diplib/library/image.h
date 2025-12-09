@@ -96,15 +96,25 @@ inline DataSegment NonOwnedRefToDataSegment( void const* ptr ) {
 /// See \ref external_interface for details on how to use the external interfaces.
 class DIP_CLASS_EXPORT ExternalInterface {
    public:
-      /// Allocates the data for an image. The function is required to set `strides`,
+      /// \brief Allocates the data for an image.
+      ///
+      /// This function is called when \ref dip::Image::Forge is called on an image with this
+      /// external interface. It should be overridden by a function that will allocate space
+      /// according to `dataType`, `sizes` and `tensor.Elements()`.
+      /// `strides` and `tensorStride` might have been set by the user before calling forging,
+      /// and should be honored if possible.
+      ///
+      /// The function is required to set `strides`,
       /// `tensorStride` and `origin`, and return a \ref dip::DataSegment that owns the
       /// allocated data segment. `origin` does not need to be the same pointer as
       /// stored in the returned \ref dip::DataSegment. For example, the latter can point
       /// to a container object (e.g. `std::vector`), and `origin` can point to data
       /// owned by the container object (e.g. `std::vector::data()`).
       ///
-      /// Note that `strides` and `tensorStride` might have been set by the user before
-      /// calling \ref dip::Image::Forge, and should be honored if possible.
+      /// There are two possible failure modes:
+      ///
+      /// 1. The function can throw an exception, which will not be caught, and causes the call to `Forge` to fail.
+      /// 2. The function can return a `nullptr`, which tells `Forge` to use the default allocator instead.
       virtual DataSegment AllocateData(
             void*& origin,
             dip::DataType dataType,
@@ -116,6 +126,12 @@ class DIP_CLASS_EXPORT ExternalInterface {
 
       // Virtual destructor so derived classes can be destructed correctly from the base class handle
       virtual ~ExternalInterface() = default;
+
+      /// \brief Overriding the `Name` function allows the user to find out what the external interface attached
+      /// to an image is.
+      virtual String Name() const {
+         return "unspecified";
+      }
 };
 
 /// \brief \ref dip::ExternalInterface that allocates aligned data.
@@ -163,6 +179,11 @@ class DIP_CLASS_EXPORT AlignedAllocInterface : public ExternalInterface {
       static AlignedAllocInterface* GetInstance() {
          static AlignedAllocInterface ei( alignment );
          return &ei;
+      }
+
+      /// \brief Overriding the `Name` function.
+      virtual String Name() const override {
+         return "AlignedAllocInterface";
       }
 };
 
@@ -618,12 +639,9 @@ class DIP_NO_EXPORT Image {
       /// Use \ref dip::Image::GetSimpleStrideAndOrigin to get a pointer to the origin
       /// of the contiguous data.
       ///
-      /// The image must be forged.
-      ///
       /// \see dip::Image::GetSimpleStrideAndOrigin, dip::Image::HasSimpleStride, dip::Image::HasNormalStrides,
       /// dip::Image::IsSingletonExpanded, dip::Image::Strides, dip::Image::TensorStride
       bool HasContiguousData() const {
-         DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
          dip::uint size = NumberOfPixels() * TensorElements();
          dip::sint start = 0;
          dip::uint sz = 0;
@@ -1319,9 +1337,6 @@ class DIP_NO_EXPORT Image {
          return protect_;
       }
 
-      // Note: This function is the reason we refer to the ExternalInterface class as
-      // dip::ExternalInterface everywhere inside the dip::Image class.
-
       /// \brief Set external interface pointer. The image must be raw. See \ref external_interface.
       void SetExternalInterface( dip::ExternalInterface* ei ) {
          DIP_THROW_IF( IsForged(), E::IMAGE_NOT_RAW );
@@ -1335,6 +1350,8 @@ class DIP_NO_EXPORT Image {
       }
 
       /// \brief Get external interface pointer. See \ref external_interface
+      // Note: This function is the reason we refer to the ExternalInterface class as
+      // dip::ExternalInterface everywhere inside the dip::Image class.
       dip::ExternalInterface* ExternalInterface() const {
          return externalInterface_;
       }

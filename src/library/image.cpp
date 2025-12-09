@@ -218,22 +218,31 @@ std::ostream& operator<<(
       }
    }
    // Data storage
-   os << "    strides:        " << img.Strides() << ", tensor stride " << img.TensorStride() << '\n';
+   os << "    strides:        " << img.Strides() << ", tensor stride " << img.TensorStride();
+   if( img.HasNormalStrides() ) {
+      os << " (normal strides)\n";
+   } else if( img.HasContiguousData() ) {
+      os << " (contiguous data)\n";
+   } else {
+      os << " (non-contiguous data)\n";
+   }
    if( img.IsForged() ) {
-      os << "    data pointer:   " << img.Data() << " (shared among " << img.ShareCount() << " images)\n";
-      os << "    origin pointer: " << img.Origin() << '\n';
-      /*
-      dip::sint sstride;
-      void* porigin;
-      img.GetSimpleStrideAndOrigin( sstride, porigin );
-      if( porigin ) {
-         os << "    simple stride: " << sstride << ", origin: " << porigin << '\n';
+      os << "    data pointer:   " << img.Data();
+      if( img.IsExternalData() ) {
+         os << " (external, ";
       } else {
-         os << "    no simple stride\n";
+         os << " (";
       }
-      */
+      os << "shared among " << img.ShareCount() << " images)\n";
+      os << "    origin pointer: " << img.Origin() << '\n';
    } else {
       os << "    not forged\n";
+   }
+   if( img.IsProtected() ) {
+      os << "    protected\n";
+   }
+   if( img.HasExternalInterface() ) {
+      os << "    external interface: " << img.ExternalInterface()->Name() << '\n';
    }
    return os;
 }
