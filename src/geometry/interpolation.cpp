@@ -454,8 +454,10 @@ void Rotation(
 ) {
    // Parse boundaryCondition
    dip::uint nDims = c_in.Dimensionality();
-   BoundaryConditionArray bc;
-   DIP_STACK_TRACE_THIS( bc = BoundaryConditionArray( nDims, StringToBoundaryCondition( boundaryCondition )));
+   BoundaryCondition bcValue{};
+   DIP_STACK_TRACE_THIS( bcValue = StringToBoundaryCondition( boundaryCondition ));
+   DIP_THROW_IF( bcValue == BoundaryCondition::PERIODIC, "Periodic boundary condition not supported." );
+   BoundaryConditionArray bc( nDims, bcValue );
    // Preserve input
    Image in = c_in.QuickCopy();
    PixelSize pixelSize = c_in.PixelSize();

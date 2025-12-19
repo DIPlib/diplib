@@ -404,17 +404,17 @@ void init_assorted( py::module& m ) {
    m.def( "Rotation", py::overload_cast< dip::Image const&, dip::Image&, dip::dfloat, dip::uint, dip::uint, dip::String const&, dip::String const& >( &dip::Rotation ),
           "in"_a, py::kw_only(), "out"_a, "angle"_a, "dimension1"_a, "dimension2"_a, "interpolationMethod"_a = "", "boundaryCondition"_a = dip::S::ADD_ZEROS, doc_strings::dip·Rotation·Image·CL·Image·L·dfloat··dip·uint··dip·uint··String·CL·String·CL );
    m.def( "Rotation2D", py::overload_cast< dip::Image const&, dip::dfloat, dip::String const&, dip::String const& >( &dip::Rotation2D ),
-          "in"_a, "angle"_a, "interpolationMethod"_a = "", "boundaryCondition"_a = "", doc_strings::dip·Rotation2D·Image·CL·Image·L·dfloat··String·CL·String·CL );
+          "in"_a, "angle"_a, "interpolationMethod"_a = "", "boundaryCondition"_a = dip::S::ADD_ZEROS, doc_strings::dip·Rotation2D·Image·CL·Image·L·dfloat··String·CL·String·CL );
    m.def( "Rotation2D", py::overload_cast< dip::Image const&, dip::Image&, dip::dfloat, dip::String const&, dip::String const& >( &dip::Rotation2D ),
-          "in"_a, py::kw_only(), "out"_a, "angle"_a, "interpolationMethod"_a = "", "boundaryCondition"_a = "", doc_strings::dip·Rotation2D·Image·CL·Image·L·dfloat··String·CL·String·CL );
+          "in"_a, py::kw_only(), "out"_a, "angle"_a, "interpolationMethod"_a = "", "boundaryCondition"_a = dip::S::ADD_ZEROS, doc_strings::dip·Rotation2D·Image·CL·Image·L·dfloat··String·CL·String·CL );
    m.def( "Rotation3D", py::overload_cast< dip::Image const&, dip::dfloat, dip::uint, dip::String const&, dip::String const& >( &dip::Rotation3D ),
-          "in"_a, "angle"_a, "axis"_a = 2, "interpolationMethod"_a = "", "boundaryCondition"_a = "", doc_strings::dip·Rotation3D·Image·CL·Image·L·dfloat··dip·uint··String·CL·String·CL );
+          "in"_a, "angle"_a, "axis"_a = 2, "interpolationMethod"_a = "", "boundaryCondition"_a = dip::S::ADD_ZEROS, doc_strings::dip·Rotation3D·Image·CL·Image·L·dfloat··dip·uint··String·CL·String·CL );
    m.def( "Rotation3D", py::overload_cast< dip::Image const&, dip::Image&, dip::dfloat, dip::uint, dip::String const&, dip::String const& >( &dip::Rotation3D ),
-          "in"_a, py::kw_only(), "out"_a, "angle"_a, "axis"_a = 2, "interpolationMethod"_a = "", "boundaryCondition"_a = "", doc_strings::dip·Rotation3D·Image·CL·Image·L·dfloat··dip·uint··String·CL·String·CL );
+          "in"_a, py::kw_only(), "out"_a, "angle"_a, "axis"_a = 2, "interpolationMethod"_a = "", "boundaryCondition"_a = dip::S::ADD_ZEROS, doc_strings::dip·Rotation3D·Image·CL·Image·L·dfloat··dip·uint··String·CL·String·CL );
    m.def( "Rotation3D", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::dfloat, dip::String const&, dip::String const& >( &dip::Rotation3D ),
-          "in"_a, "alpha"_a, "beta"_a, "gamma"_a, "interpolationMethod"_a = "", "boundaryCondition"_a = "", doc_strings::dip·Rotation3D·Image·CL·Image·L·dfloat··dfloat··dfloat··String·CL·String·CL );
+          "in"_a, "alpha"_a, "beta"_a, "gamma"_a, "interpolationMethod"_a = "", "boundaryCondition"_a = dip::S::ADD_ZEROS, doc_strings::dip·Rotation3D·Image·CL·Image·L·dfloat··dfloat··dfloat··String·CL·String·CL );
    m.def( "Rotation3D", py::overload_cast< dip::Image const&, dip::Image&, dip::dfloat, dip::dfloat, dip::dfloat, dip::String const&, dip::String const& >( &dip::Rotation3D ),
-          "in"_a, py::kw_only(), "out"_a, "alpha"_a, "beta"_a, "gamma"_a, "interpolationMethod"_a = "", "boundaryCondition"_a = "", doc_strings::dip·Rotation3D·Image·CL·Image·L·dfloat··dfloat··dfloat··String·CL·String·CL );
+          "in"_a, py::kw_only(), "out"_a, "alpha"_a, "beta"_a, "gamma"_a, "interpolationMethod"_a = "", "boundaryCondition"_a = dip::S::ADD_ZEROS, doc_strings::dip·Rotation3D·Image·CL·Image·L·dfloat··dfloat··dfloat··String·CL·String·CL );
    m.def( "RotationMatrix2D", py::overload_cast< dip::dfloat >( &dip::RotationMatrix2D ),
           "angle"_a, doc_strings::dip·RotationMatrix2D·Image·L·dfloat· );
    m.def( "RotationMatrix3D", py::overload_cast< dip::dfloat, dip::dfloat, dip::dfloat >( &dip::RotationMatrix3D ),

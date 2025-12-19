@@ -498,19 +498,21 @@ DIP_NODISCARD inline Image Skew(
 ///
 /// The output image has the same data type as the input image.
 ///
-/// The rotation is computed by three consecutive calls to \ref dip::Skew. See that function for the meaning of
-/// `interpolationMethod` and `boundaryCondition`.
+/// See \ref interpolation_methods for information on the `interpolationMethod` parameter.
+///
+/// `boundaryCondition` determines how data outside of the input image domain are filled in. See
+/// \ref dip::BoundaryCondition. The `"periodic"` boundary condition is currently not supported.
+///
+/// The rotation is computed by three consecutive calls to \ref dip::Skew.
 ///
 /// !!! note
-///     The `"periodic"` boundary condition currently produces an output image of the same size as
-///     the input, where the corners of the image that rotate out of the field of view are cut off and fill the
-///     sections that were outside of the input field of view. This is due to the way that \ref dip::Skew handles
-///     the `"periodic"` boundary condition.
+///     Because of the implementation as three consecutive skews, boundary conditions like `"mirror`" do not
+///     fill the new image regions in the same way that a single call to \ref ExtendImage would.
+///
+///     The `"periodic"` boundary condition is currently not supported.
 ///
 /// !!! warning
 ///     The `"ft"` interpolation method is not (yet?) supported.
-// TODO: The periodic boundary condition produces results that are not intuitive, and should probably be improved
-//       by expanding the image before rotating.
 DIP_EXPORT void Rotation(
       Image const& in,
       Image& out,

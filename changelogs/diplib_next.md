@@ -34,6 +34,9 @@ date: 2020-00-00
 - The low-level B-spline interpolation function had a bug that could sometimes cause the program to crash.
   See [issue #212](https://github.com/DIPlib/diplib/issues/212).
 
+- `dip::Rotation()` is bugged when selecting the `"periodic"` boundary condition. It now throws an exception if this
+  boundary condition is used, rather than potentially crashing the program.
+
 ### Updated dependencies
 
 ### Build changes
@@ -76,7 +79,9 @@ None, but see bugfixes to *DIPlib*.
 
 ### Bug fixes
 
-None, but see bugfixes to *DIPlib*.
+- `dip.Rotation2D()` and `dip.Rotation3D()` use the `"add zeros"` boundary condition by default, like the C++
+  functions do.
+
 (See also bugfixes to *DIPlib*.)
 
 ### Build and installation changes
