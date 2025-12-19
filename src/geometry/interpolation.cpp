@@ -55,8 +55,8 @@ class ResamplingLineFilter : public Framework::SeparableLineFilter {
          SampleIterator< TPI > out{ static_cast< TPI* >( params.outBuffer.buffer ), params.outBuffer.stride };
          TPI* buffer = nullptr;
          if( method_ == interpolation::Method::BSPLINE ) {
-            dip::uint size = params.inBuffer.length + 2 * params.inBuffer.border;
-            buffer_[ params.thread ].resize( 2 * size ); // NOP if already that size
+            DIP_ASSERT( params.inBuffer.border == interpolation::bspline_boundary + 1 );
+            buffer_[ params.thread ].resize( interpolation::bspline_buffer_size( params.inBuffer.length )); // NOP if already that size
             buffer = buffer_[ params.thread ].data();
          }
          interpolation::Dispatch( method_, in, out, params.outBuffer.length, zoom_[ procDim ], -shift_[ procDim ], buffer );
@@ -313,8 +313,8 @@ class SkewLineFilter : public Framework::SeparableLineFilter {
          DIP_ASSERT( tanShear_[ procDim ] != 0.0 );
          TPI* buffer = nullptr;
          if( method_ == interpolation::Method::BSPLINE ) {
-            dip::uint size = length + 2 * params.inBuffer.border;
-            buffer_[ params.thread ].resize( 2 * size ); // NOP if already that size
+            DIP_ASSERT( params.inBuffer.border == interpolation::bspline_boundary + 1 );
+            buffer_[ params.thread ].resize( interpolation::bspline_buffer_size( params.inBuffer.length )); // NOP if already that size
             buffer = buffer_[ params.thread ].data();
          }
          dfloat fullShift = tanShear_[ procDim ] * static_cast< dfloat >( params.position[ axis_ ] ) + offset_[ procDim ];
@@ -339,7 +339,7 @@ class SkewLineFilter : public Framework::SeparableLineFilter {
                ++length; // Fill in one sample more than we have in the input, so we interpolate properly.
             }
             interpolation::Dispatch( method_, in, out, length, 1.0, shift, buffer );
-            // TODO: The ExpandBuffer() call below doensn't work with "asym" boundary conditions because TPI is always
+            // TODO: The ExpandBuffer() call below doesn't work with "asym" boundary conditions because TPI is always
             //       a flex type here. We need to make this line filter take the original input data in its original
             //       type, copy the line into a flex-typed buffer, do boundary extension in that buffer, do the
             //       interpolation into another buffer, copy this buffer (with clamping) into the output image in

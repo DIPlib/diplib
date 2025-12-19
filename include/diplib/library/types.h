@@ -908,7 +908,6 @@ class AlignedBuffer {
       /// Change the size of the buffer to `size`. Data is not preserved.
       void resize( dip::uint newsz ) {
          free_array();
-         size_ = newsz;
          if( newsz > 0 ) {
             data_ = static_cast< dip::uint8* >( std::malloc( newsz + align_ - 1 ));
             if( data_ == nullptr ) {
@@ -916,6 +915,7 @@ class AlignedBuffer {
             }
             dip::uint diff = reinterpret_cast< dip::uint >( data_ ) & ( align_ - 1 );
             offset_ = diff == 0 ? 0 : align_ - diff;
+            size_ = newsz;
             DIP_ASSERT( reinterpret_cast< dip::uint >( data() ) % align_ == 0 );
          }
       }

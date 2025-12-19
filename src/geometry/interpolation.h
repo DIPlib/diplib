@@ -82,7 +82,6 @@ void SplineDerivative(
    using TPF = FloatType< TPI >;
    spline1[ 0 ] = -0.5;
    ++spline1;
-   ++spline2;
    spline2[ 0 ] = TPF( 3.0 ) * ( input[ 1 ] - input[ 0 ] );
    for( dip::uint ii = 2; ii < n; ii++ ) {
       ++input;
@@ -103,6 +102,12 @@ void SplineDerivative(
    }
 }
 
+constexpr dip::uint bspline_boundary = 5;
+
+constexpr dip::uint bspline_buffer_size( dip::uint len ) {
+   return 2 * ( len + 2 * bspline_boundary + 2 );
+}
+
 template< typename TPI >
 void BSpline(
       TPI const* input,
@@ -110,18 +115,17 @@ void BSpline(
       dip::uint outSize,
       dfloat zoom,
       dfloat shift,
-      TPI* buffer    // temporary buffer, size = 2 * ( size of input + border )
+      TPI* buffer    // temporary buffer, size = bspline_buffer_size( size of input )
 ) {
    static_assert( std::is_same< FlexType< TPI>, TPI >::value, "dip::interpolation::BSpline<> must be called with a float or complex type." );
-   constexpr dip::uint boundary = 5;
    using TPF = FloatType< TPI >;
    dip::sint offset = floor_cast( shift );
    input += offset;
    SplineDerivative(
-         input - boundary,
+         input - bspline_boundary,
          buffer,
-         static_cast< dip::uint >( static_cast< dfloat >( outSize ) / zoom ) + 2 * boundary + 1 );
-   buffer += boundary;
+         static_cast< dip::uint >( static_cast< dfloat >( outSize ) / zoom ) + 2 * bspline_boundary + 1 ); // half of bspline_buffer_size()
+   buffer += bspline_boundary;
    TPF pos = static_cast< TPF >( shift ) - static_cast< TPF >( offset );
    if( zoom == 1.0 ) {
       TPF a = 1 - pos;
@@ -580,7 +584,7 @@ dip::uint GetBorderSize( Method method ) {
          border = 6;
          break;
       case Method::BSPLINE:
-         border = 5;
+         border = bspline_boundary + 1;
          break;
       case Method::LANCZOS4:
          border = 4;
@@ -610,7 +614,7 @@ dip::uint GetNumberOfOperations( Method method, dip::uint lineLength, dfloat zoo
    dip::uint outLength = static_cast< dip::uint >( std::ceil( static_cast< dfloat >( lineLength ) * zoom ));
    switch( method ) {
       case Method::BSPLINE:
-         return ( lineLength + 10 ) * 40 + outLength * 12;
+         return ( lineLength + 2 * bspline_boundary ) * 40 + outLength * 12;
       case Method::CUBIC_ORDER_4:
          if( zoom == 1.0 ) {
             return 22 + 6 * lineLength;

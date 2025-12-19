@@ -31,6 +31,9 @@ date: 2020-00-00
   correctly if they were masked out. This now works correctly for the case of binary mask image. For non-binary masks,
   the user is now warned by the documentation to remove such values from the image before the convolution.
 
+- The low-level B-spline interpolation function had a bug that could sometimes cause the program to crash.
+  See [issue #212](https://github.com/DIPlib/diplib/issues/212).
+
 ### Updated dependencies
 
 ### Build changes
