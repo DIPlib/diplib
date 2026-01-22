@@ -164,9 +164,14 @@ include(WindowsSupport)
 # Orthogonal features
 include(LibraryFeatures)
 
-
 # math.h/libm portability
-find_package(CMath REQUIRED)
+#find_package(CMath REQUIRED)
+include(CheckSymbolExists)
+check_symbol_exists(pow "math.h" CMath_HAVE_LIBC_POW)
+set(CMath_NEEDS_M FALSE)
+if(NOT CMath_HAVE_LIBC_POW)
+   set(CMath_NEEDS_M TRUE)
+endif()
 
 # Release support
 #include(Release)
