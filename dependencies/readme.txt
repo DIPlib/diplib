@@ -7,7 +7,7 @@ eigen3/     Eigen 3.4.0       https://eigen.tuxfamily.org
 libics/     libics 1.6.5      https://github.com/svi-opensource/libics
 libjpeg/    libjpeg 9c        https://www.ijg.org
 libspng/    libspng 0.7.4     https://libspng.org
-libtiff/    LibTIFF 4.0.10    https://gitlab.com/libtiff/libtiff
+libtiff/    LibTIFF 4.7.1     https://gitlab.com/libtiff/libtiff
 zlib/       zlib 1.3.1        http://www.zlib.net
 
 pocketfft/  PocketFFT for C++ https://gitlab.mpcdf.mpg.de/mtr/pocketfft/-/tree/cpp

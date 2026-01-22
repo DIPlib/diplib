@@ -39,6 +39,8 @@ date: 2020-00-00
 
 ### Updated dependencies
 
+- Updated LibTIFF to version 4.7.1.
+
 ### Build changes
 
 
