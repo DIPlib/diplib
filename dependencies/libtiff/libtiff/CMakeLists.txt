@@ -205,6 +205,9 @@ if(HAVE_LD_VERSION_SCRIPT)
   endif()
 endif()
 
+# DIPlib-specific properties
+set_target_properties(tiff PROPERTIES C_VISIBILITY_PRESET hidden POSITION_INDEPENDENT_CODE TRUE)
+
 if(tiff-install)
   export(TARGETS tiff NAMESPACE TIFF:: FILE "${CMAKE_CURRENT_BINARY_DIR}/libtiffTargets.cmake")
   install(TARGETS tiff EXPORT TiffTargets

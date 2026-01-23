@@ -49,3 +49,6 @@ else()
           ${CMAKE_CURRENT_BINARY_DIR}
           ${CMAKE_CURRENT_SOURCE_DIR})
 endif()
+
+# DIPlib-specific properties
+set_target_properties(tiff_port PROPERTIES C_VISIBILITY_PRESET hidden POSITION_INDEPENDENT_CODE TRUE)
