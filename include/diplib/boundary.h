@@ -1,5 +1,5 @@
 /*
- * (c)2016-2021, Cris Luengo.
+ * (c)2016-2026, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -46,19 +46,20 @@ namespace dip {
 ///
 /// `BoundaryCondition` constant | String              | Definition
 /// ---------------------------- | ------------------- | ----------
-/// `SYMMETRIC_MIRROR`           | "mirror"            | The data are mirrored, with the value at -1 equal to the value at 0, at -2 equal to at 1, etc.
-/// `ASYMMETRIC_MIRROR`          | "asym mirror"       | The data are mirrored and inverted.
+/// `SYMMETRIC_MIRROR`           | "mirror"            | The data are mirrored, with the $f(-1)=f(1)$, $f(-2)=f(2)$, etc. The value at 0 is not repeated.
+/// `ASYMMETRIC_MIRROR`          | "asym mirror"       | The data are mirrored and inverted, with the $f(-1)=-f(1)$, $f(-2)=-f(2)$, etc. Note that for unsigned types, inverting means subtracting from the max value for the type.
+/// `ANTISYMMETRIC_REFLECT`      | "antisym reflect"   | The data are mirrored and inverted around the border pixel value, with $f(-1)=2f(0)-f(1)$, $f(-2)=2f(0)-f(2)$, etc. This ensures the derivative perpendicular to the image edge is constant across the edge. For integer types, the arithmetic is saturated.
 /// `PERIODIC`                   | "periodic"          | The data are repeated periodically, with the value at -1 equal to the value of the last pixel.
 /// `ASYMMETRIC_PERIODIC`        | "asym periodic"     | The data are repeated periodically and inverted.
 /// `ADD_ZEROS`                  | "add zeros"         | The boundary is filled with zeros.
-/// `ADD_MAX_VALUE`              | "add max"           | The boundary is filled with the max value for the data type.
-/// `ADD_MIN_VALUE`              | "add min"           | The boundary is filled with the min value for the data type.
+/// `ADD_MAX_VALUE`              | "add max"           | The boundary is filled with the maximum value for the data type.
+/// `ADD_MIN_VALUE`              | "add min"           | The boundary is filled with the minimum value for the data type.
 /// `ZERO_ORDER_EXTRAPOLATE`     | "zero order"        | The value at the border is repeated indefinitely.
 /// `FIRST_ORDER_EXTRAPOLATE`    | "first order"       | A linear function is defined based on the value closest to the border, the function reaches zero at the end of the extended boundary.
 /// `SECOND_ORDER_EXTRAPOLATE`   | "second order"      | A quadratic function is defined based on the two values closest to the border, the function reaches zero at the end of the extended boundary.
 /// `THIRD_ORDER_EXTRAPOLATE`    | "third order"       | A cubic function is defined based on the two values closest to the border, the function reaches zero with a zero derivative at the end of the extended boundary.
 /// `DEFAULT`                    | "default" or ""     | The default value, currently equal to `SYMMETRIC_MIRROR`.
-/// `ALREADY_EXPANDED`           | "already expanded"  | The dangerous option. The image is an ROI of a larger image, the filter should read existing data outside of the image. The user must be sure that there exists sufficient data to satisfy the filter, for this she must understand how far the filter will read data outside of the image bounds. Not supported by all functions, and cannot always be combined with other options.
+/// `ALREADY_EXPANDED`           | "already expanded"  | The dangerous option. The image is an ROI of a larger image, the filter should read existing data outside of the image. The user must be sure that there exists sufficient data to satisfy the filter, for this they must understand how far the filter will read data outside of the image bounds. Not supported by all functions, and cannot always be combined with other options.
 ///
 /// To impose a boundary condition that is a constant other than 0, min or max,
 /// subtract the desired value from the image, apply the operation with the boundary
@@ -76,6 +77,7 @@ enum class DIP_NO_EXPORT BoundaryCondition : uint8 {
    SYMMETRIC_MIRROR,
    DEFAULT = SYMMETRIC_MIRROR,
    ASYMMETRIC_MIRROR,
+   ANTISYMMETRIC_REFLECT,
    PERIODIC,
    ASYMMETRIC_PERIODIC,
    ADD_ZEROS,
@@ -98,6 +100,7 @@ inline BoundaryCondition StringToBoundaryCondition( String const& bc ) {
    if( bc == S::DEFAULT ) { return BoundaryCondition::DEFAULT; }
    if( bc == S::SYMMETRIC_MIRROR ) { return BoundaryCondition::SYMMETRIC_MIRROR; }
    if( bc == S::ASYMMETRIC_MIRROR ) { return BoundaryCondition::ASYMMETRIC_MIRROR; }
+   if( bc == S::ANTISYMMETRIC_REFLECT ) { return BoundaryCondition::ANTISYMMETRIC_REFLECT; }
    if( bc == S::PERIODIC ) { return BoundaryCondition::PERIODIC; }
    if( bc == S::ASYMMETRIC_PERIODIC ) { return BoundaryCondition::ASYMMETRIC_PERIODIC; }
    if( bc == S::ADD_ZEROS ) { return BoundaryCondition::ADD_ZEROS; }
@@ -139,8 +142,8 @@ inline void BoundaryArrayUseParameter( BoundaryConditionArray& bc, dip::uint nDi
 /// into the output pixel.
 ///
 /// First, second and third order interpolations are not implemented, because their functionality
-/// is impossible to reproduce in this simple function. Use \ref dip::ExtendImage to get the functionality
-/// of these boundary conditions.
+/// is impossible to reproduce in this simple function. `"antisym reflect"` is not yet implemented.
+/// Use \ref dip::ExtendImage to get the functionality of these boundary conditions.
 DIP_EXPORT Image::Pixel ReadPixelWithBoundaryCondition(
       Image const& img,
       IntegerArray coords, // getting a local copy so we can modify it

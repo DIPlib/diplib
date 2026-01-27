@@ -12,6 +12,8 @@
 %                   value at 1, at -2 equal to at 2, etc. The value at 0 is
 %                   not replicated
 %   'asym mirror'   The data is mirrored and inverted.
+%   'antisym reflect' The data is mirrored and inverted around the border pixel
+%                   value, with f(-1) = 2f(0) - f(1), f(-2) = 2f(0) - f(2), etc.
 %   'periodic'      The data is repeated periodically, with the value at -1
 %                   equal to the value of the last pixel.
 %   'asym periodic' The data is repeated periodically and inverted.

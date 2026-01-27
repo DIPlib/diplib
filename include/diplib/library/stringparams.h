@@ -259,6 +259,7 @@ constexpr char const* OUTERRADIUS = "outer radius";
 constexpr char const* DEFAULT = "default";
 constexpr char const* SYMMETRIC_MIRROR = "mirror";
 constexpr char const* ASYMMETRIC_MIRROR = "asym mirror";
+constexpr char const* ANTISYMMETRIC_REFLECT = "antisym reflect";
 constexpr char const* PERIODIC = "periodic";
 constexpr char const* ASYMMETRIC_PERIODIC = "asym periodic";
 constexpr char const* ADD_ZEROS = "add zeros";

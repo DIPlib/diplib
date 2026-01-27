@@ -1,5 +1,5 @@
 /*
- * (c)2016-2019, Cris Luengo.
+ * (c)2016-2026, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -386,7 +386,7 @@ template< typename DataType >
 inline void ExpandBufferFirstOrder(
       DataType* buffer,
       dip::sint stride,
-      dip::uint pixels, // guaranteed larger than 1
+      dip::uint pixels,
       dip::uint left,
       dip::uint right
 ) {
@@ -472,7 +472,7 @@ template< typename DataType >
 inline void ExpandBufferThirdOrder(
       DataType* buffer,
       dip::sint stride,
-      dip::uint pixels, // guaranteed larger than 2
+      dip::uint pixels, // guaranteed larger than 1
       dip::uint left,
       dip::uint right
 ) {
@@ -516,28 +516,75 @@ template< typename DataType, bool asymmetric >
 inline void ExpandBufferMirror(
       DataType* buffer,
       dip::sint stride,
-      dip::uint pixels, // guaranteed larger than 2
+      dip::uint pixels, // guaranteed larger than 1
       dip::uint left,
       dip::uint right
 ) {
-   dip::uint steps = pixels - 1;
+   DataType* start_in = buffer;
+   DataType* end_in = buffer + ( static_cast< dip::sint >( pixels ) - 1 ) * stride;
    // Left side
-   DataType* in = buffer;
-   DataType* out = buffer;
+   DataType* in = start_in;
+   DataType* out = start_in;
+   int sign = -1;
    for( dip::uint ii = 0; ii < left; ii++ ) {
-      bool dir = (( ii / steps ) & 1 ) == 1;
-      in -= dir ? stride : -stride;
+      in -= sign * stride;
       out -= stride;
-      *out = asymmetric ? ( dir ? *in : saturated_inv( *in )) : *in;
+      *out = ( asymmetric && ( sign < 0 )) ? saturated_inv( *in ) : *in;
+      if(( in == end_in ) || ( in == start_in )) {
+         sign *= -1;
+      }
    }
    // Right side
-   in = buffer + ( static_cast< dip::sint >( pixels ) - 1 ) * stride;
-   out = in;
+   in = end_in;
+   out = end_in;
+   sign = -1;
    for( dip::uint ii = 0; ii < right; ii++ ) {
-      bool dir = (( ii / steps ) & 1 ) == 1;
-      in += dir ? stride : -stride;
+      in += sign * stride;
       out += stride;
-      *out = asymmetric ? ( dir ? *in : saturated_inv( *in )) : *in;
+      *out = ( asymmetric && ( sign < 0 )) ? saturated_inv( *in ) : *in;
+      if(( in == end_in ) || ( in == start_in )) {
+         sign *= -1;
+      }
+   }
+}
+
+template< typename DataType >
+inline void ExpandBufferAntiSymReflect(
+      DataType* buffer,
+      dip::sint stride,
+      dip::uint pixels, // guaranteed larger than 1
+      dip::uint left,
+      dip::uint right
+) {
+   // Left side
+   DataType* start_in = buffer;
+   DataType* end_in = buffer + ( static_cast< dip::sint >( pixels ) - 1 ) * stride;
+   DataType* in = start_in;
+   DataType* out = start_in;
+   int sign = -1;
+   dfloat offset = static_cast< dfloat >( *out ) - sign * static_cast< dfloat >( *in );
+   for( dip::uint ii = 0; ii < left; ii++ ) {
+      in -= sign * stride;
+      out -= stride;
+      *out = clamp_cast< DataType >( offset + sign * static_cast< dfloat >( *in ));
+      if(( in == end_in ) || ( in == start_in )) {
+         sign *= -1;
+         offset = static_cast< dfloat >( *out ) - sign * static_cast< dfloat >( *in );
+      }
+   }
+   // Right side
+   in = end_in;
+   out = end_in;
+   sign = -1;
+   offset = static_cast< dfloat >( *out ) - sign * static_cast< dfloat >( *in );
+   for( dip::uint ii = 0; ii < right; ii++ ) {
+      in += sign * stride;
+      out += stride;
+      *out = clamp_cast< DataType >( offset + sign * static_cast< dfloat >( *in ));
+      if(( in == end_in ) || ( in == start_in )) {
+         sign *= -1;
+         offset = static_cast< dfloat >( *out ) - sign * static_cast< dfloat >( *in );
+      }
    }
 }
 
@@ -545,35 +592,39 @@ template< typename DataType, bool asymmetric >
 inline void ExpandBufferPeriodic(
       DataType* buffer,
       dip::sint stride,
-      dip::uint pixels, // guaranteed larger than 2
+      dip::uint pixels, // guaranteed larger than 1
       dip::uint left,
       dip::uint right
 ) {
    // Left side
-   DataType* in = buffer; // value not used, set during first iteration of loop
-   DataType* out = buffer - stride;
-   bool invert = false;   // value modified during first loop iteration (and hopefully optimized out if `!asymmetric`)
+   DataType* start_in = buffer;
+   DataType* end_in = buffer + ( static_cast< dip::sint >( pixels ) - 1 ) * stride;
+   DataType* in = end_in;
+   DataType* out = start_in;
+   int sign = -1;
    for( dip::uint ii = 0; ii < left; ii++ ) {
-      if( !( ii % pixels )) {
-         in = buffer + ( static_cast< dip::sint >( pixels ) - 1 ) * stride;
-         invert = !invert;
-      }
-      *out = asymmetric ? ( invert ? saturated_inv( *in ) : *in ) : *in;
-      in -= stride;
       out -= stride;
+      *out = ( asymmetric && ( sign < 0 )) ? saturated_inv( *in ) : *in;
+      if( in == start_in ) {
+         in = end_in;
+         sign *= -1;
+      } else {
+         in -= stride;
+      }
    }
    // Right side
-   in = buffer;
-   out = buffer + static_cast< dip::sint >( pixels ) * stride;
-   invert = false;
+   in = start_in;
+   out = end_in;
+   sign = -1;
    for( dip::uint ii = 0; ii < right; ii++ ) {
-      if( !( ii % pixels )) {
-         in = buffer;
-         invert = !invert;
-      }
-      *out = asymmetric ? ( invert ? saturated_inv( *in ) : *in ) : *in;
-      in += stride;
       out += stride;
+      *out = ( asymmetric && ( sign < 0 )) ? saturated_inv( *in ) : *in;
+      if( in == end_in ) {
+         in = start_in;
+         sign *= -1;
+      } else {
+         in += stride;
+      }
    }
 }
 
@@ -606,6 +657,16 @@ inline void ExpandBufferFromTo(
                ExpandBufferConstant( buffer, stride, pixels, left, right, saturated_inv( buffer[ 0 ] ), saturated_inv( buffer[ 0 ] ));
             } else {
                ExpandBufferMirror< DataType, true >( buffer, stride, pixels, left, right );
+            }
+         }
+         break;
+
+      case BoundaryCondition::ANTISYMMETRIC_REFLECT:
+         for( dip::uint jj = 0; jj < tensorElements; ++jj, buffer += tensorStride ) {
+            if( pixels == 1 ) {
+               ExpandBufferConstant( buffer, stride, pixels, left, right, buffer[ 0 ], buffer[ 0 ] );
+            } else {
+               ExpandBufferAntiSymReflect< DataType >( buffer, stride, pixels, left, right );
             }
          }
          break;
@@ -649,7 +710,7 @@ inline void ExpandBufferFromTo(
          break;
 
       case BoundaryCondition::THIRD_ORDER_EXTRAPOLATE:
-         if( pixels > 2 ) {
+         if( pixels > 1 ) {
             for( dip::uint jj = 0; jj < tensorElements; ++jj, buffer += tensorStride ) {
                ExpandBufferThirdOrder( buffer, stride, pixels, left, right );
             }

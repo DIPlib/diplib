@@ -8,6 +8,9 @@ date: 2020-00-00
 
 ### New functionality
 
+- Added a `"antisym reflect"` (`dip::BoundaryCondition::ANTISYMMETRIC_REFLECT`) boundary condition. It is similar to
+  `"asym mirror"`, but ensures the derivative is constant at the image boundary.
+
 ### Changed functionality
 
 - The `"label"` color map produced by `dip::ColorMapLut()` and used by `dip::ApplyColorMap()` now has 60 unique colors,
