@@ -45,6 +45,9 @@ date: 2020-00-00
 - `operator%()` and the unary `operator-()` for `dip::Image::Pixel` inputs threw a "data type not supported" exception
   for single-precision float pixels.
 
+- `dip::ReadPixelWithBoundaryCondition()` didn't implement the boundary conditions exactly the same way as all other
+  functions in this library, it now produces the exact same values for the modes that it supports.
+
 ### Updated dependencies
 
 - Updated LibTIFF to version 4.7.1.

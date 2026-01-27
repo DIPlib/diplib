@@ -1,5 +1,5 @@
 /*
- * (c)2016-2017, Cris Luengo.
+ * (c)2016-2026, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,20 +17,41 @@
 
 #include "diplib/boundary.h"
 
+#include <limits>
 #include <utility>
 
 #include "diplib.h"
 #include "diplib/generic_iterators.h"
 #include "diplib/library/copy_buffer.h"
+#include "diplib/overload.h"
 
 namespace dip {
+
+namespace {
+
+template< typename TPI >
+void SetValue( Image::Pixel& out, bool toMax ) {
+   out = toMax ? std::numeric_limits< TPI >::max() : std::numeric_limits< TPI >::lowest();
+}
+
+void SetMaxValue( Image::Pixel& out ) {
+   DIP_OVL_CALL_ALL( SetValue, ( out, true ), out.DataType() );
+}
+
+void SetMinValue( Image::Pixel& out ) {
+   DIP_OVL_CALL_ALL( SetValue, ( out, false ), out.DataType() );
+}
+
+} // namespace
 
 Image::Pixel ReadPixelWithBoundaryCondition(
       Image const& img,
       IntegerArray coords, // getting a local copy so we can modify it
-      BoundaryConditionArray const& bc
+      BoundaryConditionArray const& c_bc
 ) {
    DIP_THROW_IF( coords.size() != img.Dimensionality(), E::ARRAY_PARAMETER_WRONG_LENGTH );
+   BoundaryConditionArray bc = c_bc;
+   dip::BoundaryArrayUseParameter( bc, img.Dimensionality() );
    bool invert = false;
    Image::Pixel out( DataType::SuggestFlex( img.DataType() ), img.TensorElements() );
    out.ReshapeTensor( img.Tensor() );
@@ -38,36 +59,64 @@ Image::Pixel ReadPixelWithBoundaryCondition(
       dip::sint sz = static_cast< dip::sint >( img.Size( ii ));
       if(( coords[ ii ] < 0 ) || ( coords[ ii ] >= sz )) {
          switch( bc[ ii ] ) {
-            case BoundaryCondition::ASYMMETRIC_MIRROR:
-               invert = true;
-               // Intentionally falls through
-            case BoundaryCondition::SYMMETRIC_MIRROR:
-               coords[ ii ] = modulo( coords[ ii ], sz * 2 );
+            case BoundaryCondition::SYMMETRIC_MIRROR: {
+               dip::sint period = sz - 1;
+               coords[ ii ] = modulo( coords[ ii ], 2 * period );
                if( coords[ ii ] >= sz ) {
-                  coords[ ii ] = 2 * sz - coords[ ii ] - 1;
+                  coords[ ii ] = 2 * period - coords[ ii ];
                }
                break;
-            case BoundaryCondition::ASYMMETRIC_PERIODIC:
-               invert = true;
-               // Intentionally falls through
+            }
+            case BoundaryCondition::ASYMMETRIC_MIRROR: {
+               bool onLeft = coords[ ii ] < 0;
+               bool invert_again = false;
+               dip::sint period = sz - 1;
+               coords[ ii ] = modulo( coords[ ii ], 2 * period );
+               if( coords[ ii ] >= sz ) {
+                  coords[ ii ] = 2 * period - coords[ ii ];
+                  invert_again = true; // In the second half of the 2*period region, we invert
+               }
+               if( coords[ ii ] == 0 ) {
+                  // zero indices on the right are always inverted, on the left they re never
+                  invert_again = !onLeft;
+               } else if( coords[ ii ] == period ) {
+                  // end indices  the left are always inverted, on the right they are never
+                  invert_again = onLeft;
+               }
+               if( invert_again ) {
+                  invert = !invert;
+               }
+               break;
+            }
             case BoundaryCondition::PERIODIC:
                coords[ ii ] = modulo( coords[ ii ], sz );
+               break;
+            case BoundaryCondition::ASYMMETRIC_PERIODIC:
+               coords[ ii ] = modulo( coords[ ii ], 2 * sz );
+               if( coords[ ii ] >= sz ) {
+                  coords[ ii ] -= sz;
+                  invert = !invert; // In the second half of the 2*sz region, we invert
+               }
                break;
             case BoundaryCondition::ADD_ZEROS:
                out = 0;
                return out; // We're done!
             case BoundaryCondition::ADD_MAX_VALUE:
-               out = infinity;
+               SetMaxValue( out );
                return out; // We're done!
             case BoundaryCondition::ADD_MIN_VALUE:
-               out = -infinity;
+               SetMinValue( out );
                return out; // We're done!
             case BoundaryCondition::ZERO_ORDER_EXTRAPOLATE:
                coords[ ii ] = clamp( coords[ ii ], dip::sint( 0 ), sz - 1 );
                break;
-            case BoundaryCondition::FIRST_ORDER_EXTRAPOLATE:  // not implemented, difficult to implement in this framework.
-            case BoundaryCondition::SECOND_ORDER_EXTRAPOLATE: // not implemented, difficult to implement in this framework.
-            case BoundaryCondition::THIRD_ORDER_EXTRAPOLATE:  // not implemented, difficult to implement in this framework.
+            case BoundaryCondition::FIRST_ORDER_EXTRAPOLATE:
+            case BoundaryCondition::SECOND_ORDER_EXTRAPOLATE:
+            case BoundaryCondition::THIRD_ORDER_EXTRAPOLATE:
+               // The definitions for the first, second and third order extrapolation depend on the size of the boundary region, which the user is not required to decide in this function.
+            case BoundaryCondition::ANTISYMMETRIC_REFLECT:
+               // TODO. This is hard, we need to compute the edge at each distance of sz-1 that we advance.
+               //       And it requires computing multiple values, depending on how many dimensions are outside the domain.
             default:
                DIP_THROW("Boundary condition not implemented" );
          }
@@ -273,3 +322,62 @@ void ExtendRegion(
 }
 
 } // namespace dip
+
+#ifdef DIP_CONFIG_ENABLE_DOCTEST
+#include "doctest.h"
+#include "diplib/generation.h"
+#include "diplib/random.h"
+
+DOCTEST_TEST_CASE("[DIPlib] comparing the output of ReadPixelWithBoundaryCondition to that of ExtendImage") {
+   dip::Image img( { 15, 10 }, 1, dip::DT_SFLOAT );
+   img.Fill( 0 );
+   dip::Random rng;
+   dip::UniformNoise( img, img, rng, 0.5, 3.8 );
+   dip::Image ext;
+   for( auto bc : {
+      dip::BoundaryCondition::SYMMETRIC_MIRROR,
+      dip::BoundaryCondition::ASYMMETRIC_MIRROR,
+      // dip::BoundaryCondition::ANTISYMMETRIC_REFLECT // Not yet implemented
+      dip::BoundaryCondition::PERIODIC,
+      dip::BoundaryCondition::ASYMMETRIC_PERIODIC,
+      dip::BoundaryCondition::ADD_ZEROS,
+      dip::BoundaryCondition::ADD_MAX_VALUE,
+      dip::BoundaryCondition::ADD_MIN_VALUE,
+      dip::BoundaryCondition::ZERO_ORDER_EXTRAPOLATE
+      // dip::BoundaryCondition::FIRST_ORDER_EXTRAPOLATE // Will never be implemented
+      // dip::BoundaryCondition::SECOND_ORDER_EXTRAPOLATE // Will never be implemented
+      // dip::BoundaryCondition::THIRD_ORDER_EXTRAPOLATE // Will never be implemented
+   } ) {
+      dip::ExtendImage( img, ext, { 20, 15 }, { bc }, dip::Option::ExtendImage::Masked );
+      dip::sfloat const* ext_ptr;
+      ext_ptr = static_cast< dip::sfloat const* >( ext.Origin() );
+      // We can index into `ext` from x = -20 to 14 + 20 = 34, and y = -15 to 9 + 15 = 24
+      for( dip::IntegerArray coords : {
+         // Inside image
+         dip::IntegerArray{ 0, 0 },
+         // Just outside on the left
+         dip::IntegerArray{ -1, 0 },
+         dip::IntegerArray{ 0, -1 },
+         dip::IntegerArray{ -1, -1 },
+         // Just outside on the right
+         dip::IntegerArray{ 20, 14 },
+         dip::IntegerArray{ 19, 15 },
+         dip::IntegerArray{ 20, 15 },
+         // Around the transition from the first to the second replicate in the case of mirror
+         dip::IntegerArray{ 28, -9 },
+         dip::IntegerArray{ 29, -9 },
+         dip::IntegerArray{ 28, -10 },
+         dip::IntegerArray{ 29, -10 },
+         // Around the transition from the first to the second replicate in the case of periodic
+         dip::IntegerArray{ 30, -10 },
+         dip::IntegerArray{ 29, -11 },
+         dip::IntegerArray{ 30, -11 },
+      } ) {
+            dip::Image::Pixel val;
+            val = dip::ReadPixelWithBoundaryCondition( img, coords, { bc } );
+            DOCTEST_CHECK( val.As< dip::sfloat >() == *( ext_ptr + ext.Offset( coords )));
+      }
+   }
+}
+
+#endif // DIP_CONFIG_ENABLE_DOCTEST
