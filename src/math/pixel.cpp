@@ -20,6 +20,7 @@
 #include <algorithm>
 
 #include "diplib/overload.h"
+#include "diplib/saturated_arithmetic.h"
 
 namespace dip {
 
@@ -27,6 +28,13 @@ namespace {
 
 DataType SuggestArithmetic( DataType type1, DataType type2 ) {
    if( type1.IsComplex() || type2.IsComplex() ) {
+      return DT_DCOMPLEX;
+   }
+   return DT_DFLOAT;
+}
+
+DataType SuggestArithmetic( DataType type ) {
+   if( type.IsComplex() ) {
       return DT_DCOMPLEX;
    }
    return DT_DFLOAT;
@@ -266,24 +274,34 @@ Image::Pixel operator/( Image::Pixel const& lhs, Image::Pixel const& rhs ) {
 }
 
 Image::Pixel operator%( Image::Pixel const& lhs, Image::Pixel const& rhs ) {
-   if( lhs.DataType().IsFloat() ) {
+   DIP_THROW_IF( lhs.DataType().IsComplex() || rhs.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
+   if( lhs.DataType().IsFloat() || rhs.DataType().IsFloat() ) {
+      dip::DataType dt = DT_DFLOAT;
       return DyadicOperator< ComputationType::Class_Float >(
-            lhs, rhs, lhs.DataType(), lhs.DataType(),
-            [ = ]( auto in1, auto in2 ) { return std::fmod( in1, in2 ); }
+            lhs, rhs, dt, dt,
+            [ = ]( dfloat in1, dfloat in2 ) { return std::fmod( in1, in2 ); }
       );
    }
+   dip::DataType dt = lhs.DataType();
    return DyadicOperator< ComputationType::Class_Integer >(
-         lhs, rhs, lhs.DataType(), lhs.DataType(),
+         lhs, rhs, dt, dt,
          [ = ]( auto in1, auto in2 ) { return in1 % in2; }
    );
 }
 
 Image::Pixel operator-( Image::Pixel const& in ) {
-   dip::DataType dt = dip::DataType::SuggestFlex( in.DataType() );
+   if( in.DataType().IsFlex() ) {
+      dip::DataType dt = SuggestArithmetic( in.DataType() );
+      return MonadicOperator< ComputationType::Class_Flex >(
+            in, dt, dt,
+            [ = ]( auto in1 ) { return -in1; }
+      );
+   }
+   dip::DataType dt = in.DataType();
    return MonadicOperator< ComputationType::Class_Flex >(
-         in, dt, dt,
-         [ = ]( auto in1 ) { return -in1; }
-   );
+            in, dt, dt,
+            [ = ]( auto in1 ) { return saturated_inv( in1 ); }
+      );
 }
 
 //
