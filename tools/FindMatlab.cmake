@@ -1258,10 +1258,13 @@ function(matlab_add_mex)
     if(APPLE)
 
       if(Matlab_HAS_CPP_API)
-        list(APPEND _ver_map_files ${Matlab_EXTERN_LIBRARY_DIR}/cppMexFunction.map) # This one doesn't exist on Linux
-        set(_link_flags "${_link_flags} -Wl,-U,_mexCreateMexFunction -Wl,-U,_mexDestroyMexFunction -Wl,-U,_mexFunctionAdapter")
+        # list(APPEND _ver_map_files ${Matlab_EXTERN_LIBRARY_DIR}/cppMexFunction.map) # This one doesn't exist on Linux
+        # set(_link_flags "${_link_flags} -Wl,-U,_mexCreateMexFunction -Wl,-U,_mexDestroyMexFunction -Wl,-U,_mexFunctionAdapter")
         # On MacOS, the MEX command adds the above, without it the link breaks
         # because we indiscriminately use "cppMexFunction.map" even for C API MEX-files.
+        #
+        # 2026, Apple Clang 17: the above seems to no longer work, the linker complains about those three functions being undefined.
+        # So, for now, we disable this altogether. Here in DIPlib we only use the C interface anyway.
       endif()
 
       set(_export_flag_name -exported_symbols_list)
