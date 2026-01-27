@@ -84,7 +84,7 @@ if(DOXPP_FOUND)
 
    add_custom_command(
          OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/diplib_docs.json"
-         COMMAND "${DOXPP_PARSE_EXECUTABLE}"
+         COMMAND ${CMAKE_COMMAND} -E env --unset=MACOSX_DEPLOYMENT_TARGET --unset=SDKROOT "${DOXPP_PARSE_EXECUTABLE}"
          DEPENDS ${DOC_SOURCES}
          WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
    )
