@@ -37,6 +37,8 @@ date: 2020-00-00
 - `dip::Rotation()` is bugged when selecting the `"periodic"` boundary condition. It now throws an exception if this
   boundary condition is used, rather than potentially crashing the program.
 
+- The numeric function `dip::modulo()` didn't handle all cases correctly.
+
 ### Updated dependencies
 
 - Updated LibTIFF to version 4.7.1.

@@ -142,8 +142,13 @@ constexpr inline dip::uint modulo( dip::uint value, dip::uint period ) {
 }
 
 /// \brief Integer modulo, result is always positive, as opposed to % operator.
+/// `period` must be positive, this is not tested for.
 constexpr inline dip::sint modulo( dip::sint value, dip::sint period ) {
-   return ( value < 0 ) ? ( period - ( -value % period )) : ( value % period );
+   dip::sint out = value % period;
+   if( out < 0 ) {
+      out += period; // If period is negative, we need to subtract here.
+   }
+   return out;
 }
 
 /// \brief Fast floor operation, without checks, returning a \ref dip::sint.

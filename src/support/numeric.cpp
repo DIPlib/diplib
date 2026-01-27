@@ -525,6 +525,18 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::div_{floor|ceil|round} functions") 
    DOCTEST_CHECK( dip::div_round( s, s ) == 1 );
 }
 
+DOCTEST_TEST_CASE("[DIPlib] testing the dip::modulo functions") {
+   DOCTEST_CHECK( dip::modulo( dip::sint{ 0 }, 10 ) == 0 );
+   DOCTEST_CHECK( dip::modulo( dip::sint{ 9 }, 10 ) == 9 );
+   DOCTEST_CHECK( dip::modulo( dip::sint{ 10 }, 10 ) == 0 );
+   DOCTEST_CHECK( dip::modulo( dip::sint{ 11 }, 10 ) == 1 );
+   DOCTEST_CHECK( dip::modulo( dip::sint{ 100 }, 10 ) == 0 );
+   DOCTEST_CHECK( dip::modulo( dip::sint{ -1 }, 10 ) == 9 );
+   DOCTEST_CHECK( dip::modulo( dip::sint{ -9 }, 10 ) == 1 );
+   DOCTEST_CHECK( dip::modulo( dip::sint{ -10 }, 10 ) == 0 );
+   DOCTEST_CHECK( dip::modulo( dip::sint{ -11 }, 10 ) == 9 );
+}
+
 DOCTEST_TEST_CASE("[DIPlib] testing the dip::{floor|ceil|round}_cast functions") {
    DOCTEST_CHECK( dip::floor_cast( 11.0 ) == 11 );
    DOCTEST_CHECK( dip::floor_cast( 11.000000001 ) == 11 );
