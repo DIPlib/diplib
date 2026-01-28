@@ -269,6 +269,7 @@ doc_url_pairs = [
     ('dip.BoundaryCondition.SYMMETRIC_MIRROR', 'boundary.html#dip-BoundaryCondition-SYMMETRIC_MIRROR'),
     ('dip.BoundaryCondition.DEFAULT', 'boundary.html#dip-BoundaryCondition-DEFAULT'),
     ('dip.BoundaryCondition.ASYMMETRIC_MIRROR', 'boundary.html#dip-BoundaryCondition-ASYMMETRIC_MIRROR'),
+    ('dip.BoundaryCondition.ANTISYMMETRIC_REFLECT', 'boundary.html#dip-BoundaryCondition-ANTISYMMETRIC_REFLECT'),
     ('dip.BoundaryCondition.PERIODIC', 'boundary.html#dip-BoundaryCondition-PERIODIC'),
     ('dip.BoundaryCondition.ASYMMETRIC_PERIODIC', 'boundary.html#dip-BoundaryCondition-ASYMMETRIC_PERIODIC'),
     ('dip.BoundaryCondition.ADD_ZEROS', 'boundary.html#dip-BoundaryCondition-ADD_ZEROS'),

@@ -244,7 +244,8 @@ constexpr inline bin saturated_safediv( bin lhs, bin rhs ) {
 // Inversion
 //
 
-/// \brief Inverts a value using saturated arithmetic. This is the same as negation, but not for unsigned values.
+/// \brief Inverts a value using saturated arithmetic. This is the same as negation, but not for unsigned values,
+/// where the result is the input subtracted from the maximum value for the data type.
 // Floats and complex are straight-forward
 template< typename T, std::enable_if_t< detail::is_floating_point< T >::value
                                      || detail::is_complex< T >::value, int > = 0 >

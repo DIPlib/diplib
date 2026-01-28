@@ -63,6 +63,120 @@ value that changes depending on the image dimensionality.
 
 \comment --------------------------------------------------------------
 
+\section boundary_conditions Boundary Conditions
+
+When computing on images, one usually needs to read data outside the image domain. For example, a filter
+with a 7x7 window will need to read up to 3 pixels past the image boundary when computing the output at
+pixels inside the image but near the boundary. Most functions will pad (extend) the image, fill in some
+meaningful values in the padded areas, and use the result to read from when computing their output. Some
+functions will do this explicitly for the entire image, separable filters will do this on one image line
+at the time, and some other functions will do this only implicitly. One can use the function
+\ref dip::ExtendImage to visualize what the extended image looks like to a filter, or to extend the image
+manually implementing a function that needs to read outside the image bounds.
+
+In DIPlib, we refer to the method used to fill in the padded areas as the *boundary condition*. DIPlib
+knows quite a lot of different boundary conditions, see \ref dip::BoundaryCondition. Here we show what
+they do, what the conditions are that are applied to the boundary, and discuss what condition to pick
+for some common situations.
+
+The default boundary condition is `"mirror"`. The image data is mirrored at the image boundary, creating
+an even function around the boundary pixel. This is the default because it is a reasonable condition
+in most situations, and is the recommended boundary condition for low-pass filters and non-linear smoothing
+filters. Asymmetric mirror (`"asym mirror"`) does  the same thing, but additionally inverts the pixel values,
+creating an odd function around the boundary pixel. Note that, for unsigned integer images, this uses
+\ref dip::saturated_inv.
+
+The plots below show a 1D signal (an image line) padded  using these boundary conditions.
+
+![The `"mirror"` boundary condition](border_condition_mirror.png){width=400px}
+*The `"mirror"` boundary condition*
+{.m-text-center}
+
+![The `"asym mirror"` boundary condition](border_condition_asym_mirror.png){width=400px}
+*The `"asym mirror"` boundary condition*
+{.m-text-center}
+
+Antisymmetric reflect (`"antisym reflect"`) is similar to asymmetric mirror, but reflects the data also
+in the intensity axis (the y axis in the plot below). This causes the gradient to be equal on both
+sides of the boundary pixel. This is a good boundary condition to use when computing derivatives.
+Note that for integer types, this boundary condition can lead to values outside the input range, which
+will be clipped to the range. Note also that this boundary condition is noise-sensitive, as the one
+pixel at the edge affects all the padded pixels.
+
+![The `"antisym reflect"` boundary condition](border_condition_antisym_reflect.png){width=400px}
+*The `"antisym reflect"` boundary condition*
+{.m-text-center}
+
+The periodic boundary condition simply repeats the image, as if one enters the domain on one side when
+exiting it on the other, like in pac-man. For a 2D image, this corresponds to wrapping the image onto a
+toroidal geometry. The Discrete Fourier Transform implicitly uses this boundary condition, other filters
+can use it too to mimic a filter applied in the discrete Fourier domain. The asymmetric periodic condition
+additionally inverts the pixel values.
+
+![The `"periodic"` boundary condition](border_condition_periodic.png){width=400px}
+*The `"periodic"` boundary condition*
+{.m-text-center}
+
+![The `"asym periodic"` boundary condition](border_condition_asym_periodic.png){width=400px}
+*The `"asym periodic"` boundary condition*
+{.m-text-center}
+
+Three trivial conditions simply set the values outside the image to a specific value, either zero (`"add zeros"`),
+the maximum value for the data type (`"add max"`), or the minimum value for the data type (`"add min"`).
+
+Padding with zeros is useful for example in the case of normalized convolution (where it's the default), when
+extending the Fourier transform of an image, and in many cases for geometric transformations (it's the default
+also for rotation).
+
+Padding with the maximum value is useful in the morphological erosion (\ref dip::Erosion), and with the minimum
+value for dilation (\ref dip::Dilation).
+
+![The `"add zeros"` boundary condition](border_condition_add_zeros.png){width=400px}
+*The `"add zeros"` boundary condition*
+{.m-text-center}
+
+To impose a boundary condition that is a constant other than 0, min or max, subtract the desired value from
+the image, apply the operation with the boundary condition `"add zeros"`, then add that value back to the image.
+This might require converting the image to a signed type for the initial subtraction to do the right thing.
+For example, to use a value of 100 as the constant boundary condition:
+
+```cpp
+int bc = 100;
+dip::Image img = dip::ImageRead("examples/cameraman.tif");
+dip::Image rotated = img - bc;  // Note that the result here is single float
+rotated = dip::Rotation2D(rotated, dip::pi/4, "", "add zeros");
+rotated += bc;
+rotated.Convert(dip::DT_UINT8);
+```
+
+The last four boundary conditions extrapolate based on one or two pixels at the boundary. They
+establish a polygon with increasing order. All of these are very noise sensitive, and the higher
+the order, the more sensitive they are. The zero and first order extrapolation use only one boundary
+pixel. `"zero order"` simply replicates this one value out. `"first order"` fits a first order
+polynomial between this pixel and the end of the padding area, where it reaches zero. The
+second and third order extrapolation use two boundary pixels, fitting a second and third order
+polynomial that also reach zero at the end of the padding area. The third order extrapolation
+reaches zero with a zero gradient. Do not use these higher order extrapolation modes with
+noisy data.
+
+![The `"zero order"` boundary condition](border_condition_zero_order.png){width=400px}
+*The `"zero order"` boundary condition*
+{.m-text-center}
+
+![The `"first order"` boundary condition](border_condition_first_order.png){width=400px}
+*The `"first order"` boundary condition*
+{.m-text-center}
+
+![The `"second order"` boundary condition](border_condition_second_order.png){width=400px}
+*The `"second order"` boundary condition*
+{.m-text-center}
+
+![The `"third order"` boundary condition](border_condition_third_order.png){width=400px}
+*The `"third order"` boundary condition*
+{.m-text-center}
+
+\comment --------------------------------------------------------------
+
 \section aliasing Handling input and output images that alias each other
 
 Many of the old *DIPlib 2* functions (the ones that cannot work
