@@ -306,9 +306,9 @@ void init_math( py::module& m ) {
    m.def( "ClipHigh", py::overload_cast< dip::Image const&, dip::dfloat >( &dip::ClipHigh ), "in"_a, "high"_a = 255.0, doc_strings::dip·ClipHigh·Image·CL·Image·L·dfloat· );
    m.def( "ClipHigh", py::overload_cast< dip::Image const&, dip::Image&, dip::dfloat >( &dip::ClipHigh ), "in"_a, py::kw_only(), "out"_a, "high"_a = 255.0, doc_strings::dip·ClipHigh·Image·CL·Image·L·dfloat· );
    m.def( "ErfClip", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::String const& >( &dip::ErfClip ),
-          "in"_a, "low"_a = 128.0, "high"_a = 64.0, "mode"_a = dip::S::RANGE, doc_strings::dip·ErfClip·Image·CL·Image·L·dfloat··dfloat··String·CL );
+          "in"_a, "param1"_a = 128.0, "param2"_a = 64.0, "mode"_a = dip::S::RANGE, doc_strings::dip·ErfClip·Image·CL·Image·L·dfloat··dfloat··String·CL );
    m.def( "ErfClip", py::overload_cast< dip::Image const&, dip::Image&, dip::dfloat, dip::dfloat, dip::String const& >( &dip::ErfClip ),
-          "in"_a, py::kw_only(), "out"_a, "low"_a = 128.0, "high"_a = 64.0, "mode"_a = dip::S::RANGE, doc_strings::dip·ErfClip·Image·CL·Image·L·dfloat··dfloat··String·CL );
+          "in"_a, py::kw_only(), "out"_a, "param1"_a = 128.0, "param2"_a = 64.0, "mode"_a = dip::S::RANGE, doc_strings::dip·ErfClip·Image·CL·Image·L·dfloat··dfloat··String·CL );
    m.def( "Zero", py::overload_cast< dip::Image const&, dip::dfloat >( &dip::Zero ), "in"_a, "threshold"_a = 128.0, doc_strings::dip·Zero·Image·CL·Image·L·dfloat· );
    m.def( "Zero", py::overload_cast< dip::Image const&, dip::Image&, dip::dfloat >( &dip::Zero ), "in"_a, py::kw_only(), "out"_a, "threshold"_a = 128.0, doc_strings::dip·Zero·Image·CL·Image·L·dfloat· );
    m.def( "Shrinkage", py::overload_cast< dip::Image const&, dip::dfloat >( &dip::Shrinkage ),

@@ -102,18 +102,20 @@ inline Image ClipHigh(
 /// \brief Clips the sample values in `in` to a specified range, using the error function.
 ///
 /// The input values are mapped through the error function. This leads to values in the middle of the range
-/// being unaffected, and values larger than `high` asymptotically reaching 1, and values lower than `low`
-/// asymptotically reaching 0. This process is also known as soft thresholding, and leads to a quasi-binary
+/// being unaffected, and values larger than `high` asymptotically reaching `high`, and values lower than `low`
+/// asymptotically reaching `low`. This process is also known as soft thresholding, and leads to a quasi-binary
 /// image where the slow transition between foreground and background is preserved, thereby avoiding a most
 /// of the aliasing that is introduced by binarization (van Vliet, 1993).
 ///
-/// The range to map is given by `low` and `high`. `mode` can be one of the following strings:
+/// The range to map is given by `param1` and `param2`, which are interpreted differently depending on the string `mode`:
 ///
-/// - `"both"`: any value lower than `low` is set to `low`, and any value higher than `high` is set to `high`.
-/// - `"low"`: only the lower bound is enforced, but the value of `high` still affects the mapping.
-/// - `"high"`: only the upper bound is enforced, but the value of `low` still affects the mapping.
-/// - `"range"`: `low` is interpreted as the middle of the range, and `high` as the length of the range. The
-///   input range is given by [`low-high/2`, `low+high/2`]. Note that this is the default mode.
+/// - `"both"`: `low = param1` and `high = param2`.
+/// - `"low"`: same as `"both"`, but values in the upper half of the range are not changed (i.e. values above
+///     `high` are not clipped).
+/// - `"high"`: same as `"both"`, but values in the lower half of the range are not changed (i.e. values below
+///     `low` are not clipped).
+/// - `"range"`: `low = param1 - param2/2`, `high = param1 + param2/2`. That is, `param1` is interpreted as
+///     the middle of the range, and `param2` as the length of the range. This is the default mode.
 ///
 /// `in` must be real-valued. Tensor elements are processed independently. `out` is of a floating-point type.
 ///
@@ -123,18 +125,18 @@ inline Image ClipHigh(
 DIP_EXPORT void ErfClip(
       Image const& in,
       Image& out,
-      dfloat low = 128.0,
-      dfloat high = 64.0,
+      dfloat param1 = 128.0,
+      dfloat param2 = 64.0,
       String const& mode = S::RANGE
 );
 inline Image ErfClip(
       Image const& in,
-      dfloat low = 128.0,
-      dfloat high = 64.0,
+      dfloat param1 = 128.0,
+      dfloat param2 = 64.0,
       String const& mode = S::RANGE
 ) {
    Image out;
-   ErfClip( in, out, low, high, mode );
+   ErfClip( in, out, param1, param2, mode );
    return out;
 }
 

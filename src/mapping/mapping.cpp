@@ -131,8 +131,8 @@ class ErfClipLineFilter: public Framework::ScanLineFilter {
 void ErfClip(
       Image const& in,
       Image& out,
-      dfloat low,
-      dfloat high,
+      dfloat param1,
+      dfloat param2,
       String const& mode
 ) {
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
@@ -140,14 +140,14 @@ void ErfClip(
    DIP_STACK_TRACE_THIS( options = ParseClipOptions( mode ));
    dfloat threshold{}, range{};
    if( options.range ) {
-      threshold = low;
-      range = high;
+      threshold = param1;
+      range = param2;
    } else {
-      if( low > high ) {
-         std::swap( low, high );
+      if( param1 > param2 ) {
+         std::swap( param1, param2 );
       }
-      threshold = ( low + high ) / 2.0;
-      range = high - low;
+      threshold = ( param1 + param2 ) / 2.0;
+      range = param2 - param1;
    }
    ErfClipLineFilter scanLineFilter( threshold, range, options );
    DataType outType = DataType::SuggestFloat( in.DataType() );
