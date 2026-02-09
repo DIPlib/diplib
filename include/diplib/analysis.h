@@ -396,6 +396,10 @@ DIP_NODISCARD DIP_EXPORT FloatArray FindShift(
 /// // out is a transformed version of in2, as per
 /// dip::AffineTransform( in2, out, T );
 /// ```
+///
+/// !!! Literature
+///     - B.S. Reddy and B.N. Chatterji, "An FFT-based technique for translation, rotation, and scale-invariant image registration,"
+///       IEEE Transactions on Image Processing 5(8):1266-1271, 1996.
 DIP_EXPORT FloatArray FourierMellinMatch2D(
       Image const& in1,
       Image const& in2,
