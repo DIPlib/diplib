@@ -950,7 +950,6 @@ void SliceViewer::calculateTextures()
       options_.roi_sizes_.resize(image.Dimensionality(), 0);
       options_.zoom_.resize(image.Dimensionality(), 0);
       options_.origin_.resize(image.Dimensionality(), 0.);
-      options_.offset_ = dip::PhysicalQuantityArray(image.Dimensionality());
 
       for (dip::uint ii=0; ii != 4; ++ii)
         if (options_.dims_[ii] >= (dip::sint)image.Dimensionality())
@@ -975,8 +974,6 @@ void SliceViewer::calculateTextures()
 
         if (options_.zoom_[ii] == 0)
           options_.zoom_[ii] = 1;
-
-        options_.offset_[ii] = 0 * image.PixelSize(ii);
       }
 
       if (options_.element_ >= image.TensorElements())

@@ -80,12 +80,13 @@ void StatusViewPort::render()
     {
       dim_starts_.push_back(rx);
       rx += viewer()->drawString(std::to_string(op[ii]).c_str());
-      if (viewer()->image().PixelSize(ii) != PhysicalQuantity::Pixel() || o.offset_[ii])
+      if (viewer()->image().PixelSize(ii) != PhysicalQuantity::Pixel() || (ii < o.offset_.size() && o.offset_[ii]))
       {
         std::ostringstream oss;
-        PhysicalQuantity p = opp[ii] + o.offset_[ii];
-        p.Normalize();
-        oss << "=" << p.magnitude << p.units.String();
+        if (ii < o.offset_.size() && opp[ii].HasSameDimensions(o.offset_[ii]))
+          opp[ii] += o.offset_[ii];
+        opp[ii].Normalize();
+        oss << "=" << opp[ii].magnitude << opp[ii].units.String();
         rx += viewer()->drawString(oss.str().c_str());
       }
         
