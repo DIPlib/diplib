@@ -4,6 +4,8 @@
 %
 %   VALUE = NNZ(B,M) does the same but only within the mask image M (binary),
 %   and is equivalent to NNZ(B(M)).
+%
+%  This function calls the DIPlib function <a href="https://diplib.org/diplib-docs/math_statistics.html#dip-Count-Image-CL-Image-CL">dip::Count</a>.
 
 % (c)2026, Cris Luengo.
 %

@@ -19,6 +19,9 @@
 %   The behavior of MEAN(B), with B a tensor image, has changed since
 %   DIPimage 2. Previously, it operated on the tensor elements, which
 %   is currently accomplished with MEAN(B,'tensor').
+%
+%  This function calls the DIPlib functions <a href="https://diplib.org/diplib-docs/math_projection.html#dip-Mean-Image-CL-Image-CL-Image-L-String-CL-BooleanArray-CL">dip::Mean</a> and
+%  <a href="https://diplib.org/diplib-docs/math_tensor.html#dip-MeanTensorElement-Image-CL-Image-L">dip::MeanTensorElement</a>.
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

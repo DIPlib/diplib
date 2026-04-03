@@ -28,6 +28,10 @@
 %   The behavior of MIN(B), with B a tensor image, has changed since
 %   DIPimage 2. Previously, it operated on the tensor elements, which
 %   is currently accomplished with MIN(B,'tensor').
+%
+%  This function calls the DIPlib functions <a href="https://diplib.org/diplib-docs/math_projection.html#dip-Minimum-Image-CL-Image-CL-Image-L-BooleanArray-CL">dip::Minimum</a>,
+%  <a href="https://diplib.org/diplib-docs/math_projection.html#dip-PositionMinimum-Image-CL-Image-CL-Image-L-dip-uint--String-CL">dip::PositionMinimum</a>, <a href="https://diplib.org/diplib-docs/math_statistics.html#dip-MinimumPixel-Image-CL-Image-CL-String-CL">dip::MinimumPixel</a>, <a href="https://diplib.org/diplib-docs/math_tensor.html#dip-MinimumTensorElement-Image-CL-Image-L">dip::MinimumTensorElement</a>
+%  and <a href="https://diplib.org/diplib-docs/math_arithmetic.html#dip-Infimum-ImageConstRefArray-CL-Image-L">dip::Infimum</a>.
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

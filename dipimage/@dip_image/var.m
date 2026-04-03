@@ -11,6 +11,8 @@
 %   VALUE = VAR(...,'stable') uses a stable algorithm that prevents
 %   catastrophic cancellation.
 %   VALUE = VAR(...,'directional') uses directional statistics.
+%
+%  This function calls the DIPlib functions <a href="https://diplib.org/diplib-docs/math_projection.html#dip-Variance-Image-CL-Image-CL-Image-L-String--BooleanArray-CL">dip::Variance</a>.
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

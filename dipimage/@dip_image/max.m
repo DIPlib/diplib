@@ -28,6 +28,10 @@
 %   The behavior of MAX(B), with B a tensor image, has changed since
 %   DIPimage 2. Previously, it operated on the tensor elements, which
 %   is currently accomplished with MAX(B,'tensor').
+%
+%  This function calls the DIPlib functions <a href="https://diplib.org/diplib-docs/math_projection.html#dip-Maximum-Image-CL-Image-CL-Image-L-BooleanArray-CL">dip::Maximum</a>,
+%  <a href="https://diplib.org/diplib-docs/math_projection.html#dip-PositionMaximum-Image-CL-Image-CL-Image-L-dip-uint--String-CL">dip::PositionMaximum</a>, <a href="https://diplib.org/diplib-docs/math_statistics.html#dip-MaximumPixel-Image-CL-Image-CL-String-CL">dip::MaximumPixel</a>, <a href="https://diplib.org/diplib-docs/math_tensor.html#dip-MaximumTensorElement-Image-CL-Image-L">dip::MaximumTensorElement</a>
+%  and <a href="https://diplib.org/diplib-docs/math_arithmetic.html#dip-Supremum-ImageConstRefArray-CL-Image-L">dip::Supremum</a>.
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
