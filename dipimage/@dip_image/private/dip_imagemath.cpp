@@ -18,6 +18,7 @@
 
 #include "dip_matlab_interface.h"
 #include "diplib/math.h"
+#include "diplib/statistics.h"
 
 namespace {
 
@@ -105,6 +106,18 @@ void bessely( mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
    plhs[ 0 ] = dml::GetArray( out );
 }
 
+void nnz( mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
+   DML_MIN_ARGS( 1 );
+   DML_MAX_ARGS( 2 );
+   dip::Image in = dml::GetImage( prhs[ 0 ] );
+   dip::uint count = 0;
+   if( in.IsForged() ) {
+      dip::Image mask = nrhs > 1 ? dml::GetImage( prhs[ 1 ] ) : dip::Image();
+      count = dip::Count( in, mask );
+   }
+   plhs[ 0 ] = dml::GetArray( count );
+}
+
 } // namespace
 
 // Gateway function
@@ -125,6 +138,9 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
          besselj( plhs, nrhs, prhs );
       } else if( function == "bessely" ) {
          bessely( plhs, nrhs, prhs );
+
+      } else if( function == "nnz" ) {
+         nnz( plhs, nrhs, prhs );
 
       } else {
          DIP_THROW_INVALID_FLAG( function );

@@ -14,6 +14,13 @@
 %   VALUE = SUM(B,'tensor') works over the tensor elements, returning
 %   a scalar image of the same size as B.
 %
+%   WARNING:
+%   The output of SUM is a floating-point image (either single or double
+%   precision depending on the type of IN). Summing a large number of
+%   values can lead to loss of precision because of floating-point rounding
+%   errors. Do not use SUM to count set pixels in a binary image, instead
+%   use NNZ.
+%
 %   COMPATIBILITY NOTE:
 %   The behavior of SUM(B), with B a tensor image, has changed since
 %   DIPimage 2. Previously, it operated on the tensor elements, which

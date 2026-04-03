@@ -68,6 +68,8 @@ date: 2020-00-00
 
 ### New functionality
 
+- Added the overload `dip_image/nnz`.
+
 ### Changed functionality
 
 (See also changes to *DIPlib*.)
