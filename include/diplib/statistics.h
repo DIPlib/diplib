@@ -238,6 +238,10 @@ DIP_NODISCARD inline Image name( Image::View const& in, String const& mode = ( d
 /// If `mask` is forged, only those pixels selected by the mask image are used.
 ///
 /// An alias is defined such that `dip::Mean( img.At( mask ), mode )` is the same as `dip::Mean( img, mask, mode )`.
+///
+/// !!! attention
+///     Values are accumulated internally in a double-precision floating-point value. The limited precision can cause
+///     the output to be imprecise or plain wrong when summing a very large number of pixels.
 DIP_EXPORT void Mean( Image const& in, Image const& mask, Image& out, String const& mode = "", BooleanArray const& process = {} );
 DIP_DEFINE_PROJECTION_FUNCTIONS_WITH_MODE( Mean, "" )
 
@@ -255,6 +259,12 @@ DIP_DEFINE_PROJECTION_FUNCTIONS_WITH_MODE( Mean, "" )
 /// If `mask` is forged, only those pixels selected by the mask image are used.
 ///
 /// An alias is defined such that `dip::Sum( img.At( mask ))` is the same as `dip::Sum( img, mask )`.
+///
+/// !!! attention
+///     Values are accumulated internally in a double-precision floating-point value. The limited precision can cause
+///     the output to be imprecise or plain wrong when summing a very large number of pixels.
+///
+/// To count set pixels in a binary image, use \ref dip::Count.
 DIP_EXPORT void Sum( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
 DIP_DEFINE_PROJECTION_FUNCTIONS( Sum )
 

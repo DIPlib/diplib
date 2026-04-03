@@ -10,6 +10,7 @@ date: 2020-00-00
 
 - Added a `"antisym reflect"` (`dip::BoundaryCondition::ANTISYMMETRIC_REFLECT`) boundary condition. It is similar to
   `"asym mirror"`, but ensures the derivative is constant at the image boundary.
+  See [Issue #214](https://github.com/DIPlib/diplib/issues/214).
 
 ### Changed functionality
 
@@ -33,6 +34,7 @@ date: 2020-00-00
 - `dip::NormalizedConvolution` and `dip::NormalizedDifferentialConvolution` didn't handle NaN or infinity input values
   correctly if they were masked out. This now works correctly for the case of binary mask image. For non-binary masks,
   the user is now warned by the documentation to remove such values from the image before the convolution.
+  See [issue #211](https://github.com/DIPlib/diplib/issues/211).
 
 - The low-level B-spline interpolation function had a bug that could sometimes cause the program to crash.
   See [issue #212](https://github.com/DIPlib/diplib/issues/212).
@@ -47,6 +49,11 @@ date: 2020-00-00
 
 - `dip::ReadPixelWithBoundaryCondition()` didn't implement the boundary conditions exactly the same way as all other
   functions in this library, it now produces the exact same values for the modes that it supports.
+
+- Projection functions that compute sums (`dip::Sum`, `dip::Mean`, `dip::SumAbs`, `dip::MeanAbs`, `dip::SumSquare`,
+  `dip::MeanSquare`, `dip::SumSquareModulus`, `dip::MeanSquareModulus`) or products (`dip::Product`, `dip::GeometricMean`)
+  now do the computation using double precision internally, before casting to the output data type (typically
+  single-precision float). This should lead to better precision for large images.
 
 ### Updated dependencies
 

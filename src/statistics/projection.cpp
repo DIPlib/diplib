@@ -1,5 +1,5 @@
 /*
- * (c)2017-2025, Cris Luengo.
+ * (c)2017-2026, Cris Luengo.
  * (c)2018, Erik Schuitema.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
@@ -38,15 +38,16 @@ namespace {
 template< typename TPI, bool ComputeMean_ >
 class ProjectionSumMean : public Framework::ProjectionFunction {
       using TPO = FlexType< TPI >;
+      using TPC = DoubleType< TPO >;
    public:
       void Project( Image const& in, Image const& mask, Image::Sample& out, dip::uint /*thread*/ ) override {
          dip::uint n = 0;
-         TPO sum = 0;
+         TPC sum = 0;
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( { in, mask } );
             do {
                if( it.template Sample< 1 >() ) {
-                  sum += static_cast< TPO >( it.template Sample< 0 >() );
+                  sum += static_cast< TPC >( it.template Sample< 0 >() );
                   if( ComputeMean_ ) {
                      ++n;
                   }
@@ -55,17 +56,17 @@ class ProjectionSumMean : public Framework::ProjectionFunction {
          } else {
             ImageIterator< TPI > it( in );
             do {
-               sum += static_cast< TPO >( *it );
+               sum += static_cast< TPC >( *it );
             } while( ++it );
             if( ComputeMean_ ) {
                n = in.NumberOfPixels();
             }
          }
          if( ComputeMean_ ) {
-            *static_cast< TPO* >( out.Origin() ) = ( n > 0 ) ? ( sum / static_cast< FloatType< TPI >>( n ))
-                                                             : ( sum );
+            *static_cast< TPO* >( out.Origin() ) = ( n > 0 ) ? static_cast< TPO >( sum / static_cast< FloatType< TPC >>( n ))
+                                                             : static_cast< TPO >( sum );
          } else {
-            *static_cast< TPO* >( out.Origin() ) = sum;
+            *static_cast< TPO* >( out.Origin() ) = static_cast< TPO >( sum );
          }
       }
 };
@@ -134,15 +135,16 @@ namespace {
 template< typename TPI, bool ComputeMean_  >
 class ProjectionProductGeomMean : public Framework::ProjectionFunction {
       using TPO = FlexType< TPI >;
+      using TPC = DoubleType< TPO >;
    public:
       void Project( Image const& in, Image const& mask, Image::Sample& out, dip::uint /*thread*/ ) override {
          dip::uint n = 0;
-         TPO product = 1.0;
+         TPC product = 1.0;
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( { in, mask } );
             do {
                if( it.template Sample< 1 >() ) {
-                  product *= static_cast< TPO >( it.template Sample< 0 >() );
+                  product *= static_cast< TPC >( it.template Sample< 0 >() );
                   if( ComputeMean_ ) {
                      ++n;
                   }
@@ -151,17 +153,17 @@ class ProjectionProductGeomMean : public Framework::ProjectionFunction {
          } else {
             ImageIterator< TPI > it( in );
             do {
-               product *= static_cast< TPO >( *it );
+               product *= static_cast< TPC >( *it );
             } while( ++it );
             if( ComputeMean_ ) {
                n = in.NumberOfPixels();
             }
          }
          if( ComputeMean_ ) {
-            *static_cast< TPO* >( out.Origin() ) = ( n > 0 ) ? ( std::pow( product, 1 / static_cast< FloatType< TPO >>( n )))
-                                                             : ( product );
+            *static_cast< TPO* >( out.Origin() ) = ( n > 0 ) ? static_cast< TPO >( std::pow( product, 1 / static_cast< FloatType< TPC >>( n )))
+                                                             : static_cast< TPO >( product );
          } else {
-            *static_cast< TPO* >( out.Origin() ) = product;
+            *static_cast< TPO* >( out.Origin() ) = static_cast< TPO >( product );
          }
       }
 };
@@ -196,15 +198,16 @@ namespace {
 template< typename TPI, bool ComputeMean_ >
 class ProjectionSumMeanAbs : public Framework::ProjectionFunction {
       using TPO = FloatType< TPI >;
+      using TPC = DoubleType< TPO >;
    public:
       void Project( Image const& in, Image const& mask, Image::Sample& out, dip::uint /*thread*/ ) override {
          dip::uint n = 0;
-         TPO sum = 0;
+         TPC sum = 0;
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( { in, mask } );
             do {
                if( it.template Sample< 1 >() ) {
-                  sum += static_cast< TPO >( std::abs( it.template Sample< 0 >() ));
+                  sum += static_cast< TPC >( std::abs( it.template Sample< 0 >() ));
                   if ( ComputeMean_ ) {
                      ++n;
                   }
@@ -213,16 +216,16 @@ class ProjectionSumMeanAbs : public Framework::ProjectionFunction {
          } else {
             ImageIterator< TPI > it( in );
             do {
-               sum += static_cast< TPO >( std::abs( *it ));
+               sum += static_cast< TPC >( std::abs( *it ));
             } while( ++it );
             if( ComputeMean_ ) {
                n = in.NumberOfPixels();
             }
          }
          if( ComputeMean_ ) {
-            *static_cast< TPO* >( out.Origin() ) = ( n > 0 ) ? ( sum / static_cast< TPO >( n )) : ( sum );
+            *static_cast< TPO* >( out.Origin() ) = ( n > 0 ) ? static_cast< TPO >( sum / static_cast< TPC >( n )) : static_cast< TPO >( sum );
          } else {
-            *static_cast< TPO* >( out.Origin() ) = sum;
+            *static_cast< TPO* >( out.Origin() ) = static_cast< TPO >( sum );
          }
       }
 };
@@ -270,15 +273,16 @@ namespace {
 template< typename TPI, bool ComputeMean_ >
 class ProjectionSumMeanSquare : public Framework::ProjectionFunction {
       using TPO = FlexType< TPI >;
+      using TPC = DoubleType< TPO >;
    public:
       void Project( Image const& in, Image const& mask, Image::Sample& out, dip::uint /*thread*/ ) override {
          dip::uint n = 0;
-         TPO sum = 0;
+         TPC sum = 0;
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( { in, mask } );
             do {
                if( it.template Sample< 1 >() ) {
-                  TPO v = static_cast< TPO >( it.template Sample< 0 >() );
+                  TPC v = static_cast< TPC >( it.template Sample< 0 >() );
                   sum += v * v;
                   if( ComputeMean_ ) {
                      ++n;
@@ -288,7 +292,7 @@ class ProjectionSumMeanSquare : public Framework::ProjectionFunction {
          } else {
             ImageIterator< TPI > it( in );
             do {
-               TPO v = static_cast< TPO >( *it );
+               TPC v = static_cast< TPC >( *it );
                sum += v * v;
             } while( ++it );
             if( ComputeMean_ ) {
@@ -296,10 +300,10 @@ class ProjectionSumMeanSquare : public Framework::ProjectionFunction {
             }
          }
          if( ComputeMean_ ) {
-            *static_cast< TPO* >( out.Origin() ) = ( n > 0 ) ? ( sum / static_cast< FloatType< TPI >>( n ))
-                                                             : ( sum );
+            *static_cast< TPO* >( out.Origin() ) = ( n > 0 ) ? static_cast< TPO >( sum / static_cast< FloatType< TPC >>( n ))
+                                                             : static_cast< TPO >( sum );
          } else {
-            *static_cast< TPO* >( out.Origin() ) = sum;
+            *static_cast< TPO* >( out.Origin() ) = static_cast< TPO >( sum );
          }
       }
 };
@@ -348,10 +352,11 @@ template< typename TPI, bool ComputeMean_ >
 class ProjectionSumMeanSquareModulus : public Framework::ProjectionFunction {
       // TPI is a complex type.
       using TPO = FloatType< TPI >;
+      using TPC = DoubleType< TPO >;
    public:
       void Project( Image const& in, Image const& mask, Image::Sample& out, dip::uint /*thread*/ ) override {
          dip::uint n = 0;
-         TPO sum = 0;
+         TPC sum = 0;
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( { in, mask } );
             do {
@@ -376,10 +381,10 @@ class ProjectionSumMeanSquareModulus : public Framework::ProjectionFunction {
             }
          }
          if( ComputeMean_ ) {
-            *static_cast< TPO* >( out.Origin() ) = ( n > 0 ) ? ( sum / static_cast< TPO >( n ))
-                                                             : ( sum );
+            *static_cast< TPO* >( out.Origin() ) = ( n > 0 ) ? static_cast< TPO >( sum / static_cast< TPC >( n ))
+                                                             : static_cast< TPO >( sum );
          } else {
-            *static_cast< TPO* >( out.Origin() ) = sum;
+            *static_cast< TPO* >( out.Origin() ) = static_cast< TPO >( sum );
          }
       }
 };
