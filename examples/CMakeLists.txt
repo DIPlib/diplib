@@ -136,6 +136,10 @@ if(DIP_BUILD_DIPVIEWER)
    target_compile_definitions(blend_images PRIVATE DIP_EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
    target_link_libraries(blend_images DIP DIPviewer)
 
+   # An example program that shows how to use dip::FindHoughCircles and dip::RadonTransformCircles, and use dip::viewer::Show
+   add_executable(detect_circles cpp/detect_circles.cpp)
+   target_link_libraries(detect_circles DIP DIPviewer)
+
    add_dependencies(examples
                     viewer
                     display

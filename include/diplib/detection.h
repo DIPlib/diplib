@@ -1,5 +1,6 @@
 /*
- * (c)2018-2021, Cris Luengo.
+ * (c)2017, Wouter Caarls.
+ * (c)2018-2025, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -53,12 +54,19 @@ namespace dip {
 
 /// \brief Hough transform for circles in 2D binary images.
 ///
-/// Computes the Hough parameter space for circles in 2D images, with the radius dimension collapsed.
-/// The parameter space `out` has the same sizes as the binary input image `in`. `gv` is a vector image
-/// of the same sizes as `in`, with the gradient vector for each pixel of `in`.
+/// Computes the Hough parameter space for circles in 2D binary images, with the radius dimension collapsed.
+/// The parameter space `out` has the same sizes as the input image `in`.
+///
+/// `gv` is a vector image of the same sizes as `in`, with 2D vectors that point normal to the circle at
+/// each pixel in `in`.
+/// This version of the algorithm does not draw a full cone in a 3D parameter space (x, y, r) for each
+/// set pixel in the input, but draws a line along the normal in a 2D parameter space (x, y).
+/// The magnitude of the vector is used as weight, meaning that the length of the vector can be used
+/// to encode confidence in the direction. See \ref dip::FindHoughCircles for an example how to generate
+/// the input images.
 ///
 /// `range` must be empty, or have exactly two elements representing the minimum and maximum radius to
-/// be considered. If empty, the minimum radius is 0, and the maximum is the length of the image diagonal.
+//. be considered. If empty, the minimum radius is 0, and the maximum is the length of the image diagonal.
 DIP_EXPORT void HoughTransformCircleCenters(
       Image const& in,
       Image const& gv,
@@ -106,7 +114,8 @@ DIP_EXPORT Distribution PointDistanceDistribution(
 /// using \ref dip::HoughTransformCircleCenters, and then a radius is calculated for each center. Note that
 /// only a single radius is returned per center coordinates.
 ///
-/// `gv` is a vector image of the same sizes as `in`, with the gradient vector for each pixel of `in`.
+/// `gv` is a vector image of the same sizes as `in`, with 2D vectors that point normal to the circle at
+/// each pixel in `in`. See \ref dip::HoughTransformCircleCenters for details.
 ///
 /// `range` must be empty, or have exactly two elements representing the minimum and maximum radius to
 /// be considered. If empty, the minimum radius is 0, and the maximum is the length of the image diagonal.
@@ -114,6 +123,15 @@ DIP_EXPORT Distribution PointDistanceDistribution(
 /// `distance` is the minimum distance between centers, used to suppress noisy results.
 /// `fraction` is the minimum height of a peak in the Hough transform, with respect to the largest peak,
 /// that should be considered, again to suppress noisy results.
+///
+/// The output array contains three values per circle found: the x and y coordinates, and the radius.
+///
+/// Example usage:
+/// ```cpp
+/// dip::Image gv = dip::Gradient( img );
+/// dip::Image mask = dip::Norm( gv ) > 10; // Some threshold that removes irrelevant gradients, keeping only significant edges
+/// auto hough = dip::FindHoughCircles( mask, gv, { 50, 150 } );
+/// ```
 DIP_EXPORT FloatCoordinateArray FindHoughCircles(
       Image const& in,
       Image const& gv,
@@ -121,6 +139,7 @@ DIP_EXPORT FloatCoordinateArray FindHoughCircles(
       dfloat distance = 10.0,
       dfloat fraction = 0.1
 );
+
 
 /// \brief Stores the parameters for one hypersphere (circle, sphere).
 struct RadonCircleParameters{
@@ -184,7 +203,7 @@ using RadonCircleParametersArray = std::vector< RadonCircleParameters >;
 ///     - C.L. Luengo Hendriks, M. van Ginkel and L.J. van Vliet,
 ///       "Underestimation of the radius in the Radon transform for circles and spheres",
 ///       Technical Report PH-2003-02, Pattern Recognition Group, Delft University of Technology, The Netherlands, 2003.
-// TODO: If `mode` is `"full"`, then the parameter space is computed chunks to save memory.
+// TODO: If `mode` is `"full"`, then the parameter space is computed in chunks to save memory.
 DIP_EXPORT RadonCircleParametersArray RadonTransformCircles(
       Image const& in,
       Image& out,
@@ -209,8 +228,8 @@ DIP_NODISCARD inline Image RadonTransformCircles(
    return out;
 }
 
-
 /// \endgroup
+
 
 /// \group detection_corners Corner detectors
 /// \ingroup detection
