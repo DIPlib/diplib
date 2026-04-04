@@ -74,6 +74,10 @@ date: 2020-00-00
 
 - Added the `'exclude_out_of_bounds_values'` option to `diphist`.
 
+- In the `dipzoom` mode of the `dipshow` window, double-clicking no longer zooms to 100%. Instead,
+  the second click in the double-click repeats the action of the first click. Use shift-click to
+  zoom to 100%.
+
 (See also changes to *DIPlib*.)
 
 ### Bug fixes

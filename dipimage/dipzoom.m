@@ -4,10 +4,11 @@
 %   DIPZOOM by itself toggles the state.
 %
 %   When DIPZOOM is turned on, clicking on the image with the left mouse
-%   button zooms in, and with the right mouse button zooms out. A double-
-%   click will set the zoom factor to 100%. You can also drag a rectangle
-%   around the region of interest, which will be zoomed such that it fits
-%   the figure window. DIPZOOM never changes the size of the window itself.
+%   button zooms in, and with the right mouse button (of ctrl-click the
+%   left button) zooms out. A shift-click will set the zoom factor to 100%.
+%   You can also drag a rectangle around the region of interest, which will
+%   be zoomed such that it fits the figure window. DIPZOOM never changes
+%   the size of the window itself.
 %
 %   DIPZOOM only works on figure windows created through DIPSHOW.
 %

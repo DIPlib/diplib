@@ -1620,17 +1620,20 @@ if strncmp(get(fig,'Tag'),'DIP_Image',9)
    else
       % Clicked
       switch get(fig,'SelectionType')
-         case 'normal'
+         case 'normal' % regular click
             % zoom in
             zoomdelta = 2;
-         case 'alt'
+         case 'alt'  % ctrl-click or right-click
             % zoom out
             zoomdelta = 0.5;
-         case 'open'
+         case 'extend'  % shift-click
             % set to 100%
             zoomdelta = 0;
-         otherwise
+         case 'open'  % double-click
+            % repeat the previous click
+            zoomdelta = udata.prevclick;
       end
+      udata.prevclick = zoomdelta;
       dipzoomZoom(zoomdelta,pt,udata.ax,udata,udata.figsz);
    end
    % Clean up
