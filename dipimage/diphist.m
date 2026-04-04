@@ -15,6 +15,10 @@
 %   sizes determined according to the Freedman-Diaconis rule.
 %   Do not combine with the 'n' input above.
 %
+%   DIPHIST(B,...,'exclude_out_of_bounds_values') excludes values
+%   smaller than MIN or larger than MAX. By default these pixels
+%   are counted in the first and last bin, respectively.
+%
 %   DIPHIST(B,...,mode) displays the histogram using a different
 %   plotting method instead of the default stem plot. MODE can be
 %   one of: 'stem' (the default), 'bar', 'line'.
@@ -26,7 +30,7 @@
 %
 %   See also: MDHISTOGRAM, DIPHIST2D
 
-% (c)2017-2024, Cris Luengo.
+% (c)2017-2026, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
@@ -49,6 +53,7 @@ mini = 0;
 maxi = 255;
 stretch = 0;
 has_range = false;
+exclude_out_of_bounds_values = false;
 mode = '';
 
 % Parse input
@@ -60,6 +65,8 @@ if nargin > 1
          switch lower(arg)
             case 'all'
                stretch = 1;
+            case 'exclude_out_of_bounds_values'
+               exclude_out_of_bounds_values = true;
             case 'optimal'
                n = 'optimal';
             case {'stem','bar','line'}
@@ -117,6 +124,9 @@ if has_range
    conf = [conf,{'lower',mini,'upper',maxi}];
    if ~stretch
       conf = [conf,{'lower_abs','upper_abs'}];
+   end
+   if exclude_out_of_bounds_values
+      conf = [conf,{'exclude_out_of_bounds_values'}];
    end
 end
 

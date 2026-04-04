@@ -72,6 +72,8 @@ date: 2020-00-00
 
 ### Changed functionality
 
+- Added the `'exclude_out_of_bounds_values'` option to `diphist`.
+
 (See also changes to *DIPlib*.)
 
 ### Bug fixes
