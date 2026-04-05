@@ -1,10 +1,11 @@
 %H = GETFIGH(ARG)
-%    Parses an input argument and returns a valid figure handle.
+%    Parses an input argument and returns a valid figure handle,
+%    in numeric form.
 %    The argument can be the name of a variable or a figure handle.
 %    The figure window must exist. If the argument is invalid, produces
 %    an error.
 
-% (c)2017, Cris Luengo.
+% (c)2017-2026, Cris Luengo.
 % (c)1999-2014, Delft University of Technology.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,4 +35,7 @@ else
 end
 if ~isfigh(h)
    error('Figure handle expected');
+end
+if useshg2
+   h = get(h,'Number');
 end

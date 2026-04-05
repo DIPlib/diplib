@@ -238,7 +238,7 @@ if nargin >= n
       end
       fig = dipfig('-get',varargin{n});
       n = n+1;
-   elseif isnumeric(varargin{n}) && length(varargin{n})==1
+   elseif isnumeric(varargin{n}) && numel(varargin{n})==1
       fig = double(varargin{n});
       if ~isfigh(fig) && fix(fig) ~= fig
          error('Argument must be a valid figure handle.')
@@ -270,11 +270,12 @@ if nargin >= n
       end
       if strcmp(in,'updatelinked')
          udata = get(fig,'UserData');
+         ax = findobj(fig,'Type','axes');
          handle = udata.handle;
          coords = imagedisplay(handle,'coordinates');
          slicing = imagedisplay(handle,'slicing');
-         udata.linkdisplay = update_linked(fig,udata.linkdisplay,coords,slicing,[]);
-         set(fig,'UserData',udata)
+         zoom = dipfig_getcurrentzoom(ax);
+         update_linked(fig,udata.linkdisplay,coords,slicing,zoom);
       else
          change_mapping(fig,varargin{n:end});
       end
@@ -419,7 +420,7 @@ if isempty(position) && newfig
    position = [dipgetpref('DefaultFigureWidth'),dipgetpref('DefaultFigureHeight')];
 end
 if ~isempty(position)
-   if length(position)==2
+   if numel(position)==2
       pos = get(fig,'position');
       top = pos(2)+pos(4);
       position = [pos(1),top-position(2),position];
@@ -451,7 +452,7 @@ else
    end
 end
 % Solve bug with positioning windows close to the top screen border on newer MATLABs with Java enabled.
-if fixposition && length(position)==4
+if fixposition && numel(position)==4
    set(fig,'position',position);
 end
 %
@@ -537,7 +538,7 @@ if ischar(currange)
 else
    if isempty(currange)
       mappingmode = 'lin';
-   elseif length(currange) ~= 2
+   elseif numel(currange) ~= 2
       error('Illegal range argument.')
    else
       mappingmode = 'manual';
@@ -626,7 +627,7 @@ end
 function dipshow_1D(fig,in,imname,currange,mappingmode,complexmapping,state,keys,truesz,dontshowzoom)
 % Check image type
 sz = imsize(in);
-if length(sz)~=1, error('Unexplicable error: data is not 1D in dipshow_1D.'); end
+if numel(sz)~=1, error('Unexplicable error: data is not 1D in dipshow_1D.'); end
 iscol = iscolor(in);
 if iscol
    isbin = 0;
@@ -821,7 +822,7 @@ else
 end
 iscomp = iscomplex(in);
 sz = imsize(in);
-nD = length(sz);
+nD = numel(sz);
 % Get some data out of the figure window before resetting
 linkdisplay=[];
 coords = [];
@@ -831,7 +832,7 @@ if nD>=3
    if isfield(udata,'handle')
       handle = udata.handle;
       newcoords = imagedisplay(handle,'coordinates');
-      if length(newcoords) == nD
+      if numel(newcoords) == nD
          slicing = imagedisplay(handle,'slicing');
          globalstretch = imagedisplay(handle,'globalstretch');
          coords = newcoords;
@@ -948,7 +949,7 @@ end
 function change_slice(udata,newslice)
 handle = udata.handle;
 sz = imagedisplay(handle,'sizes');
-nD = length(sz);
+nD = numel(sz);
 if nD>2
    coords = imagedisplay(handle,'coordinates');
    k = imagedisplay(handle,'orthogonal');
@@ -990,12 +991,13 @@ end
 %
 % Update slices in linked displays
 %
-function hlist = update_linked(fig,hlist,newcoords,newslicing,zoomdelta)
-% Input of newcoords, newslicing and zoomdelta can be empty if no change
+function update_linked(fig,hlist,newcoords,newslicing,newzoom)
+% Input of newcoords, newslicing and newzoom can be empty if no change
 % needed. If they're all empty, just shift to center.
 
 curax = findobj(fig,'Type','axes');
 center = [mean(get(curax,'xlim')),mean(get(curax,'ylim'))];
+curzoom = [];
 
 tag = get(fig,'Tag');
 hlist = hlist(isfighlist(hlist));
@@ -1030,10 +1032,11 @@ end
 for ii=1:numel(hlist)
    h = hlist(ii);
    imh = findobj(h,'Type','image');
-   if length(imh)~=1, return, end
+   if numel(imh)~=1, return, end
    udata = get(h,'UserData');
    change = false; % change in axes
    update = false;
+   linkedzoom = newzoom;
    if isfield(udata,'handle') && (~isempty(newcoords) || ~isempty(newslicing))
       handle = udata.handle;
       if ~isempty(newcoords)
@@ -1043,18 +1046,19 @@ for ii=1:numel(hlist)
          imagedisplay(handle,'slicing',newslicing);
       end
       change = imagedisplay(handle,'change');
+      if change && isempty(linkedzoom)
+         % when changing slicing direction, always update zooming too
+         if isempty(curzoom)
+            curzoom = dipfig_getcurrentzoom(curax);
+         end
+         linkedzoom = curzoom;
+      end
       if (imagedisplay(handle,'dirty'))
          udata = update_display(udata,imh,handle);
          update = true;
       end
    end
-   if change && ~isempty(udata.zoom)
-      set(h,'UserData',[]);    % Solve MATLAB bug!
-      set(h,'UserData',udata);
-      diptruesize(h,udata.zoom*100); % changes UserData
-      udata = get(h,'UserData');
-      update = false;
-   end
+
    % Maybe we need to shift the image and/or zoom?
    ax = findobj(h,'Type','axes');
    au = get(ax,'Units');
@@ -1062,13 +1066,13 @@ for ii=1:numel(hlist)
    set(h,'Units','pixels');
    winsize = get(h,'Position');
    winsize = winsize(3:4);
-   if ~isempty(zoomdelta)
-      dipzoomZoom(zoomdelta,center,ax,udata,winsize)
-      udata.zoom = dipfig_isnormalaspect(ax);
-      update = true;
-   else
+   if isempty(linkedzoom)
       % This centers around `center`
       dipzoomZoom(1,center,ax,udata,winsize)
+   else
+      dipzoomSet(linkedzoom,center,ax,udata,winsize)
+      udata.zoom = dipfig_isnormalaspect(ax);
+      update = true;
    end
    set(ax,'Units',au);
    if update
@@ -1077,8 +1081,16 @@ for ii=1:numel(hlist)
       set(h,'UserData',udata);
    end
 end
+
 if isempty(hlist)
    diplink(fig,'off');
+else
+   udata = get(fig,'UserData');
+   if ~isequal(hlist,udata.linkdisplay)
+      udata.linkdisplay = hlist;
+      set(fig,'UserData',[]);    % Solve MATLAB bug!
+      set(fig,'UserData',udata);
+   end
 end
 
 
@@ -1412,13 +1424,13 @@ while ii<=N
          imagedisplay(handle,'globalstretch',varargin{ii});
       case 'ch_slice'
          newslice = varargin{ii};
-         if ~isnumeric(newslice) || length(newslice)>1
+         if ~isnumeric(newslice) || numel(newslice)>1
             error('Illegal argument for slice number selection')
          end
          change_slice(udata,[newslice,-1])
       case  'ch_time'
          newtime = varargin{ii};
-         if ~isnumeric(newtime) || length(newtime)>1
+         if ~isnumeric(newtime) || numel(newtime)>1
             error('Illegal argument for time number selection')
          end
          change_slice(udata,[-1,newtime])
@@ -1432,7 +1444,7 @@ change = false;
 dolinked = false;
 if isfield(udata,'imagedata') %1D display
    axh = findobj(fig,'Type','axes');
-   if length(axh)~=1, return, end
+   if numel(axh)~=1, return, end
    if disp1D
       % 1D data change
       udata = display_data_1D(axh,udata);
@@ -1444,7 +1456,7 @@ else %other dimensionality
    change = imagedisplay(handle,'change'); % update axes?
    dolinked = imagedisplay(handle,'dirty');  % update linked displays?
    imh = findobj(fig,'Type','image');
-   if length(imh)~=1, return, end
+   if numel(imh)~=1, return, end
    udata = update_display(udata,imh,handle);
    if ~isempty(colmap)
       set(fig,'Colormap',colmap);
@@ -1464,12 +1476,7 @@ end
 if dolinked && ~isempty(udata.linkdisplay)
    coords = imagedisplay(handle,'coordinates');
    slicing = imagedisplay(handle,'slicing');
-   newlinks = update_linked(fig,udata.linkdisplay,coords,slicing,[]);
-   if ~isequal(newlinks,udata.linkdisplay)
-      udata.linkdisplay = newlinks;
-      set(fig,'UserData',[]);    % Solve MATLAB bug!
-      set(fig,'UserData',udata);
-   end
+   update_linked(fig,udata.linkdisplay,coords,slicing,[]);
 end
 
 
@@ -1515,7 +1522,7 @@ if isset
 end
 if ischar(filename)
    % Remove ending separator from directory name
-   if length(p)>1 && p(end)==filesep
+   if numel(p)>1 && p(end)==filesep
       p(end) = [];
    end
    if strcmp(p,curp)
@@ -1556,7 +1563,7 @@ function dipzoomWindowButtonDownFcn(fig,~)
 if strncmp(get(fig,'Tag'),'DIP_Image',9)
    udata = get(fig,'UserData');
    ax = findobj(fig,'Type','axes');
-   if length(ax)~=1
+   if numel(ax)~=1
       return
    end
    udata.ax = ax;
@@ -1595,28 +1602,28 @@ end
 function dipzoomWindowButtonUpFcn(fig,~)
 if strncmp(get(fig,'Tag'),'DIP_Image',9)
    udata = get(fig,'UserData');
+   ax = udata.ax;
    delete(udata.recth);
-   pt = dipfig_getcurpos(udata.ax);
+   pt = dipfig_getcurpos(ax);
    if isfield(udata,'imagedata')
       pt = pt(1);
       udata.coords = udata.coords(1);
    end
    if abs(pt-udata.coords) > 2
       % Dragged a rectangle
-      %axpos = get(udata.ax,'Position');
+      %axpos = get(ax,'Position');
       if isfield(udata,'imagedata')
          delta = abs(pt-udata.coords)+1;
          pt = min(pt,udata.coords);
-         set(udata.ax,'XLim',pt+[0,delta]-0.5);
-         position_axes(udata.ax,0,delta,udata.figsz);
+         set(ax,'XLim',pt+[0,delta]-0.5);
+         position_axes(ax,0,delta,udata.figsz);
       else
          [pt,delta] = dipzoomConstrain(pt,udata);
          pt = min(pt,udata.coords);
          pelsize = min(udata.figsz./delta);
-         set(udata.ax,'XLim',pt(1)+[0,delta(1)]-0.5,'YLim',pt(2)+[0,delta(2)]-0.5);
-         position_axes(udata.ax,[pelsize,pelsize],delta,udata.figsz);
+         set(ax,'XLim',pt(1)+[0,delta(1)]-0.5,'YLim',pt(2)+[0,delta(2)]-0.5);
+         position_axes(ax,[pelsize,pelsize],delta,udata.figsz);
       end
-      zoomdelta = [];
    else
       % Clicked
       switch get(fig,'SelectionType')
@@ -1634,24 +1641,24 @@ if strncmp(get(fig,'Tag'),'DIP_Image',9)
             zoomdelta = udata.prevclick;
       end
       udata.prevclick = zoomdelta;
-      dipzoomZoom(zoomdelta,pt,udata.ax,udata,udata.figsz);
+      dipzoomZoom(zoomdelta,pt,ax,udata,udata.figsz);
    end
    % Clean up
-   udata = rmfield(udata,{'recth','coords','figsz'});
    if ~isequal(udata.zoom,0)
-      udata.zoom = dipfig_isnormalaspect(udata.ax);
+      udata.zoom = dipfig_isnormalaspect(ax);
    end
-   set(udata.ax,'Units',udata.oldAxesUnits);
+   set(ax,'Units',udata.oldAxesUnits);
    set(fig,'WindowButtonMotionFcn','','WindowButtonUpFcn','',...
            'NumberTitle',udata.oldNumberTitle);
-   udata = rmfield(udata,{'ax','oldAxesUnits','oldNumberTitle'});
+   udata = rmfield(udata,{'recth','coords','figsz','ax','oldAxesUnits','oldNumberTitle'});
    dipfig_titlebar(fig,udata);
-   % Update linked displays
-   if ~isempty(zoomdelta) && ~isempty(udata.linkdisplay)
-      udata.linkdisplay = update_linked(fig,udata.linkdisplay,[],[],zoomdelta);
-   end
    set(fig,'UserData',[]);    % Solve MATLAB bug!
    set(fig,'UserData',udata);
+   % Update linked displays
+   if ~isempty(udata.linkdisplay)
+      zoom = dipfig_getcurrentzoom(ax);
+      update_linked(fig,udata.linkdisplay,[],'',zoom);
+   end
 end
 
 function dipzoomUpdateDisplay(fig,ax,udata)
@@ -1688,35 +1695,32 @@ pt = udata.coords + (delta-1).*direction;
 
 function dipzoomZoom(zoom,pt,ax,udata,winsize)
 axpos = get(ax,'Position');
-dispsize = winsize;
-if isfield(udata,'imagedata')
-   curxlim = get(ax,'XLim');
-   pelsize = axpos(3)/diff(curxlim);
-   winsize = winsize(1);
+if isfield(udata,'imagedata') % means is a 1D image
+   pelsize = axpos(3)/diff(get(ax,'XLim'));
 else
    axsize = axpos([3,4]);
-   %axpos = axpos([1,2]);
-   curxlim = get(ax,'XLim'); curxrange = diff(curxlim);
-   curylim = get(ax,'YLim'); curyrange = diff(curylim);
-   pelsize = [(axsize(1)/curxrange),(axsize(2)/curyrange)];
+   currange = [diff(get(ax,'XLim')), diff(get(ax,'YLim'))];
+   pelsize = axsize./currange;
 end
-imsz = udata.imsize;
 newpelsize = pelsize*zoom;
 if zoom==0
    newpelsize(:) = 1;
 end
-sz = min(imsz,ceil(winsize./(newpelsize)));
+dipzoomSet(newpelsize,pt,ax,udata,winsize);
+
+function dipzoomSet(newpelsize,pt,ax,udata,winsize)
+imsz = udata.imsize;
+sz = min(imsz,ceil(winsize(1:numel(imsz))./newpelsize));
 sz = max(sz,1); % Minimum image size: 1 pixel.
 pt = round(pt-sz/2);
 pt = max(pt,0);
 pt = min(pt,imsz-sz);
-if length(imsz) == 1
+if numel(imsz) == 1
    set(ax,'XLim',pt+[0,sz]-0.5);
 else
    set(ax,'XLim',pt(1)+[0,sz(1)]-0.5,'YLim',pt(2)+[0,sz(2)]-0.5);
 end
-position_axes(ax,newpelsize,sz,dispsize);
-
+position_axes(ax,newpelsize,sz,winsize);
 
 %
 % Callback function for DIPSTEP
@@ -1727,7 +1731,7 @@ if strncmp(get(fig,'Tag'),'DIP_Image_3D',12) || strncmp(get(fig,'Tag'),'DIP_Imag
    ax = findobj(fig,'Type','axes');
    udata.ax = ax;
    udata.imh = findobj(fig,'Type','image');
-   if length(ax)~=1 || length(udata.imh)~=1
+   if numel(ax)~=1 || numel(udata.imh)~=1
       return
    end
    udata.oldAxesUnits = get(ax,'Units');
@@ -1754,7 +1758,7 @@ if strncmp(get(fig,'Tag'),'DIP_Image_3D',12) || strncmp(get(fig,'Tag'),'DIP_Imag
    delta = round(delta(dir));
    udata.moved = 1;
    newslice = udata.startslice;
-   if length(udata.startslice)==2
+   if numel(udata.startslice)==2
       switch get(fig,'SelectionType')
          case 'alt'
             newslice(1) = newslice(1)+delta;
@@ -1792,17 +1796,18 @@ if strncmp(get(fig,'Tag'),'DIP_Image_3D',12) || strncmp(get(fig,'Tag'),'DIP_Imag
       udata = update_display(udata,udata.imh,udata.handle);
       dipfig_titlebar(fig,udata);
    end
-   if ~isempty(udata.linkdisplay)
-      handle = udata.handle;
-      coords = imagedisplay(handle,'coordinates');
-      udata.linkdisplay = update_linked(fig,udata.linkdisplay,coords,'',[]);
-   end
    % Clean up
    set(udata.ax,'Units',udata.oldAxesUnits);
    set(fig,'WindowButtonMotionFcn','','WindowButtonUpFcn','');
    udata = rmfield(udata,{'ax','imh','oldAxesUnits','moved','coords','startslice'});
    set(fig,'UserData',[]);    % Solve MATLAB bug!
    set(fig,'UserData',udata);
+   % Update linked
+   if ~isempty(udata.linkdisplay)
+      handle = udata.handle;
+      coords = imagedisplay(handle,'coordinates');
+      update_linked(fig,udata.linkdisplay,coords,'',[]);
+   end
 end
 
 
@@ -1835,6 +1840,7 @@ if strncmp(get(fig,'Tag'),'DIP_Image',9)
          case {char(13),';'} % Enter: go to selected slice
             if (nD>=3) && isfield(udata,'nextslice') && ~isempty(udata.nextslice)
                newslice = str2double(udata.nextslice);
+               change = false;
                if ~isnan(newslice)
                   imh = findobj(fig,'Type','image');
                   if (nD>3) && ch==';'
@@ -1844,15 +1850,15 @@ if strncmp(get(fig,'Tag'),'DIP_Image',9)
                   end
                   udata = update_display(udata,imh,udata.handle);
                   dipfig_titlebar(fig,udata);
-                  if ~isempty(udata.linkdisplay)
-                     handle = udata.handle;
-                     coords = imagedisplay(handle,'coordinates');
-                     udata.linkdisplay = update_linked(fig,udata.linkdisplay,coords,'',[]);
-                  end
+                  change = true;
                end
                udata.nextslice = '';
                set(fig,'UserData',[]);    % Solve MATLAB bug!
                set(fig,'UserData',udata);
+               if change && ~isempty(udata.linkdisplay)
+                  coords = imagedisplay(udata.handle,'coordinates');
+                  update_linked(fig,udata.linkdisplay,coords,'',[]);
+               end
             end
          case {'p','P','n','N'} % Previous/next slice (3rd dim)
             if nD>=3
@@ -1868,15 +1874,15 @@ if strncmp(get(fig,'Tag'),'DIP_Image',9)
                end
                change_slice(udata,[newslice,-1])
                imh = findobj(fig,'Type','image');
-               udata = update_display(udata,imh,udata.handle);
+               udata = update_display(udata,imh,handle);
                dipfig_titlebar(fig,udata);
-               if ~isempty(udata.linkdisplay)
-                  coords = imagedisplay(handle,'coordinates');
-                  udata.linkdisplay = update_linked(fig,udata.linkdisplay,coords,'',[]);
-               end
                udata.nextslice = '';
                set(fig,'UserData',[]);    % Solve MATLAB bug!
                set(fig,'UserData',udata);
+               if ~isempty(udata.linkdisplay)
+                  coords = imagedisplay(handle,'coordinates');
+                  update_linked(fig,udata.linkdisplay,coords,'',[]);
+               end
             end
          case {'b','B','f','F'} % Back/forward slide (4th dim)
             if nD>=4
@@ -1892,15 +1898,15 @@ if strncmp(get(fig,'Tag'),'DIP_Image',9)
                end
                change_slice(udata,[-1,newslice])
                imh = findobj(fig,'Type','image');
-               udata = update_display(udata,imh,udata.handle);
+               udata = update_display(udata,imh,handle);
                dipfig_titlebar(fig,udata);
-               if ~isempty(udata.linkdisplay)
-                  coords = imagedisplay(handle,'coordinates');
-                  udata.linkdisplay = update_linked(fig,udata.linkdisplay,coords,'',[]);
-               end
                udata.nextslice = '';
                set(fig,'UserData',[]);    % Solve MATLAB bug!
                set(fig,'UserData',udata);
+               if ~isempty(udata.linkdisplay)
+                  coords = imagedisplay(handle,'coordinates');
+                  update_linked(fig,udata.linkdisplay,coords,'',[]);
+               end
             end
          case {'i','I','o','O'} % Zoom in/out
             ax = findobj(fig,'Type','axes');
@@ -1909,7 +1915,7 @@ if strncmp(get(fig,'Tag'),'DIP_Image',9)
             set(fig,'Units','pixels');
             winsize = get(fig,'Position');
             winsize = winsize(3:4);
-            if length(udata.imsize)==1
+            if numel(udata.imsize)==1
                pt = mean(get(ax,'XLim'));
             else
                pt = [mean(get(ax,'XLim')),mean(get(ax,'YLim'))];
@@ -1925,11 +1931,12 @@ if strncmp(get(fig,'Tag'),'DIP_Image',9)
             end
             set(ax,'Units',au);
             dipfig_titlebar(fig,udata);
-            if ~isempty(udata.linkdisplay)
-               udata.linkdisplay = update_linked(fig,udata.linkdisplay,[],'',zoomdelta);
-            end
             set(fig,'UserData',[]);    % Solve MATLAB bug!
             set(fig,'UserData',udata);
+            if ~isempty(udata.linkdisplay)
+               zoom = dipfig_getcurrentzoom(ax);
+               update_linked(fig,udata.linkdisplay,[],'',zoom);
+            end
          case {'a','A',char(28)} % Pan left
             ax = findobj(fig,'Type','axes');
             curxlim = get(ax,'Xlim');
@@ -1938,9 +1945,7 @@ if strncmp(get(fig,'Tag'),'DIP_Image',9)
             curxlim = curxlim-stepsize;
             set(ax,'Xlim',curxlim);
             if ~isempty(udata.linkdisplay)
-               udata.linkdisplay = update_linked(fig,udata.linkdisplay,[],'',[]);
-               set(fig,'UserData',[]);    % Solve MATLAB bug!
-               set(fig,'UserData',udata);
+               update_linked(fig,udata.linkdisplay,[],'',[]);
             end
          case {'d','D',char(29)} % Pan right
             udata = get(fig,'UserData');
@@ -1951,13 +1956,11 @@ if strncmp(get(fig,'Tag'),'DIP_Image',9)
             curxlim = curxlim+stepsize;
             set(ax,'Xlim',curxlim);
             if ~isempty(udata.linkdisplay)
-               udata.linkdisplay = update_linked(fig,udata.linkdisplay,[],'',[]);
-               set(fig,'UserData',[]);    % Solve MATLAB bug!
-               set(fig,'UserData',udata);
+               update_linked(fig,udata.linkdisplay,[],'',[]);
             end
          case {'w','W',char(30)} % Pan up
             udata = get(fig,'UserData');
-            if length(udata.imsize)>1
+            if numel(udata.imsize)>1
                ax = findobj(fig,'Type','axes');
                curylim = get(ax,'Ylim');
                stepsize = ceil(diff(curylim)/2);
@@ -1965,14 +1968,12 @@ if strncmp(get(fig,'Tag'),'DIP_Image',9)
                curylim = curylim-stepsize;
                set(ax,'Ylim',curylim);
                if ~isempty(udata.linkdisplay)
-                  udata.linkdisplay = update_linked(fig,udata.linkdisplay,[],'',[]);
-                  set(fig,'UserData',[]);    % Solve MATLAB bug!
-                  set(fig,'UserData',udata);
+                  update_linked(fig,udata.linkdisplay,[],'',[]);
                end
             end
          case {'s','S',char(31)} % Pan down
             udata = get(fig,'UserData');
-            if length(udata.imsize)>1
+            if numel(udata.imsize)>1
                ax = findobj(fig,'Type','axes');
                curylim = get(ax,'Ylim');
                stepsize = ceil(diff(curylim)/2);
@@ -1980,9 +1981,7 @@ if strncmp(get(fig,'Tag'),'DIP_Image',9)
                curylim = curylim+stepsize;
                set(ax,'Ylim',curylim);
                if ~isempty(udata.linkdisplay)
-                  udata.linkdisplay = update_linked(fig,udata.linkdisplay,[],'',[]);
-                  set(fig,'UserData',[]);    % Solve MATLAB bug!
-                  set(fig,'UserData',udata);
+                  update_linked(fig,udata.linkdisplay,[],'',[]);
                end
             end
          case {char(27)} % Esc: disable this callback
@@ -2009,7 +2008,7 @@ if isempty(udata)
 end
 if ~isequal(udata.zoom,0)
    ax = findobj(fig,'Type','axes');
-   if length(ax)==1
+   if numel(ax)==1
       if ~isempty(udata.zoom)
          % there's an aspect ratio we want to keep
          zoom = udata.zoom;
@@ -2017,7 +2016,7 @@ if ~isequal(udata.zoom,0)
          set(fig,'Units','pixels');
          figsz = get(fig,'Position');
          figsz = figsz(3:4);
-         if length(udata.imsize)==1
+         if numel(udata.imsize)==1
             axsz = floor(figsz(1)/zoom);
             axsz = min(axsz,udata.imsize);
             axleft = get(ax,'XLim');
@@ -2048,7 +2047,7 @@ end
 % figsz = size of figure window in screen pixels
 %
 function position_axes(ax,zoom,axsz,figsz)
-if length(zoom)==1
+if numel(zoom)==1
    if zoom==0
       zoom = figsz(1)/axsz;
    end

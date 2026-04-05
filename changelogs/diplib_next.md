@@ -78,11 +78,17 @@ date: 2020-00-00
   the second click in the double-click repeats the action of the first click. Use shift-click to
   zoom to 100%.
 
+- The `diplink` command no longer silently ignores erroneous window handles in its input arguments.
+  It now also accepts `string` inputs.
+
 (See also changes to *DIPlib*.)
 
 ### Bug fixes
 
-None, but see bugfixes to *DIPlib*.
+- When linking one or more windows, their zoom level is now adjusted to the controlling window.
+
+- The `dipzoom` drag interactions in `dipshow` windows now also propagate to linked windows.
+
 (See also bugfixes to *DIPlib*.)
 
 ### Build and installation changes
