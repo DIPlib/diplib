@@ -364,6 +364,30 @@ void Image::Copy( Image::View const& src ) {
 
 //
 
+Image::Pixel ExpandTensor( Image::Pixel const& in) {
+   if( in.Tensor().HasNormalOrder() ) {
+      return in;
+   }
+   dip::uint n_elem_out = in.Tensor().Rows() * in.Tensor().Columns();
+   Image::Pixel out( in.DataType(), n_elem_out );
+   out.ReshapeTensor( in.Tensor().Rows(), in.Tensor().Columns() );
+   std::vector< dip::sint > lookUpTable = in.Tensor().LookUpTable();
+   detail::CopyBuffer(
+                     in.Origin(),
+                     in.DataType(),
+                     1,
+                     in.TensorStride(),
+                     out.Origin(),
+                     out.DataType(),
+                     1,
+                     out.TensorStride(),
+                     1,
+                     out.TensorElements(),
+                     lookUpTable
+               );
+   return out;
+}
+
 void ExpandTensor( Image const& c_in, Image& out ) {
    DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
 

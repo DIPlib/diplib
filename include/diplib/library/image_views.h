@@ -551,6 +551,9 @@ class Image::Pixel {
          return out;
       }
 
+      /// \brief Expands the pixels's tensor, such that the output tensor representation is a column-major matrix.
+      Pixel ExpandTensor() const;
+
       /// \brief Extracts the real component of the pixel values, returns an identical copy if the data type is
       /// not complex.
       Pixel Real() const {
@@ -859,6 +862,13 @@ inline std::ostream& operator<<(
       }
    }
    return os;
+}
+
+/// \brief Expands the pixels's tensor, such that the output tensor representation is a column-major matrix.
+DIP_EXPORT Image::Pixel ExpandTensor( Image::Pixel const& in);
+
+inline Image::Pixel Image::Pixel::ExpandTensor() const {
+   return dip::ExpandTensor( *this );
 }
 
 // Some dip::Image methods that depend on dip::Image::Pixel

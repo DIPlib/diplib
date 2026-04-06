@@ -12,6 +12,8 @@ date: 2020-00-00
   `"asym mirror"`, but ensures the derivative is constant at the image boundary.
   See [Issue #214](https://github.com/DIPlib/diplib/issues/214).
 
+- Added `dip::Image::Pixel::ExpandTensor()`.
+
 ### Changed functionality
 
 - The `"label"` color map produced by `dip::ColorMapLut()` and used by `dip::ApplyColorMap()` now has 60 unique colors,
