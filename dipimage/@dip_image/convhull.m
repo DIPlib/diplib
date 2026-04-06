@@ -26,10 +26,13 @@ if ~islogical(in), error('Input image must be binary.'); end
 
 if nargin < 2
    fill = true;
-elseif ischar(fill)
-   fill = strcmpi(fill,'yes');
-elseif (~isnumeric(fill) && ~islogical(fill)) || ~isscalar(fill)
-   error('Second argument should be ''yes'' or ''no'' (or 0 or 1)')
+else
+   fill = string2char(fill);
+   if ischar(fill)
+      fill = strcmpi(fill,'yes');
+   elseif (~isnumeric(fill) && ~islogical(fill)) || ~isscalar(fill)
+      error('Second argument should be ''yes'' or ''no'' (or 0 or 1)')
+   end
 end
 
 cc = findcoord(in-berosion(in,1,1,0)); % Only use edge pixels...

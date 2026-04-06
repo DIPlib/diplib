@@ -47,6 +47,8 @@ function [image,file_info] = readroiim(filename,spacing,origin,sizes,format)
 
 if nargin < 1
    filename = 'trui.ics';
+else
+   filename = string2char(filename);
 end
 if nargin < 2
    spacing = 4;
@@ -59,6 +61,8 @@ if nargin < 4
 end
 if nargin < 5
    format = '';
+else
+   format = string2char(format);
 end
 
 % ORIGIN, SIZES and SPACING should be vectors with 0, 1 or more elements.

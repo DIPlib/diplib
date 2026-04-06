@@ -41,23 +41,3 @@ switch command
          varargout{1} = 'DEFAULT boolean should be ''yes'',''no'', 1 or 0';
       end
 end
-
-function bool = evalbool(string)
-if ischar(string)
-   switch lower(string)
-      case {'y','yes','t','true'}
-         bool = true;
-      case {'n','no','f','false'}
-         bool  = false;
-      otherwise
-         error('Boolean value expected.')
-   end
-elseif ( isnumeric(string) || islogical(string) ) && numel(string)==1
-   if string
-      bool = true;
-   else
-      bool = false;
-   end
-else
-   error('Boolean value expected.')
-end

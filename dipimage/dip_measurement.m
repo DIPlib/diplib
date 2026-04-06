@@ -125,6 +125,7 @@ classdef dip_measurement
          end
          index = 1;
          for ii=1:numel(features)
+            features(ii).Name = string2char(features(ii).Name);
             if ~ischar(features(ii).Name) || size(features(ii).Name,1)~=1
                error('FEATURES.Name must be a string');
             end
@@ -147,9 +148,11 @@ classdef dip_measurement
             error('Number of VALUES differs from described by FEATURES');
          end
          for ii=1:numel(values)
+            values(ii).Name = string2char(values(ii).Name);
             if ~ischar(values(ii).Name) || ~(isempty(values(ii).Name) || size(values(ii).Name,1)==1)
                error('VALUES.Name must be a string');
             end
+            values(ii).Units = string2char(values(ii).Units);
             if ~ischar(values(ii).Units) || ~(isempty(values(ii).Units) || size(values(ii).Units,1)==1)
                error('VALUES.Units must be a string');
             end
@@ -181,6 +184,7 @@ classdef dip_measurement
             [varargout{:}] = size(obj.Data);
          else
             if nargin > 1
+               dim = string2char(dim);
                if ischar(dim)
                   I = FindFeature(obj,dim);
                   varargout{1} = obj.Features(I).NumberValues;
@@ -495,6 +499,7 @@ classdef dip_measurement
                return
             elseif strcmpi(name,'prefix')
                % Prefix names with b.
+               b = string2char(b);
                if ~ischar(b) || isempty(b) || size(b,1)~=1
                   error('Invalid prefix.')
                end

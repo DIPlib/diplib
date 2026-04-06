@@ -32,6 +32,8 @@ function value = dipgetpref(name)
 
 if nargin<1
    name = 'list';
+else
+   name = string2char(name);
 end
 if ~ischar(name)
    error('Input argument should be a string.')

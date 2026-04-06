@@ -48,6 +48,7 @@ state = 1;
 tight = 0;
 initial = 0;
 ii = 1;
+varargin{1} = string2char(varargin{1});
 if nargin > 1 && ~ischar(varargin{1})
    try
       fig = getfigh(varargin{1});
@@ -64,6 +65,7 @@ end
 if nargin < ii
    zoom = 1;
 else
+   varargin{ii} = string2char(varargin{ii});
    if ischar(varargin{ii})
       if strcmpi(varargin{ii},'off')
          state = 0;

@@ -89,6 +89,10 @@ date: 2020-00-00
 
 - The `dipzoom` drag interactions in `dipshow` windows now also propagate to linked windows.
 
+- All functions should now work correctly when given modern-style strings (`""`) as input, instead of the old-style
+  strings (actually char arrays, `''`). Previously, all functions implemented in M-code assumed string inputs were
+  the old-style strings, but functions implemented in MEX-files accepted both.
+
 (See also bugfixes to *DIPlib*.)
 
 ### Build and installation changes

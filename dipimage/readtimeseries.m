@@ -62,8 +62,11 @@
 
 function out=readtimeseries(basefilename,extension,range,color,verbose)
 
+basefilename = string2char(basefilename);
 if nargin < 2
    extension = '';
+else
+   extension = string2char(extension);
 end
 if nargin < 3 || isempty(range)
    range = [0,-1];
@@ -74,31 +77,13 @@ end
 if nargin < 4
    color = false;
 else
-   if ischar(color)
-      switch color
-         case {'yes','on'}
-            color = true;
-         case {'no','off'}
-            color = false;
-         otherwise
-            error('Cannot parse COLOR parameter')
-      end
-   end
+   color = evalbool(color);
 end
 
 if nargin < 5
    verbose = false;
 else
-   if ischar(verbose)
-      switch verbose
-         case {'yes','on'}
-            verbose = true;
-         case {'no','off'}
-            verbose = false;
-         otherwise
-            error('Cannot parse VERBOSE parameter')
-      end
-   end
+   verbose = evalbool(verbose);
 end
 
 fns = find_files(basefilename,extension,range(1),range(2));

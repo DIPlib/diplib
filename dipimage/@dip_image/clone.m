@@ -48,7 +48,7 @@ if isempty(colsp)
 end
 dtype = datatype(in);
 while kk < length(varargin)
-   key = varargin{kk};
+   key = string2char(varargin{kk});
    value = varargin{kk+1};
    kk = kk+2;
    if ~ischar(key)
@@ -68,14 +68,14 @@ while kk < length(varargin)
          colsp = '';
          telem = 0;
       case 'tensorshape'
-         tsh = value;
+         tsh = string2char(value);
          if ~ischar(tsh)
             error('TENSORSHAPE value must be a string')
          end
          colsp = '';
          telem = 0;
       case 'colorspace'
-         colsp = value;
+         colsp = string2char(value);
          if ~ischar(colsp)
             error('COLORSPACE value must be a string')
          end
@@ -83,7 +83,7 @@ while kk < length(varargin)
          tsz = telem;
          tsh = 'column vector';
       case 'datatype'
-         dtype = value;
+         dtype = string2char(value);
          if ~ischar(dtype)
             error('DATATYPE value must be a string')
          end

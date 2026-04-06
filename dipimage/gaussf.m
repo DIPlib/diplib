@@ -57,6 +57,7 @@ if nargin < 2
 elseif nargin < 3
    image_out = dip_filtering('derivative',image_in,0,sigma);
 else
+   method = string2char(method);
    if ~ischar(method) && ~isvector(method)
       error('METHOD argument must be a string');
    end

@@ -74,6 +74,7 @@
 
 function out = tensorfun(fun,in)
 
+fun = string2char(fun);
 if ~ischar(fun)
    error('First parameter should be a string')
 end
@@ -142,7 +143,7 @@ else
       case 'prodofsize'
          out(:) = numpixels(in);
       case 'max'
-         out = max(in); % TODO: The projection function don't return an array with the same shape as the input
+         out = max(in);
       case 'mean'
          out = mean(in);
       case 'median'

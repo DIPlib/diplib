@@ -38,8 +38,8 @@
 function out = tile(in,st)
 if nargin<2
    st = false;
-elseif ischar(st)
-   st = strcmp(st,{y,'yes'});
+else
+   st = evalbool(st);
 end
 % Stretch
 if st

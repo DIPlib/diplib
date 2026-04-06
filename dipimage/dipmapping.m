@@ -84,8 +84,9 @@ if N==0
 end
 ii = 1;
 while ii<=N
-   arg = lower(varargin{ii});
+   arg = string2char(varargin{ii});
    if ischar(arg)
+      arg = lower(arg);
       switch arg
          case {'normal','unit','lin','all','percentile','angle','orientation','base','log','8bit','12bit','16bit','u8bit','u12bit','u16bit','s8bit','s12bit','s16bit'}
             if hasrange, error('Too many arguments.'); end

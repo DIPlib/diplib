@@ -35,6 +35,10 @@ sz = [256,256]; % default sizes
 origin = 'right';
 options = {};
 
+for ii = 1:numel(varargin)
+   varargin{ii} = string2char(varargin{ii});
+end
+
 % Get OPTIONS parameter
 if ~isempty(varargin) && iscell(varargin{end})
    options = varargin{end};

@@ -62,6 +62,9 @@ function h = dipfig(varargin)
 if nargin < 1
    error('Variable name expected.')
 end
+for ii = 1:numel(varargin)
+   varargin{ii} = string2char(varargin{ii});
+end
 fig = 0;
 pos = [];
 n = 1;

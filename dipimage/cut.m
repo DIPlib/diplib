@@ -51,19 +51,22 @@ function out = cut(in,newsz,location)
 
 if nargin < 3
    location = 'symmetric';
-elseif ischar(location)
-   % Aliases for 'location' string (for backwards compatibility):
-   switch location
-      case ''
-         location = 'symmetric';
-      case {'leftup','topleft'}
-         location = 'top left';
-      case {'rightup','topright'}
-         location = 'top right';
-      case {'leftlow','leftdown','bottomleft'}
-         location = 'bottom left';
-      case {'rightlow','rightdown','bottomright'}
-         location = 'bottom right';
+else
+   location = string2char(location)
+   if ischar(location)
+      % Aliases for 'location' string (for backwards compatibility):
+      switch location
+         case ''
+            location = 'symmetric';
+         case {'leftup','topleft'}
+            location = 'top left';
+         case {'rightup','topright'}
+            location = 'top right';
+         case {'leftlow','leftdown','bottomleft'}
+            location = 'bottom left';
+         case {'rightlow','rightdown','bottomright'}
+            location = 'bottom right';
+      end
    end
 end
 

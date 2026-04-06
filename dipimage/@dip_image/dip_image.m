@@ -384,6 +384,7 @@ classdef dip_image
 
       function img = set.TensorShape(img,tshape)
          nelem = size(img.Data,2);
+         tshape = string2char(tshape);
          if isstring(tshape)
             % Figure out what the size must be
             switch tshape
@@ -457,6 +458,7 @@ classdef dip_image
       end
 
       function img = set.ColorSpace(img,colsp)
+         colsp = string2char(colsp);
          if isempty(colsp) || isstring(colsp)
             img.ColorSpace = colsp;
          else
@@ -918,10 +920,13 @@ classdef dip_image
          %   is returned. That is, the image dimensions are discarded.
          if nargin == 1
             dt = '';
-         elseif ~isstring(dt)
-            error('DATATYPE must be a string')
          else
-            [dt,~] = matlabtype(dt);
+            dt = string2char(dt);
+            if ~isstring(dt)
+               error('DATATYPE must be a string')
+            else
+               [dt,~] = matlabtype(dt);
+            end
          end
          out = obj.Data;
          sz = size(out);
@@ -2473,6 +2478,7 @@ end
 % Converts a DIPlib data type string or one of the many aliases into a
 % MATLAB class string and a complex flag.
 function [str,complex] = matlabtype(str)
+   str = string2char(str);
    if ~isstring(str), error('String expected'); end
    complex = false;
    switch str
@@ -2579,6 +2585,7 @@ function dt_out = di_findtypex(dt1,dt2,comp)
 end
 
 function res = validate_tensor_shape(str)
+   str = string2char(str);
    if isstring(str)
       res = ismember(str,{
          'column vector'
@@ -2600,10 +2607,15 @@ end
 function pxsz = validatePixelSize(pxsz)
    if isnumeric(pxsz)
       pxsz = struct('magnitude',num2cell(pxsz(:)),'units',repmat({'m'},numel(pxsz),1));
-   elseif ~isstruct(pxsz) || ~isfield(pxsz,'magnitude') || ~isfield(pxsz,'units') || ...
-          ~all(arrayfun(@(pxsz)isnumeric(pxsz.magnitude) && isscalar(pxsz.magnitude) && isstring(pxsz.units), pxsz))
-          % Record for longest expression???
+   elseif ~isstruct(pxsz) || ~isfield(pxsz,'magnitude') || ~isfield(pxsz,'units')
       error('Illegal value for pixel size')
+   else
+      for ii = 1:numel(pxsz)
+         pxsz(ii).units = string2char(pxsz(ii).units);
+         if ~isnumeric(pxsz(ii).magnitude) || ~isscalar(pxsz(ii).magnitude) || ~isstring(pxsz(ii).units)
+            error('Illegal value for pixel size')
+         end
+      end
    end
    pxsz = reshape(pxsz,[],1); % We try to keep this being a column vector
 end

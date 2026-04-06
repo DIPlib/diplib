@@ -43,7 +43,7 @@ if N>3
    error('Too many input arguments.')
 end
 if N>=1
-   arg = varargin{N};
+   arg = string2char(varargin{N});
    if ischar(arg)
       if any(strcmpi(arg,{'loop','yes'}))
          loop = 1;
@@ -56,7 +56,7 @@ if N>=1
 end
 if N>=1
    try
-      fig = getfigh(varargin{1});
+      fig = getfigh(string2char(varargin{1}));
    catch
       error('Argument must be a valid figure handle.')
    end

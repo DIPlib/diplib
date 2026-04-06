@@ -41,6 +41,7 @@ end
 dt = class(dip_array(lab));
 
 lut_out = zeros(1,dt):max(lab);
+value = string2char(value);
 if ischar(value)
    if strcmp(value,'clear')
       lut_out(labels+1) = 0;

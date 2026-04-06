@@ -36,6 +36,7 @@ if nargin == 0
    end
    action = 'toggle';
 elseif nargin == 1
+   arg1 = string2char(arg1);
    if ischar(arg1)
       fig = get(0,'CurrentFigure');
       if isempty(fig)
@@ -48,7 +49,6 @@ elseif nargin == 1
       catch
          error('Argument must be a valid figure handle.')
       end
-      
       action = 'toggle';
    end
 else
@@ -197,6 +197,6 @@ if ndims(cdata)==3
    cdata = cdata(mi(2)+(1:width),mi(1)+(1:width),:);%color images
 else
    cdata = cdata(mi(2)+(1:width),mi(1)+(1:width));
-end      
+end
 set(findobj(udata.lookaxes,'type','image'),'cdata',cdata);
 set(udata.lookaxes,'Position',[co,w_width*aspect]);

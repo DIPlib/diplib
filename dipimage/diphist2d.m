@@ -107,9 +107,7 @@ if isempty(range2) || isequal(range2, -1)
 elseif numel(range2)~=2 || ~isnumeric(range2)
    error('RANGE2 must be a 2-element numeric vector')
 end
-if ischar(contourhist)
-   contourhist = strcmpi(contourhist,'Yes') || strcmpi(contourhist,'On');
-end
+contourhist = evalbool(contourhist);
 xlog = false;
 ylog = false;
 zlog = false;
@@ -127,12 +125,8 @@ if ischar(logdisp)
 else
    error('LOGDISP must be a string');
 end
-if ischar(contourfill)
-   contourfill = strcmpi(contourfill,'Yes') || strcmpi(contourfill,'On');
-end
-if ischar(contourlab)
-   contourlab = strcmpi(contourlab,'Yes') || strcmpi(contourlab,'On');
-end
+contourfill = evalbool(contourfill);
+contourlab = evalbool(contourlab);
 
 conf1 = build_configuration(range1, bins1);
 conf2 = build_configuration(range2, bins2);
@@ -203,6 +197,7 @@ end
 
 function conf = build_configuration(range, bins)
 conf = {'lower',range(1),'upper',range(2),'lower_abs','upper_abs'};
+bins = string2char(bins);
 if ischar(bins)
    conf = [conf,bins];
 else

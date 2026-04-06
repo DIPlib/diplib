@@ -42,7 +42,7 @@
 % we never expect to occur as long as this function is called through DIPGETPREF
 % and DIPSETPREF.
 
-function out = dippreferences(varargin)
+function out = dippreferences(command,name,value)
 
 persistent settings;
 persistent factory;
@@ -86,10 +86,11 @@ if isempty(settings)
    settings = factory;
 end
 
-if nargin<1 || ~ischar(varargin{1})
-   error('Nothing to do!');
+command = string2char(command);
+if ~ischar(command)
+   error('First input must be a string');
 end
-switch varargin{1}
+switch command
 
    % dippreferences('defaults')
    case 'defaults'
@@ -101,10 +102,13 @@ switch varargin{1}
 
    % dippreferences('get',name)
    case 'get'
-      if nargin~=2 || ~ischar(varargin{2})
-         error('Get what???')
+      if nargin>2
+         error('Get command must not have a value')
       end
-      name = varargin{2};
+      name = string2char(name);
+      if ~ischar(name)
+         error('Preference name must be a string');
+      end
       snames = fieldnames(settings);
       I = find(strcmpi(name,snames));
       if isempty(I)
@@ -116,11 +120,10 @@ switch varargin{1}
 
    % dippreferences('set',name,value)
    case 'set'
-      if nargin~=3 || ~ischar(varargin{2})
-         error('Set what???')
+      name = string2char(name);
+      if ~ischar(name)
+         error('Preference name must be a string');
       end
-      name = varargin{2};
-      value = varargin{3};
       snames = fieldnames(settings);
       I = find(strcmpi(name,snames));
       if isempty(I)
@@ -139,23 +142,16 @@ switch varargin{1}
       end
       switch type
          case 'string'
+            value = string2char(value);
             if ~ischar(value)
                error(['String expected for preference ',name,'.'])
             end
             data.value = value;
          case 'boolean'
-            if islogical(value) || isnumeric(value)
-               data.value = logical(value(1));
-            elseif ischar(value)
-               if any(strcmpi({'on','yes'},value))
-                  data.value = true;
-               elseif any(strcmpi({'off','no'},value))
-                  data.value = false;
-               else
-                  error(['String expected for preference ',name,'.'])
-               end
-            else
-               error(['String expected for preference ',name,'.'])
+            try
+               data.value = evalbool(value);
+            catch
+               error(['Boolean expected for preference ',name,'.'])
             end
          case 'integer'
             if ~isnumeric(value) || any(mod(value,1))
@@ -186,7 +182,7 @@ switch varargin{1}
       settings = [];
 
    otherwise
-      error('I don''t understand you.')
+      error('Unknown command.')
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

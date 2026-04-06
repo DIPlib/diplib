@@ -45,6 +45,7 @@ n = [256,256];
 N = nargin;
 psize = [];
 if N ~= 0
+   varargin{N} = string2char(varargin{N});
    if ischar(varargin{N})
       dt = varargin{N};
       N = N-1;

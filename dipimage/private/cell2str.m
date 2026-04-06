@@ -44,7 +44,7 @@ end
 if ~isnumeric(n) || numel(n)~=1
    error('Input argument N should be a scalar.')
 end
-if ~ischar(mode) || ~any(strcmp(mode,{'','class'}))
+if ~any(strcmp(mode,{'','class'}))
    error('Mode string can only be ''class''.')
 end
 
@@ -72,8 +72,11 @@ elseif isnumeric(c)
    else
       str = mat2str(c,n);
    end
-elseif ischar(c) || islogical(c)
-   str = mat2str(c);
 else
-   error('Illegal array in input.')
+   c = string2char(c);
+   if ischar(c) || islogical(c)
+      str = mat2str(c);
+   else
+      error('Illegal array in input.')
+   end
 end

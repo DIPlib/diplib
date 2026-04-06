@@ -67,9 +67,13 @@ function [image,file_info] = readim(filename,format)
 
 if nargin < 2
    format = '';
+else
+   format = string2char(format);
 end
 if nargin < 1
    filename = 'trui.ics';
+else
+   filename = string2char(filename);
 end
 
 % If we don't have a format, look for the file name extension

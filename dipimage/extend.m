@@ -62,21 +62,25 @@ end
 
 if nargin < 5
    clip = false;
-elseif ischar(clip)
-	clip = any(strcmp(clip,{'yes','y'}));
+else
+	clip = evalbool(clip);
 end
 if nargin < 4
    value = 0;
-elseif ischar(value) || iscellstr(value)
-   % Optional string as 'value' argument
-   borderextension = value;
-   value = 0;
-elseif ~isnumeric(value) || ( numel(value)~=numtensorel(in) && numel(value)~=1 )
-   error('VALUE must be a numeric array with one value per tensor element')
+else
+   value = string2char(value);
+   if ischar(value) || iscellstr(value)
+      % Optional string as 'value' argument
+      borderextension = value;
+      value = 0;
+   elseif ~isnumeric(value) || ( numel(value)~=numtensorel(in) && numel(value)~=1 )
+      error('VALUE must be a numeric array with one value per tensor element')
+   end
 end
 if nargin < 3
    location = 'symmetric';
-elseif ischar(location)
+else
+   location = string2char(location);
    % Aliases for 'location' string (for backwards compatibility):
    switch location
       case ''

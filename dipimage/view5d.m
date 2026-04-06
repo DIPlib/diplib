@@ -86,12 +86,15 @@ ElementNum = 0;
 
 N = numel(varargin);
 ii = 1;
-if ii <= N && ~ischar(varargin{ii})
-   ts = varargin{ii};
-   ii = ii + 1;
+if ii <= N
+   tmp = string2char(varargin{ii});
+   if ~ischar(tmp)
+      ts = tmp;
+      ii = ii + 1;
+   end
 end
 if ii <= N
-   mode = varargin{ii};
+   mode = string2char(varargin{ii});
    if ~ischar(mode)
       error('MODE string expected.')
    end

@@ -59,6 +59,9 @@ function [varargout] = diproi(fig,intertype)
 if nargin < 2
    intertype = 'polygon';
 end
+if nargin > 0
+   fig = string2char(fig);
+end
 if nargin == 1 && ischar(fig)
    intertype = fig;
    fig = gcf;

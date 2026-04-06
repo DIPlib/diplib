@@ -52,6 +52,8 @@ end
 di = ndims(in);
 if nargin<2
    mir = 'point';
+else
+   mir = string2char(mir);
 end
 if ischar(mir)
    mir_para = zeros(1,di);

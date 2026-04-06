@@ -52,13 +52,13 @@ if nargin < 2
    update = false;
    if nargin < 1
       version = 'latest';
-   elseif ~isstring(version) && ~ischar(version)
-      update = version;
-      version = 'latest';
+   else
+      version = string2char(version);
+      if ~ischar(version)
+         update = version;
+         version = 'latest';
+      end
    end
-end
-if isstring(version)
-   version = char(version);
 end
 if ~ischar(version)
    error('VERSION must be a string or character array')

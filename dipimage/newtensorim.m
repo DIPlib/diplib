@@ -70,7 +70,7 @@ while nargin >= N
       end
       N = N+1;
    else
-      dtype = varargin{N};
+      dtype = string2char(varargin{N});
       if ~ischar(dtype) || ~isvector(dtype)
          error('Data type must be a string')
       end

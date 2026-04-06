@@ -33,7 +33,7 @@
 
 function dipsetpref(varargin)
 
-if nargin==1 && ischar(varargin{1}) && strcmpi(varargin{1},'-unload')
+if nargin==1 && strcmpi(varargin{1},'-unload')
    dippreferences('unload');
    clear dippreferences
 return

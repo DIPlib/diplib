@@ -33,14 +33,18 @@ else
    if ~iscell(h)
       if isnumeric(h) || ishandle(h)
          h = num2cell(h);
-      elseif ischar(h)
-         h = {h};
       else
-         error('Array with figure handles expected')
+         h = string2char(h);
+         if ischar(h)
+            h = {h};
+         else
+            error('Array with figure handles expected')
+         end
       end
    end
    I = false(size(h));
    for ii=1:numel(I)
+      h{ii} = string2char(h{ii});
       if ischar(h{ii})
          h{ii} = dipfig('-get',h{ii});
       end

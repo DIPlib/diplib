@@ -43,6 +43,7 @@ if nargin<3
    dt = 'uint8';
 else
    % Convert DIPimage type string to MATLAB type string
+   dt = string2char(dt);
    if strcmp(dt,'sfloat')
       dt = 'single';
    elseif strcmp(dt,'dfloat')

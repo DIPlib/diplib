@@ -60,7 +60,7 @@ mode = '';
 if nargin > 1
    ii = 1;
    while ii<nargin
-      arg = varargin{ii};
+      arg = string2char(varargin{ii});
       if ischar(arg)
          switch lower(arg)
             case 'all'

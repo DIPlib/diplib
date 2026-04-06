@@ -54,7 +54,10 @@ if nargin<2 || isempty(dim)
    in = dip_image(in);
 else
    sz = size(in);
-   if isnumeric(dim) && isscalar(dim)
+   if isnumeric(dim)
+      if ~isscalar(dim)
+         error('DIM parameter must be scalar');
+      end
       if dim==-1
          dim = ndims(in);
       elseif dim>ndims(in) || dim<1
@@ -69,9 +72,12 @@ else
          in = dip_image(in);
          in = spatialtotensor(in,dim);
       end
-   elseif ischar(dim)
-      in = joinchannels(dim,in);
    else
-      error('Wrong input');
+      dim = string2char(dim);
+      if ischar(dim)
+         in = joinchannels(dim,in);
+      else
+         error('Wrong input');
+      end
    end
 end

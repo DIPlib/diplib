@@ -47,6 +47,7 @@ if nargin == 0
    end
    action = 'on';
 elseif nargin == 1
+   arg1 = string2char(arg1);
    if ischar(arg1)
       fig = get(0,'CurrentFigure');
       if isempty(fig)
@@ -76,7 +77,7 @@ else
    catch
       error('Argument must be a valid figure handle.')
    end
-   if ischar(arg2) && any(strcmpi(arg2,{'on','off','toggle'}))
+   if any(strcmpi(arg2,{'on','off','toggle'}))
       action = lower(arg2);
    elseif isempty(arg2)
       action = 'on';

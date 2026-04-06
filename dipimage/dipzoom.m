@@ -40,6 +40,7 @@ if nargin == 0
    end
    action = 'toggle';
 elseif nargin == 1
+   arg1 = string2char(arg1);
    if ischar(arg1)
       fig = get(0,'CurrentFigure');
       if isempty(fig)

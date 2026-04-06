@@ -253,7 +253,7 @@ if nargin >= n
    end
 end
 if nargin >= n
-   in = varargin{n};
+   in = string2char(varargin{n});
    if ischar(in)
       if isempty(fig)
          fig = get(0,'CurrentFigure');
@@ -303,13 +303,13 @@ else
    error('Input image required.')
 end
 while nargin >= n
-   tmp = varargin{n};
+   tmp = string2char(varargin{n});
    n = n+1;
    if ischar(tmp)
       switch lower(tmp)
          case 'name'
             if nargin < n, error('DIPSHOW requires more arguments.'); end
-            imname = varargin{n};
+            imname = string2char(varargin{n});
             if ~ischar(imname), error('Name should be a string.'); end
             n = n+1;
          case 'truesize'
