@@ -2,8 +2,8 @@
 %   OUT = TENSORFUN(FUNCTION,IN) applies FUNCTION to each of the
 %   tensor elements of image IN. FUNCTION must be one of the strings
 %   detailed below. Depending on the chosen FUNCTION, OUT is either a
-%   scalar image (mode 1) or an array of the same size as the tensor
-%   of IN (mode 2).
+%   scalar image (mode 1) or an array with one element per tensor
+%   element of IN (mode 2).
 %
 %   MODE 1
 %   FUNCTION is one of:
@@ -47,17 +47,18 @@
 %      'std'       -- standard deviation of pixels in image
 %      'sum'       -- sum of pixels in image
 %
-%   OUT is a MATLAB array of the same size as the tensor of IMAGE_IN,
-%   each element containing the scalar result of FUNCTION on each
-%   tensor element.
+%   OUT is a MATLAB array with one element per tensor element in IMAGE_IN,
+%   each element containing the scalar result of FUNCTION on each tensor
+%   element.
 %
-%   Note that the first 5 functions retun an array with all the same
-%   values, and the latter 6 return the same as applying the method
-%   of the same name to IMAGE_IN. For exaple 'max' calls MAX(IMG).
+%   NOTE! The first 5 functions return an array with all the same values.
+%   This mode exist for backwards compatibility, each of the functions
+%   can be called directly on the image, for example 'max' calls MAX(IMG).
+%   Only 'prodofsize' is not a function name, it calls NUMPIXELS.
 %
 %   See also dip_image/iterate, dip_image/slice_op
 
-% (c)2017-2019, Cris Luengo.
+% (c)2017-2026, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
@@ -130,7 +131,7 @@ if strncmpi(fun,'im',2)
    end
 else
    % MODE 2
-   out = zeros(tensorsize(in));
+   out = zeros(1,numtensorel(in));
    switch fun
       case 'isempty'
          out(:) = isempty(in);

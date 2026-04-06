@@ -83,6 +83,10 @@ date: 2020-00-00
 - The `diplink` command no longer silently ignores erroneous window handles in its input arguments.
   It now also accepts `string` inputs.
 
+- `dip_image/tensorfun` with the options `'isempty'`, `'islogical'`, `'isreal'`, `'ndims'` or `'prodofsize'`
+  now returns an array with one element per tensor element, instead of an array matching the tensor sizes.
+  This makes these options logically compatible with the other options (`'max'`, `'mean'`, etc.).
+
 (See also changes to *DIPlib*.)
 
 ### Bug fixes
