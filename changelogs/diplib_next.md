@@ -63,6 +63,7 @@ date: 2020-00-00
 
 ### Build changes
 
+- Suppress some warnings when building libjpeg with GCC
 
 
 

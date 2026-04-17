@@ -73,3 +73,6 @@ set_target_properties(jpeg PROPERTIES C_VISIBILITY_PRESET hidden POSITION_INDEPE
 if(CMAKE_C_COMPILER_ID MATCHES "Clang") # also matchs "AppleClang"
    target_compile_options(jpeg PRIVATE -Wno-shift-negative-value)
 endif()
+if(CMAKE_C_COMPILER_ID MATCHES "GNU")
+   target_compile_options(jpeg PRIVATE -Wno-shift-negative-value -Wno-unused-parameter)
+endif()
