@@ -1,5 +1,7 @@
 name: "Debian Packaging"
 
+on: workflow_dispatch
+
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
