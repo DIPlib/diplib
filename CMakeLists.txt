@@ -214,6 +214,11 @@ if(DIP_SHARED_LIBRARY)
 endif()
 
 
+### .deb packaging
+
+include(tools/Packing.cmake)
+
+
 ### Status report
 
 message("")
