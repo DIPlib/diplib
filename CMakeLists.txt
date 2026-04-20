@@ -216,7 +216,7 @@ endif()
 
 ### .deb packaging
 
-include(tools/Packing.cmake)
+include(tools/packing.cmake)
 
 
 ### Status report
