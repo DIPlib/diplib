@@ -1,0 +1,71 @@
+name: "Binary Packaging"
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - packing
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    runs-on: ${{matrix.os}}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            n_cores: 4
+      fail-fast: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install
+        # Install libraries and Python packages we need
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ]; then
+            sudo apt-get update
+            sudo apt-get -y install libglfw3-dev
+          elif [ "$RUNNER_OS" == "Windows" ]; then
+            choco install openjdk8 --no-progress --yes
+            python -m pip install wget
+            python -m wget https://github.com/glfw/glfw/releases/download/3.3.5/glfw-3.3.5.bin.WIN64.zip
+            python -c "import zipfile; zip = zipfile.ZipFile('glfw-3.3.5.bin.WIN64.zip', 'r'); zip.extractall()"
+          elif [ "$RUNNER_OS" == "macOS" ]; then
+            brew install libomp glfw
+          fi
+        shell: bash
+
+      - name: Install cross-compiler
+        if: matrix.cross_compile
+        run: |
+          sudo apt-get install gcc-multilib g++-multilib
+
+      - name: Configure
+        run: |
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            python_executable=`which python`
+          else
+            python_executable=`which python3`
+          fi
+          cmake -B '${{github.workspace}}/build' -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} ${{matrix.dip_cmake_opts}} -DDIP_ENABLE_ASSERT=ON
+        shell: bash
+
+      - name: Build
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --parallel ${{matrix.n_cores}}
+
+      - name: Package
+        # Create the Debian package
+        if: ${{ ! matrix.cross_compile }}
+        run: cd ${{github.workspace}}/build && cpack -G DEB
+
+      - name: Archive
+        # Store the Debian package
+        if: ${{ ! matrix.cross_compile }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: Debian-package-${{matrix.os}}
+          path: ${{github.workspace}}/build/*.deb
