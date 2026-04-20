@@ -1,4 +1,4 @@
-name: "Debian Packaging"
+name: "Binary Packaging"
 
 on:
   workflow_dispatch:
@@ -16,7 +16,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             n_cores: 4
       fail-fast: true
 
@@ -28,7 +28,7 @@ jobs:
         run: |
           if [ "$RUNNER_OS" == "Linux" ]; then
             sudo apt-get update
-            sudo apt-get -y install freeglut3-dev
+            sudo apt-get -y install libglut-dev
           elif [ "$RUNNER_OS" == "Windows" ]; then
             choco install openjdk8 --no-progress --yes
             python -m pip install wget
