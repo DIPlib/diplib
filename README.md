@@ -198,6 +198,10 @@ to the Apache License.
   Copyright 1996-2021 David Turner, Robert Wilhelm, and Werner Lemberg  
   FreeType License (BSD style)
 
+- *zstd* (as installed on your system, not used by default)  
+  Copyright Meta Platforms, Inc. and affiliates  
+  3-Clause BSD License
+
 *DIPviewer* links against the following libraries:
 
 - *FreeGLUT* (as installed on your system, alternative to *GLFW*)  

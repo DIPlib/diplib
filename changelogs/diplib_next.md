@@ -14,6 +14,9 @@ date: 2020-00-00
 
 - Added `dip::Image::Pixel::ExpandTensor()`.
 
+- TIFF files can now be read and written using ZSTD compression, if configured during build, using the *zstd* library
+  on the system (i.e. is not part of the DIPlib source distribution, and is not enabled by default).
+
 ### Changed functionality
 
 - The `"label"` color map produced by `dip::ColorMapLut()` and used by `dip::ApplyColorMap()` now has 60 unique colors,

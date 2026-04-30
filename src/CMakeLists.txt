@@ -144,9 +144,12 @@ endif()
 
 # libtiff
 set(DIP_ENABLE_TIFF ON CACHE BOOL "Enable TIFF file support")
+set(DIP_TIFF_USE_ZSTD OFF CACHE BOOL "Enable Zstd compression in TIFF files")
 if(DIP_ENABLE_TIFF)
    message("~~~Configuring LibTIFF~~~")
+   option(zstd "" ${DIP_TIFF_USE_ZSTD})  # Override libtiff's variable
    add_subdirectory("${PROJECT_SOURCE_DIR}/dependencies/libtiff" "${PROJECT_BINARY_DIR}/libtiff" EXCLUDE_FROM_ALL)
+   set(ZSTD_SUPPORT ${ZSTD_SUPPORT} PARENT_SCOPE)
    mark_as_advanced(FORCE TIFF_DEFAULT_STRIP_SIZE)
    mark_as_advanced(FORCE extra-warnings)
    mark_as_advanced(FORCE fatal-warnings)

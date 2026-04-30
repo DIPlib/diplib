@@ -74,6 +74,9 @@ uint16 CompressionTranslate( String const& compression ) {
    if( compression == "LZW" ) {
       return COMPRESSION_LZW;
    }
+   if( compression == "ZSTD" ) {
+      return COMPRESSION_ZSTD;
+   }
    if( compression == "PackBits" ) {
       return COMPRESSION_PACKBITS;
    }

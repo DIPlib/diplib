@@ -144,6 +144,8 @@ Important *CMake* variables controlling the build of *DIPlib*:
 - `DIP_ENABLE_PNG`: `On` (default) or `Off`. Enable support for the PNG file format using the included *libspng* library.
 - `DIP_ENABLE_ZLIB`: `On` (default) or `Off`. Enable support for ZIP (deflate) compression in the ICS and TIFF file
     formats using the included *zlib* library.
+- `DIP_TIFF_USE_ZSTD`: `On` or Off` (default). Enable support for Zstd compression in the TIFF file format, if the *zstd*
+    library is available on the system.
 - `DIP_ENABLE_FFTW`: `On` or `Off` (default). Enable the use of the *FFTW3* library, if available.
 - `DIP_ENABLE_FREETYPE`: `On` or `Off` (default). Enable the use of the *FreeType2* library, if available.
 - `DIP_ENABLE_UNICODE`: `On` (default) or `Off`. Enable support for UTF-8 strings within *DIPlib*.

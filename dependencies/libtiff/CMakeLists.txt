@@ -147,7 +147,7 @@ set(OJPEG_SUPPORT ${JPEG_SUPPORT})
 #include(LZMACodec)
 
 # Check for ZSTD codec
-#include(ZSTDCodec)
+include(ZSTDCodec)
 
 # Check for WebP codec
 #include(WebPCodec)
