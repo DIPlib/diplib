@@ -1,17 +1,16 @@
 import os
-from setuptools import setup, Extension, Distribution
+import sysconfig
+import setuptools
+import setuptools.command.bdist_wheel
 
-# https://stackoverflow.com/questions/51939257/how-do-you-get-the-filename-of-a-python-wheel-when-running-setup-py
-def wheel_name(**kwargs):
-    # create a fake distribution from arguments
-    dist = Distribution(attrs=kwargs)
-    # finalize bdist_wheel command
-    bdist_wheel_cmd = dist.get_command_obj('bdist_wheel')
-    bdist_wheel_cmd.ensure_finalized()
-    # assemble wheel file name
+
+# https://stackoverflow.com/a/62351713
+def wheel_name(setup):
+    bdist_wheel_cmd = setup.get_command_obj('bdist_wheel')
     distname = bdist_wheel_cmd.wheel_dist_name
-    tag = '-'.join(bdist_wheel_cmd.get_tag())
-    return '{0}-{1}.whl'.format(distname, tag)
+    tag = "-".join(bdist_wheel_cmd.get_tag())
+    return f"{distname}-{tag}.whl"
+
 
 try:
     with open("README.md", "r") as fh:
@@ -29,6 +28,8 @@ if ${pydip_wheel_include_libs}:
 
     if $<BOOL:${DIP_BUILD_JAVAIO}>:
         libraries.append('DIPjavaio.jar')
+
+bdist_root = os.path.join("$<TARGET_FILE_DIR:PyDIP_bin>", "staging", "dist")
 
 setup_kwargs = dict(
     name="diplib",
@@ -59,16 +60,20 @@ setup_kwargs = dict(
     ],
     keywords="image-analysis image-viewer image-processing filtering",
     packages=['diplib'],
-    ext_modules=[Extension('diplib.PyDIP_bin', [])],
+    ext_modules=[setuptools.Extension('diplib.PyDIP_bin', [])],
     package_data={'diplib': libraries},
     entry_points={'gui_scripts': ['dipview = diplib.dipview:main']},
-    python_requires='>=3.8'
+    python_requires='>=3.8',
+    options={
+        "bdist_wheel": {
+            # For some reason, this is necessary now on Windows???
+            "plat_name": setuptools.command.bdist_wheel.get_platform(bdist_root),
+        },
+    },
 )
 
-name = os.path.join("$<TARGET_FILE_DIR:PyDIP_bin>", "staging", "dist", wheel_name(**setup_kwargs))
-
-setup(**setup_kwargs)
-print("To install, run\n  ${Python_EXECUTABLE} -m pip install --upgrade ", name)
-
+s = setuptools.setup(**setup_kwargs)
+name = os.path.join(bdist_root, wheel_name(s))
+print(f"To install, run\n    {r'${Python_EXECUTABLE}'} -m pip install --upgrade {name}")
 with open('$<TARGET_FILE_DIR:PyDIP_bin>/wheel.txt', 'w') as f:
     print(name, file=f)

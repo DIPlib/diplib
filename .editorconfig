@@ -17,7 +17,7 @@ indent_style = space
 indent_size = 3
 
 # Python and Markdown use 4-space indentation
-[*.{py,md}]
+[*.{py,py.in,md}]
 indent_size = 4
 
 # GitHub .yml files use 2-space indentation

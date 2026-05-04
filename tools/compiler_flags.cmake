@@ -39,9 +39,11 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
    # TODO: compiler flags for Intel compiler
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
    # Compiler flags for Visual Studio C++
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
-   add_definitions(-D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS) # Disable unchecked iterator warnings and unsafe (string manipulation) function warnings
-   add_definitions(/wd4180) # Disable "qualifier applied to function type has no meaning; ignored" that happens in union_find.h as used in maxima.cpp
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj /wd4180 /MP")
+   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /bigobj /MP")
+   # /wd4180 : Disable "qualifier applied to function type has no meaning; ignored" that happens in union_find.h as used in maxima.cpp
+   # /MP : Enable Multi-Processor compilation
    add_definitions(/EHa) # This exception handling model apparently is what MATLAB uses (default is /EHsc)
-   add_definitions(/MP) # Enable Multi-Processor compilation
+   # TODO: Add the /EHa above only if building for MATLAB. It generates lots of warnings otherwise.
+   add_definitions(-D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS) # Disable unchecked iterator warnings and unsafe (string manipulation) function warnings
 endif()
