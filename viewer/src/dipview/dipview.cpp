@@ -13,11 +13,11 @@
 
 int main( int argc, char** argv ) {
    if( argc < 2 ) {
-      std::cerr << "Usage: dipview"
+      std::cerr << "Usage: " << argv[0];
 #ifdef DIPVIEW_WITH_JAVAIO
-      " [-b]"
+      std::cerr << " [-b]";
 #endif
-      " <image> [<image> ...]\n";
+      std::cerr << " <image> [<image> ...]\n";
 #ifdef DIPVIEW_WITH_JAVAIO
       std::cerr << "   The -b option forces the use of Bio-Formats for all file types.\n";
 #endif
@@ -37,14 +37,28 @@ int main( int argc, char** argv ) {
 
    std::list< dip::viewer::SliceViewer::Ptr > windows;
    for( ; ii < argc; ++ii ) {
-      std::string arg( argv[ ii ] );
+      std::string filename = argv[ ii ];
       dip::Image img;
       dip::FileInformation info;
-      try {
-         info = dip::ImageRead( img, arg, format );
-      } catch( dip::Error const& err ) {
-         std::cout << err.what() << '\n';
-         return 1;
+      if( format != "bioformats" ) {
+         // Try reading as a TIFF stack
+         try {
+            std::cout << "Trying to read as a TIFF stack\n";
+            info = dip::ImageReadTIFF( img, filename, dip::Range{ 0, -1 } );
+         } catch( dip::Error const& ) {
+            std::cout << "That failed!\n";
+            img.Strip();
+         }
+      }
+      if( !img.IsForged() ) {
+         // If that didn't work, read using the generic form
+         try {
+            std::cout << "Trying to read with the generic function. format = " << format << "\n";
+            info = dip::ImageRead( img, filename, format );
+         } catch( dip::Error const& err ) {
+            std::cout << err.what() << '\n';
+            return 1;
+         }
       }
       std::cout << info.name << ":\n";
       std::cout << "   - fileType:        " << info.fileType        << '\n';
@@ -63,7 +77,7 @@ int main( int argc, char** argv ) {
          }
       }
 
-      windows.push_back( dip::viewer::Show( img, arg ) );
+      windows.push_back( dip::viewer::Show( img, filename ) );
       dip::viewer::SliceViewer::Guard guard( *windows.back() );
       windows.back()->options().offset_ = info.origin;
 

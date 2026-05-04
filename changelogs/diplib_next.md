@@ -32,6 +32,9 @@ date: 2020-00-00
 - `dip::ExternalInterface` has a new virtual member function `Name()` that derived classes can overload to give
   themselves a name.
 
+- The `dipview` and `dipviewjava` command-line tools will now first attempt to read a file as if it were a multi-page
+  TIFF file where the pages compose a 3D image. If it fails, it proceeds as it did previously.
+
 ### Bug fixes
 
 - `dip::Image::Mask` used multiplication for masking, which doesn't work to mask out NaN or Infinity values.
@@ -122,6 +125,10 @@ date: 2020-00-00
 - Regular indexing (such as `img[10:40:2, :]`), which creates a new image that shares data with the original image,
   now has the output image protected. This allows the user to write into the sub-image with confidence.
   See [issue #204](https://github.com/DIPlib/diplib/issues/204).
+
+- The Python version of the `dipview` utility is changed in the same way as the C++ version: The tool will first attempt
+  to read a file as if it were a multi-page TIFF file where the pages compose a 3D image. If it fails, it proceeds
+  as it did previously.
 
 (See also changes to *DIPlib*.)
 

@@ -23,7 +23,12 @@ def main(args=None):
         if args.bioformats:
             image = dip.ImageRead(f, 'bioformats')
         else:
-            image = dip.ImageRead(f)
+            try:
+                # Try reading as an TIFF stack
+                image = dip.ImageReadTIFF(f, imageNumbers=slice(0, -1, 1))
+            except:
+                # Otherwise, use the generic function
+                image = dip.ImageRead(f)
 
         handle = dip.viewer.Show(image)
         if first is None:
