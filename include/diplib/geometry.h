@@ -843,12 +843,14 @@ DIP_NODISCARD inline Image LogPolarTransform2D(
 /// If `tiling` is an empty array (the default), then `ceil(sqrt(in.size()))` images will be placed horizontally,
 /// in however many rows are necessary to fit all images.
 ///
-/// The input images must all have the same sizes, with the exception for the case where all images are tiled
-/// along a single dimension, in which case their sizes can differ along that dimension (see \ref dip::Concatenate)
+/// The input images must have matching sizes. That is, images on the same row must have the same height, and images
+/// on the same column must have the same width.
 ///
 /// The input images must all have the same number of tensor elements. If their tensor representations do not
 /// match, the output image will be a default column vector. If images are differing data types, the output will
 /// be of a type that best can represent the input (see \ref dip::DataType::SuggestDyadicOperation).
+///
+/// \see dip::TileTensorElements, dip::Concatenate, dip::Dice
 DIP_EXPORT void Tile(
       ImageConstRefArray const& in,
       Image& out,
@@ -869,6 +871,8 @@ DIP_NODISCARD inline Image Tile(
 /// spatial dimensions. This produces a scalar image of size `in.Size(0) * in.TensorColumns()` along the
 /// horizontal dimension, and size `in.Size(1) * in.TensorRows()` along the vertical dimension. The output
 /// image has the same dimensions as `in` along the third and further dimensions.
+///
+/// \see dip::Tile, dip::Dice.
 DIP_EXPORT void TileTensorElements(
       Image const& in,
       Image& out
@@ -889,6 +893,8 @@ DIP_NODISCARD inline Image TileTensorElements(
 /// The input images must all have the same number of tensor elements. If their tensor representations do not
 /// match, the output image will be a default column vector. If images are differing data types, the output will
 /// be of a type that best can represent the input (see \ref dip::DataType::SuggestDyadicOperation).
+///
+/// \see dip::Tile, dip::Dice.
 inline void Concatenate(
       ImageConstRefArray const& in,
       Image& out,
@@ -944,6 +950,23 @@ DIP_NODISCARD inline Image JoinChannels(
    JoinChannels( in, out );
    return out;
 }
+
+/// \brief Cut an image up according to a grid.
+///
+/// The input image is cut up into smaller images, according to `grid`. For example, `grid = { 3, 2 }` will cut the image
+/// horizontally into three equal parts, and vertically into two, generating an array with 6 images. The images are ordered
+/// in the output array from left to right, top to bottom. `grid` can have any number of dimensions.
+///
+/// The images are all `in.Size(i) / grid[i]` (integer division) pixels along dimension `i`. This means that, if the input
+/// image size does not evenly divide into `grid`, some pixels will not be included in the output.
+///
+/// The images in the output array share data with the input image.
+///
+/// \see dip::Tile, dip::Concatenate
+DIP_EXPORT ImageArray Dice(
+      Image const& in,
+      UnsignedArray grid
+);
 
 /// \brief Splits the tensor elements of a tensor image into individual images.
 ///

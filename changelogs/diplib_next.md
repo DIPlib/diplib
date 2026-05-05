@@ -17,6 +17,8 @@ date: 2020-00-00
 - TIFF files can now be read and written using ZSTD compression, if configured during build, using the *zstd* library
   on the system (i.e. is not part of the DIPlib source distribution, and is not enabled by default).
 
+- Added `dip::Dice`, which does the opposite of `dip::Tile`.
+
 ### Changed functionality
 
 - The `"label"` color map produced by `dip::ColorMapLut()` and used by `dip::ApplyColorMap()` now has 60 unique colors,
@@ -33,6 +35,9 @@ date: 2020-00-00
   themselves a name.
 
 - `dip::Canny` has a new `boundaryCondition` argument, that is passed through when computing the gradient.
+
+- `dip::Tile` has relaxed requirements for input image sizes. It is now possible to tile images of different sizes
+  as long as the images on the same row have the same height, and images on the same column have the same width.
 
 - The `dipview` and `dipviewjava` command-line tools will now first attempt to read a file as if it were a multi-page
   TIFF file where the pages compose a 3D image. If it fails, it proceeds as it did previously.

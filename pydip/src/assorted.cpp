@@ -454,6 +454,7 @@ void init_assorted( py::module& m ) {
           "in_array"_a, doc_strings::dip·JoinChannels·ImageConstRefArray·CL·Image·L );
    m.def( "JoinChannels", py::overload_cast< dip::ImageConstRefArray const&, dip::Image& >( &dip::JoinChannels ),
           "in_array"_a, py::kw_only(), "out"_a, doc_strings::dip·JoinChannels·ImageConstRefArray·CL·Image·L );
+   m.def( "Dice", &dip::Dice, "in"_a, "grid"_a, doc_strings::dip·SplitChannels·Image·CL ); // TODO: generate docs and update here
    m.def( "SplitChannels", &dip::SplitChannels, "in"_a, doc_strings::dip·SplitChannels·Image·CL );
 
    // diplib/testing.h

@@ -1,5 +1,5 @@
 /*
- * (c)2018, Cris Luengo.
+ * (c)2018-2026, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@
 
 #include <algorithm>
 #include <cmath>
-#include <limits>
 #include <utility>
 
 #include "diplib.h"
@@ -26,22 +25,6 @@
 #include "diplib/iterators.h"
 
 namespace dip {
-
-namespace {
-
-inline bool CompareAllBut( UnsignedArray const& s1, UnsignedArray const& s2, dip::uint dim ) {
-   for( dip::uint ii = 0; ii < s1.size(); ++ii ) {
-      if( ii != dim ) {
-         if( s1[ ii ] != s2[ ii ] ) {
-            return false;
-         }
-      }
-   }
-   return true;
-}
-
-} // namespace
-
 void Tile(
       ImageConstRefArray const& in,
       Image& c_out,
@@ -55,29 +38,15 @@ void Tile(
       tiling[ 0 ] = static_cast< dip::uint >( ceil_cast( std::sqrt( nImages )));
       tiling[ 1 ] = ( nImages - 1 ) / tiling[ 0 ] + 1;
    }
-   dip::uint nTiles = 1; // number of tiles
-   dip::uint nDim = 0;   // number of dimensions we're tiling along
-   dip::uint oneDim = 0; // the one dimension we're tiling along (if nDim == 1)
-   for( dip::uint ii = 0; ii < tiling.size(); ++ii ) {
-      nTiles *= tiling[ ii ];
-      if( tiling[ ii ] > 1 ) {
-         ++nDim;
-         oneDim = ii;
-      }
-
-   }
+   dip::uint nTiles = tiling.product();
    DIP_THROW_IF( nTiles < nImages, "There are more images than fit in the tiling" ); // Note that this also ensures that all elements of `tiling` are at least 1.
    if( nTiles == 1 ) {
       c_out = in[ 0 ].get();
       return;
    }
-   bool oneDimTiling = nDim == 1;
-   if( !oneDimTiling ) {
-      oneDim = std::numeric_limits< dip::uint >::max();
-   }
-   // All inputs must be forged and of the same sizes
+   // All inputs must be forged. Figure out output properties at the same time.
    auto const& first = in[ 0 ].get();
-   auto inSize = first.Sizes();
+   auto nDims = first.Dimensionality();
    auto tensor = first.Tensor();
    auto nTElems = tensor.Elements();
    auto dataType = first.DataType();
@@ -86,8 +55,8 @@ void Tile(
    for( dip::uint ii = 1; ii < nImages; ++ii ) {
       auto const& img = in[ ii ].get();
       DIP_THROW_IF( !img.IsForged(), E::IMAGE_NOT_FORGED );
+      nDims = std::max( nDims, img.Dimensionality() );
       DIP_THROW_IF( img.TensorElements() != nTElems, E::NTENSORELEM_DONT_MATCH );
-      DIP_THROW_IF( !CompareAllBut( inSize, img.Sizes(), oneDim ), E::SIZES_DONT_MATCH );
       if( img.Tensor() != tensor ) {
          tensor.ChangeShape();
       }
@@ -99,42 +68,62 @@ void Tile(
          pixelSize = img.PixelSize(); // We use the first pixel size that we come across
       }
    }
-   // What size will the output image be?
-   UnsignedArray outSize( std::max( inSize.size(), tiling.size() ), 1 );
-   for( dip::uint ii = 0; ii < inSize.size(); ++ii ) {
-      outSize[ ii ] = inSize[ ii ];
-   }
-   tiling.resize( outSize.size(), 1 );
-   if( oneDimTiling ) {
-      // outSize is same as inSize, but outSize[oneDim] is the sum of the size of all inputs along oneDim
-      if( oneDim < inSize.size() ) {
-         for( dip::uint ii = 1; ii < nImages; ++ii ) {
+   nDims = std::max( nDims, tiling.size() );
+   tiling.resize( nDims, 1 );
+   // A simple trick to do n-D iteration: create an image of sizes `tiling`, and iterate over that:
+   Image tile( tiling, 1, DT_UINT8 );
+   // Check that input images have matching sizes along rows and columns of the tiling. And compute the output size.
+   std::vector< UnsignedArray > imageSizes( nDims );
+   UnsignedArray outSize( nDims, 1 );
+   for( dip::uint jj = 0; jj < nDims; ++jj ) {
+      imageSizes[ jj ] = UnsignedArray( tiling[ jj ] );
+      if( tiling[ jj ] == 1 ) {
+         // Just check all images have the same size along this dimension.
+         dip::uint expected_size = 0;
+         for( dip::uint ii = 0; ii < nImages; ++ii ) {
             auto const& img = in[ ii ].get();
-            outSize[ oneDim ] += img.Size( oneDim );
+            dip::uint sz = jj < img.Dimensionality() ? img.Size( jj ) : 1;
+            if( ii == 0 ) {
+               expected_size = sz;
+            } else {
+               DIP_THROW_IF( expected_size != sz, E::SIZES_DONT_MATCH );
+            }
          }
+         outSize[ jj ] = expected_size;
       } else {
-         outSize[ oneDim ] = nImages;
-      }
-   } else {
-      // outSize element-wise multiplied by tiling
-      for( dip::uint ii = 0; ii < outSize.size(); ++ii ) {
-         outSize[ ii ] *= tiling[ ii ];
+         // Compare sizes along this dimension for images that are along the same row/column
+         ImageIterator< uint8 > it( tile );
+         dip::uint sum = 0;
+         for( dip::uint ii = 0; ii < nImages; ++ii, ++it ) {
+            auto const& img = in[ ii ].get();
+            dip::uint sz = jj < img.Dimensionality() ? img.Size( jj ) : 1;
+            dip::uint kk = it.Coordinates()[ jj ];
+            if( imageSizes[ jj ][ kk ] == 0 ) {
+               imageSizes[ jj ][ kk ] = sz;
+               sum += sz;
+            } else {
+               DIP_THROW_IF( imageSizes[ jj ][ kk ] != sz, E::SIZES_DONT_MATCH );
+            }
+         }
+         outSize[ jj ] = sum;
       }
    }
-   /*
-   std::cout << "Creating an output image of sizes " << outSize << ", with input image of size " << inSize << '\n';
-   std::cout << "   tiling = " << tiling << " nTiles = " << nTiles << " nImages = " << nImages << '\n';
-   if( oneDimTiling ) {
-      std::cout << "   oneDimTiling, oneDim = " << oneDim << '\n';
+   // Compute offsets from image sizes
+   std::vector< UnsignedArray > gridOffsets( nDims );
+   for( dip::uint jj = 0; jj < nDims; ++jj ) {
+      dip::uint numImgs = imageSizes[ jj ].size();
+      gridOffsets[ jj ] = UnsignedArray( numImgs, 0 );
+      for( dip::uint ii = 1; ii < numImgs; ++ii ) {
+         gridOffsets[ jj ][ ii ] = gridOffsets[ jj ][ ii - 1 ] + imageSizes[ jj ][ ii - 1 ];
+      }
    }
-   */
    // Create temporary output image, initialized to the actual output image
    // We do this in case `c_out` is the same as one of the images in `in`, reforging it would destroy
    // one of the inputs. Not initializing `out` to `c_out` would mean not being able to re-use a pixel
    // buffer already allocated for `c_out`, and would mean not using any external interface set in it.
    // NOTE that there is no way for `ReForge` to keep the data segment if `c_out` is the same as one of
    // the images in `in`, because out will always be larger than each of the images in `in` (the case
-   // where the is one one image to tile has already been taken care of).
+   // where the is one image to tile has already been taken care of).
    Image out( c_out ); //
    out.ReForge( outSize, nTElems, dataType );
    out.ReshapeTensor( tensor );
@@ -144,41 +133,18 @@ void Tile(
       out.Fill( 0 ); // This is not necessary if we have enough input images to tile the whole output image.
    }
    // Do the tiling
-   if( oneDimTiling ) {
-      // In this case, we need to increment the offset differently for each input image
-      Image tmp = out.QuickCopy();
-      auto stride = out.Stride( oneDim );
-      for( dip::uint ii = 0; ii < nImages; ++ii ) {
-         auto const& src = in[ ii ].get();
-         if( oneDim < inSize.size() ) {
-            inSize[ oneDim ] = src.Size( oneDim );
-         }
-         tmp.SetSizesUnsafe( inSize );
-         tmp.Copy( src );
-         if( oneDim < inSize.size() ) {
-            tmp.ShiftOriginUnsafe( stride * static_cast< dip::sint >( inSize[ oneDim ] ));
-         } else {
-            tmp.ShiftOriginUnsafe( stride );
-         }
+   Image tmp = out.QuickCopy();
+   ImageIterator< uint8 > it( tile );
+   for( dip::uint ii = 0; ii < nImages; ++ii, ++it ) {
+      auto const& src = in[ ii ].get();
+      auto const& gridCoords = it.Coordinates();
+      UnsignedArray imgCoords( nDims );
+      for( dip::uint jj = 0; jj < nDims; ++jj ) {
+         imgCoords[ jj ] = gridOffsets[ jj ][ gridCoords[ jj ]];
       }
-   } else {
-      // In this case, all input images are guaranteed the same size
-      Image tmp = out.QuickCopy();
-      tmp.SetSizesUnsafe( inSize );
-      auto origin = tmp.Origin();
-      IntegerArray strides = out.Strides();
-      for( dip::uint ii = 0; ii < inSize.size(); ++ii ) {
-         strides[ ii ] *= static_cast< dip::sint >( inSize[ ii ] );
-      }
-      // A simple trick to do n-D iteration: create an image of sizes `tiling`, and iterate over that:
-      Image tile( tiling, 1, DT_UINT8 );
-      ImageIterator< uint8 > it( tile );
-      for( dip::uint ii = 0; ii < nImages; ++ii, ++it ) {
-         auto const& coords = it.Coordinates();
-         tmp.SetOriginUnsafe( origin );
-         tmp.ShiftOriginUnsafe( Image::Offset( coords, strides, tiling ));
-         tmp.Copy( in[ ii ].get() );
-      }
+      tmp.SetOriginUnsafe( out.Pointer( imgCoords ));
+      tmp.SetSizesUnsafe( src.Sizes() );
+      tmp.Copy( src );
    }
    // We're done, now swap `out` and `c_out`.
    c_out.swap( out );
@@ -276,6 +242,46 @@ void JoinChannels(
    c_out.swap( out );
 }
 
+ImageArray Dice(
+      Image const& in,
+      UnsignedArray grid
+) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   dip::uint nImages = grid.product();
+   DIP_THROW_IF( nImages == 0, E::INVALID_PARAMETER );
+   ImageArray out( nImages );
+   if( nImages == 1 ) {
+      out[ 0 ] = in;
+      return out;
+   }
+   // Compute output size, error if we can't split
+   dip::uint nDims = std::min( in.Dimensionality(), grid.size() );
+   UnsignedArray outSizes( nDims );
+   for( dip::uint ii = 0; ii < nDims; ++ii ) {
+      DIP_THROW_IF( in.Size( ii ) < grid[ ii ], E::INVALID_PARAMETER );
+      outSizes[ ii ] = in.Size( ii ) / grid[ ii ];
+   }
+   for( dip::uint ii = nDims; ii < grid.size(); ++ii ) { // In case the grid array is larger than the image dimensionality
+      DIP_THROW_IF( grid[ ii ] > 1, E::INVALID_PARAMETER );
+   }
+   nDims = in.Dimensionality();
+   grid.resize( nDims );
+   // A simple trick to do n-D iteration: create an image of sizes `grid`, and iterate over that:
+   Image tile( grid, 1, DT_UINT8 );
+   ImageIterator< uint8 > it( tile );
+   for( dip::uint ii = 0; ii < nImages; ++ii, ++it ) {
+      auto const& gridCoords = it.Coordinates();
+      UnsignedArray imgCoords( nDims );
+      for( dip::uint jj = 0; jj < nDims; ++jj ) {
+         imgCoords[ jj ] = outSizes[ jj ] * gridCoords[ jj ];
+      }
+      out[ ii ] = in;
+      out[ ii ].SetSizesUnsafe( outSizes );
+      out[ ii ].SetOriginUnsafe( in.Pointer( imgCoords ));
+   }
+   return out;
+}
+
 ImageArray SplitChannels(
       Image const& in
 ) {
@@ -295,6 +301,29 @@ ImageArray SplitChannels(
 #include "diplib/generation.h"
 #include "diplib/random.h"
 #include "diplib/testing.h"
+
+DOCTEST_TEST_CASE( "[DIPlib] testing dip::Dice and dip::Tile" ) {
+   dip::Random random;
+   dip::Image img( { 50, 30 }, 3, dip::DT_UINT8 );
+   img.ReshapeTensor( dip::Tensor( dip::Tensor::Shape::SYMMETRIC_MATRIX, 2, 2 ));  // A 2x2 symmetric tensor has 3 elements
+   img.SetPixelSize( dip::PhysicalQuantityArray{ 0.4 * dip::Units::Micrometer(), 1.3 * dip::Units::Second() } );
+   img.SetColorSpace( "CMYK" );  // This cannot have 6 tensor components, but that doesn't matter for this test.
+   dip::UniformNoise( img, img, random, 0, 255 );
+   auto imar = dip::Dice( img, { 2, 3 } );
+   DOCTEST_CHECK( imar.size() == 6 );
+   for( auto const& a : imar ) {
+      DOCTEST_CHECK( a.IsForged() );
+      DOCTEST_CHECK( a.TensorElements() == img.TensorElements() );
+      DOCTEST_CHECK( a.TensorShape() == img.TensorShape() );
+      DOCTEST_CHECK( a.PixelSize() == img.PixelSize() );
+      DOCTEST_CHECK( a.ColorSpace() == img.ColorSpace() );
+      DOCTEST_CHECK( a.Sizes() == dip::UnsignedArray{ 25, 10 } );
+   }
+   dip::Image out = dip::Tile( dip::CreateImageConstRefArray( imar ), { 2, 3 } );
+   DOCTEST_CHECK( dip::testing::CompareImages( img, out ));
+   DOCTEST_CHECK( !img.Aliases( out ));
+   DOCTEST_CHECK( out.CompareProperties( img, dip::Option::CmpProp::All ));
+}
 
 DOCTEST_TEST_CASE( "[DIPlib] testing dip::SplitChannels and dip::JoinChannels" ) {
    dip::Random random;
