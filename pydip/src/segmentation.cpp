@@ -1,6 +1,6 @@
 /*
  * (c)2017-2021, Flagship Biosciences, Inc., written by Cris Luengo.
- * (c)2022-2024, Cris Luengo.
+ * (c)2022-2026, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -112,10 +112,10 @@ void init_segmentation( py::module& m ) {
           "Finds a per-object threshold such that found objects are maximally\nellipsoidal.\n"
           "Like the C++ function, but with individual input values rather than a single\n"
           "`dip::PerObjectEllipsoidFitParameters` object collecting all algorithm parameters." );
-   m.def( "Canny", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::dfloat, dip::dfloat, dip::String const& >( &dip::Canny ),
-          "in"_a, "sigmas"_a = dip::FloatArray{ 1 }, "lower"_a = 0.5, "upper"_a = 0.9, "selection"_a = dip::S::ALL, doc_strings::dip·Canny·Image·CL·Image·L·FloatArray·CL·dfloat··dfloat··String·CL );
-   m.def( "Canny", py::overload_cast< dip::Image const&, dip::Image&, dip::FloatArray const&, dip::dfloat, dip::dfloat, dip::String const& >( &dip::Canny ),
-          "in"_a, py::kw_only(), "out"_a, "sigmas"_a = dip::FloatArray{ 1 }, "lower"_a = 0.5, "upper"_a = 0.9, "selection"_a = dip::S::ALL, doc_strings::dip·Canny·Image·CL·Image·L·FloatArray·CL·dfloat··dfloat··String·CL );
+   m.def( "Canny", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::dfloat, dip::dfloat, dip::String const&, dip::StringArray const& >( &dip::Canny ),
+          "in"_a, "sigmas"_a = dip::FloatArray{ 1 }, "lower"_a = 0.5, "upper"_a = 0.9, "selection"_a = dip::S::ALL, "boundaryCondition"_a = dip::StringArray{}, doc_strings::dip·Canny·Image·CL·Image·L·FloatArray·CL·dfloat··dfloat··String·CL );
+   m.def( "Canny", py::overload_cast< dip::Image const&, dip::Image&, dip::FloatArray const&, dip::dfloat, dip::dfloat, dip::String const&, dip::StringArray const& >( &dip::Canny ),
+          "in"_a, py::kw_only(), "out"_a, "sigmas"_a = dip::FloatArray{ 1 }, "lower"_a = 0.5, "upper"_a = 0.9, "selection"_a = dip::S::ALL, "boundaryCondition"_a = dip::StringArray{}, doc_strings::dip·Canny·Image·CL·Image·L·FloatArray·CL·dfloat··dfloat··String·CL );
    m.def( "Superpixels", []( dip::Image const& in, dip::dfloat density, dip::dfloat compactness, dip::String const& method, dip::StringSet const& flags ) {
              return dip::Superpixels( in, RandomNumberGenerator(), density, compactness, method, flags );
           },

@@ -1,4 +1,4 @@
-\comment (c)2016-2020, Cris Luengo.
+\comment (c)2016-2026, Cris Luengo.
 \comment Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 
 \comment Licensed under the Apache License, Version 2.0 [the "License"];
@@ -72,7 +72,7 @@ meaningful values in the padded areas, and use the result to read from when comp
 functions will do this explicitly for the entire image, separable filters will do this on one image line
 at the time, and some other functions will do this only implicitly. One can use the function
 \ref dip::ExtendImage to visualize what the extended image looks like to a filter, or to extend the image
-manually implementing a function that needs to read outside the image bounds.
+when manually implementing a function that needs to read outside the image bounds.
 
 In DIPlib, we refer to the method used to fill in the padded areas as the *boundary condition*. DIPlib
 knows quite a lot of different boundary conditions, see \ref dip::BoundaryCondition. Here we show what

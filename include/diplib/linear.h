@@ -565,6 +565,7 @@ DIP_NODISCARD inline Image SobelGradient(
 /// better to use Gaussian derivatives than finite difference derivatives.
 ///
 /// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See \ref dip::BoundaryCondition.
+/// Consider using the `"antisym reflect"` boundary condition for derivative filters. The default is `"mirror"`.
 DIP_EXPORT void Derivative(
       Image const& in,
       Image& out,

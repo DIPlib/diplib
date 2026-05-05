@@ -1,5 +1,5 @@
 /*
- * (c)2017-2018, Cris Luengo.
+ * (c)2017-2026, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,13 +31,14 @@ void Canny(
       FloatArray const& sigmas,
       dfloat lower,
       dfloat upper,
-      String const& selection
+      String const& selection,
+      StringArray const& boundaryCondition
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_START_STACK_TRACE
-      Image gradient = Gradient( in, sigmas, S::BEST );
+      Image gradient = Gradient( in, sigmas, S::BEST, boundaryCondition );
       NonMaximumSuppression( {}, gradient, {}, out, S::INTERPOLATE ); // use interpolation in 2D, for higher dims it's always "round"
       dfloat t1 = upper;
       dfloat t2 = lower;

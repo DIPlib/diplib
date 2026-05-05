@@ -1,5 +1,5 @@
 /*
- * (c)2017-2022, Cris Luengo.
+ * (c)2017-2026, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -558,6 +558,9 @@ DIP_NODISCARD inline Image PerObjectEllipsoidFit(
 ///
 /// `in` must be scalar, real-valued, and have at least one dimension.
 ///
+/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See \ref dip::BoundaryCondition.
+/// Consider using the `"antisym reflect"` boundary condition. The default is `"mirror"`.
+///
 /// The Canny edge detector was originally described, and typically implemented, for 2D images only.
 /// Here we provide an obvious extension to arbitrary dimensions. The final homotopic thinning is
 /// only applied in 2D and 3D, since \ref dip::EuclideanSkeleton is not defined for other dimensionalities.
@@ -571,17 +574,19 @@ DIP_EXPORT void Canny(
       FloatArray const& sigmas = { 1 },
       dfloat lower = 0.5,
       dfloat upper = 0.9,
-      String const& selection = S::ALL
+      String const& selection = S::ALL,
+      StringArray const& boundaryCondition = {}
 );
 DIP_NODISCARD inline Image Canny(
       Image const& in,
       FloatArray const& sigmas = { 1 },
       dfloat lower = 0.5,
       dfloat upper = 0.9,
-      String const& selection = S::ALL
+      String const& selection = S::ALL,
+      StringArray const& boundaryCondition = {}
 ) {
    Image out;
-   Canny( in, out, sigmas, lower, upper, selection );
+   Canny( in, out, sigmas, lower, upper, selection, boundaryCondition );
    return out;
 }
 

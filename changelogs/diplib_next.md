@@ -32,6 +32,8 @@ date: 2020-00-00
 - `dip::ExternalInterface` has a new virtual member function `Name()` that derived classes can overload to give
   themselves a name.
 
+- `dip::Canny` has a new `boundaryCondition` argument, that is passed through when computing the gradient.
+
 - The `dipview` and `dipviewjava` command-line tools will now first attempt to read a file as if it were a multi-page
   TIFF file where the pages compose a 3D image. If it fails, it proceeds as it did previously.
 
