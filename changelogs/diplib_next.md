@@ -34,9 +34,9 @@ date: 2020-00-00
 - `dip::ExternalInterface` has a new virtual member function `Name()` that derived classes can overload to give
   themselves a name.
 
-- `dip::Canny` has a new `boundaryCondition` argument, that is passed through when computing the gradient.
+- `dip::Canny()` has a new `boundaryCondition` argument, that is passed through when computing the gradient.
 
-- `dip::Tile` has relaxed requirements for input image sizes. It is now possible to tile images of different sizes
+- `dip::Tile()` has relaxed requirements for input image sizes. It is now possible to tile images of different sizes
   as long as the images on the same row have the same height, and images on the same column have the same width.
 
 - The `dipview` and `dipviewjava` command-line tools will now first attempt to read a file as if it were a multi-page
@@ -65,8 +65,8 @@ date: 2020-00-00
 - `dip::ReadPixelWithBoundaryCondition()` didn't implement the boundary conditions exactly the same way as all other
   functions in this library, it now produces the exact same values for the modes that it supports.
 
-- Projection functions that compute sums (`dip::Sum`, `dip::Mean`, `dip::SumAbs`, `dip::MeanAbs`, `dip::SumSquare`,
-  `dip::MeanSquare`, `dip::SumSquareModulus`, `dip::MeanSquareModulus`) or products (`dip::Product`, `dip::GeometricMean`)
+- Projection functions that compute sums (`dip::Sum()`, `dip::Mean()`, `dip::SumAbs()`, `dip::MeanAbs()`, `dip::SumSquare()`,
+  `dip::MeanSquare()`, `dip::SumSquareModulus()`, `dip::MeanSquareModulus()`) or products (`dip::Product()`, `dip::GeometricMean()`)
   now do the computation using double precision internally, before casting to the output data type (typically
   single-precision float). This should lead to better precision for large images.
 
@@ -127,6 +127,8 @@ date: 2020-00-00
 - Added bindings for three functions that manipulate the image's data segment: `dip.Image.ForceNormalStrides()`,
   `dip.Image.ForceContiguousData()` and `dip.Image.Separate()`.
 
+- Added `dip.Dice()`.
+
 ### Changed functionality
 
 - Regular indexing (such as `img[10:40:2, :]`), which creates a new image that shares data with the original image,
@@ -136,6 +138,9 @@ date: 2020-00-00
 - The Python version of the `dipview` utility is changed in the same way as the C++ version: The tool will first attempt
   to read a file as if it were a multi-page TIFF file where the pages compose a 3D image. If it fails, it proceeds
   as it did previously.
+
+- `dip.PhysicalQuantity` has a new alias `dip.PQ`, making it easier to write code that works with physical quantities
+  and pixel sizes.
 
 (See also changes to *DIPlib*.)
 

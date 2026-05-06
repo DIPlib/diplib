@@ -1056,7 +1056,7 @@ class DIP_NO_EXPORT PixelSize {
          return out;
       }
 
-      /// Converts pixels to meters.
+      /// Converts pixels to physical units.
       PhysicalQuantityArray ToPhysical( FloatArray const& in ) const {
          PhysicalQuantityArray out( in.size() );
          for( dip::uint ii = 0; ii < in.size(); ++ii ) {

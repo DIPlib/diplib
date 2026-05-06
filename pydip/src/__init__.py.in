@@ -50,6 +50,7 @@ from .PyDIP_py import *
 Image.Show = Show
 Histogram.Show = HistogramShow
 SE = StructuringElement  # for backwards compatibility (and ease of use)
+PQ = PhysicalQuantity
 Measurement.ToDataFrame = MeasurementToDataFrame
 
 

@@ -157,7 +157,7 @@ PYBIND11_MODULE( PyDIP_bin, m ) {
    units.def( "Thousands", &dip::Units::Thousands, doc_strings::dip·Units·Thousands·C );
    py::implicitly_convertible< py::str, dip::Units >();
 
-   auto physQ = py::class_< dip::PhysicalQuantity >( m, "PhysicalQuantity", doc_strings::dip·PhysicalQuantity );
+   auto physQ = py::class_< dip::PhysicalQuantity >( m, "PhysicalQuantity", "Encapsulates a quantity with physical units. Can be shorted to PQ." );
    physQ.def( py::init<>(), doc_strings::dip·PhysicalQuantity·PhysicalQuantity );
    physQ.def( py::init< dip::dfloat, dip::Units >(), "magnitude"_a, "units"_a = dip::Units{}, doc_strings::dip·PhysicalQuantity·PhysicalQuantity·dip·dfloat··Units·CL );
    physQ.def( py::init< dip::Units >(), "units"_a, doc_strings::dip·PhysicalQuantity·PhysicalQuantity·Units·CL );

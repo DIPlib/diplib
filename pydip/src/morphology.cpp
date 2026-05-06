@@ -82,7 +82,7 @@ dip::String StructuringElementRepr( dip::StructuringElement const& s ) {
 
 void init_morphology( py::module& m ) {
 
-   auto se = py::class_< dip::StructuringElement >( m, "StructuringElement", doc_strings::dip·StructuringElement );
+   auto se = py::class_< dip::StructuringElement >( m, "StructuringElement", "Represents the shape and size of a structuring element. Can be shortened to SE." );
    se.def( py::init<>(), doc_strings::dip·StructuringElement·StructuringElement );
    se.def( py::init< dip::String const& >(), "shape"_a, doc_strings::dip·StructuringElement·StructuringElement·String·CL );
    se.def( py::init< dip::dfloat, dip::String const& >(), "param"_a, "shape"_a = dip::S::ELLIPTIC, doc_strings::dip·StructuringElement·StructuringElement·dfloat··String·CL );
