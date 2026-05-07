@@ -1,6 +1,6 @@
 /*
  * (c)2017-2021, Flagship Biosciences, Inc., written by Cris Luengo.
- * (c)2022, Cris Luengo.
+ * (c)2022-2026, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -149,7 +149,7 @@ class type_caster< dip::DataType > {
          }
          if( PYBIND11_BYTES_CHECK( src.ptr() ) || PyUnicode_Check( src.ptr() )) {
             value = dip::DataType( src.cast< dip::String >() );
-            //std::cout << "   Result: " << value << std::endl;
+            //std::cout << "   Result: " << value << '\n';
             return true;
          }
          return false;
@@ -171,7 +171,7 @@ class type_caster< dip::Tensor::Shape > {
          }
          if( PYBIND11_BYTES_CHECK( src.ptr() ) || PyUnicode_Check( src.ptr() )) {
             value = dip::Tensor::ShapeFromString( src.cast< dip::String >() );
-            //std::cout << "   Result: " << value << std::endl;
+            //std::cout << "   Result: " << value << '\n';
             return true;
          }
          return false;
@@ -195,9 +195,9 @@ class type_caster< dip::Range > {
          }
          if( PySlice_Check( src.ptr() )) {
             auto* ptr = reinterpret_cast< PySliceObject* >( src.ptr() );
-            dip::sint start = 0;
-            dip::sint stop = 0;
-            dip::sint step = 1;
+            dip::sint start{};
+            dip::sint stop{};
+            dip::sint step{};
             // Alternative: PySlice_Unpack( src.ptr(), &start, &stop, &step );
             if( PyNone_Check( ptr->step )) {
                step = 1;
@@ -223,8 +223,51 @@ class type_caster< dip::Range > {
             if( step < 0 ) {
                step = -step;
             }
-            //std::cout << "   value == " << start << ":" << stop << ":" << step << std::endl;
+            //std::cout << "   value == " << start << ":" << stop << ":" << step << '\n';
             value = dip::Range( start, stop, static_cast< dip::uint >( step ));
+            return true;
+         }
+         if( PyTuple_Check( src.ptr() )) {
+            // Same as slice() constructor, but we don't accept None as input (not needed with DIPlib's definitions)
+            // () => [:]
+            // (e) => [:e]
+            // (b,e) => [b:e]
+            // (b,e,s) => [b:e:s]
+            py::tuple list = reinterpret_borrow< py::tuple >( src );
+            dip::uint n = list.size();
+            if( n > 3 ) {
+               return false;
+            }
+            dip::sint start = 0;
+            dip::sint stop = -1;
+            dip::uint step = 1;
+            if( n > 0 ) {
+               // First element is either start or stop, depending on how many further elements there are
+               if( !PyLong_Check( list[ 0 ].ptr() )) {
+                  return false;
+               }
+               if( n == 1 ) {
+                  stop = PyLong_AsSsize_t( list[ 0 ].ptr() );
+               } else {
+                  start = PyLong_AsSsize_t( list[ 0 ].ptr() );
+               }
+            }
+            if( n > 1 ) {
+               // Second element is stop
+               if( !PyLong_Check( list[ 1 ].ptr() )) {
+                  return false;
+               }
+               stop = PyLong_AsSsize_t( list[ 1 ].ptr() );
+            }
+            if( n > 2 ) {
+               // Third element is step
+               if( !PyLong_Check( list[ 2 ].ptr() )) {
+                  return false;
+               }
+               step = static_cast< dip::uint >(std::abs(PyLong_AsSsize_t( list[ 2 ].ptr() )));
+            }
+            //std::cout << "   value == " << start << ":" << stop << ":" << step << '\n';
+            value = dip::Range( start, stop, step );
             return true;
          }
          if( PyLong_Check( src.ptr() )) {
@@ -266,7 +309,7 @@ class type_caster< dip::Image::Sample > {
             //std::cout << "   Input is not a scalar type\n";
             return false;
          }
-         //std::cout << "   Result: " << value << std::endl;
+         //std::cout << "   Result: " << value << '\n';
          return true;
       }
       static handle cast( dip::Image::Sample const& src, return_value_policy /*policy*/, handle /*parent*/ ) {
@@ -344,7 +387,7 @@ class type_caster< dip::Image::Pixel > {
                //std::cout << "   Input is not a scalar type\n";
                return false;
             }
-            //std::cout << "   Result: " << value << std::endl;
+            //std::cout << "   Result: " << value << '\n';
             return true;
          }
          sample_conv conv;

@@ -142,6 +142,12 @@ date: 2020-00-00
 - `dip.PhysicalQuantity` has a new alias `dip.PQ`, making it easier to write code that works with physical quantities
   and pixel sizes.
 
+- For *DIPlib* functions that take a `dip::Range` as input, the Python bindings instead take a `slice` object. They
+  now also take a tuple instead, defined in the same way as the `slice()` constructor except that `None` cannot be
+  given. For example, instead of `slice(5, 10)` you can now write `(5, 10)`. Note that `(5,)` is the same as `(0, 5)`,
+  because that is how `slice()` is defined. `slice(None, None)` is the same as `slice(0, -1)` which now can be
+  written as `(0, -1)` (or simply `()`).
+
 (See also changes to *DIPlib*.)
 
 ### Bug fixes
