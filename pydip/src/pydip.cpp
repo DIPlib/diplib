@@ -1,6 +1,6 @@
 /*
  * (c)2017-2021, Flagship Biosciences, Inc., written by Cris Luengo.
- * (c)2022-2024, Cris Luengo.
+ * (c)2022-2026, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,9 @@
 #include <sstream>
 
 #include "pydip.h"
-#include "diplib/neighborlist.h"
+#include "diplib/generic_iterators.h"
 #include "diplib/multithreading.h"
+#include "diplib/neighborlist.h"
 #include "diplib/random.h"
 
 #if defined(__clang__)
@@ -263,6 +264,51 @@ PYBIND11_MODULE( PyDIP_bin, m ) {
    // diplib/multithreading.h
    m.def( "SetNumberOfThreads", &dip::SetNumberOfThreads, "nThreads"_a, doc_strings::dip·SetNumberOfThreads·dip·uint· );
    m.def( "GetNumberOfThreads", &dip::GetNumberOfThreads, doc_strings::dip·GetNumberOfThreads );
+
+   // diplib/iterators.h
+   auto isi = py::class_< dip::ImageSliceIterator >( m, "ImageSliceIterator", doc_strings::dip·ImageSliceIterator );
+   isi.def( py::init< dip::Image const&, dip::uint >(), "image"_a, "procDim"_a, doc_strings::dip·ImageSliceIterator·ImageSliceIterator·Image·CL·dip·uint· );
+   isi.def( "__iter__", []( dip::ImageSliceIterator& self ) { return self; } );
+   isi.def( "__next__", []( dip::ImageSliceIterator& self ) {
+      if( self.IsAtEnd() ) {
+         throw py::stop_iteration();
+      }
+      dip::Image retval = *self;
+      ++self;
+      return retval;
+   } );
+   isi.def( "__repr__", []( dip::ImageSliceIterator& self ) { return "<ImageSliceIterator>"; } );
+   isi.def( "Image", []( dip::ImageSliceIterator& self ) { return *self; }, "Returns the slice that the iterator is currently pointing at" );
+   isi.def( "IsAtEnd", &dip::ImageSliceIterator::IsAtEnd, doc_strings::dip·ImageSliceIterator·IsAtEnd·C );
+   isi.def( "Coordinate", &dip::ImageSliceIterator::Coordinate, doc_strings::dip·ImageSliceIterator·Coordinate·C );
+   isi.def( "SetCoordinate", &dip::ImageSliceIterator::SetCoordinate, "coord"_a, doc_strings::dip·ImageSliceIterator·SetCoordinate·dip·uint· );
+   isi.def( "ProcessingDimension", &dip::ImageSliceIterator::ProcessingDimension, doc_strings::dip·ImageSliceIterator·ProcessingDimension·C );
+   isi.def( "Reset", &dip::ImageSliceIterator::Reset, doc_strings::dip·ImageSliceIterator·Reset );
+
+   m.def( "ImageTensorIterator", dip::ImageTensorIterator, "image"_a, doc_strings::dip·ImageTensorIterator·Image·CL );
+
+   auto bli = py::class_< dip::BresenhamLineIterator >( m, "BresenhamLineIterator", "An iterator to iterate over pixels along a straight line. Unline the C++\nversion, it iterates over pixel coordinates, not memory offsets." );
+   bli.def( py::init( []( dip::UnsignedArray start, dip::UnsignedArray const& end ) {
+      dip::IntegerArray strides( start.size() ); // bogus strides, we're ignoring them.
+      return dip::BresenhamLineIterator( std::move( strides ), std::move( start ), end );
+   } ), "start"_a, "end"_a, "Construct an iterator by giving start and end points." );
+   bli.def( py::init( []( dip::FloatArray stepSize, dip::UnsignedArray start, dip::uint length ) {
+      dip::IntegerArray strides( start.size() ); // bogus strides, we're ignoring them.
+      return dip::BresenhamLineIterator( std::move( strides ), std::move( stepSize ), std::move( start ), length );
+   } ), "stepSize"_a, "start"_a, "length"_a, "Construct an iterator by giving a start point, a step size, and a number of steps." );
+   bli.def( "__iter__", []( dip::BresenhamLineIterator& self ) { return self; } );
+   bli.def( "__next__", []( dip::BresenhamLineIterator& self ) {
+      if( self.IsAtEnd() ) {
+         throw py::stop_iteration();
+      }
+      dip::UnsignedArray retval = self.Coordinates();
+      ++self;
+      return retval;
+   } );
+   bli.def( "__repr__", []( dip::BresenhamLineIterator& self ) { return "<BresenhamLineIterator>"; } );
+   bli.def( "IsAtEnd", &dip::BresenhamLineIterator::IsAtEnd, doc_strings::dip·BresenhamLineIterator·IsAtEnd·C );
+   bli.def( "Coordinates", &dip::BresenhamLineIterator::Coordinates, doc_strings::dip·BresenhamLineIterator·Coordinates·C );
+   bli.def( "Length", &dip::BresenhamLineIterator::Length, doc_strings::dip·BresenhamLineIterator·Length·C );
 
    // Include definitions from all other source files
    init_image( m );

@@ -70,6 +70,10 @@ date: 2020-00-00
   now do the computation using double precision internally, before casting to the output data type (typically
   single-precision float). This should lead to better precision for large images.
 
+- `dip::ImageSliceIterator::SetCoordinate()`, `Set()` and `Reset()` didn't update the internal data pointer, meaning
+  that the slice returned by the iterator after calling any of these functions didn't match the coordinate, and
+  could point to out-of-bounds data.
+
 ### Updated dependencies
 
 - Updated LibTIFF to version 4.7.1.
@@ -128,6 +132,8 @@ date: 2020-00-00
   `dip.Image.ForceContiguousData()` and `dip.Image.Separate()`.
 
 - Added `dip.Dice()`.
+
+- Added bindings for `dip::BresenhamLineIterator`, `dip::ImageSliceIterator` and `dip::ImageTensorIterator()`.
 
 ### Changed functionality
 

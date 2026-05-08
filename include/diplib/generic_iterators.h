@@ -1134,8 +1134,7 @@ class DIP_NO_EXPORT ImageSliceIterator {
       /// Set the iterator to point at a different location in the image
       ImageSliceIterator& SetCoordinate( dip::uint coord ) {
          DIP_THROW_IF( coord >= size_, E::INDEX_OUT_OF_RANGE );
-         coord_ = coord;
-         return *this;
+         return Set( coord );
       }
 
       /// Return the processing dimension, the direction over which the iterator iterates
@@ -1143,13 +1142,13 @@ class DIP_NO_EXPORT ImageSliceIterator {
 
       /// Reset the iterator to the first image plane (as it was when the iterator first was created)
       ImageSliceIterator& Reset() {
-         coord_ = 0;
-         return *this;
+         return Set( 0 );
       }
 
       /// \brief Set the iterator to index `plane`. If `plane` is outside the image domain, the iterator is still valid,
-      /// but should not be dereferenced.
+      /// but should not be dereferenced. Like \ref SetCoordinate but without check.
       ImageSliceIterator& Set( dip::uint plane ) {
+         image_.ShiftOriginUnsafe( static_cast< dip::sint >( plane ) - static_cast< dip::sint >( coord_ ) * stride_ );
          coord_ = plane;
          return *this;
       }
