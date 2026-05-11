@@ -18,6 +18,8 @@ jobs:
         include:
           - os: ubuntu-22.04
             n_cores: 4
+          - os: ubuntu-24.04
+            n_cores: 4
       fail-fast: true
 
     steps:
