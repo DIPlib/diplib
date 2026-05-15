@@ -51,7 +51,7 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions {
    enum class ComplexToReal : uint8 { Real, Imaginary, Magnitude, Phase };
 
    /// \brief Grey-value mapping options
-   enum class Mapping : uint8 { ZeroOne, Angle, Normal, Linear, Symmetric, Logarithmic };
+   enum class Mapping : uint8 { ZeroOne, Angle, Normal, Modulo, Linear, Symmetric, Logarithmic };
 
    /// \brief Slice projection options
    enum class Projection : uint8 { None, Min, Mean, Max };
@@ -310,6 +310,7 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions {
             mapping_range_ = { -pi, pi };
             break;
          case ViewingOptions::Mapping::Normal:
+         case ViewingOptions::Mapping::Modulo:
             mapping_range_ = { 0, 255 };
             break;
          case ViewingOptions::Mapping::Linear:
@@ -328,7 +329,7 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions {
 
    /// \brief Returns a textual description of the current grey-value mapping
    String getMappingDescription() const {
-      String names[ ] = { "unit", "angle", "normal", "linear", "symmetric around 0", "logarithmic" };
+      String names[ ] = { "unit", "angle", "normal", "modulo", "linear", "symmetric around 0", "logarithmic" };
       return names[ ( dip::uint )mapping_ ];
    }
 
@@ -536,7 +537,12 @@ inline dfloat rangeMap( T val, dfloat offset, dfloat scale, ViewingOptions::Mapp
    if( mapping == ViewingOptions::Mapping::Logarithmic ) {
       return 255. * std::min( std::log( std::max( ( dfloat )val - offset, 1. )) * scale, 1. );
    } else {
-      return 255. * std::min( std::max( ( ( dfloat )val - offset ) * scale, 0. ), 1. );
+      dfloat scaled = ( static_cast< dfloat >( val ) - offset ) * scale * 255.0;
+      if( mapping == ViewingOptions::Mapping::Modulo ) {
+         return scaled == 0.0 ? 0.0 : ( std::fmod( scaled - 1.0, 255.0 ) + 1.0 );
+      } else {
+         return std::min( std::max( scaled, 0.0 ), 255.0 );
+      }
    }
 }
 

@@ -173,13 +173,14 @@ PYBIND11_MODULE( PyDIPviewer, m ) {
          self.options().mapping_range_ = dip::viewer::FloatRange( range[ 0 ], range[ 1 ] );
       }, "Mapped value range (colorbar limits)." );
 
-   auto mappingOpts = to_array< dip::String >( "unit", "angle", "8bit", "lin", "base", "log" );
+   auto mappingOpts = to_array< dip::String >( "unit", "angle", "8bit", "mod", "lin", "base", "log" );
    tsl::robin_map< dip::String, dip::String > mappingAliases{
       {"normal", "8bit"},
       {"linear", "lin"},
       {"all", "lin"},
       {"based", "base"},
-      // Not possible: "12bit", "16bit", "s8bit", "s12bit", "s16bit", "orientation", "percentile", "modulo", "labels"
+      {"modulo", "mod"},
+      // Not possible: "12bit", "16bit", "s8bit", "s12bit", "s16bit", "orientation", "percentile", "labels"
    };
    sv.def_property(
       "mapping",

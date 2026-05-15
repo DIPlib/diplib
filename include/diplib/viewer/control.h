@@ -40,7 +40,7 @@ class DIPVIEWER_CLASS_EXPORT ControlViewPort : public ViewPort {
       explicit ControlViewPort( Viewer* viewer ) : ViewPort( viewer ) {
          // NOTE! These strings must match the corresponding enums in include/diplib/viewer/viewer.h
          lists_.push_back( { "SPA", "RGB", "GRY", "SEQ", "DIV", "CYC", "LBL" } );
-         lists_.push_back( { "0-1", "ANG", "255", "LIN", "SYM", "LOG" } );
+         lists_.push_back( { "0-1", "ANG", "255", "MOD", "LIN", "SYM", "LOG" } );
          lists_.push_back( { "REA", "IMG", "MAG", "PHA" } );
          lists_.push_back( { "SLC", "MIN", "MEA", "MAX" } );
       }
