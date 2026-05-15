@@ -259,19 +259,19 @@ struct DIP_NO_EXPORT DataType {
    /// \brief Returns the size in bytes of the data type.
    dip::uint SizeOf() const {
       switch( dt ) {
-         case DT::BIN:      return sizeof( dip::bin );
-         case DT::UINT8:    return sizeof( dip::uint8 );
-         case DT::SINT8:    return sizeof( dip::sint8 );
-         case DT::UINT16:   return sizeof( dip::uint16 );
-         case DT::SINT16:   return sizeof( dip::sint16 );
-         case DT::UINT32:   return sizeof( dip::uint32 );
-         case DT::SINT32:   return sizeof( dip::sint32 );
-         case DT::UINT64:   return sizeof( dip::uint64 );
-         case DT::SINT64:   return sizeof( dip::sint64 );
-         case DT::SFLOAT:   return sizeof( dip::sfloat );
-         case DT::DFLOAT:   return sizeof( dip::dfloat );
-         case DT::SCOMPLEX: return sizeof( dip::scomplex );
-         case DT::DCOMPLEX: return sizeof( dip::dcomplex );
+         case DT::BIN:      return sizeof( bin );
+         case DT::UINT8:    return sizeof( uint8 );
+         case DT::SINT8:    return sizeof( sint8 );
+         case DT::UINT16:   return sizeof( uint16 );
+         case DT::SINT16:   return sizeof( sint16 );
+         case DT::UINT32:   return sizeof( uint32 );
+         case DT::SINT32:   return sizeof( sint32 );
+         case DT::UINT64:   return sizeof( uint64 );
+         case DT::SINT64:   return sizeof( sint64 );
+         case DT::SFLOAT:   return sizeof( sfloat );
+         case DT::DFLOAT:   return sizeof( dfloat );
+         case DT::SCOMPLEX: return sizeof( scomplex );
+         case DT::DCOMPLEX: return sizeof( dcomplex );
       }
       DIP_THROW( "Unknown data type" ); // This should never happen, but GCC complains.
    }

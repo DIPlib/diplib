@@ -62,9 +62,9 @@ class FeaturePodczeckShapes : public Composite {
             dfloat boxHeight = it[ feretIndex_ + 2 ];
             dfloat perimeter = it[ perimeterIndex_ ];
             output[ 0 ] = area / ( boxWidth * boxHeight );
-            output[ 1 ] = area / ( 0.25 * dip::pi * boxHeight * boxHeight );
+            output[ 1 ] = area / ( 0.25 * pi * boxHeight * boxHeight );
             output[ 2 ] = area / ( 0.5 * boxWidth * boxHeight );
-            output[ 3 ] = area / ( 0.25 * dip::pi * boxWidth * boxHeight );
+            output[ 3 ] = area / ( 0.25 * pi * boxWidth * boxHeight );
             output[ 4 ] = perimeter / length;
          }
       }

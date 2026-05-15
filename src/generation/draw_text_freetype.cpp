@@ -110,8 +110,8 @@ GlyphSequence GetGlyphSequence(
    bool use_kerning = FT_HAS_KERNING( face );
    GlyphSequence glyphSequence;
    FT_Vector pen = { 0, 0 };   /* start at (0,0) */
-   double advanceScaleX = std::cos( orientation );
-   double advanceScaleY = std::sin( orientation );
+   dfloat advanceScaleX = std::cos( orientation );
+   dfloat advanceScaleY = std::sin( orientation );
    FT_Matrix matrix{
          static_cast< FT_Fixed >( advanceScaleX * 0x10000L ),
          static_cast< FT_Fixed >( advanceScaleY * 0x10000L ),
@@ -153,8 +153,8 @@ GlyphSequence GetGlyphSequence(
       // Save
       glyphSequence.glyphs.push_back( glyph );
       // Prepare for next glyph
-      pen.x += round_cast( static_cast< double >( slot->advance.x ) / 64.0 * advanceScaleX );
-      pen.y += round_cast( static_cast< double >( slot->advance.x ) / 64.0 * advanceScaleY );
+      pen.x += round_cast( static_cast< dfloat >( slot->advance.x ) / 64.0 * advanceScaleX );
+      pen.y += round_cast( static_cast< dfloat >( slot->advance.x ) / 64.0 * advanceScaleY );
       previous = index;
    }
    glyphSequence.endPos = pen;
@@ -257,11 +257,11 @@ void FreeTypeTool::DrawText(
    DIP_THROW_IF( !value.IsScalar() && ( value.TensorElements() != out.TensorElements() ), E::NTENSORELEM_DONT_MATCH );
    GlyphSequence glyphSequence = GetGlyphSequence( face, text, orientation );
    if( align == S::CENTER ) {
-      origin[ 0 ] -= static_cast< double >( glyphSequence.endPos.x ) / 2.0;
-      origin[ 1 ] -= static_cast< double >( glyphSequence.endPos.y ) / 2.0;
+      origin[ 0 ] -= static_cast< dfloat >( glyphSequence.endPos.x ) / 2.0;
+      origin[ 1 ] -= static_cast< dfloat >( glyphSequence.endPos.y ) / 2.0;
    } else if( align == S::RIGHT ) {
-      origin[ 0 ] -= static_cast< double >( glyphSequence.endPos.x );
-      origin[ 1 ] -= static_cast< double >( glyphSequence.endPos.y );
+      origin[ 0 ] -= static_cast< dfloat >( glyphSequence.endPos.x );
+      origin[ 1 ] -= static_cast< dfloat >( glyphSequence.endPos.y );
    } else if( align != S::LEFT ) {
       DIP_THROW_INVALID_FLAG( align );
    }
@@ -285,7 +285,7 @@ FreeTypeTool::TextInfo FreeTypeTool::DrawText(
    out.image.Fill( 0 );
    out.left = { xpos, ypos };
    out.right = { xpos + glyphSequence.endPos.x, ypos + glyphSequence.endPos.y };
-   FloatArray origin{ static_cast< double >( xpos ), static_cast< double >( ypos ) };
+   FloatArray origin{ static_cast< dfloat >( xpos ), static_cast< dfloat >( ypos ) };
    RenderGlyphSequence( glyphSequence, out.image, origin, { 255 } );
    return out;
 }

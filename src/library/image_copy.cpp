@@ -549,7 +549,7 @@ void InternSwapBytesInSample( Image& img ) {
    ImageIterator< TPI > it( img );
    it.OptimizeAndFlatten();
    do {
-      auto* c = reinterpret_cast< dip::uint8* >( it.Pointer() );
+      auto* c = reinterpret_cast< uint8* >( it.Pointer() );
       for( dip::uint ii = 0; ii < sizeof( TPI ) / 2; ++ii ) {
          std::swap( c[ ii ], c[ sizeof( TPI ) - 1 - ii ] );
       }
@@ -573,15 +573,15 @@ void Image::SwapBytesInSample() { // NOLINT(*-make-member-function-const)
    switch( DataType().SizeOf() ) {
       case 2:
          tmp.ReinterpretCast( DT_UINT16 );
-         InternSwapBytesInSample< dip::uint16 >( tmp );
+         InternSwapBytesInSample< uint16 >( tmp );
          break;
       case 4:
          tmp.ReinterpretCast( DT_UINT32 );
-         InternSwapBytesInSample< dip::uint32 >( tmp );
+         InternSwapBytesInSample< uint32 >( tmp );
          break;
       case 8:
          tmp.ReinterpretCast( DT_UINT64 );
-         InternSwapBytesInSample< dip::uint64 >( tmp );
+         InternSwapBytesInSample< uint64 >( tmp );
          break;
       default:
          DIP_THROW( E::NOT_IMPLEMENTED ); // This should never happen

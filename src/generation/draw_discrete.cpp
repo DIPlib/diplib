@@ -75,8 +75,8 @@ int OutcodeForPoint( VertexFloat p, VertexFloat bottom_right ) {
 // Moves points p0 and p1 to be within the image. If the line doesn't intersect the image at all, returns false.
 bool ClipLineToImageDomain( VertexFloat& p0, VertexFloat& p1, UnsignedArray const& img_size ) {
    VertexFloat bottom_right{
-         static_cast< double >( img_size[0] - 1 ),
-         static_cast< double >( img_size[1] - 1 )
+         static_cast< dfloat >( img_size[0] - 1 ),
+         static_cast< dfloat >( img_size[1] - 1 )
    };
    int outcode0 = OutcodeForPoint( p0, bottom_right );
    int outcode1 = OutcodeForPoint( p1, bottom_right );

@@ -37,7 +37,7 @@ int main( int argc, char** argv ) {
 
    std::list< dip::viewer::SliceViewer::Ptr > windows;
    for( ; ii < argc; ++ii ) {
-      std::string filename = argv[ ii ];
+      dip::String filename = argv[ ii ];
       dip::Image img;
       dip::FileInformation info;
       if( format != "bioformats" ) {
@@ -84,7 +84,7 @@ int main( int argc, char** argv ) {
       auto it = windows.rbegin();
       for ( ++it; it != windows.rend(); ++it ) {
          dip::viewer::SliceViewer::Guard guard( **it );
-         if ( (*it)->image().Sizes() == windows.back()->image().Sizes() ) {
+         if ( ( *it )->image().Sizes() == windows.back()->image().Sizes() ) {
             windows.back()->link( **it );
          }
       }

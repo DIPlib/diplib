@@ -2280,11 +2280,11 @@ class DIP_NO_EXPORT Image {
 
       /// \brief Returns an iterator to the first pixel in the image. Include \ref "diplib/generic_iterators.h"
       /// to use this.
-      GenericImageIterator< dip::dfloat > begin();
+      GenericImageIterator< dfloat > begin();
 
       /// \brief Returns an iterator to the end of the iterator range. It cannot be dereferenced or manipulated,
       /// and is meant solely as an end-of-iteration marker.
-      static GenericImageIterator< dip::dfloat > end();
+      static GenericImageIterator< dfloat > end();
 
       /// \brief Extracts a subset of pixels from a 1D image. The image must be forged.
       DIP_NODISCARD View At( Range const& x_range ) const;
@@ -2611,7 +2611,7 @@ class DIP_NO_EXPORT Image {
       /// \brief Sets all pixels not in `mask` to zero. `img.Mask(mask)` is equivalent to `img.At(~mask).Fill(0)`, but
       /// without creating an intermediate copy of `mask`. Can also be expressed as `img *= mask`, unless `img`
       /// contains non-finite values.
-      DIP_EXPORT void Mask( dip::Image const& mask );
+      DIP_EXPORT void Mask( Image const& mask );
 
       /// \endname
 

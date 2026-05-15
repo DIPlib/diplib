@@ -108,12 +108,12 @@ class hsi2rgb : public ColorSpaceConverter {
             // Hue sextant
             H /= 60.0;
             int lambda = static_cast< int >( std::floor( H ));
-            double phi = H - lambda;
+            dfloat phi = H - lambda;
             lambda = lambda % 6;
             if( lambda % 2 ) { phi = 1.0 - phi; }
             // Sorted RGB values
-            double RGBmed = I - 2.0 / 3.0 * ( 1.0 / 2.0 - phi ) * S;
-            double RGBmax, RGBmin;
+            dfloat RGBmed = I - 2.0 / 3.0 * ( 1.0 / 2.0 - phi ) * S;
+            dfloat RGBmax, RGBmin;
             if( phi < 0.5 ) {
                RGBmax = I + 2.0 / 3.0 * S;
                RGBmin = 3.0 * I - RGBmax - RGBmed;

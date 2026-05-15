@@ -49,7 +49,7 @@ std::ostream& operator<<(
    auto const& values = msr.Values();
    std::vector< int > valueWidths( values.size(), 0 );
    for( dip::uint ii = 0; ii < values.size(); ++ii ) {
-      std::string units = values[ ii ].units.StringUnicode();
+      String units = values[ ii ].units.StringUnicode();
       valueWidths[ ii ] = static_cast< int >( LengthUnicode( units )) + 2; // + 2 for the brackets we'll add later
       valueWidths[ ii ] = std::max( valueWidths[ ii ], static_cast< int >( values[ ii ].name.size() ));
       valueWidths[ ii ] = std::max( valueWidths[ ii ], minimumColumnWidth );
@@ -89,7 +89,7 @@ std::ostream& operator<<(
    // Write out the header: value units
    os << std::setw( firstColumnWidth ) << ' ' << " | ";
    for( dip::uint ii = 0; ii < values.size(); ++ii ) {
-      std::string units = values[ ii ].units.StringUnicode();
+      String units = values[ ii ].units.StringUnicode();
       if( !units.empty() ) {
          // ostream does not correctly align UTF-8 encoded strings
          dip::uint len = LengthUnicode( units );

@@ -166,7 +166,7 @@ void GridPixelPairSampler(
             dip::uint maxDist = std::min( maxLength, size - pos - 1 );
             dip::sint dataStride = object.Stride( dim ) * static_cast< dip::sint >( object.DataType().SizeOf() );
             dip::sint maskStride = hasMask ? mask.Stride( dim ) : 0;
-            dip::uint8 const* dataPtr2 = dataPtr;
+            uint8 const* dataPtr2 = dataPtr;
             bin const* maskPtr2 = maskPtr;
             // Iterate over pixels at all distances from this pixel
             for( dip::uint distance = 1; distance <= maxDist; ++distance ) {
@@ -277,7 +277,7 @@ private:
    UIntPixelValueReaderFunction GetUIntPixelValue_;
 };
 
-enum class PairCorrelationNormalization: dip::uint8 { None, Volume, VolumeSquare };
+enum class PairCorrelationNormalization: uint8 { None, Volume, VolumeSquare };
 
 std::pair< bool, PairCorrelationNormalization > ParsePairCorrelationOptions( StringSet const& options ) {
    PairCorrelationNormalization normalization = PairCorrelationNormalization::None;

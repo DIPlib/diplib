@@ -72,7 +72,7 @@ dfloat FractalDimension(
    // Compute box counts for boxes of sizes Delta
    CovarianceAccumulator acc;
    // size = 1
-   double count = Sum( in ).As< double >();
+   dfloat count = Sum( in ).As< dfloat >();
    if( count == 0 ) {
       return 0; // If this count is not 0, then others won't either.
    }
@@ -80,7 +80,7 @@ dfloat FractalDimension(
    acc.Push( std::log( 1.0 ), std::log( count ));
    // size = 2
    dip::Image boxes = Dilation( in, { 2, S::RECTANGULAR } );
-   count = Sum( boxes ).As< double >();
+   count = Sum( boxes ).As< dfloat >();
    //std::cout << "size = 2, count = " << count << std::endl;
    acc.Push( std::log( 2.0 ), std::log( count ));
    bool mirror = true; // We need to mirror every other even size kernel, to keep the composition centered.
@@ -99,7 +99,7 @@ dfloat FractalDimension(
             mirror = !mirror;
          }
          Dilation( boxes, boxes, se );
-         count = Sum( boxes ).As< double >();
+         count = Sum( boxes ).As< dfloat >();
       }
       //std::cout << "size = " << size << ", count = " << count << std::endl;
       acc.Push( std::log( static_cast< dfloat >( size )), std::log( count ));

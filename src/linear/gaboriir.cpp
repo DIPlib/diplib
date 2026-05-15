@@ -101,14 +101,14 @@ GaborIIRParams FillGaborIIRParams(
 
    // Actual coefficients
    params.b1[ 0 ].imag( 0.0 );
-   params.b1[ 1 ].imag( std::sin( 1 * 2 * dip::pi*w ) * params.b1[ 1 ].real() );
-   params.b1[ 2 ].imag( std::sin( 2 * 2 * dip::pi*w ) * params.b1[ 2 ].real() );
-   params.b1[ 3 ].imag( std::sin( 3 * 2 * dip::pi*w ) * params.b1[ 3 ].real() );
+   params.b1[ 1 ].imag( std::sin( 1 * 2 * pi*w ) * params.b1[ 1 ].real() );
+   params.b1[ 2 ].imag( std::sin( 2 * 2 * pi*w ) * params.b1[ 2 ].real() );
+   params.b1[ 3 ].imag( std::sin( 3 * 2 * pi*w ) * params.b1[ 3 ].real() );
 
    params.b1[ 0 ].real( params.b1[ 0 ].real() );
-   params.b1[ 1 ].real( std::cos( 1 * 2 * dip::pi*w ) * params.b1[ 1 ].real() );
-   params.b1[ 2 ].real( std::cos( 2 * 2 * dip::pi*w ) * params.b1[ 2 ].real() );
-   params.b1[ 3 ].real( std::cos( 3 * 2 * dip::pi*w ) * params.b1[ 3 ].real() );
+   params.b1[ 1 ].real( std::cos( 1 * 2 * pi*w ) * params.b1[ 1 ].real() );
+   params.b1[ 2 ].real( std::cos( 2 * 2 * pi*w ) * params.b1[ 2 ].real() );
+   params.b1[ 3 ].real( std::cos( 3 * 2 * pi*w ) * params.b1[ 3 ].real() );
 
    params.b2[ 0 ].imag( 0.0 );
    params.b2[ 1 ].imag( -1.0 * params.b1[ 1 ].imag() );

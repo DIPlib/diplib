@@ -20,6 +20,7 @@
 
 #include <algorithm>
 #include <array>
+#include <initializer_list>
 #include <vector>
 
 #include "diplib.h"
@@ -95,7 +96,7 @@ struct DIP_NO_EXPORT ChainCode {
          /// Default constructor
          Code() = default;
          /// Constructor
-         Code( unsigned code, bool border = false ) : value( static_cast< dip::uint8 >(( code & 7u ) | ( static_cast< unsigned >( border ) << 3u )) ) {}
+         Code( unsigned code, bool border = false ) : value( static_cast< uint8 >(( code & 7u ) | ( static_cast< unsigned >( border ) << 3u )) ) {}
          /// Returns whether the border flag is set
          bool IsBorder() const { return static_cast< bool >( isBorder() ); }
          /// Returns the chain code
@@ -117,7 +118,7 @@ struct DIP_NO_EXPORT ChainCode {
             return !( *this == c2 );
          }
       private:
-         dip::uint8 value = 0;
+         uint8 value = 0;
          unsigned code8() const { return value & 7u; }
          unsigned code4() const { return value & 3u; }
          bool isBorder() const { return static_cast< bool >( value & 8u ); }
@@ -286,7 +287,7 @@ inline ChainCodeArray GetImageChainCodes(
 // An another version to disambiguate when we call `GetImageChainCodes(labels, {1})`.
 inline ChainCodeArray GetImageChainCodes(
       Image const& labels,
-      std::initializer_list< dip::LabelType > const& initializerList,
+      std::initializer_list< LabelType > const& initializerList,
       dip::uint connectivity = 2
 ) {
    std::vector< LabelType > ids( initializerList.size() );

@@ -64,7 +64,7 @@ class OutputBuffer {
       /// when the buffer is full. Can throw an exception if the buffer implementation doesn't support resizing.
       virtual void assure_capacity( dip::uint /*capacity*/ ) { DIP_THROW( E::NOT_IMPLEMENTED ); };
       /// Returns a pointer to the data.
-      virtual dip::uint8* data() = 0;
+      virtual uint8* data() = 0;
 };
 
 /// \brief A simple output buffer implementation.
@@ -75,7 +75,7 @@ class OutputBuffer {
 class SimpleOutputBuffer: public OutputBuffer {
    public:
       /// Constructor.
-      SimpleOutputBuffer( std::vector< dip::uint8 >& buffer ) : buffer_( buffer ) {}
+      SimpleOutputBuffer( std::vector< uint8 >& buffer ) : buffer_( buffer ) {}
       ~SimpleOutputBuffer() override = default;
       SimpleOutputBuffer( SimpleOutputBuffer const& ) = delete;
       SimpleOutputBuffer( SimpleOutputBuffer&& ) = default;
@@ -106,12 +106,12 @@ class SimpleOutputBuffer: public OutputBuffer {
       }
 
       /// Returns a pointer to the data.
-      dip::uint8* data() override {
+      uint8* data() override {
          return buffer_.data();
       }
 
    private:
-      std::vector< dip::uint8 >& buffer_;
+      std::vector< uint8 >& buffer_;
       dip::uint size_ = 0;
 };
 
@@ -124,7 +124,7 @@ class SimpleOutputBuffer: public OutputBuffer {
 class FixedOutputBuffer: public OutputBuffer {
    public:
       /// Constructor.
-      FixedOutputBuffer( dip::uint8* buffer, dip::uint size ) : buffer_( buffer ), capacity_( size ) {}
+      FixedOutputBuffer( uint8* buffer, dip::uint size ) : buffer_( buffer ), capacity_( size ) {}
       ~FixedOutputBuffer() override = default;
       FixedOutputBuffer( FixedOutputBuffer const& ) = delete;
       FixedOutputBuffer( FixedOutputBuffer&& ) = default;
@@ -154,12 +154,12 @@ class FixedOutputBuffer: public OutputBuffer {
       }
 
       /// Returns a pointer to the data.
-      dip::uint8* data() override {
+      uint8* data() override {
          return buffer_;
       }
 
    private:
-      dip::uint8* buffer_;
+      uint8* buffer_;
       dip::uint capacity_;
       dip::uint size_ = 0;
 };
@@ -516,8 +516,8 @@ DIP_EXPORT void ImageWriteJPEG( Image const& image, OutputBuffer& buffer, dip::u
 
 /// \brief Encodes `image` as a JPEG file and writes it to a buffer that is returned.
 /// See \ref ImageWriteJPEG(Image const&, String const&, dip::uint) for details.
-DIP_NODISCARD inline std::vector< dip::uint8 > ImageWriteJPEG( Image const& image, dip::uint jpegLevel = 80 ) {
-   std::vector< dip::uint8 > output;
+DIP_NODISCARD inline std::vector< uint8 > ImageWriteJPEG( Image const& image, dip::uint jpegLevel = 80 ) {
+   std::vector< uint8 > output;
    SimpleOutputBuffer buffer( output );
    ImageWriteJPEG( image, buffer, jpegLevel );
    output.resize( buffer.size() );
@@ -628,13 +628,13 @@ DIP_EXPORT void ImageWritePNG(
 
 /// \brief Encodes `image` as a PNG file and writes it to a buffer that is returned.
 /// See \ref ImageWritePNG(Image const&, String const&, dip::sint, StringSet const&, dip::uint) for details.
-DIP_NODISCARD inline std::vector< dip::uint8 > ImageWritePNG(
+DIP_NODISCARD inline std::vector< uint8 > ImageWritePNG(
       Image const& image,
       dip::sint compressionLevel = 6,
       StringSet const& filterChoice = { S::ALL },
       dip::uint significantBits = 0
 ) {
-      std::vector< dip::uint8 > output;
+      std::vector< uint8 > output;
       SimpleOutputBuffer buffer( output );
       ImageWritePNG( image, buffer, compressionLevel, filterChoice, significantBits );
       output.resize( buffer.size() ); // This is probably not necessary.

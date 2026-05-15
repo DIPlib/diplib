@@ -165,13 +165,13 @@ void ImageReadJPEG( Image& out, JpegInput& jpeg, FileInformation const& info ) {
    // Read data
    jpeg_start_decompress( jpeg.cinfoptr() );
    std::vector< JSAMPLE > buffer( info.sizes[ 0 ] * static_cast< unsigned >( nchan )); // casting to unsigned rather than dip::uint to shut up GCC warning.
-   dip::uint8* imagedata = static_cast< dip::uint8* >( out.Origin() );
+   uint8* imagedata = static_cast< uint8* >( out.Origin() );
    auto stride = out.Strides();
    auto tStride = out.TensorStride();
    for( dip::uint ii = 0; ii < info.sizes[ 1 ]; ++ii ) {
       JSAMPLE* indata = buffer.data();
       jpeg_read_scanlines( jpeg.cinfoptr(), &indata, 1 );
-      dip::uint8* outdata = imagedata;
+      uint8* outdata = imagedata;
       if( nchan > 1 ) {
          for( dip::uint jj = 0; jj < info.sizes[ 0 ]; ++jj ) {
             for( int kk = 0; kk < nchan; ++kk ) {
@@ -303,7 +303,7 @@ class JpegOutput {
       j_compress_ptr cinfoptr() { return &cinfo_; }
    private:
       FILE* outfile_ = nullptr;
-      std::vector< dip::uint8 > buffer_;
+      std::vector< uint8 > buffer_;
       jpeg_compress_struct cinfo_{};
       my_error_mgr jerr_;
       bool initialized_ = false;
@@ -334,12 +334,12 @@ void ImageWriteJPEG( Image const& image, JpegOutput& jpeg, dip::uint jpegLevel )
    // Write data
    jpeg_start_compress( jpeg.cinfoptr(), TRUE );
    std::vector< JSAMPLE > buffer( image.Size( 0 ) * static_cast< dip::uint >( nchan ));
-   dip::uint8* imagedata = static_cast< dip::uint8* >( image_u8.Origin() );
+   uint8* imagedata = static_cast< uint8* >( image_u8.Origin() );
    auto stride = image_u8.Strides();
    auto tStride = image_u8.TensorStride();
    for( dip::uint ii = 0; ii < image.Size( 1 ); ++ii ) {
       JSAMPLE* outdata = buffer.data();
-      dip::uint8* indata = imagedata;
+      uint8* indata = imagedata;
       for( dip::uint jj = 0; jj < image.Size( 0 ); ++jj ) {
          for( int kk = 0; kk < nchan; ++kk ) {
             *outdata = *( indata + kk * tStride );

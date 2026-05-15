@@ -48,7 +48,7 @@ constexpr char const super9[] = u8"\u2079";
 // Note: Advances `ii` if it returns true.
 // Note: N is equal to 3 or 4, and includes the terminating null character, which we ignore below.
 template< dip::uint N >
-bool NextCharIs( dip::String const& string, dip::uint& ii, char const unicodeChar[ N ] ) {
+bool NextCharIs( String const& string, dip::uint& ii, char const unicodeChar[ N ] ) {
    for( dip::uint jj = 0; jj < N - 1; ++jj ) {
       if( string[ ii + jj ] != unicodeChar[ jj ] ) {
          return false;
@@ -66,7 +66,7 @@ bool NextCharIs( dip::String const& string, dip::uint& ii, char const unicodeCha
 
 namespace {
 
-bool ParsePower( dip::String const& string, dip::uint& ii, int& power ) {
+bool ParsePower( String const& string, dip::uint& ii, int& power ) {
    power = 0;
    if( string[ ii ] == '^' ) {
       ++ii;
@@ -127,7 +127,7 @@ bool ParsePower( dip::String const& string, dip::uint& ii, int& power ) {
 }
 
 // Parses a part of a string representation of units.
-bool ParseComponent( dip::String const& string, dip::uint& ii, Units::BaseUnits& bu, int& power ) {
+bool ParseComponent( String const& string, dip::uint& ii, Units::BaseUnits& bu, int& power ) {
    // <component> = <units>[ { ^<N> | <n> } ]
    // <units> = {m|g|s|A|K|cd|rad|px}
    // <N> = small integer
@@ -169,7 +169,7 @@ bool ParseComponent( dip::String const& string, dip::uint& ii, Units::BaseUnits&
    return true;
 }
 
-bool ExpectCDot( dip::String const& string, dip::uint& ii ) {
+bool ExpectCDot( String const& string, dip::uint& ii ) {
    if( string[ ii ] == '.' ) {
       ++ii;
       return true;
@@ -338,14 +338,14 @@ constexpr char const* CDotUnicode() {
 #endif
 }
 
-std::string PowerAsString( dip::sint p ) {
+String PowerAsString( dip::sint p ) {
    return '^' + std::to_string( p );
 }
 
-std::string PowerAsStringUnicode( dip::sint p ) {
+String PowerAsStringUnicode( dip::sint p ) {
 #ifdef DIP_CONFIG_ENABLE_UNICODE
-   std::string str = std::to_string( p );
-   std::string out;
+   String str = std::to_string( p );
+   String out{};
    for( auto c : str ) {
       switch( c ) {
          case '-': out += superN; break;
@@ -369,12 +369,12 @@ std::string PowerAsStringUnicode( dip::sint p ) {
 }
 
 // Appends an SI prefix to the string `out`.
-void WritePrefix( dip::String& out, dip::sint n ) {
+void WritePrefix( String& out, dip::sint n ) {
    constexpr char const* prefixes = "fpnum kMGTPE";
    out += prefixes[ n + 5 ];
 }
 
-void WritePrefixUnicode( dip::String& out, dip::sint n ) {
+void WritePrefixUnicode( String& out, dip::sint n ) {
 #ifdef DIP_CONFIG_ENABLE_UNICODE
    switch( n ) {
       case -5: out += 'f'; break;
@@ -397,7 +397,7 @@ void WritePrefixUnicode( dip::String& out, dip::sint n ) {
 }
 
 // Appends a unit with a positive power to the string `out`.
-bool WritePositivePower( dip::String& out, char const* s, dip::sint p, bool prefix, bool unicode ) {
+bool WritePositivePower( String& out, char const* s, dip::sint p, bool prefix, bool unicode ) {
    if( p > 0 ) {
       if( prefix ) {
          out += unicode ? CDotUnicode() : CDot();
@@ -412,7 +412,7 @@ bool WritePositivePower( dip::String& out, char const* s, dip::sint p, bool pref
 }
 
 // Appends a unit with a negative power to the string `out`.
-bool WriteNegativePower( dip::String& out, char const* s, dip::sint p, bool prefix, bool unicode ) {
+bool WriteNegativePower( String& out, char const* s, dip::sint p, bool prefix, bool unicode ) {
    if( p < 0 ) {
       if( prefix ) {
          out += '/';

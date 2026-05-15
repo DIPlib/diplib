@@ -837,7 +837,7 @@ class ProjectionPositionMinMax : public Framework::ProjectionFunction {
          }
          // Store coordinate.
          // Currently, only a single processing dim is supported, so only one coordinate is stored.
-         *static_cast< dip::uint32* >( out.Origin() ) = clamp_cast< dip::uint32 >( limitCoords.front() );
+         *static_cast< uint32* >( out.Origin() ) = clamp_cast< uint32 >( limitCoords.front() );
       }
 
    protected:
@@ -976,7 +976,7 @@ class ProjectionPositionPercentile : public Framework::ProjectionFunction {
          }
          // Store coordinate.
          // Currently, only a single processing dim is supported, so only one coordinate is stored.
-         *static_cast< dip::uint32* >( out.Origin() ) = clamp_cast< dip::uint32 >( percentileCoords.front() );
+         *static_cast< uint32* >( out.Origin() ) = clamp_cast< uint32 >( percentileCoords.front() );
       }
 
       void SetNumberOfThreads( dip::uint threads ) override {

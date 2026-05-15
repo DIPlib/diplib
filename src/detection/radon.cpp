@@ -208,7 +208,7 @@ void ComputeProjectedParameterSpace_SubPixel(
 // with a fixed choice of separable parabolic fit, and for DT_SFLOAT images only.
 RadonCircleParametersArray RadonCircleSubpixelMaxima(
       Image const& in,
-      double threshold
+      dfloat threshold
 ) {
    // Check input
    DIP_ASSERT( in.IsForged() );

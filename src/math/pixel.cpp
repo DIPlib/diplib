@@ -69,9 +69,9 @@ template< typename F >
 struct MonadicOperatorDispatch< ComputationType::Class_Flex, F > {
    static void Call( DataType in1Type, void* in1Ptr, DataType outType, void* outPtr, DataType computeType, F const& function ) {
       switch( computeType ) {
-         case dip::DT_DFLOAT: ApplyMonadicOperator< dip::dfloat >( in1Type, in1Ptr, outType, outPtr, function ); break;
-         case dip::DT_DCOMPLEX: ApplyMonadicOperator< dip::dcomplex >( in1Type, in1Ptr, outType, outPtr, function ); break;
-         default: DIP_THROW( dip::E::DATA_TYPE_NOT_SUPPORTED );
+         case DT_DFLOAT: ApplyMonadicOperator< dfloat >( in1Type, in1Ptr, outType, outPtr, function ); break;
+         case DT_DCOMPLEX: ApplyMonadicOperator< dcomplex >( in1Type, in1Ptr, outType, outPtr, function ); break;
+         default: DIP_THROW( E::DATA_TYPE_NOT_SUPPORTED );
       }
    }
 };
@@ -79,8 +79,8 @@ template< typename F >
 struct MonadicOperatorDispatch< ComputationType::Class_Float, F > {
    static void Call( DataType in1Type, void* in1Ptr, DataType outType, void* outPtr, DataType computeType, F const& function ) {
       switch( computeType ) {
-         case dip::DT_DFLOAT: ApplyMonadicOperator< dip::dfloat >( in1Type, in1Ptr, outType, outPtr, function ); break;
-         default: DIP_THROW( dip::E::DATA_TYPE_NOT_SUPPORTED );
+         case DT_DFLOAT: ApplyMonadicOperator< dfloat >( in1Type, in1Ptr, outType, outPtr, function ); break;
+         default: DIP_THROW( E::DATA_TYPE_NOT_SUPPORTED );
       }
    }
 };
@@ -154,9 +154,9 @@ struct DyadicOperatorDispatch< ComputationType::Class_Flex, F > {
    static void Call( DataType in1Type, void* in1Ptr, DataType in2Type, void* in2Ptr,
                      DataType outType, void* outPtr, DataType computeType, F const& function ) {
       switch( computeType ) {
-         case dip::DT_DFLOAT: ApplyDyadicOperator< dip::dfloat >( in1Type, in1Ptr, in2Type, in2Ptr, outType, outPtr, function ); break;
-         case dip::DT_DCOMPLEX: ApplyDyadicOperator< dip::dcomplex >( in1Type, in1Ptr, in2Type, in2Ptr, outType, outPtr, function ); break;
-         default: DIP_THROW( dip::E::DATA_TYPE_NOT_SUPPORTED );
+         case DT_DFLOAT: ApplyDyadicOperator< dfloat >( in1Type, in1Ptr, in2Type, in2Ptr, outType, outPtr, function ); break;
+         case DT_DCOMPLEX: ApplyDyadicOperator< dcomplex >( in1Type, in1Ptr, in2Type, in2Ptr, outType, outPtr, function ); break;
+         default: DIP_THROW( E::DATA_TYPE_NOT_SUPPORTED );
       }
    }
 };
@@ -165,8 +165,8 @@ struct DyadicOperatorDispatch< ComputationType::Class_Float, F > {
    static void Call( DataType in1Type, void* in1Ptr, DataType in2Type, void* in2Ptr,
                      DataType outType, void* outPtr, DataType computeType, F const& function ) {
       switch( computeType ) {
-         case dip::DT_DFLOAT: ApplyDyadicOperator< dip::dfloat >( in1Type, in1Ptr, in2Type, in2Ptr, outType, outPtr, function ); break;
-         default: DIP_THROW( dip::E::DATA_TYPE_NOT_SUPPORTED );
+         case DT_DFLOAT: ApplyDyadicOperator< dfloat >( in1Type, in1Ptr, in2Type, in2Ptr, outType, outPtr, function ); break;
+         default: DIP_THROW( E::DATA_TYPE_NOT_SUPPORTED );
       }
    }
 };
@@ -233,7 +233,7 @@ Image::Pixel DyadicOperator(
 //
 
 Image::Pixel operator+( Image::Pixel const& lhs, Image::Pixel const& rhs ) {
-   dip::DataType dt = SuggestArithmetic( lhs.DataType(), rhs.DataType() );
+   DataType dt = SuggestArithmetic( lhs.DataType(), rhs.DataType() );
    return DyadicOperator< ComputationType::Class_Flex >(
          lhs, rhs, dt, dt,
          [ = ]( auto in1, auto in2 ) { return in1 + in2; }
@@ -241,7 +241,7 @@ Image::Pixel operator+( Image::Pixel const& lhs, Image::Pixel const& rhs ) {
 }
 
 Image::Pixel operator-( Image::Pixel const& lhs, Image::Pixel const& rhs ) {
-   dip::DataType dt = SuggestArithmetic( lhs.DataType(), rhs.DataType() );
+   DataType dt = SuggestArithmetic( lhs.DataType(), rhs.DataType() );
    return DyadicOperator< ComputationType::Class_Flex >(
          lhs, rhs, dt, dt,
          [ = ]( auto in1, auto in2 ) { return in1 - in2; }
@@ -250,7 +250,7 @@ Image::Pixel operator-( Image::Pixel const& lhs, Image::Pixel const& rhs ) {
 
 Image::Pixel operator*( Image::Pixel const& lhs, Image::Pixel const& rhs ) {
    if(( lhs.TensorElements() == 1 ) || ( rhs.TensorElements() == 1 )) {
-      dip::DataType dt = SuggestArithmetic( lhs.DataType(), rhs.DataType() );
+      DataType dt = SuggestArithmetic( lhs.DataType(), rhs.DataType() );
       return DyadicOperator< ComputationType::Class_Flex >(
             lhs, rhs, dt, dt,
             [ = ]( auto in1, auto in2 ) { return in1 * in2; }
@@ -266,7 +266,7 @@ Image::Pixel operator*( Image::Pixel const& lhs, Image::Pixel const& rhs ) {
 }
 
 Image::Pixel operator/( Image::Pixel const& lhs, Image::Pixel const& rhs ) {
-   dip::DataType dt = SuggestArithmetic( lhs.DataType(), rhs.DataType() );
+   DataType dt = SuggestArithmetic( lhs.DataType(), rhs.DataType() );
    return DyadicOperator< ComputationType::Class_Flex >(
          lhs, rhs, dt, dt,
          [ = ]( auto in1, auto in2 ) { return in1 / in2; }
@@ -276,13 +276,13 @@ Image::Pixel operator/( Image::Pixel const& lhs, Image::Pixel const& rhs ) {
 Image::Pixel operator%( Image::Pixel const& lhs, Image::Pixel const& rhs ) {
    DIP_THROW_IF( lhs.DataType().IsComplex() || rhs.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
    if( lhs.DataType().IsFloat() || rhs.DataType().IsFloat() ) {
-      dip::DataType dt = DT_DFLOAT;
+      DataType dt = DT_DFLOAT;
       return DyadicOperator< ComputationType::Class_Float >(
             lhs, rhs, dt, dt,
             [ = ]( dfloat in1, dfloat in2 ) { return std::fmod( in1, in2 ); }
       );
    }
-   dip::DataType dt = lhs.DataType();
+   DataType dt = lhs.DataType();
    return DyadicOperator< ComputationType::Class_Integer >(
          lhs, rhs, dt, dt,
          [ = ]( auto in1, auto in2 ) { return in1 % in2; }
@@ -291,13 +291,13 @@ Image::Pixel operator%( Image::Pixel const& lhs, Image::Pixel const& rhs ) {
 
 Image::Pixel operator-( Image::Pixel const& in ) {
    if( in.DataType().IsFlex() ) {
-      dip::DataType dt = SuggestArithmetic( in.DataType() );
+      DataType dt = SuggestArithmetic( in.DataType() );
       return MonadicOperator< ComputationType::Class_Flex >(
             in, dt, dt,
             [ = ]( auto in1 ) { return -in1; }
       );
    }
-   dip::DataType dt = in.DataType();
+   DataType dt = in.DataType();
    return MonadicOperator< ComputationType::Class_Flex >(
             in, dt, dt,
             [ = ]( auto in1 ) { return saturated_inv( in1 ); }
@@ -310,7 +310,7 @@ Image::Pixel operator-( Image::Pixel const& in ) {
 //
 
 Image::Pixel operator&( Image::Pixel const& lhs, Image::Pixel const& rhs ) {
-   dip::DataType dt = lhs.DataType();
+   DataType dt = lhs.DataType();
    return DyadicOperator< ComputationType::Class_IntOrBin >(
          lhs, rhs, dt, dt,
          [ = ]( auto in1, auto in2 ) { return in1 & in2; }
@@ -318,7 +318,7 @@ Image::Pixel operator&( Image::Pixel const& lhs, Image::Pixel const& rhs ) {
 }
 
 Image::Pixel operator|( Image::Pixel const& lhs, Image::Pixel const& rhs ) {
-   dip::DataType dt = lhs.DataType();
+   DataType dt = lhs.DataType();
    return DyadicOperator< ComputationType::Class_IntOrBin >(
          lhs, rhs, dt, dt,
          [ = ]( auto in1, auto in2 ) { return in1 | in2; }
@@ -326,7 +326,7 @@ Image::Pixel operator|( Image::Pixel const& lhs, Image::Pixel const& rhs ) {
 }
 
 Image::Pixel operator^( Image::Pixel const& lhs, Image::Pixel const& rhs ) {
-   dip::DataType dt = lhs.DataType();
+   DataType dt = lhs.DataType();
    return DyadicOperator< ComputationType::Class_IntOrBin >(
          lhs, rhs, dt, dt,
          [ = ]( auto in1, auto in2 ) { return in1 ^ in2; }
@@ -335,7 +335,7 @@ Image::Pixel operator^( Image::Pixel const& lhs, Image::Pixel const& rhs ) {
 
 namespace {
 Image::Pixel Not( Image::Pixel const& in ) {
-   dip::DataType dt = in.DataType();
+   DataType dt = in.DataType();
    return MonadicOperator< ComputationType::Class_IntOrBin >(
          in, dt, dt,
          [ = ]( auto in1 ) { return ~in1; }
@@ -364,7 +364,7 @@ bool operator==( Image::Pixel const& lhs, Image::Pixel const& rhs ) {
       return false; // tests false if different number of tensor elements
    }
    // Compare element-wise
-   dip::DataType dt = SuggestArithmetic( lhs.DataType(), rhs.DataType() );
+   DataType dt = SuggestArithmetic( lhs.DataType(), rhs.DataType() );
    Image::Pixel res = DyadicOperator< ComputationType::Class_Flex >( lhs, rhs, dt, DT_BIN,
                                                                      [ = ]( auto in1, auto in2 ) { return in1 == in2; }
    );

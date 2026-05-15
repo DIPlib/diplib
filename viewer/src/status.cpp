@@ -14,15 +14,19 @@
  * limitations under the License.
  */
 
+#include <sstream>
+
 #include "include_gl.h"
+#include "diplib.h"
 #include "diplib/viewer/slice.h"
 #include "diplib/viewer/status.h"
+#include "diplib/viewer/viewer.h"
 
 namespace dip { namespace viewer {
 
 namespace {
-std::string to_string(dcomplex value) {
-   std::stringstream str;
+String to_string(dcomplex value) {
+   std::stringstream str{};
    str << value.real();
    if (value.imag() >= 0) {
       str << '+';
@@ -47,7 +51,7 @@ void StatusViewPort::render()
     glVertex2f(0.f, 0.f);
     glVertex2f((GLfloat)width(), 0.f);
   glEnd();
-  
+
   glColor3f(1., 1., 1.);
   glRasterPos2i(1, 12);
 
@@ -62,7 +66,7 @@ void StatusViewPort::render()
   {
     // Describe operating point
     auto op = o.operating_point_;
-    
+
     // Bail if options do not match original. This can happen
     // after the original is changed, but before it is processed
     // and copied to the viewer's image.
@@ -71,10 +75,10 @@ void StatusViewPort::render()
     for (dip::uint ii=0; ii < op.size(); ++ii)
       if (op[ii] >= viewer()->original().Size(ii))
         return;
-        
+
     auto te = (int)viewer()->image().TensorElements();
     auto opp = viewer()->image().PixelsToPhysical((FloatArray)op);
-    
+
     rx += viewer()->drawString("(");
     for (dip::uint ii=0; ii < op.size(); ++ii)
     {
@@ -82,14 +86,14 @@ void StatusViewPort::render()
       rx += viewer()->drawString(std::to_string(op[ii]).c_str());
       if (viewer()->image().PixelSize(ii) != PhysicalQuantity::Pixel() || (ii < o.offset_.size() && o.offset_[ii]))
       {
-        std::ostringstream oss;
+        std::ostringstream oss{};
         if (ii < o.offset_.size() && opp[ii].HasSameDimensions(o.offset_[ii]))
           opp[ii] += o.offset_[ii];
         opp[ii].Normalize();
         oss << "=" << opp[ii].magnitude << opp[ii].units.String();
         rx += viewer()->drawString(oss.str().c_str());
       }
-        
+
       if (ii < op.size()-1)
         rx += viewer()->drawString(", ");
     }
@@ -120,7 +124,7 @@ void StatusViewPort::render()
         else
           glColor3f(.5, .5, .5);
       }
-      
+
       glRasterPos2i((GLint)rx, 12);
       auto value = pixel[(dip::uint)ii];
       if (value.DataType().IsUnsigned()) {
@@ -132,10 +136,10 @@ void StatusViewPort::render()
       } else {
          rx += viewer()->drawString(std::to_string(value.As<dfloat>()).c_str());
       }
-        
+
       glColor3f(1., 1., 1.);
       glRasterPos2i((GLint)rx, 12);
-      
+
       if (ii < te-1)
         rx += viewer()->drawString(", ");
     }

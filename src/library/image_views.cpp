@@ -145,11 +145,11 @@ void Image::View::Copy( Image const& source ) {
    } else if( !offsets_.empty() ) {
       DIP_STACK_TRACE_THIS( CopyTo( source, reference_, offsets_ ));
    } else {
-      dip::Image src = source.QuickCopy();
+      Image src = source.QuickCopy();
       while( src.Size( src.Dimensionality() - 1 ) == 1 ) { // remove trailing singleton dimensions
          src.Squeeze( src.Dimensionality() - 1 );
       }
-      dip::Image dst = reference_.QuickCopy();
+      Image dst = reference_.QuickCopy();
       while( dst.Size( dst.Dimensionality() - 1 ) == 1 ) { // remove trailing singleton dimensions
          dst.Squeeze( dst.Dimensionality() - 1 );
       }
@@ -377,7 +377,7 @@ Image::View::Iterator::~Iterator() = default;
 void Image::View::Iterator::Initialize() {
    if( view_.mask_.IsForged() ) {
       // Iterate over the set pixels in the mask
-      maskIt_ = std::make_unique< GenericJointImageIterator< 2, dip::dfloat >>( ImageConstRefArray{ view_.reference_, view_.mask_ } );
+      maskIt_ = std::make_unique< GenericJointImageIterator< 2, dfloat >>( ImageConstRefArray{ view_.reference_, view_.mask_ } );
       // test to see if we're pointing at a set pixel, if not, call operator++.
       if( !*( static_cast< bin* >( maskIt_->Pointer< 1 >() ))) {
          operator++();
@@ -387,7 +387,7 @@ void Image::View::Iterator::Initialize() {
       // nothing to do here
    } else {
       // Iterate over the image
-      refIt_ = std::make_unique< GenericImageIterator< dip::dfloat >>( view_.reference_ );
+      refIt_ = std::make_unique< GenericImageIterator< dfloat >>( view_.reference_ );
    }
 }
 

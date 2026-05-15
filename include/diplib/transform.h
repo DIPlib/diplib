@@ -150,7 +150,7 @@ DIP_NODISCARD inline Image InverseFourierTransform(
 /// For *PocketFFT* this changes depending on whether the transform is complex-to-complex
 /// (complex-valued transform), or is real-to-complex or complex-to-real (real-valued transform).
 /// See \ref dip::GetOptimalDFTSize.
-DIP_EXPORT dip::uint OptimalFourierTransformSize( dip::uint size, dip::String const& which = S::LARGER, dip::String const& purpose = S::REAL );
+DIP_EXPORT dip::uint OptimalFourierTransformSize( dip::uint size, String const& which = S::LARGER, String const& purpose = S::REAL );
 
 
 /// \brief Computes the Riesz transform of a scalar image.

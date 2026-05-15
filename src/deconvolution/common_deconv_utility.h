@@ -56,8 +56,8 @@ inline void FourierTransformImageAndKernel(
    DIP_THROW_IF( pad && isOtf, E::ILLEGAL_FLAG_COMBINATION );
    if( pad || ( powersOfTwo > 0 )) {
       dip::uint multiple = static_cast< dip::uint >( std::pow( 2, powersOfTwo ));
-      dip::String purpose = in.DataType().IsComplex() ? S::COMPLEX : S::REAL;
-      dip::UnsignedArray sizes = in.Sizes();
+      String purpose = in.DataType().IsComplex() ? S::COMPLEX : S::REAL;
+      UnsignedArray sizes = in.Sizes();
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
          if( pad ) {
             sizes[ ii ] += 2 * psf.Size( ii );

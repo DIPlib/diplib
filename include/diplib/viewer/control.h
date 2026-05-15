@@ -34,10 +34,11 @@ namespace viewer {
 /// \brief Allows the user to control how the image is displayed.
 class DIPVIEWER_CLASS_EXPORT ControlViewPort : public ViewPort {
    protected:
-      std::vector< std::vector< dip::String >> lists_;
+      std::vector< std::vector< String >> lists_;
 
    public:
       explicit ControlViewPort( Viewer* viewer ) : ViewPort( viewer ) {
+         // NOTE! These strings must match the corresponding enums in include/diplib/viewer/viewer.h
          lists_.push_back( { "SPA", "RGB", "GRY", "SEQ", "DIV", "CYC", "LBL" } );
          lists_.push_back( { "0-1", "ANG", "255", "LIN", "SYM", "LOG" } );
          lists_.push_back( { "REA", "IMG", "MAG", "PHA" } );

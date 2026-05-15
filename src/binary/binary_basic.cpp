@@ -107,10 +107,10 @@ void BinaryDilationErosion(
          bool isBorderPixel = TestAnyBit( pixelByte, borderMask );
 
          // Propagate to all neighbours which are not yet processed
-         dip::IntegerArray::const_iterator itNeighborOffset = neighborOffsetsOut.begin();
+         IntegerArray::const_iterator itNeighborOffset = neighborOffsetsOut.begin();
          for( NeighborList::Iterator itNeighbor = neighborList.begin(); itNeighbor != neighborList.end(); ++itNeighbor, ++itNeighborOffset ) {
-            if( !isBorderPixel || itNeighbor.IsInImage( coordsComputer( pPixel - static_cast< dip::bin* >( out.Origin() )), out.Sizes() )) { // IsInImage() is not evaluated for non-border pixels
-               dip::bin* pNeighbor = pPixel + *itNeighborOffset;
+            if( !isBorderPixel || itNeighbor.IsInImage( coordsComputer( pPixel - static_cast< bin* >( out.Origin() )), out.Sizes() )) { // IsInImage() is not evaluated for non-border pixels
+               bin* pNeighbor = pPixel + *itNeighborOffset;
                uint8& neighborByte = static_cast< uint8& >( *pNeighbor );
                bool neighborIsObject = TestAnyBit( neighborByte, dataMask );
                if( neighborIsObject == findObjectPixels ) {

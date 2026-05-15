@@ -176,11 +176,11 @@ Distribution& Distribution::Differentiate() {
    return *this;
 }
 
-std::vector< dip::dfloat > Distribution::MaximumLikelihood() {
+std::vector< dfloat > Distribution::MaximumLikelihood() {
    DIP_THROW_IF( Empty(), "Attempting to compute maximum likelihood of an empty distribution" );
    dip::uint nValues = ValuesPerSample();
-   std::vector< dip::dfloat > maxval( nValues, std::numeric_limits< dip::dfloat >::lowest() );
-   std::vector< dip::dfloat > maxind = maxval;
+   std::vector< dfloat > maxval( nValues, std::numeric_limits< dfloat >::lowest() );
+   std::vector< dfloat > maxind = maxval;
 
    dfloat const* data = data_.data();
    for( dip::uint ii = 0; ii != Size(); ++ii ) {

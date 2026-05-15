@@ -174,8 +174,8 @@ class KernelTransform2DRotation : public KernelTransform {
          Image::Pixel dirPixel = orientation_.At( imgCoords );
          // Iterate over tensor elements
          for( dip::uint iTE = 0; iTE < orientation_.TensorElements(); ++iTE ) {
-            csn_[ iTE ] = std::cos( dip::pi * 0.5 - dirPixel[ iTE ].As< dfloat >() );
-            sn_[ iTE ] = std::sin( dip::pi * 0.5 - dirPixel[ iTE ].As< dfloat >() );
+            csn_[ iTE ] = std::cos( pi * 0.5 - dirPixel[ iTE ].As< dfloat >() );
+            sn_[ iTE ] = std::sin( pi * 0.5 - dirPixel[ iTE ].As< dfloat >() );
          }
       }
 

@@ -109,7 +109,7 @@ class DIP_NO_EXPORT Units {
       constexpr Units() = default;
 
       /// Construct a `Units` for a specific unit.
-      constexpr explicit Units( BaseUnits bu, dip::sint8 power = 1 ) {
+      constexpr explicit Units( BaseUnits bu, sint8 power = 1 ) {
          power_[ static_cast< dip::uint >( bu ) ] = power;
       }
 
@@ -118,9 +118,9 @@ class DIP_NO_EXPORT Units {
       DIP_EXPORT explicit Units( dip::String const& string );
 
       /// Elevates `this` to the power `p`.
-      constexpr Units& Power( dip::sint8 power ) {
+      constexpr Units& Power( sint8 power ) {
          for( dip::uint ii = 0; ii < nUnits_; ++ii ) {
-            power_[ ii ] = clamp_cast< dip::sint8 >( power_[ ii ] * power );
+            power_[ ii ] = clamp_cast< sint8 >( power_[ ii ] * power );
          }
          return *this;
       }
@@ -128,7 +128,7 @@ class DIP_NO_EXPORT Units {
       /// Multiplies two units objects.
       constexpr Units& operator*=( Units const& other ) {
          for( dip::uint ii = 0; ii < nUnits_; ++ii ) {
-            power_[ ii ] = clamp_cast< dip::sint8 >( power_[ ii ] + other.power_[ ii ] );
+            power_[ ii ] = clamp_cast< sint8 >( power_[ ii ] + other.power_[ ii ] );
          }
          return *this;
       }
@@ -143,7 +143,7 @@ class DIP_NO_EXPORT Units {
       /// Divides two units objects.
       constexpr Units& operator/=( Units const& other ) {
          for( dip::uint ii = 0; ii < nUnits_; ++ii ) {
-            power_[ ii ] = clamp_cast< dip::sint8 >( power_[ ii ] - other.power_[ ii ] );
+            power_[ ii ] = clamp_cast< sint8 >( power_[ ii ] - other.power_[ ii ] );
          }
          return *this;
       }
@@ -209,7 +209,7 @@ class DIP_NO_EXPORT Units {
          dip::sint fp = FirstPower();
          dip::sint newPower = div_floor( thousands, fp ) * fp;
          newPower = clamp< dip::sint >( newPower, -5l, 6l ); // these are the SI prefixes that dip::Units knows.
-         power_[ thousandsIndex ] = static_cast< dip::sint8 >( newPower );
+         power_[ thousandsIndex ] = static_cast< sint8 >( newPower );
          thousands -= newPower;
          return thousands;
       }
@@ -367,7 +367,7 @@ struct DIP_NO_EXPORT PhysicalQuantity {
    constexpr PhysicalQuantity() = default;
 
    /// Create an arbitrary physical quantity.
-   constexpr PhysicalQuantity( dip::dfloat m, Units const& u = {} ) : magnitude( m ), units( u ) {}
+   constexpr PhysicalQuantity( dfloat m, Units const& u = {} ) : magnitude( m ), units( u ) {}
 
    /// Create a unit-valued physical quantity.
    constexpr PhysicalQuantity( Units const& u ) : magnitude( 1 ), units( u ) {}
@@ -416,7 +416,7 @@ struct DIP_NO_EXPORT PhysicalQuantity {
       return *this;
    }
    /// Scaling of a physical quantity.
-   constexpr PhysicalQuantity& operator*=( dip::dfloat other ) {
+   constexpr PhysicalQuantity& operator*=( dfloat other ) {
       magnitude *= other;
       return *this;
    }
@@ -428,13 +428,13 @@ struct DIP_NO_EXPORT PhysicalQuantity {
       return *this;
    }
    /// Scaling of a physical quantity.
-   constexpr PhysicalQuantity& operator/=( dip::dfloat other ) {
+   constexpr PhysicalQuantity& operator/=( dfloat other ) {
       magnitude /= other;
       return *this;
    }
 
    /// Computes a physical quantity to the power of `p`.
-   PhysicalQuantity Power( dip::sint8 p ) const {
+   PhysicalQuantity Power( sint8 p ) const {
       PhysicalQuantity out = *this;
       out.units.Power( p );
       out.magnitude = std::pow( magnitude, p );
@@ -482,8 +482,8 @@ struct DIP_NO_EXPORT PhysicalQuantity {
          return false;
       }
       if( units.Thousands() != rhs.units.Thousands() ) {
-         dip::dfloat lhs_mag =     magnitude * pow10( 3 *     units.Thousands() );
-         dip::dfloat rhs_mag = rhs.magnitude * pow10( 3 * rhs.units.Thousands() );
+         dfloat lhs_mag =     magnitude * pow10( 3 *     units.Thousands() );
+         dfloat rhs_mag = rhs.magnitude * pow10( 3 * rhs.units.Thousands() );
          return dip::ApproximatelyEquals( lhs_mag, rhs_mag, tolerance );
       }
       return dip::ApproximatelyEquals( magnitude, rhs.magnitude, tolerance );
@@ -534,7 +534,7 @@ struct DIP_NO_EXPORT PhysicalQuantity {
    }
 
    /// Retrieve the magnitude, discarding units.
-   constexpr explicit operator dip::dfloat() const { return magnitude; };
+   constexpr explicit operator dfloat() const { return magnitude; };
 
    /// A physical quantity tests true if it is different from 0.
    constexpr explicit operator bool() const { return magnitude != 0; };
@@ -546,13 +546,13 @@ struct DIP_NO_EXPORT PhysicalQuantity {
       swap( units, other.units );
    }
 
-   dip::dfloat magnitude = 0; ///< The magnitude
+   dfloat magnitude = 0; ///< The magnitude
    Units units;               ///< The units
 
    private:
 
       // Adds stuff to `this`. Call only when units.HasSameDimensions( otherUnits ).
-      constexpr PhysicalQuantity& Add( Units const& otherUnits, double otherMagnitude ) {
+      constexpr PhysicalQuantity& Add( Units const& otherUnits, dfloat otherMagnitude ) {
          dip::sint this1000 = units.Thousands();
          dip::sint other1000 = otherUnits.Thousands();
          if( this1000 > other1000 ) {
@@ -574,7 +574,7 @@ struct DIP_NO_EXPORT PhysicalQuantity {
       // Throws an exception if the physical quantities cannot be added together.
       // A workaround for GCC 5.4 bug that only allows a `throw` in a constexpr function in this way.
       constexpr void CheckHasSameDimensions( PhysicalQuantity const& other ) const {
-         ( void ) ( units.HasSameDimensions( other.units ) ? 0 : throw dip::ParameterError( "Units don't match" ));
+         ( void ) ( units.HasSameDimensions( other.units ) ? 0 : throw ParameterError( "Units don't match" ));
       }
 };
 
@@ -586,13 +586,13 @@ constexpr inline PhysicalQuantity operator*( PhysicalQuantity lhs, PhysicalQuant
 }
 /// \brief Scaling of a physical quantity.
 /// \relates dip::PhysicalQuantity
-constexpr inline PhysicalQuantity operator*( PhysicalQuantity lhs, dip::dfloat rhs ) {
+constexpr inline PhysicalQuantity operator*( PhysicalQuantity lhs, dfloat rhs ) {
    lhs *= rhs;
    return lhs;
 }
 /// \brief Scaling of a physical quantity.
 /// \relates dip::PhysicalQuantity
-constexpr inline PhysicalQuantity operator*( dip::dfloat lhs, PhysicalQuantity rhs ) {
+constexpr inline PhysicalQuantity operator*( dfloat lhs, PhysicalQuantity rhs ) {
    rhs *= lhs;
    return rhs;
 }
@@ -605,13 +605,13 @@ constexpr inline PhysicalQuantity operator/( PhysicalQuantity lhs, PhysicalQuant
 }
 /// \brief Scaling of a physical quantity.
 /// \relates dip::PhysicalQuantity
-constexpr inline PhysicalQuantity operator/( PhysicalQuantity lhs, dip::dfloat rhs ) {
+constexpr inline PhysicalQuantity operator/( PhysicalQuantity lhs, dfloat rhs ) {
    lhs /= rhs;
    return lhs;
 }
 /// \brief Scaling of a physical quantity.
 /// \relates dip::PhysicalQuantity
-constexpr inline PhysicalQuantity operator/( dip::dfloat lhs, PhysicalQuantity rhs ) {
+constexpr inline PhysicalQuantity operator/( dfloat lhs, PhysicalQuantity rhs ) {
    return rhs.Invert() * lhs;
 }
 
@@ -645,12 +645,12 @@ using PhysicalQuantityArray = DimensionArray< PhysicalQuantity >;
 
 /// \brief Create an arbitrary physical quantity by multiplying a magnitude with units.
 /// \relates dip::PhysicalQuantity
-constexpr inline PhysicalQuantity operator*( dip::dfloat magnitude, Units const& units ) {
+constexpr inline PhysicalQuantity operator*( dfloat magnitude, Units const& units ) {
    return { magnitude, units };
 }
 /// \brief Create an arbitrary physical quantity by multiplying a magnitude with units.
 /// \relates dip::PhysicalQuantity
-constexpr inline PhysicalQuantity operator*( Units const& units, dip::dfloat magnitude ) {
+constexpr inline PhysicalQuantity operator*( Units const& units, dfloat magnitude ) {
    return { magnitude, units };
 }
 
@@ -757,48 +757,48 @@ class DIP_NO_EXPORT PixelSize {
       }
 
       /// Sets the pixel size in the given dimension, in nanometers.
-      void SetNanometers( dip::uint d, dip::dfloat m ) {
+      void SetNanometers( dip::uint d, dfloat m ) {
          Set( d, m * PhysicalQuantity::Nanometer() );
       }
       /// Sets the isotropic pixel size, in nanometers.
-      void SetNanometers( dip::dfloat m ) {
+      void SetNanometers( dfloat m ) {
          Set( m * PhysicalQuantity::Nanometer() );
       }
       /// Sets the pixel size in the given dimension, in micrometers.
-      void SetMicrometers( dip::uint d, dip::dfloat m ) {
+      void SetMicrometers( dip::uint d, dfloat m ) {
          Set( d, m * PhysicalQuantity::Micrometer() );
       }
       /// Sets the isotropic pixel size, in micrometers.
-      void SetMicrometers( dip::dfloat m ) {
+      void SetMicrometers( dfloat m ) {
          Set( m * PhysicalQuantity::Micrometer() );
       }
       /// Sets the pixel size in the given dimension, in millimeters.
-      void SetMillimeters( dip::uint d, dip::dfloat m ) {
+      void SetMillimeters( dip::uint d, dfloat m ) {
          Set( d, m * PhysicalQuantity::Millimeter() );
       }
       /// Sets the isotropic pixel size, in millimeters.
-      void SetMillimeters( dip::dfloat m ) {
+      void SetMillimeters( dfloat m ) {
          Set( m * PhysicalQuantity::Millimeter() );
       }
       /// Sets the pixel size in the given dimension, in meters.
-      void SetMeters( dip::uint d, dip::dfloat m ) {
+      void SetMeters( dip::uint d, dfloat m ) {
          Set( d, m * PhysicalQuantity::Meter() );
       }
       /// Sets the isotropic pixel size, in meters.
-      void SetMeters( dip::dfloat m ) {
+      void SetMeters( dfloat m ) {
          Set( m * PhysicalQuantity::Meter() );
       }
       /// Sets the pixel size in the given dimension, in kilometers.
-      void SetKilometers( dip::uint d, dip::dfloat m ) {
+      void SetKilometers( dip::uint d, dfloat m ) {
          Set( d, m * PhysicalQuantity::Kilometer() );
       }
       /// Sets the isotropic pixel size, in kilometers.
-      void SetKilometers( dip::dfloat m ) {
+      void SetKilometers( dfloat m ) {
          Set( m * PhysicalQuantity::Kilometer() );
       }
 
       /// Scales the pixel size in the given dimension, if it is defined.
-      void Scale( dip::uint d, dip::dfloat s ) {
+      void Scale( dip::uint d, dfloat s ) {
          if( !size_.empty() ) {
             // we add a dimension past `d` here so that, if they were meaningful, dimensions d+1 and further don't change value.
             EnsureDimensionality( d + 2 );
@@ -807,7 +807,7 @@ class DIP_NO_EXPORT PixelSize {
       }
 
       /// Scales the pixel size isotropically.
-      void Scale( dip::dfloat s ) {
+      void Scale( dfloat s ) {
          for( auto& sz : size_ ) {
             sz *= s;
          }
@@ -1009,7 +1009,7 @@ class DIP_NO_EXPORT PixelSize {
                return out;
             }
          }
-         return Units::Pixel().Power( clamp_cast< dip::sint8 >( d ));
+         return Units::Pixel().Power( clamp_cast< sint8 >( d ));
       }
 
       /// \brief Any dimension that is not a physical dimension will be set to 1 px.
@@ -1033,7 +1033,7 @@ class DIP_NO_EXPORT PixelSize {
       }
 
       /// Compares two pixels for the first `nDims` dimensions, magnitudes are compared with a relative tolerance of `tolerance`
-      bool ApproximatelyEquals( PixelSize const& rhs, dip::uint nDims, double tolerance = 1e-6 ) const {
+      bool ApproximatelyEquals( PixelSize const& rhs, dip::uint nDims, dfloat tolerance = 1e-6 ) const {
          nDims = std::min( nDims, std::max( size_.size(), rhs.size_.size() ));
          for( dip::uint ii = 0; ii < nDims; ++ii ) {
             if( !Get( ii ).ApproximatelyEquals( rhs.Get( ii ), tolerance )) {

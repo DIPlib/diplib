@@ -36,7 +36,7 @@ namespace viewer {
 
 class DIPVIEWER_CLASS_EXPORT ImageView : public View {
    protected:
-      dip::Image image_; ///< 2D RGB image
+      Image image_; ///< 2D RGB image
       unsigned int texture_ = 0; ///< OpenGL texture identifier.
 
    public:
@@ -49,7 +49,7 @@ class DIPVIEWER_CLASS_EXPORT ImageView : public View {
       ImageView& operator=( ImageView&& ) = default;
       ~ImageView() override = default;
 
-      void set( dip::Image const& image ) {
+      void set( Image const& image ) {
          DIP_ASSERT( image.HasNormalStrides() );
          DIP_ASSERT( image.DataType() == DT_UINT8 );
          DIP_ASSERT( image.TensorElements() == 3 );
@@ -61,7 +61,7 @@ class DIPVIEWER_CLASS_EXPORT ImageView : public View {
       dip::uint size( dip::uint ii ) override { return image_.Size( ii ); }
 
       class ViewPort* viewport() { return viewport_; }
-      dip::Image const& image() { return image_; }
+      Image const& image() { return image_; }
 };
 
 class DIPVIEWER_CLASS_EXPORT ImageViewPort : public ViewPort {
@@ -98,7 +98,7 @@ class DIPVIEWER_CLASS_EXPORT ImageViewer : public Viewer {
       ViewingOptions options_;
       ImageViewPort* viewport_;
 
-      std::string name_;
+      String name_;
 
    public:
       /// \brief Construct a new `ImageViewer`.
@@ -116,7 +116,7 @@ class DIPVIEWER_CLASS_EXPORT ImageViewer : public Viewer {
       /// ```cpp
       /// manager.createWindow( dip::viewer::ImageViewer::Create( image ));
       /// ```
-      static Ptr Create( const dip::Image& image, std::string name = "ImageViewer", dip::uint width = 0, dip::uint height = 0 ) {
+      static Ptr Create( const Image& image, String name = "ImageViewer", dip::uint width = 0, dip::uint height = 0 ) {
          return Ptr( new ImageViewer( image, std::move( name ), width, height ));
       }
 
@@ -134,16 +134,16 @@ class DIPVIEWER_CLASS_EXPORT ImageViewer : public Viewer {
       }
 
       ViewingOptions& options() override { return options_; }
-      dip::Image const& image() override { return viewport_->view()->image(); }
-      dip::Image const& original() override { return viewport_->view()->image(); }
+      Image const& image() override { return viewport_->view()->image(); }
+      Image const& original() override { return viewport_->view()->image(); }
 
-      void setImage( const dip::Image& image ) override {
+      void setImage( const Image& image ) override {
          viewport_->view()->set( image );
          refresh();
       }
 
    protected:
-      explicit ImageViewer( dip::Image const& image, std::string name = "ImageViewer", dip::uint width = 0, dip::uint height = 0 ) :
+      explicit ImageViewer( Image const& image, String name = "ImageViewer", dip::uint width = 0, dip::uint height = 0 ) :
          Viewer( std::move( name )), options_( image ) {
          DIP_THROW_IF( !image.HasNormalStrides(), E::NO_NORMAL_STRIDE );
          DIP_THROW_IF( image.DataType() != DT_UINT8, E::DATA_TYPE_NOT_SUPPORTED );

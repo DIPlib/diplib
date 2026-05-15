@@ -171,8 +171,8 @@ void RandomPixelPairSampler(
          }
          dfloat totalLength = 0.0;
          for( dip::uint ii = 0; ii < nDims; ++ii ) {
-            double end = origin[ ii ] + direction[ ii ] * distanceEnd;
-            double begin = origin[ ii ] - direction[ ii ] * distanceBegin;
+            dfloat end = origin[ ii ] + direction[ ii ] * distanceEnd;
+            dfloat begin = origin[ ii ] - direction[ ii ] * distanceBegin;
             DIP_ASSERT( end >= -0.499 );
             DIP_ASSERT( end <= maxpos[ ii ] + 0.499 );
             DIP_ASSERT( begin >= -0.499 );

@@ -392,24 +392,24 @@ void SeparableConvolution(
       // Get callback function
       std::unique_ptr< Framework::SeparableLineFilter > lineFilter;
       switch( dtype ) {
-         case dip::DT_SFLOAT:
-            lineFilter = static_cast< decltype( lineFilter ) >( new SeparableConvolutionLineFilter< dip::sfloat, dip::sfloat >( filterData ));
+         case DT_SFLOAT:
+            lineFilter = static_cast< decltype( lineFilter ) >( new SeparableConvolutionLineFilter< sfloat, sfloat >( filterData ));
             break;
-         case dip::DT_DFLOAT:
-            lineFilter = static_cast< decltype( lineFilter ) >( new SeparableConvolutionLineFilter< dip::dfloat, dip::dfloat >( filterData ));
+         case DT_DFLOAT:
+            lineFilter = static_cast< decltype( lineFilter ) >( new SeparableConvolutionLineFilter< dfloat, dfloat >( filterData ));
             break;
-         case dip::DT_SCOMPLEX:
+         case DT_SCOMPLEX:
             if( isComplexFilter ) {
-               lineFilter = static_cast< decltype( lineFilter ) >( new SeparableConvolutionLineFilter< dip::scomplex, dip::scomplex >( filterData ));
+               lineFilter = static_cast< decltype( lineFilter ) >( new SeparableConvolutionLineFilter< scomplex, scomplex >( filterData ));
             } else {
-               lineFilter = static_cast< decltype( lineFilter ) >( new SeparableConvolutionLineFilter< dip::scomplex, dip::sfloat >( filterData ));
+               lineFilter = static_cast< decltype( lineFilter ) >( new SeparableConvolutionLineFilter< scomplex, sfloat >( filterData ));
             }
             break;
-         case dip::DT_DCOMPLEX:
+         case DT_DCOMPLEX:
             if( isComplexFilter ) {
-               lineFilter = static_cast< decltype( lineFilter ) >( new SeparableConvolutionLineFilter< dip::dcomplex, dip::dcomplex >( filterData ));
+               lineFilter = static_cast< decltype( lineFilter ) >( new SeparableConvolutionLineFilter< dcomplex, dcomplex >( filterData ));
             } else {
-               lineFilter = static_cast< decltype( lineFilter ) >( new SeparableConvolutionLineFilter< dip::dcomplex, dip::dfloat >( filterData ));
+               lineFilter = static_cast< decltype( lineFilter ) >( new SeparableConvolutionLineFilter< dcomplex, dfloat >( filterData ));
             }
             break;
          default:
@@ -455,7 +455,7 @@ void ConvolveFT(
    bool reuseInFT = false;
    if( inSpatial ) {
       real &= in.DataType().IsReal();
-      dip::String purpose = real ? S::COMPLEX : S::REAL;
+      String purpose = real ? S::COMPLEX : S::REAL;
       if( inPadding ) {
          // Pad the input image with at least the size of `filter`, but make it larger so it's a nice size
          UnsignedArray sizes = inSizes;
@@ -656,7 +656,7 @@ void Convolution(
       dfloat n = static_cast< dfloat >( in.NumberOfPixels() );
       dfloat ks = static_cast< dfloat >( filter.Sizes().sum() );
       dfloat kp = static_cast< dfloat >( filter.Sizes().product() ); // TODO: This should count only the non-zero pixels...
-      dip::UnsignedArray expandedSizes = in.Sizes();
+      UnsignedArray expandedSizes = in.Sizes();
       expandedSizes += filter.Sizes();
       dfloat nx = static_cast< dfloat >( expandedSizes.product() ); // number of pixels of boundary expanded image
 
@@ -685,10 +685,10 @@ void Convolution(
 
    if( trySeparable ) {
       // Try to separate the filter kernel into 1D filters
-      auto filterArray = dip::SeparateFilter( filter );
+      auto filterArray = SeparateFilter( filter );
       if( !filterArray.empty()) {
          //std::cout << "Using separable method\n";
-         dip::SeparableConvolution( in, out, filterArray, boundaryCondition );
+         SeparableConvolution( in, out, filterArray, boundaryCondition );
          return;
       }
       // We failed. If the user explicitly asked for a separable computation, error out.
@@ -701,16 +701,16 @@ void Convolution(
          //std::cout << "Using FT method\n";
          if( boundaryCondition.empty() ) {
             // Using a non-empty bc array forces padding with the boundary condition
-            dip::ConvolveFT( in, filter, out, S::SPATIAL, S::SPATIAL, S::SPATIAL, { "" } );
+            ConvolveFT( in, filter, out, S::SPATIAL, S::SPATIAL, S::SPATIAL, { "" } );
          } else {
-            dip::ConvolveFT( in, filter, out, S::SPATIAL, S::SPATIAL, S::SPATIAL, boundaryCondition );
+            ConvolveFT( in, filter, out, S::SPATIAL, S::SPATIAL, S::SPATIAL, boundaryCondition );
          }
          return;
       }
    }
 
    //std::cout << "Using direct method\n";
-   dip::GeneralConvolution( in, filter, out, boundaryCondition );
+   GeneralConvolution( in, filter, out, boundaryCondition );
 }
 
 } // namespace dip

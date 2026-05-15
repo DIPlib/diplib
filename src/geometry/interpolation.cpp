@@ -369,7 +369,7 @@ class SkewLineFilter : public Framework::SeparableLineFilter {
 
 } // namespace
 
-dip::UnsignedArray Skew(
+UnsignedArray Skew(
       Image const& c_in,
       Image& out,
       FloatArray const& shearArray,

@@ -1265,8 +1265,8 @@ class Image::View::Iterator {
       View view_;                // A copy of the view object that we're iterating over.
       dip::uint position_ = 0;   // Counts how many elements we've advanced past.
       bool atEnd_ = false;       // true when we're done iterating
-      std::unique_ptr< GenericImageIterator< dip::dfloat >> refIt_;           // Using pointers to incomplete type here
-      std::unique_ptr< GenericJointImageIterator< 2, dip::dfloat >> maskIt_;  // Using pointers to incomplete type here
+      std::unique_ptr< GenericImageIterator< dfloat >> refIt_;           // Using pointers to incomplete type here
+      std::unique_ptr< GenericJointImageIterator< 2, dfloat >> maskIt_;  // Using pointers to incomplete type here
 
       void Initialize();
 

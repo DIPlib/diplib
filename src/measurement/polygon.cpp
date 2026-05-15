@@ -96,7 +96,7 @@ void SimplifySection( Polygon::Vertices const& vertices, Polygon::Vertices& out,
       return;
    }
    // Find point furthest from the straight line between start and end.
-   double maxDistSq = 0;
+   dfloat maxDistSq = 0;
    dip::uint maxIndex = 0;
    VertexFloat baseVector = vertices[ end ] - vertices[ start ];
    for( dip::uint ii = Next( start, N ); ii != end; ii = Next( ii, N )) {
@@ -143,7 +143,7 @@ Polygon& Polygon::Simplify( dfloat tolerance ) {
 
 namespace {
 
-void InsertPoints( Polygon::Vertices& vertices, VertexFloat start, VertexFloat end, double distance ) {
+void InsertPoints( Polygon::Vertices& vertices, VertexFloat start, VertexFloat end, dfloat distance ) {
    VertexFloat line = end - start;
    dfloat length = Norm( line );
    dfloat N = std::ceil( length / distance );

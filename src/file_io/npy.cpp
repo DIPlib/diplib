@@ -319,7 +319,7 @@ FileInformation ImageReadNPY( Image& out, String const& filename ) {
          std::iota( order.rbegin(), order.rend(), 0 );
          tmp.PermuteDimensions( order );
       }
-      GenericImageIterator< dip::uint8 > it( tmp );
+      GenericImageIterator< uint8 > it( tmp );
       do {
          istream.read( static_cast< char* >( it.Pointer() ), sampleSize );
       } while( ++it );
@@ -382,7 +382,7 @@ void ImageWriteNPY( Image const& image, String const& filename ) {
    } else {
       // Write data sample per sample
       auto sampleSize = static_cast< dip::sint >( image.DataType().SizeOf() );
-      GenericImageIterator< dip::uint8 > it( image );
+      GenericImageIterator< uint8 > it( image );
       do {
          ostream.write( static_cast< char* >( it.Pointer() ), sampleSize );
       } while( ++it );

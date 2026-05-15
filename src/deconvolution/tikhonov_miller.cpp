@@ -67,7 +67,7 @@ Image ComputeMatrixC( UnsignedArray const& sizes ) {
    return C;
 }
 
-Image ComputeMatrixA( Image const& G, Image const& H, double regularization) {
+Image ComputeMatrixA( Image const& G, Image const& H, dfloat regularization) {
    // Regularization matrix C (an ideal Laplacian) (in the frequency domain)
    Image CtC = ComputeMatrixC( G.Sizes() );
    // A = HtH + regularization CtC (in the frequency domain)

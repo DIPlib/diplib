@@ -16,6 +16,7 @@
 
 #include "diplib.h"
 #include "diplib/display.h"
+#include "diplib/lookup_table.h"
 #include "diplib/overload.h"
 #include "diplib/viewer/viewer.h"
 
@@ -41,9 +42,9 @@ void ApplyViewerColorMapInternal( Image const& slice, Image& out, ViewingOptions
 
    // These values are from
    // Peter Kovesi, "Good Colour Maps: How to Design Them", arXiv:1509.03700 [cs.GR], 2015
-   dip::dfloat RGB[] = {0.9, 0.17, 0., 0.0, 0.50, 0., 0.1, 0.33, 1.};
+   dfloat RGB[] = {0.9, 0.17, 0., 0.0, 0.50, 0., 0.1, 0.33, 1.};
 
-   double offset, scale;
+   dfloat offset, scale;
    if( mapping == ViewingOptions::Mapping::Logarithmic )
    {
       offset = options.mapping_range_.first-1.;
@@ -68,26 +69,26 @@ void ApplyViewerColorMapInternal( Image const& slice, Image& out, ViewingOptions
          case ViewingOptions::LookupTable::RGB:
             for( iPtr = slicePtr, oPtr = outPtr, ii = 0; ii < width; ++ii, iPtr += sliceStride0, oPtr += outStride0)
             {
-               double r=0, g=0, b=0;
+               dfloat r=0, g=0, b=0;
                for (dip::uint kk=0; kk < 3; ++kk)
                {
                   dip::sint elem = color_elements[kk];
                   if (elem >= 0)
                   {
-                     dip::dfloat val = rangeMap((dip::sfloat)iPtr[elem*sliceStrideT], offset, scale, mapping);
+                     dfloat val = rangeMap((sfloat)iPtr[elem*sliceStrideT], offset, scale, mapping);
                      r += val * RGB[kk*3+0];
                      g += val * RGB[kk*3+1];
                      b += val * RGB[kk*3+2];
                   }
                }
-               oPtr[0] = (dip::uint8) r;
-               oPtr[1] = (dip::uint8) g;
-               oPtr[2] = (dip::uint8) b;
+               oPtr[0] = (uint8) r;
+               oPtr[1] = (uint8) g;
+               oPtr[2] = (uint8) b;
             }
             break;
          default:
             for( iPtr = slicePtr, oPtr = outPtr, ii = 0; ii < width; ++ii, iPtr += sliceStride0, oPtr += outStride0)
-               oPtr[0] = oPtr[1] = oPtr[2] = (dip::uint8)( rangeMap((dip::sfloat)iPtr[(dip::sint)element*sliceStrideT], offset, scale, mapping) + 1e-6);
+               oPtr[0] = oPtr[1] = oPtr[2] = (uint8)( rangeMap((sfloat)iPtr[(dip::sint)element*sliceStrideT], offset, scale, mapping) + 1e-6);
                // Note: the cast to uint8 is a floor. When the input is integer, the scaling introduces a rounding error that is amplified by this
                // floor. When scale==1/255, which should lead to the output being identical to the input, this leads to a few values being reduced by 1.
                // This change is very noticeable when using a labeled color map. The addition of 1e-6 avoids this issue.
@@ -98,12 +99,12 @@ void ApplyViewerColorMapInternal( Image const& slice, Image& out, ViewingOptions
 
 } // namespace
 
-void ApplyViewerColorMap(dip::Image &in, dip::Image &out, ViewingOptions &options)
+void ApplyViewerColorMap(Image &in, Image &out, ViewingOptions &options)
 {
-   dip::Image in2d = in;
+   Image in2d = in;
    in2d.ExpandDimensionality(2);
 
-   dip::Image mapped = dip::Image(in2d.Sizes(), 3, DT_UINT8);
+   Image mapped = Image(in2d.Sizes(), 3, DT_UINT8);
    DIP_OVL_CALL_NONCOMPLEX( ApplyViewerColorMapInternal, ( in2d, mapped, options ), in.DataType() );
 
    switch(options.lut_)

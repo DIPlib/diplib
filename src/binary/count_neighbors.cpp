@@ -170,8 +170,8 @@ void CountNeighbors(
       Image const& in,
       Image& out,
       dip::uint connectivity,
-      dip::String const& s_mode,
-      dip::String const& s_edgeCondition
+      String const& s_mode,
+      String const& s_edgeCondition
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
@@ -196,7 +196,7 @@ void MajorityVote(
       Image const& in,
       Image& out,
       dip::uint connectivity,
-      dip::String const& s_edgeCondition
+      String const& s_edgeCondition
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );

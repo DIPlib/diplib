@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include "diplib.h"
 #include "diplib/math.h"
 #include "diplib/statistics.h"
 #include "diplib/generic_iterators.h"
@@ -59,8 +60,8 @@ void SliceView::project()
   {
     // Projection
     BooleanArray process( image.Dimensionality(), true );
-    dip::UnsignedArray ro = o.roi_origin_;
-    dip::UnsignedArray rs = o.roi_sizes_;
+    UnsignedArray ro = o.roi_origin_;
+    UnsignedArray rs = o.roi_sizes_;
 
     if (dx != -1)
     {
@@ -122,7 +123,7 @@ void SliceView::map()
     dip::uint width = line.Size(0);
     dip::uint xstride = (dip::uint)line.Stride(0);
     dip::uint ystride = (dip::uint)line.Stride(1);
-    dip::uint8 *col = (dip::uint8*)line.Origin();
+    uint8 *col = (uint8*)line.Origin();
 
     GenericImageIterator<> it(projected_);
     for( dip::uint ii = 0; ii < width; ++ii, ++it, col += xstride)
@@ -132,7 +133,7 @@ void SliceView::map()
         for (dip::uint kk=0; kk < 3; ++kk)
           if (o.color_elements_[kk] != -1)
           {
-            dip::uint8 color = (dip::uint8)rangeMap(it[(dip::uint)o.color_elements_[kk]], o);
+            uint8 color = (uint8)rangeMap(it[(dip::uint)o.color_elements_[kk]], o);
             dip::uint height = 99-color*100U/256;
             for (dip::uint jj=height; jj < 100; ++jj)
               col[jj*ystride+kk] = 255;
@@ -140,7 +141,7 @@ void SliceView::map()
       }
       else
       {
-        dip::uint8 color = (dip::uint8)rangeMap(it[o.element_], o);
+        uint8 color = (uint8)rangeMap(it[o.element_], o);
         dip::uint height = 99-color*100U/256;
         for (dip::uint jj=height; jj < 100; ++jj)
           for (dip::uint kk=0; kk < 3; ++kk)
@@ -169,7 +170,7 @@ void SliceView::map()
         colored_ = projected_;
         colored_.ResetColorSpace();
       }
-      colored_.Convert(dip::DT_UINT8);
+      colored_.Convert(DT_UINT8);
       colored_.ForceNormalStrides();
     }
     else
@@ -287,8 +288,8 @@ void SliceViewPort::render()
 
   dip::sint dx = viewer()->options().dims_[view()->dimx()];
   dip::sint dy = viewer()->options().dims_[view()->dimy()];
-  dip::dfloat odx = 0, ody = 0;
-  dip::dfloat zdx = 1, zdy = 1;
+  dfloat odx = 0, ody = 0;
+  dfloat zdx = 1, zdy = 1;
 
   if (dx != -1) { odx = o[(dip::uint)dx]; zdx = z[(dip::uint)dx]; }
   if (dy != -1) { ody = o[(dip::uint)dy]; zdy = z[(dip::uint)dy]; }
@@ -326,8 +327,8 @@ void SliceViewPort::render()
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glViewport(x_, viewer()->height()-y_-height, width, height);
-  glOrtho(odx, odx + (dip::dfloat)width/zdx,
-          ody + (dip::dfloat)height/zdy, ody, -1, 1);
+  glOrtho(odx, odx + (dfloat)width/zdx,
+          ody + (dfloat)height/zdy, ody, -1, 1);
 
   glMatrixMode(GL_MODELVIEW);
 
@@ -352,8 +353,8 @@ void SliceViewPort::click(int button, int state, int x, int y, int mods)
       if (mods == KEY_MOD_SHIFT)
       {
         // Shift-Left mouse button: adjust projection ROI
-        dip::UnsignedArray start = viewer()->options().roi_origin_;
-        dip::UnsignedArray end = start;
+        UnsignedArray start = viewer()->options().roi_origin_;
+        UnsignedArray end = start;
         end += viewer()->options().roi_sizes_;
 
         // Find closest edge
@@ -408,7 +409,7 @@ void SliceViewPort::click(int button, int state, int x, int y, int mods)
       if (mods == KEY_MOD_SHIFT)
       {
         // Reset ROI
-        viewer()->options().roi_origin_ = dip::UnsignedArray(viewer()->image().Dimensionality(), 0);
+        viewer()->options().roi_origin_ = UnsignedArray(viewer()->image().Dimensionality(), 0);
         viewer()->options().roi_sizes_ = viewer()->image().Sizes();
 
         viewer()->options().status_ = "Reset projection ROI";
@@ -579,8 +580,8 @@ void SliceViewPort::screenToView(int x, int y, double *ix, double *iy)
     *iy = (y-y_)/viewer()->options().zoom_[(dip::uint)dy] + viewer()->options().origin_[(dip::uint)dy];
 }
 
-SliceViewer::SliceViewer(const dip::Image &image, std::string name, dip::uint width, dip::uint height)
-  : Viewer(name), options_(image), continue_(false), updated_(false), original_(image), drag_viewport_(NULL), refresh_seq_(0)
+SliceViewer::SliceViewer(const Image &image, String name, dip::uint width, dip::uint height)
+  : Viewer(std::move(name)), options_(image), continue_(false), updated_(false), original_(image), drag_viewport_(NULL), refresh_seq_(0)
 {
   if (width && height)
     requestSize(width, height);
@@ -757,7 +758,7 @@ void SliceViewer::key(unsigned char k, int x, int y, int mods)
       for (dip::uint ii=0; ii < image_.Dimensionality(); ++ii)
       {
         options_.origin_[ii] = 0;
-        zoom[ii] = std::numeric_limits<dip::dfloat>::max();
+        zoom[ii] = std::numeric_limits<dfloat>::max();
       }
 
       for (dip::uint ii=0; ii < 4; ++ii)
@@ -773,19 +774,19 @@ void SliceViewer::key(unsigned char k, int x, int y, int mods)
         }
 
         if (dims[ii] != -1)
-          zoom[(dip::uint)dims[ii]] = std::min(zoom[(dip::uint)dims[ii]], (dip::dfloat)sz/(dip::dfloat)image_.Size((dip::uint)dims[ii]));
+          zoom[(dip::uint)dims[ii]] = std::min(zoom[(dip::uint)dims[ii]], (dfloat)sz/(dfloat)image_.Size((dip::uint)dims[ii]));
       }
 
       for (dip::uint ii=0; ii < image_.Dimensionality(); ++ii)
-        if (zoom[ii] == std::numeric_limits<dip::dfloat>::max())
+        if (zoom[ii] == std::numeric_limits<dfloat>::max())
           zoom[ii] = 1.;
 
       // Keep XY aspect ratio
       dip::sint dx = dims[0], dy = dims[1];
       if (dx != -1 && dy != -1)
       {
-        dip::dfloat aspect_image = (dip::dfloat)image_.Size((dip::uint)dx)/(dip::dfloat)image_.Size((dip::uint)dy),
-                    aspect_viewport = (dip::dfloat)(main_->width()-DIM_WIDTH)/(dip::dfloat)(main_->height()-DIM_HEIGHT);
+        dfloat aspect_image = (dfloat)image_.Size((dip::uint)dx)/(dfloat)image_.Size((dip::uint)dy),
+                    aspect_viewport = (dfloat)(main_->width()-DIM_WIDTH)/(dfloat)(main_->height()-DIM_HEIGHT);
 
         if (aspect_image > aspect_viewport)
           zoom[(dip::uint)dy] = zoom[(dip::uint)dx];
@@ -811,7 +812,7 @@ void SliceViewer::key(unsigned char k, int x, int y, int mods)
     if (k == 'R')
     {
       // ^R: reset ROI
-      options_.roi_origin_ = dip::UnsignedArray(image_.Dimensionality(), 0);
+      options_.roi_origin_ = UnsignedArray(image_.Dimensionality(), 0);
       options_.roi_sizes_ = image_.Sizes();
 
       options_.status_ = "Reset projection ROI";
@@ -893,7 +894,8 @@ void SliceViewer::calculateTextures()
     if (diff >= ViewingOptions::Diff::Complex)
     {
       lock();
-      dip::Image original = original_, image;
+      Image original = original_;
+      Image image;
       unlock();
 
       // Deal with complex numbers
@@ -919,13 +921,13 @@ void SliceViewer::calculateTextures()
         image = original;
 
       // Get ranges
-      FloatRange range = { std::numeric_limits<dip::dfloat>::infinity(),
-                          -std::numeric_limits<dip::dfloat>::infinity()};
+      FloatRange range = { std::numeric_limits<dfloat>::infinity(),
+                          -std::numeric_limits<dfloat>::infinity()};
       FloatRangeArray tensor_range(image.TensorElements());
 
       for (dip::uint ii=0; ii != image.TensorElements(); ++ii)
       {
-        dip::MinMaxAccumulator acc = MaximumAndMinimum( image[ii], IsFinite(image[ii]) );
+        MinMaxAccumulator acc = MaximumAndMinimum( image[ii], IsFinite(image[ii]) );
         tensor_range[ii] = {acc.Minimum(), acc.Maximum()};
         range = {std::min(range.first, tensor_range[ii].first),
                  std::max(range.second, tensor_range[ii].second)};

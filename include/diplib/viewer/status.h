@@ -36,7 +36,7 @@ namespace viewer {
 class DIPVIEWER_CLASS_EXPORT StatusViewPort : public ViewPort {
    protected:
       class SliceViewer* viewer_;
-      std::vector< std::vector< dip::String >> lists_;
+      std::vector< std::vector< String >> lists_;
       std::vector< dip::uint > dim_starts_;
 
    public:

@@ -29,22 +29,22 @@ void TensorViewPort::render()
 
   auto &o = viewer()->options();
   const Image &image = viewer()->image();
-  
+
   Tensor t = image.Tensor();
-  auto p = image.At<dip::sfloat>(o.operating_point_);
+  auto p = image.At<sfloat>(o.operating_point_);
   std::vector<dip::sint> lut = t.LookUpTable();
-  
+
   for (dip::uint jj=0; jj < t.Rows(); ++jj)
     for (dip::uint ii=0; ii < t.Columns(); ++ii)
     {
       dip::sint idx = lut[jj*t.Columns()+ii];
       if (idx != -1)
       {
-        dip::sfloat val = p[(dip::uint)idx];
-        dip::uint8 rv = (dip::uint8)rangeMap(val, o);
+        sfloat val = p[(dip::uint)idx];
+        uint8 rv = (uint8)rangeMap(val, o);
         GLfloat cwidth = (GLfloat)width()/(GLfloat)t.Columns(),
                 cheight = (GLfloat)height()/(GLfloat)t.Rows();
-        
+
         // Tensor element value
         glColor3ub(rv, rv, rv);
         glBegin(GL_QUADS);
@@ -53,7 +53,7 @@ void TensorViewPort::render()
           glVertex2f((GLfloat)(ii+1)*cwidth-1.f, (GLfloat)(jj+1)*cheight-1.f);
           glVertex2f((GLfloat)ii*cwidth+1.f,     (GLfloat)(jj+1)*cheight-1.f);
         glEnd();
-        
+
         // Draw box around selected element(s)
         if (o.lut_ == ViewingOptions::LookupTable::RGB)
         {
@@ -70,7 +70,7 @@ void TensorViewPort::render()
           glColor3f(1., 1., 1.);
         else
           glColor3f(0., 0., 0.);
-        
+
         glBegin(GL_LINE_LOOP);
           glVertex2f((GLfloat)ii*cwidth+1.f,     (GLfloat)jj*cheight);
           glVertex2f((GLfloat)(ii+1)*cwidth-1.f, (GLfloat)jj*cheight);
@@ -88,19 +88,19 @@ void TensorViewPort::click(int button, int state, int x, int y, int /*mods*/)
     auto &o = viewer()->options();
     double ix, iy;
     screenToView(x, y, &ix, &iy);
-    
+
     // Find clicked element
     Tensor t = viewer()->image().Tensor();
     std::vector<dip::sint> lut = t.LookUpTable();
     dip::sint row=y*(dip::sint)t.Rows()/(dip::sint)height();
     dip::sint col=x*(dip::sint)t.Columns()/(dip::sint)width();
-    
+
     if (row < 0 || row >= (dip::sint)t.Rows() ||
         col < 0 || col >= (dip::sint)t.Columns())
       return;
-    
+
     dip::sint idx = lut[(dip::uint)row*t.Columns()+(dip::uint)col];
-    
+
     if (idx != -1)
     {
       if (o.lut_ == ViewingOptions::LookupTable::RGB)

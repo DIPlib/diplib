@@ -28,10 +28,10 @@ class srgb2ypbpr : public ColorSpaceConverter {
       String OutputColorSpace() const override { return YPbPr_name; }
       void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
-            double R = input[ 0 ] / 255.0;
-            double G = input[ 1 ] / 255.0;
-            double B = input[ 2 ] / 255.0;
-            double Y = Kr * R + Kg * G + Kb * B;
+            dfloat R = input[ 0 ] / 255.0;
+            dfloat G = input[ 1 ] / 255.0;
+            dfloat B = input[ 2 ] / 255.0;
+            dfloat Y = Kr * R + Kg * G + Kb * B;
             output[ 0 ] = Y;
             output[ 1 ] = 0.5 * ( B - Y ) / ( 1 - Kb );
             output[ 2 ] = 0.5 * ( R - Y ) / ( 1 - Kr );
@@ -43,9 +43,9 @@ class srgb2ypbpr : public ColorSpaceConverter {
          Kb = matrix[ 7 ];
       }
    private:
-      double Kr = 0.2126729;
-      double Kg = 0.7151521;
-      double Kb = 0.072175; // The Y row of the XYZ matrix
+      dfloat Kr = 0.2126729;
+      dfloat Kg = 0.7151521;
+      dfloat Kb = 0.072175; // The Y row of the XYZ matrix
 };
 
 class ypbpr2srgb : public ColorSpaceConverter {
@@ -54,9 +54,9 @@ class ypbpr2srgb : public ColorSpaceConverter {
       String OutputColorSpace() const override { return sRGB_name; }
       void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
-            double B = 2 * input[ 1 ] * ( 1 - Kb ) + input[ 0 ];
-            double R = 2 * input[ 2 ] * ( 1 - Kr ) + input[ 0 ];
-            double G = ( input[ 0 ] - R * Kr - B * Kb ) / Kg;
+            dfloat B = 2 * input[ 1 ] * ( 1 - Kb ) + input[ 0 ];
+            dfloat R = 2 * input[ 2 ] * ( 1 - Kr ) + input[ 0 ];
+            dfloat G = ( input[ 0 ] - R * Kr - B * Kb ) / Kg;
             output[ 0 ] = R * 255;
             output[ 1 ] = G * 255;
             output[ 2 ] = B * 255;
@@ -68,9 +68,9 @@ class ypbpr2srgb : public ColorSpaceConverter {
          Kb = matrix[ 7 ];
       }
    private:
-      double Kr = 0.2126729;
-      double Kg = 0.7151521;
-      double Kb = 0.072175; // The Y row of the XYZ matrix
+      dfloat Kr = 0.2126729;
+      dfloat Kg = 0.7151521;
+      dfloat Kb = 0.072175; // The Y row of the XYZ matrix
 };
 
 class ypbpr2ycbcr : public ColorSpaceConverter {

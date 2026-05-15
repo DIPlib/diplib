@@ -262,13 +262,13 @@ GetTIFFInfoData GetTIFFInfo( TiffFile& tiff, bool useColorMap ) {
    float resolution{};
    PhysicalQuantity ps = 1;
    if( TIFFGetField( tiff, TIFFTAG_XRESOLUTION, &resolution )) {
-      ps = ( 1.0 / static_cast< double >( resolution )) * pixelSizeMultiplier;
+      ps = ( 1.0 / static_cast< dfloat >( resolution )) * pixelSizeMultiplier;
       ps.Normalize();
    }
    data.fileInformation.pixelSize.Set( 0, ps );
    ps = 1;
    if( TIFFGetField( tiff, TIFFTAG_YRESOLUTION, &resolution )) {
-      ps = ( 1.0 / static_cast< double >( resolution )) * pixelSizeMultiplier;
+      ps = ( 1.0 / static_cast< dfloat >( resolution )) * pixelSizeMultiplier;
       ps.Normalize();
    }
    data.fileInformation.pixelSize.Set( 1, ps );
@@ -277,11 +277,11 @@ GetTIFFInfoData GetTIFFInfo( TiffFile& tiff, bool useColorMap ) {
    float position{};
    PhysicalQuantity xPos = 0 * pixelSizeMultiplier, yPos = 0 * pixelSizeMultiplier;
    if( TIFFGetField( tiff, TIFFTAG_XPOSITION, &position )) {
-      xPos = static_cast< double >( position ) * pixelSizeMultiplier;
+      xPos = static_cast< dfloat >( position ) * pixelSizeMultiplier;
       xPos.Normalize();
    }
    if( TIFFGetField( tiff, TIFFTAG_YPOSITION, &position )) {
-      yPos = static_cast< double >( position ) * pixelSizeMultiplier;
+      yPos = static_cast< dfloat >( position ) * pixelSizeMultiplier;
       yPos.Normalize();
    }
    data.fileInformation.origin = { xPos, yPos };

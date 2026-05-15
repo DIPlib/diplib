@@ -136,7 +136,7 @@ std::vector< GaussianParameters > GaussianMixtureModel(
             }
             params[ kk ].sigma = std::sqrt( std::abs( params[ kk ].sigma ));
             if( params[ kk ].sigma != 0 ) {
-               params[ kk ].amplitude /= params[ kk ].sigma * std::sqrt( 2.0 * dip::pi );
+               params[ kk ].amplitude /= params[ kk ].sigma * std::sqrt( 2.0 * pi );
             }
             tp += size;
          }

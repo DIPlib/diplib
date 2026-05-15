@@ -44,7 +44,7 @@ inline dip::uint HalfGaussianSize(
    if( truncation <= 0 ) {
       truncation = 3; // The default value
    }
-   double max_trunc = dt == DT_DFLOAT ? maximum_gauss_truncation< dfloat >() : maximum_gauss_truncation< sfloat >();
+   dfloat max_trunc = dt == DT_DFLOAT ? maximum_gauss_truncation< dfloat >() : maximum_gauss_truncation< sfloat >();
    truncation = std::min( truncation, max_trunc );
    truncation += 0.5 * static_cast< dfloat >( derivativeOrder );
    return clamp_cast< dip::uint >( std::ceil( truncation * sigma ));

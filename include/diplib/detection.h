@@ -494,15 +494,15 @@ DIP_NODISCARD inline Image FrangiVesselness(
 DIP_EXPORT void MatchedFiltersLineDetector2D(
       Image const& in,
       Image& out,
-      dip::dfloat sigma = 2.0,
-      dip::dfloat length = 10.0,
+      dfloat sigma = 2.0,
+      dfloat length = 10.0,
       String const& polarity = S::WHITE,
       StringArray const& boundaryCondition = {}
 );
 DIP_NODISCARD inline Image MatchedFiltersLineDetector2D(
       Image const& in,
-      dip::dfloat sigma = 2.0,
-      dip::dfloat length = 10.0,
+      dfloat sigma = 2.0,
+      dfloat length = 10.0,
       String const& polarity = S::WHITE,
       StringArray const& boundaryCondition = {}
 ) {
@@ -529,13 +529,13 @@ DIP_NODISCARD inline Image MatchedFiltersLineDetector2D(
 DIP_EXPORT void DanielssonLineDetector(
       Image const& in,
       Image& out,
-      dip::FloatArray const& sigmas = { 2.0 },
+      FloatArray const& sigmas = { 2.0 },
       String const& polarity = S::WHITE,
       StringArray const& boundaryCondition = {}
 );
 DIP_NODISCARD inline Image DanielssonLineDetector(
       Image const& in,
-      dip::FloatArray const& sigmas = { 2.0 },
+      FloatArray const& sigmas = { 2.0 },
       String const& polarity = S::WHITE,
       StringArray const& boundaryCondition = {}
 ) {

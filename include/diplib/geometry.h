@@ -354,7 +354,7 @@ DIP_NODISCARD inline Image ResampleAt(
 // is not shifted (or rather, it is shifted by some integer amount to allow negative shifts of other sub-volumes).
 // Returns `ret` the location of `in[0,origin,0,0,...]` in the output image. The return array `ret` will always have
 // `ret[axis]==origin` since no change happens along that dimension.
-DIP_EXPORT dip::UnsignedArray Skew(
+DIP_EXPORT UnsignedArray Skew(
       Image const& in,
       Image& out,
       FloatArray const& shearArray, // value along `axis` is ignored

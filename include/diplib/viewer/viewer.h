@@ -40,7 +40,7 @@ namespace viewer {
 /// \addtogroup dipviewer
 
 /// \brief Specifies a range of values between a lower and upper limit
-using FloatRange = std::pair< dip::dfloat, dip::dfloat >;
+using FloatRange = std::pair< dfloat, dfloat >;
 
 /// \brief Specifies an array of ranges (typically one per tensor element)
 using FloatRangeArray = std::vector< FloatRange >;
@@ -63,13 +63,13 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions {
    enum class Diff : uint8 { None, Draw, Place, Mapping, Projection, Complex };
 
    // Projection
-   dip::IntegerArray dims_; ///< Dimensions to visualize (MainX, MainY, LeftX, TopY). Use -1 to not map to any image dimension.
-   dip::UnsignedArray operating_point_; ///< Coordinates of selected point, which also determines which slice is shown.
+   IntegerArray dims_; ///< Dimensions to visualize (MainX, MainY, LeftX, TopY). Use -1 to not map to any image dimension.
+   UnsignedArray operating_point_; ///< Coordinates of selected point, which also determines which slice is shown.
    ComplexToReal complex_; ///< What to do with complex numbers.
    Projection projection_; ///< Type of projection.
-   dip::UnsignedArray roi_origin_; ///< Origin of projection ROI.
-   dip::UnsignedArray roi_sizes_; ///< Sizes of projection ROI.
-   dip::String labels_; ///< Labels to use for axes, one character per axis.
+   UnsignedArray roi_origin_; ///< Origin of projection ROI.
+   UnsignedArray roi_sizes_; ///< Sizes of projection ROI.
+   String labels_; ///< Labels to use for axes, one character per axis.
 
    // Mapping
    FloatRange range_; ///< value range across image (histogram limits).
@@ -80,40 +80,37 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions {
    // Color
    dip::uint element_; ///< Tensor element to visualize.
    LookupTable lut_; ///< Grey-value to color mapping options.
-   dip::IntegerArray color_elements_; ///< Which tensor element is R, G, and B.
+   IntegerArray color_elements_; ///< Which tensor element is R, G, and B.
 
    // Placement
-   dip::IntegerArray split_; ///< Split point between projections (pixels).
+   IntegerArray split_; ///< Split point between projections (pixels).
 
    // Display
-   dip::FloatArray zoom_; ///< \brief Zoom factor per dimension (from physical dimensions + user). Also determines relative viewport sizes.
-   dip::FloatArray origin_; ///< Display origin for moving the image around.
+   FloatArray zoom_; ///< \brief Zoom factor per dimension (from physical dimensions + user). Also determines relative viewport sizes.
+   FloatArray origin_; ///< Display origin for moving the image around.
 
    // Status
-   dip::PhysicalQuantityArray offset_; ///< Offset of origin pixel in real-world coordinates.
-   dip::String status_; ///< Status bar text.
+   PhysicalQuantityArray offset_; ///< Offset of origin pixel in real-world coordinates.
+   String status_; ///< Status bar text.
 
    ViewingOptions() :
       complex_( ComplexToReal::Imaginary ) // To force update
    {}
 
    /// \brief Calculate default options from an image
-   explicit ViewingOptions( const dip::Image& image ) {
+   explicit ViewingOptions( const Image& image ) {
       // Projection
-      if( image.Dimensionality() == 0 ) {
-         dims_ = { -1, -1, -1, -1 };
-      } else if( image.Dimensionality() == 1 ) {
-         dims_ = { 0, -1, -1, -1 };
-      } else if( image.Dimensionality() == 2 ) {
-         dims_ = { 0, 1, -1, -1 };
-      } else {
-         dims_ = { 0, 1, 2, 2 };
+      switch( image.Dimensionality() ) {
+         case 0:  dims_ = { -1, -1, -1, -1 }; break;
+         case 1:  dims_ = { 0, -1, -1, -1 };  break;
+         case 2:  dims_ = { 0, 1, -1, -1 };   break;
+         default: dims_ = { 0, 1, 2, 2 };
       }
 
-      operating_point_ = dip::UnsignedArray( image.Dimensionality(), 0 );
+      operating_point_ = UnsignedArray( image.Dimensionality(), 0 );
       complex_ = ComplexToReal::Real;
       projection_ = Projection::None;
-      roi_origin_ = dip::UnsignedArray( image.Dimensionality(), 0 );
+      roi_origin_ = UnsignedArray( image.Dimensionality(), 0 );
       roi_sizes_ = image.Sizes();
       labels_ = "xyzw56789";
 
@@ -153,10 +150,10 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions {
          }
       }
 
-      origin_ = dip::FloatArray( image.Dimensionality(), 0. );
+      origin_ = FloatArray( image.Dimensionality(), 0. );
       split_ = { 100, 100 };
 
-      offset_ = dip::PhysicalQuantityArray( image.Dimensionality() );
+      offset_ = PhysicalQuantityArray( image.Dimensionality() );
       for( dip::uint ii = 0; ii < image.Dimensionality(); ++ii ) {
          offset_[ ii ] = 0 * image.PixelSize( ii );
       }
@@ -274,8 +271,8 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions {
    void setAutomaticRange() {
       if( lut_ == LookupTable::RGB ) {
          FloatRange range = {
-            std::numeric_limits< dip::dfloat >::infinity(),
-            -std::numeric_limits< dip::dfloat >::infinity()
+            std::numeric_limits< dfloat >::infinity(),
+            -std::numeric_limits< dfloat >::infinity()
          };
 
          for( dip::uint ii = 0; ii != color_elements_.size(); ++ii ) {
@@ -310,7 +307,7 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions {
             mapping_range_ = { 0, 1 };
             break;
          case ViewingOptions::Mapping::Angle:
-            mapping_range_ = { -dip::pi, dip::pi };
+            mapping_range_ = { -pi, pi };
             break;
          case ViewingOptions::Mapping::Normal:
             mapping_range_ = { 0, 255 };
@@ -324,26 +321,26 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions {
    }
 
    /// \brief Returns a textual description of the current complex-to-real mapping
-   dip::String getComplexDescription() const {
-      dip::String names[ ] = { "real part", "imaginary part", "magnitude (abs)", "phase" };
+   String getComplexDescription() const {
+      String names[ ] = { "real part", "imaginary part", "magnitude (abs)", "phase" };
       return names[ ( dip::uint )complex_ ];
    }
 
    /// \brief Returns a textual description of the current grey-value mapping
-   dip::String getMappingDescription() const {
-      dip::String names[ ] = { "unit", "angle", "normal", "linear", "symmetric around 0", "logarithmic" };
+   String getMappingDescription() const {
+      String names[ ] = { "unit", "angle", "normal", "linear", "symmetric around 0", "logarithmic" };
       return names[ ( dip::uint )mapping_ ];
    }
 
    /// \brief Returns a textual description of the current slice projection
-   dip::String getProjectionDescription() const {
-      dip::String names[ ] = { "none (slice)", "minimum", "mean", "maximum" };
+   String getProjectionDescription() const {
+      String names[ ] = { "none (slice)", "minimum", "mean", "maximum" };
       return names[ ( dip::uint )projection_ ];
    }
 
    /// \brief Returns a textual description of the current grey-value to color mapping
-   dip::String getLookupTableDescription() const {
-      dip::String names[ ] = { "image colorspace (mapping inactive)", "ternary (RGB)", "grey-value", "perceptually linear", "divergent blue-red", "cyclic", "labels" };
+   String getLookupTableDescription() const {
+      String names[ ] = { "image colorspace (mapping inactive)", "ternary (RGB)", "grey-value", "perceptually linear", "divergent blue-red", "cyclic", "labels" };
       return names[ ( dip::uint )lut_ ];
    }
 
@@ -457,11 +454,11 @@ class DIPVIEWER_CLASS_EXPORT Viewer : public Window {
       using Guard = std::lock_guard< Viewer >;
 
    protected:
-      std::string name_;
+      String name_;
       std::recursive_mutex mutex_;
 
    public:
-      explicit Viewer( std::string name = "Viewer" ) :
+      explicit Viewer( String name = "Viewer" ) :
          name_( std::move( name )) {}
 
       /// \brief Returns the `Viewer`'s model
@@ -490,7 +487,7 @@ class DIPVIEWER_CLASS_EXPORT Viewer : public Window {
       ///    dip::Image image = viewer->image();
       /// }
       /// ```
-      virtual const dip::Image& image() = 0;
+      virtual const Image& image() = 0;
 
       /// \brief Returns the \ref dip::Image being visualized.
       ///
@@ -504,7 +501,7 @@ class DIPVIEWER_CLASS_EXPORT Viewer : public Window {
       ///    dip::Image image = viewer->original();
       /// }
       /// ```
-      virtual const dip::Image& original() = 0;
+      virtual const Image& original() = 0;
 
       /// \brief Sets the image to be visualized.
       ///
@@ -518,10 +515,10 @@ class DIPVIEWER_CLASS_EXPORT Viewer : public Window {
       ///    viewer->setImage(image);
       /// }
       /// ```
-      virtual void setImage( const dip::Image& image ) = 0;
+      virtual void setImage( const Image& image ) = 0;
 
       /// \brief Returns the `Viewer`'s name
-      virtual const std::string& name() { return name_; }
+      virtual const String& name() { return name_; }
 
       /// \brief Set window title, in addition to the `Viewer`'s name
       virtual void setWindowTitle( const char* name ) { title( ( name_ + name ).c_str() ); }
@@ -535,17 +532,17 @@ class DIPVIEWER_CLASS_EXPORT Viewer : public Window {
 
 /// \brief Maps an image grey-value onto [0,255]
 template< typename T >
-inline dip::dfloat rangeMap( T val, double offset, double scale, ViewingOptions::Mapping mapping ) {
+inline dfloat rangeMap( T val, dfloat offset, dfloat scale, ViewingOptions::Mapping mapping ) {
    if( mapping == ViewingOptions::Mapping::Logarithmic ) {
-      return 255. * std::min( std::log( std::max( ( double )val - offset, 1. )) * scale, 1. );
+      return 255. * std::min( std::log( std::max( ( dfloat )val - offset, 1. )) * scale, 1. );
    } else {
-      return 255. * std::min( std::max( ( ( double )val - offset ) * scale, 0. ), 1. );
+      return 255. * std::min( std::max( ( ( dfloat )val - offset ) * scale, 0. ), 1. );
    }
 }
 
 /// \brief Maps an image grey-value onto [0,255]
 template< typename T >
-inline dip::dfloat rangeMap( T val, const ViewingOptions& options ) {
+inline dfloat rangeMap( T val, const ViewingOptions& options ) {
    if( options.mapping_ == ViewingOptions::Mapping::Logarithmic ) {
       return rangeMap( val, options.mapping_range_.first - 1., 1. / std::log( options.mapping_range_.second - options.mapping_range_.first + 1. ), options.mapping_ );
    } else {
@@ -555,7 +552,7 @@ inline dip::dfloat rangeMap( T val, const ViewingOptions& options ) {
 
 /// \brief String conversion for \ref dip::DimensionArray
 template< typename T >
-std::string to_string( dip::DimensionArray< T > array ) {
+String to_string( DimensionArray< T > array ) {
    std::ostringstream oss;
    oss << '[';
    for( dip::uint ii = 0; ii < array.size(); ++ii ) {
@@ -569,7 +566,7 @@ std::string to_string( dip::DimensionArray< T > array ) {
 }
 
 /// \brief Applies the colormap defined by the \ref ViewingOptions
-void DIPVIEWER_NO_EXPORT ApplyViewerColorMap( dip::Image& in, dip::Image& out, ViewingOptions& options );
+void DIPVIEWER_NO_EXPORT ApplyViewerColorMap( Image& in, Image& out, ViewingOptions& options );
 
 /// \endgroup
 

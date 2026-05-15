@@ -1205,7 +1205,7 @@ inline void Gabor2D(
       Image& out,
       FloatArray sigmas = { 5.0, 5.0 },
       dfloat frequency = 0.1,
-      dfloat direction = dip::pi,
+      dfloat direction = pi,
       StringArray const& boundaryCondition = {},
       dfloat truncation = 3
 ) {
@@ -1218,7 +1218,7 @@ DIP_NODISCARD inline Image Gabor2D(
       Image const& in,
       FloatArray sigmas = { 5.0, 5.0 },
       dfloat frequency = 0.1,
-      dfloat direction = dip::pi,
+      dfloat direction = pi,
       StringArray const& boundaryCondition = {},
       dfloat truncation = 3
 ) {

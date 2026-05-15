@@ -170,7 +170,7 @@ void IncoherentPSF(
             return static_cast< sfloat >( b * b );
          }, 1 );
    DIP_STACK_TRACE_THIS( dip::Framework::ScanMonadic( radius, out, DT_SFLOAT, out.DataType(), 1, *filter ));
-   amplitude /= Sum( out ).As< double >();
+   amplitude /= Sum( out ).As< dfloat >();
    out *= amplitude;
 }
 

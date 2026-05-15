@@ -555,14 +555,14 @@ DIP_EXPORT void CountNeighbors(
       Image const& in,
       Image& out,
       dip::uint connectivity = 0,
-      dip::String const& mode = S::FOREGROUND,
-      dip::String const& edgeCondition = S::BACKGROUND
+      String const& mode = S::FOREGROUND,
+      String const& edgeCondition = S::BACKGROUND
 );
 DIP_NODISCARD inline Image CountNeighbors(
       Image const& in,
       dip::uint connectivity = 0,
-      dip::String const& mode = S::FOREGROUND,
-      dip::String const& edgeCondition = S::BACKGROUND
+      String const& mode = S::FOREGROUND,
+      String const& edgeCondition = S::BACKGROUND
 ) {
    Image out;
    CountNeighbors( in, out, connectivity, mode, edgeCondition );
@@ -590,12 +590,12 @@ DIP_EXPORT void MajorityVote(
       Image const& in,
       Image& out,
       dip::uint connectivity = 0,
-      dip::String const& edgeCondition = S::BACKGROUND
+      String const& edgeCondition = S::BACKGROUND
 );
 DIP_NODISCARD inline Image MajorityVote(
       Image const& in,
       dip::uint connectivity = 0,
-      dip::String const& edgeCondition = S::BACKGROUND
+      String const& edgeCondition = S::BACKGROUND
 ) {
    Image out;
    MajorityVote( in, out, connectivity, edgeCondition );
@@ -607,7 +607,7 @@ inline void GetSinglePixels(
       Image const& in,
       Image& out,
       dip::uint connectivity = 0,
-      dip::String const& edgeCondition = S::BACKGROUND
+      String const& edgeCondition = S::BACKGROUND
 ) {
    Image nn = CountNeighbors( in, connectivity, S::FOREGROUND, edgeCondition );
    Equal( nn, 1, out );
@@ -615,7 +615,7 @@ inline void GetSinglePixels(
 DIP_NODISCARD inline Image GetSinglePixels(
       Image const& in,
       dip::uint connectivity = 0,
-      dip::String const& edgeCondition = S::BACKGROUND
+      String const& edgeCondition = S::BACKGROUND
 ) {
    Image out;
    GetSinglePixels( in, out, connectivity, edgeCondition );
@@ -627,7 +627,7 @@ inline void GetEndPixels(
       Image const& in,
       Image& out,
       dip::uint connectivity = 0,
-      dip::String const& edgeCondition = S::BACKGROUND
+      String const& edgeCondition = S::BACKGROUND
 ) {
    Image nn = CountNeighbors( in, connectivity, S::FOREGROUND, edgeCondition );
    Equal( nn, 2, out );
@@ -635,7 +635,7 @@ inline void GetEndPixels(
 DIP_NODISCARD inline Image GetEndPixels(
       Image const& in,
       dip::uint connectivity = 0,
-      dip::String const& edgeCondition = S::BACKGROUND
+      String const& edgeCondition = S::BACKGROUND
 ) {
    Image out;
    GetEndPixels( in, out, connectivity, edgeCondition );
@@ -647,7 +647,7 @@ inline void GetLinkPixels(
       Image const& in,
       Image& out,
       dip::uint connectivity = 0,
-      dip::String const& edgeCondition = S::BACKGROUND
+      String const& edgeCondition = S::BACKGROUND
 ) {
    Image nn = CountNeighbors( in, connectivity, S::FOREGROUND, edgeCondition );
    Equal( nn, 3, out );
@@ -655,7 +655,7 @@ inline void GetLinkPixels(
 DIP_NODISCARD inline Image GetLinkPixels(
       Image const& in,
       dip::uint connectivity = 0,
-      dip::String const& edgeCondition = S::BACKGROUND
+      String const& edgeCondition = S::BACKGROUND
 ) {
    Image out;
    GetLinkPixels( in, out, connectivity, edgeCondition );
@@ -667,7 +667,7 @@ inline void GetBranchPixels(
       Image const& in,
       Image& out,
       dip::uint connectivity = 0,
-      dip::String const& edgeCondition = S::BACKGROUND
+      String const& edgeCondition = S::BACKGROUND
 ) {
    Image nn = CountNeighbors( in, connectivity, S::FOREGROUND, edgeCondition );
    Greater( nn, 3, out );
@@ -675,7 +675,7 @@ inline void GetBranchPixels(
 DIP_NODISCARD inline Image GetBranchPixels(
       Image const& in,
       dip::uint connectivity = 0,
-      dip::String const& edgeCondition = S::BACKGROUND
+      String const& edgeCondition = S::BACKGROUND
 ) {
    Image out;
    GetBranchPixels( in, out, connectivity, edgeCondition );

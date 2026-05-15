@@ -205,13 +205,13 @@ dfloat ChainCode::BendingEnergy() const {
       be += diff[ ii ] * diff[ ii ] * delta_s[ ii ];
    }
    // Convert chain code into actual angle in radian
-   be *= dip::pi * dip::pi / 16.0;
+   be *= pi * pi / 16.0;
    return be;
 }
 
 BoundingBoxInteger ChainCode::BoundingBox() const {
    VertexInteger current = start;
-   dip::BoundingBoxInteger bb{ current };
+   BoundingBoxInteger bb{ current };
    if( is8connected ) {
       for( auto code : codes ) {
          current += code.Delta8();

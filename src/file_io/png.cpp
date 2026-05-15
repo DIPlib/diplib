@@ -378,16 +378,16 @@ void ImageWritePNG(
          PNG_THROW_WRITE_ERROR;
       }
       DIP_THROW_IF( row_buffer_size != image_size / n_rows, "Incongruent buffer size" );
-      std::vector< dip::uint8 > row_buffer( row_buffer_size, 0 );
+      std::vector< uint8 > row_buffer( row_buffer_size, 0 );
       int ret = 0;
-      dip::bin const* img_ptr = static_cast< dip::bin const* >( image_out.Origin() );
-      dip::IntegerArray const& strides = image_out.Strides();
+      bin const* img_ptr = static_cast< bin const* >( image_out.Origin() );
+      IntegerArray const& strides = image_out.Strides();
       for( dip::uint ii = 0; ii < n_rows; ++ii ) {
-         dip::bin const* line_ptr = img_ptr;
+         bin const* line_ptr = img_ptr;
          dip::uint jj = 0;
          for( ; jj < row_buffer_size - 1; ++jj ) {
-            dip::uint8 byte = 0;
-            dip::uint8 bitmask = 128;
+            uint8 byte = 0;
+            uint8 bitmask = 128;
             for( dip::uint kk = 0; kk < 8; ++kk, ++line_ptr ) {
                if( *line_ptr ) {
                   byte |= bitmask;
@@ -398,8 +398,8 @@ void ImageWritePNG(
          }
          {
             // Last, possibly incomplete byte
-            dip::uint8 byte = 0;
-            dip::uint8 bitmask = 128;
+            uint8 byte = 0;
+            uint8 bitmask = 128;
             for( dip::uint kk = 0; kk < pixels_in_last_byte; ++kk, ++line_ptr ) {
                if( *line_ptr ) {
                   byte |= bitmask;
@@ -519,7 +519,7 @@ void ImageWritePNG(
       buffer.assure_capacity( buf_len );
       DIP_ASSERT( buffer.capacity() >= buf_len );
       buffer.set_size( buf_len );
-      std::copy_n( static_cast< dip::uint8* >( buf_ptr ), buf_len, buffer.data() );
+      std::copy_n( static_cast< uint8* >( buf_ptr ), buf_len, buffer.data() );
       std::free( buf_ptr );
    } catch ( ... ) {
       std::free( buf_ptr );

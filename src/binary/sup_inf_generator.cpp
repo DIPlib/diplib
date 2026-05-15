@@ -122,7 +122,7 @@ Image RotateBy45Degrees( Image const& input ) {
    dip::sint stepX = output.Stride( 0 );
    dip::sint stepY = output.Stride( 1 );
    // Rotate by shells. Each shell (pixels with the same L_inf distance) rotates independently.
-   dip::sfloat* ptr = static_cast< dip::sfloat* >( output.Origin() );
+   sfloat* ptr = static_cast< sfloat* >( output.Origin() );
    for( dip::uint shell = 0; shell < len / 2; ++shell ) {
       dip::sint n = static_cast< dip::sint >( len / 2 - shell ); // number of pixels in half an edge
       dip::sint nStepX = n * stepX;
@@ -132,9 +132,9 @@ Image RotateBy45Degrees( Image const& input ) {
       for( dip::sint ii = 0; ii < n; ++ ii ) {
          dip::sint iX = ii * stepX;
          dip::sint iY = ii * stepY;
-         dip::sfloat* ptr1 = ptr + iX;
-         dip::sfloat* ptr2 = ptr + nStepY - iY;
-         dip::sfloat value = *ptr1;
+         sfloat* ptr1 = ptr + iX;
+         sfloat* ptr2 = ptr + nStepY - iY;
+         sfloat value = *ptr1;
          *ptr1 = *ptr2;
          ptr1 = ptr2; ptr2 += nStepY; *ptr1 = *ptr2;
          ptr1 = ptr2; ptr2 = ptr + nStepX - iX + nEndY; *ptr1 = *ptr2;

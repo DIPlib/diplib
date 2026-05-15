@@ -361,19 +361,19 @@ class ResampleAtLineFilter : public Framework::ScanLineFilter
          FloatArray subpos( dims );
          FloatArray limit( dims );
          for( dip::uint dd = 0; dd < dims; ++dd ) {
-            limit[ dd ] = static_cast< dip::dfloat >( in_.Size( dd )) - 1;
+            limit[ dd ] = static_cast< dfloat >( in_.Size( dd )) - 1;
          }
          TPI* inPtr = static_cast< TPI* >( in_.Origin() );
-         dip::dfloat* mapPtr = static_cast< dip::dfloat* >( map.buffer );
+         dfloat* mapPtr = static_cast< dfloat* >( map.buffer );
          TPI* outPtr = static_cast< TPI* >( out.buffer );
          for( dip::uint ii = 0; ii < params.bufferLength; ++ii, mapPtr += map.stride, outPtr += out.stride ) {
-            dip::dfloat* mptr = mapPtr;
+            dfloat* mptr = mapPtr;
             bool valid = true;
             for( dip::uint dd = 0; dd < dims; ++dd, mptr += map.tensorStride ) {
-               dip::dfloat pos = *mptr;
+               dfloat pos = *mptr;
                if( pos >= 0 && pos < limit[ dd ] ) {
                   coords[ dd ] = static_cast< dip::uint >( pos );
-                  subpos[ dd ] = pos - static_cast< dip::dfloat >( coords[ dd ] );
+                  subpos[ dd ] = pos - static_cast< dfloat >( coords[ dd ] );
                } else if( pos == limit[ dd ] ) {
                   coords[ dd ] = static_cast< dip::uint >( pos - 0.01 );
                   subpos[ dd ] = 1.0;

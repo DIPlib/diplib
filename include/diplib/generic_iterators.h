@@ -507,11 +507,11 @@ inline void swap( GenericImageIterator< T >& v1, GenericImageIterator< S >& v2 )
    v1.swap( v2 );
 }
 
-inline GenericImageIterator< dip::dfloat > Image::begin() {
-   return GenericImageIterator< dip::dfloat >( *this );
+inline GenericImageIterator< dfloat > Image::begin() {
+   return GenericImageIterator< dfloat >( *this );
 }
 
-inline GenericImageIterator< dip::dfloat > Image::end() {
+inline GenericImageIterator< dfloat > Image::end() {
    return {};
 }
 

@@ -648,7 +648,7 @@ void FourierTransform(
 }
 
 
-dip::uint OptimalFourierTransformSize( dip::uint size, dip::String const& which, dip::String const& purpose ) {
+dip::uint OptimalFourierTransformSize( dip::uint size, String const& which, String const& purpose ) {
    bool larger = BooleanFromString( which, S::LARGER, S::SMALLER );
    bool complex = BooleanFromString( purpose, S::COMPLEX, S::REAL );
    DIP_STACK_TRACE_THIS( size = GetOptimalDFTSize( size, larger, MaxFactor( complex )));

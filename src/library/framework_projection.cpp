@@ -186,7 +186,7 @@ void Projection(
    for( dip::sint& s : outStride ) {
       s *= psz;
    }
-   dip::uint8* outputPointer = static_cast< dip::uint8* >( output.Origin() );
+   uint8* outputPointer = static_cast< uint8* >( output.Origin() );
    bool useOutputBuffer = output.DataType() != outImageType;
 
    // Determine the number of threads we'll be using
@@ -231,7 +231,7 @@ void Projection(
       if( hasMask ) {
          localTempMask.ShiftOriginUnsafe( Image::Offset( startPosition, maskStride ));
       }
-      dip::uint8* localOutputPointer = outputPointer + Image::Offset( startPosition, outStride );
+      uint8* localOutputPointer = outputPointer + Image::Offset( startPosition, outStride );
 
       // Iterate over the pixels in the output image. For each, we create a view in the input image.
       for( dip::uint ii = 0; ii < nLoopPerThread; ++ii ) {

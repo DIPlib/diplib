@@ -38,9 +38,9 @@ namespace viewer {
 
 class DIPVIEWER_CLASS_EXPORT SliceView : public View {
    protected:
-      dip::Image projected_;       ///< Projected (2D) image.
-      dip::Image colored_;         ///< Colored (RGB) image.
-      dip::ColorSpaceManager csm_; ///< For \ref ViewingOptions::LookupTable::ColorSpace
+      Image projected_;       ///< Projected (2D) image.
+      Image colored_;         ///< Colored (RGB) image.
+      ColorSpaceManager csm_; ///< For \ref ViewingOptions::LookupTable::ColorSpace
 
       dip::uint dimx_, dimy_;      ///< Indices in options.dims_.
       unsigned int texture_ = 0;   ///< OpenGL texture identifier.
@@ -82,7 +82,7 @@ class DIPVIEWER_CLASS_EXPORT SliceViewer : public Viewer {
       ControlViewPort* control_;
       StatusViewPort* status_;
       LinkViewPort* link_;
-      dip::Image original_, image_;
+      Image original_, image_;
 
       ViewPort* drag_viewport_;
       int drag_button_;
@@ -98,7 +98,7 @@ class DIPVIEWER_CLASS_EXPORT SliceViewer : public Viewer {
       /// ```cpp
       /// manager.createWindow( dip::viewer::SliceViewer::Create( image ));
       /// ```
-      static Ptr Create( const dip::Image& image, std::string name = "SliceViewer", dip::uint width = 0, dip::uint height = 0 ) {
+      static Ptr Create( const Image& image, String name = "SliceViewer", dip::uint width = 0, dip::uint height = 0 ) {
          return Ptr( new SliceViewer( image, std::move( name ), width, height ));
       }
 
@@ -133,10 +133,10 @@ class DIPVIEWER_CLASS_EXPORT SliceViewer : public Viewer {
       }
 
       ViewingOptions& options() override { return options_; }
-      const dip::Image& image() override { return image_; }
-      const dip::Image& original() override { return original_; }
+      const Image& image() override { return image_; }
+      const Image& original() override { return original_; }
 
-      void setImage( const dip::Image& image ) override {
+      void setImage( const Image& image ) override {
          Guard guard( *this );
          original_ = image;
          refresh_seq_++;
@@ -154,7 +154,7 @@ class DIPVIEWER_CLASS_EXPORT SliceViewer : public Viewer {
       DIPVIEWER_EXPORT void link( SliceViewer& other );
 
    protected:
-      DIPVIEWER_EXPORT explicit SliceViewer( const dip::Image& image, std::string name = "SliceViewer", dip::uint width = 0, dip::uint height = 0 );
+      DIPVIEWER_EXPORT explicit SliceViewer( const Image& image, String name = "SliceViewer", dip::uint width = 0, dip::uint height = 0 );
 
       DIPVIEWER_EXPORT void create() override;
       DIPVIEWER_EXPORT void reshape( int width, int height ) override;

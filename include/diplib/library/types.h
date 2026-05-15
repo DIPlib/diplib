@@ -300,12 +300,12 @@ inline std::ostream& operator<<(
 }
 
 // if 8 bits is not a byte...
-static_assert( sizeof( dip::uint8 ) == 1, "8 bits is not a byte in your system!" );
+static_assert( sizeof( uint8 ) == 1, "8 bits is not a byte in your system!" );
 // Seriously, though. We rely on this property, and there is no guarantee
 // that a system actually has 8 bits in a byte. Maybe we should use char
 // (which is guaranteed to be size 1) for generic pointer arithmetic?
 
-static_assert( sizeof( dip::bin ) == 1, "The binary type is not a single byte!" );
+static_assert( sizeof( bin ) == 1, "The binary type is not a single byte!" );
 
 
 //
@@ -395,7 +395,7 @@ using IntegerArray = DimensionArray< dip::sint >;
 /// An array to hold dimensions, dimension lists, etc.
 using UnsignedArray = DimensionArray< dip::uint >;
 /// An array to hold filter parameters.
-using FloatArray = DimensionArray< dip::dfloat >;
+using FloatArray = DimensionArray< dfloat >;
 /// An array used as a dimension selector.
 using BooleanArray = DimensionArray< bool >;
 
@@ -909,7 +909,7 @@ class AlignedBuffer {
       void resize( dip::uint newsz ) {
          free_array();
          if( newsz > 0 ) {
-            data_ = static_cast< dip::uint8* >( std::malloc( newsz + align_ - 1 ));
+            data_ = static_cast< uint8* >( std::malloc( newsz + align_ - 1 ));
             if( data_ == nullptr ) {
                throw std::bad_alloc();
             }
@@ -929,15 +929,15 @@ class AlignedBuffer {
       /// Returns  the size of the buffer.
       dip::uint size() const noexcept { return size_; }
       /// Returns a pointer to the first byte of the buffer.
-      dip::uint8* data() noexcept { return data_ + offset_; };
+      uint8* data() noexcept { return data_ + offset_; };
       /// Returns a pointer to the first byte of the buffer.
-      dip::uint8 const* data() const noexcept { return data_ + offset_; };
+      uint8 const* data() const noexcept { return data_ + offset_; };
 
    private:
       constexpr static dip::uint align_ = 32; // Must be a power of two!
       dip::uint size_ = 0;
       dip::uint offset_ = 0;
-      dip::uint8* data_ = nullptr;
+      uint8* data_ = nullptr;
 
       void free_array() noexcept {
          if( data_ ) {

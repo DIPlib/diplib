@@ -129,8 +129,8 @@ Image CreateMatchedFilter( Image const& coords, dfloat phi, dfloat sigma, dfloat
 void MatchedFiltersLineDetector2D(
       Image const& in,
       Image& out,
-      dip::dfloat sigma,
-      dip::dfloat length,
+      dfloat sigma,
+      dfloat length,
       String const& polarity,
       StringArray const& boundaryCondition
 ) {
@@ -161,7 +161,7 @@ void MatchedFiltersLineDetector2D(
 void DanielssonLineDetector(
       Image const& in,
       Image& out,
-      dip::FloatArray const& sigmas,
+      FloatArray const& sigmas,
       String const& polarity,
       StringArray const& boundaryCondition
 ) {
@@ -272,7 +272,7 @@ void DanielssonLineDetector(
 namespace {
 
 ImageConstRefArray CreateImageConstRefArray( Image const& a, Image const& b, Image const& c, Image const& d ) {
-   dip::ImageConstRefArray out;
+   ImageConstRefArray out;
    out.reserve( 4 );
    out.emplace_back( a );
    out.emplace_back( b );

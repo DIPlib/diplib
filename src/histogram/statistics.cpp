@@ -233,7 +233,6 @@ std::vector< GaussianParameters > GaussianMixtureModel(
    // Scale data
    dfloat scale = in.BinSize();
    dfloat offset = in.LowerBound() + scale / 2; // bin[ii] = offset + ii * scale;
-   std::cout << "scale = " << scale << ", offset = " << offset << '\n';
    for( auto& p : params ) {
       p.position = p.position * scale + offset;
       p.sigma *= scale;

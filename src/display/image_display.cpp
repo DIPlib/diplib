@@ -411,7 +411,7 @@ void MapPixelValues(
 ) {
    // Input and output both always have 3 tensor elements
    for( dip::uint ii = 0; ii < 3; ++ii ) {
-      double value = usePhase
+      dfloat value = usePhase
                      ? std::arg( input[ ii ].As< dcomplex >() )
                      : input[ ii ].As< dfloat >();
       output[ ii ] = params.Scale( value );

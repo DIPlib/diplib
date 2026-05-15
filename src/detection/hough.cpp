@@ -293,7 +293,7 @@ Distribution PointDistanceDistribution(
       // Iterate over points
       dip::uint cid = 0;
       for( auto cit = points.begin(); cit != points.end(); ++cit, ++cid ) {
-         double dist = std::sqrt( norm_square( coord, *cit ));
+         dfloat dist = std::sqrt( norm_square( coord, *cit ));
 
          dip::sint bin = round_cast( dist - static_cast< dfloat >( range[ 0 ] ));
          if( bin >= 0 && bin < static_cast< dip::sint >( steps )) {

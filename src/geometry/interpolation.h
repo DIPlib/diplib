@@ -435,7 +435,7 @@ void Fourier(
    dip::uint inSize = ft.TransformSize();
    dip::uint outSize = ift.TransformSize();
    constexpr bool realData = std::is_same< TPI, TPR >::value; // In this case, we only get inSize / 2 + 1 elements
-   TPR invScale = static_cast< TPR >( 1.0 / static_cast< dip::dfloat >( inSize ));
+   TPR invScale = static_cast< TPR >( 1.0 / static_cast< dfloat >( inSize ));
    // FT of input
    ft.Apply( const_cast< TPI* >( input ), reinterpret_cast< TPI* >( intermediate ), 1.0 );
    // Shift

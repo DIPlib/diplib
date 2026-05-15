@@ -256,7 +256,7 @@ void EdgeObjectsRemove( Image const& in, Image& out, dip::uint connectivity ) {
    } else if( in.DataType().IsUInt() ) {
       DIP_START_STACK_TRACE
          auto edgeObjects = ListObjectLabels( in, {}, S::EXCLUDE, "edges" );
-         dip::LabelMap map; // Note that labels not in the map will be preserved, we only need to insert the zero mappings.
+         LabelMap map; // Note that labels not in the map will be preserved, we only need to insert the zero mappings.
          for( auto obj : edgeObjects ) {
             map[ obj ] = 0;
          }
@@ -428,10 +428,10 @@ ObjectConvexHulls GetObjectConvexHulls( ObjectContours const& objectContours ) {
       Polygon polygon;
       polygon.vertices.reserve( obj_it.value().size() * 2 );
       for( auto it = obj_it.value().begin(); it != obj_it.value().end(); ++it ) {
-         polygon.vertices.emplace_back( static_cast< dip::sfloat >( it->second.max ) + 0.1,  static_cast< dip::sfloat >( it->first ));
+         polygon.vertices.emplace_back( static_cast< sfloat >( it->second.max ) + 0.1,  static_cast< sfloat >( it->first ));
       }
       for( auto it = obj_it.value().rbegin(); it != obj_it.value().rend(); ++it ) {
-         polygon.vertices.emplace_back( static_cast< dip::sfloat >( it->second.min ) - 0.1,  static_cast< dip::sfloat >( it->first ));
+         polygon.vertices.emplace_back( static_cast< sfloat >( it->second.min ) - 0.1,  static_cast< sfloat >( it->first ));
       }
       out[ obj_it.key() ] = std::move( polygon.ConvexHull().Polygon() );
    }
@@ -492,7 +492,7 @@ void MakeRegionsConvex2D(
    DIP_THROW_IF( !label.DataType().IsUnsigned(), E::DATA_TYPE_NOT_SUPPORTED );
    bool filled = BooleanFromString( mode, S::FILLED, S::HOLLOW );
    out.Copy( label );
-   dip::Image tmp = out.QuickCopy();
+   Image tmp = out.QuickCopy();
    if( tmp.DataType().IsBinary() ) {
       tmp.Convert( DT_UINT8 ); // This doesn't change the data, which is shared with the output.
    }
