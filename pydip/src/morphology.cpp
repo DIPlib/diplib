@@ -356,29 +356,29 @@ void init_morphology( py::module& m ) {
           "in"_a, py::kw_only(), "out"_a, "endPixelCondition"_a = dip::S::NATURAL, "edgeCondition"_a = dip::S::BACKGROUND, doc_strings::dip·EuclideanSkeleton·Image·CL·Image·L·String·CL·String·CL );
 
    m.def( "CountNeighbors", py::overload_cast< dip::Image const&, dip::uint, dip::String const&, dip::String const& >( &dip::CountNeighbors ),
-          "in"_a, "connectivity"_a = 0, "mode"_a = dip::S::FOREGROUND, "edgeCondition"_a = dip::S::BACKGROUND, doc_strings::dip·CountNeighbors·Image·CL·Image·L·dip·uint··dip·String·CL·dip·String·CL );
+          "in"_a, "connectivity"_a = 0, "mode"_a = dip::S::FOREGROUND, "edgeCondition"_a = dip::S::BACKGROUND, doc_strings::dip·CountNeighbors·Image·CL·Image·L·dip·uint··String·CL·String·CL );
    m.def( "CountNeighbors", py::overload_cast< dip::Image const&, dip::Image&, dip::uint, dip::String const&, dip::String const& >( &dip::CountNeighbors ),
-          "in"_a, py::kw_only(), "out"_a, "connectivity"_a = 0, "mode"_a = dip::S::FOREGROUND, "edgeCondition"_a = dip::S::BACKGROUND, doc_strings::dip·CountNeighbors·Image·CL·Image·L·dip·uint··dip·String·CL·dip·String·CL );
+          "in"_a, py::kw_only(), "out"_a, "connectivity"_a = 0, "mode"_a = dip::S::FOREGROUND, "edgeCondition"_a = dip::S::BACKGROUND, doc_strings::dip·CountNeighbors·Image·CL·Image·L·dip·uint··String·CL·String·CL );
    m.def( "MajorityVote", py::overload_cast< dip::Image const&, dip::uint, dip::String const& >( &dip::MajorityVote ),
-          "in"_a, "connectivity"_a = 0, "edgeCondition"_a = dip::S::BACKGROUND, doc_strings::dip·MajorityVote·Image·CL·Image·L·dip·uint··dip·String·CL );
+          "in"_a, "connectivity"_a = 0, "edgeCondition"_a = dip::S::BACKGROUND, doc_strings::dip·MajorityVote·Image·CL·Image·L·dip·uint··String·CL );
    m.def( "MajorityVote", py::overload_cast< dip::Image const&, dip::Image&, dip::uint, dip::String const& >( &dip::MajorityVote ),
-          "in"_a, py::kw_only(), "out"_a, "connectivity"_a = 0, "edgeCondition"_a = dip::S::BACKGROUND, doc_strings::dip·MajorityVote·Image·CL·Image·L·dip·uint··dip·String·CL );
+          "in"_a, py::kw_only(), "out"_a, "connectivity"_a = 0, "edgeCondition"_a = dip::S::BACKGROUND, doc_strings::dip·MajorityVote·Image·CL·Image·L·dip·uint··String·CL );
    m.def( "GetSinglePixels", py::overload_cast< dip::Image const&, dip::uint, dip::String const& >( &dip::GetSinglePixels ),
-          "in"_a, "connectivity"_a = 0, "edgeCondition"_a = dip::S::BACKGROUND, doc_strings::dip·GetSinglePixels·Image·CL·Image·L·dip·uint··dip·String·CL );
+          "in"_a, "connectivity"_a = 0, "edgeCondition"_a = dip::S::BACKGROUND, doc_strings::dip·GetSinglePixels·Image·CL·Image·L·dip·uint··String·CL );
    m.def( "GetSinglePixels", py::overload_cast< dip::Image const&, dip::Image&, dip::uint, dip::String const& >( &dip::GetSinglePixels ),
-          "in"_a, py::kw_only(), "out"_a, "connectivity"_a = 0, "edgeCondition"_a = dip::S::BACKGROUND, doc_strings::dip·GetSinglePixels·Image·CL·Image·L·dip·uint··dip·String·CL );
+          "in"_a, py::kw_only(), "out"_a, "connectivity"_a = 0, "edgeCondition"_a = dip::S::BACKGROUND, doc_strings::dip·GetSinglePixels·Image·CL·Image·L·dip·uint··String·CL );
    m.def( "GetEndPixels", py::overload_cast< dip::Image const&, dip::uint, dip::String const& >( &dip::GetEndPixels ),
-          "in"_a, "connectivity"_a = 0, "edgeCondition"_a = dip::S::BACKGROUND, doc_strings::dip·GetEndPixels·Image·CL·Image·L·dip·uint··dip·String·CL );
+          "in"_a, "connectivity"_a = 0, "edgeCondition"_a = dip::S::BACKGROUND, doc_strings::dip·GetEndPixels·Image·CL·Image·L·dip·uint··String·CL );
    m.def( "GetEndPixels", py::overload_cast< dip::Image const&, dip::Image&, dip::uint, dip::String const& >( &dip::GetEndPixels ),
-          "in"_a, py::kw_only(), "out"_a, "connectivity"_a = 0, "edgeCondition"_a = dip::S::BACKGROUND, doc_strings::dip·GetEndPixels·Image·CL·Image·L·dip·uint··dip·String·CL );
+          "in"_a, py::kw_only(), "out"_a, "connectivity"_a = 0, "edgeCondition"_a = dip::S::BACKGROUND, doc_strings::dip·GetEndPixels·Image·CL·Image·L·dip·uint··String·CL );
    m.def( "GetLinkPixels", py::overload_cast< dip::Image const&, dip::uint, dip::String const& >( &dip::GetLinkPixels ),
-          "in"_a, "connectivity"_a = 0, "edgeCondition"_a = dip::S::BACKGROUND, doc_strings::dip·GetLinkPixels·Image·CL·Image·L·dip·uint··dip·String·CL );
+          "in"_a, "connectivity"_a = 0, "edgeCondition"_a = dip::S::BACKGROUND, doc_strings::dip·GetLinkPixels·Image·CL·Image·L·dip·uint··String·CL );
    m.def( "GetLinkPixels", py::overload_cast< dip::Image const&, dip::Image&, dip::uint, dip::String const& >( &dip::GetLinkPixels ),
-          "in"_a, py::kw_only(), "out"_a, "connectivity"_a = 0, "edgeCondition"_a = dip::S::BACKGROUND, doc_strings::dip·GetLinkPixels·Image·CL·Image·L·dip·uint··dip·String·CL );
+          "in"_a, py::kw_only(), "out"_a, "connectivity"_a = 0, "edgeCondition"_a = dip::S::BACKGROUND, doc_strings::dip·GetLinkPixels·Image·CL·Image·L·dip·uint··String·CL );
    m.def( "GetBranchPixels", py::overload_cast< dip::Image const&, dip::uint, dip::String const& >( &dip::GetBranchPixels ),
-          "in"_a, "connectivity"_a = 0, "edgeCondition"_a = dip::S::BACKGROUND, doc_strings::dip·GetBranchPixels·Image·CL·Image·L·dip·uint··dip·String·CL );
+          "in"_a, "connectivity"_a = 0, "edgeCondition"_a = dip::S::BACKGROUND, doc_strings::dip·GetBranchPixels·Image·CL·Image·L·dip·uint··String·CL );
    m.def( "GetBranchPixels", py::overload_cast< dip::Image const&, dip::Image&, dip::uint, dip::String const& >( &dip::GetBranchPixels ),
-          "in"_a, py::kw_only(), "out"_a, "connectivity"_a = 0, "edgeCondition"_a = dip::S::BACKGROUND, doc_strings::dip·GetBranchPixels·Image·CL·Image·L·dip·uint··dip·String·CL );
+          "in"_a, py::kw_only(), "out"_a, "connectivity"_a = 0, "edgeCondition"_a = dip::S::BACKGROUND, doc_strings::dip·GetBranchPixels·Image·CL·Image·L·dip·uint··String·CL );
 
    auto intv = py::class_< dip::Interval >( m, "Interval", doc_strings::dip·Interval );
    intv.def( py::init< dip::Image >(), "image"_a, doc_strings::dip·Interval·Interval·dip·Image· );

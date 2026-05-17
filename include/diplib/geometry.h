@@ -872,7 +872,7 @@ DIP_NODISCARD inline Image Tile(
 /// horizontal dimension, and size `in.Size(1) * in.TensorRows()` along the vertical dimension. The output
 /// image has the same dimensions as `in` along the third and further dimensions.
 ///
-/// \see dip::Tile, dip::Dice.
+/// \see dip::Tile, dip::Dice
 DIP_EXPORT void TileTensorElements(
       Image const& in,
       Image& out
@@ -894,7 +894,7 @@ DIP_NODISCARD inline Image TileTensorElements(
 /// match, the output image will be a default column vector. If images are differing data types, the output will
 /// be of a type that best can represent the input (see \ref dip::DataType::SuggestDyadicOperation).
 ///
-/// \see dip::Tile, dip::Dice.
+/// \see dip::Tile, dip::Dice
 inline void Concatenate(
       ImageConstRefArray const& in,
       Image& out,

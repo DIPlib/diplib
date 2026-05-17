@@ -171,7 +171,7 @@ void init_analysis( py::module& m ) {
           "in"_a, "options"_a = dip::StringSet{}, "process"_a = dip::BooleanArray{}, doc_strings::dip·InverseFourierTransform·Image·CL·Image·L·StringSet··BooleanArray· );
    m.def( "InverseFourierTransform", py::overload_cast< dip::Image const&, dip::Image&, dip::StringSet, dip::BooleanArray >( &dip::InverseFourierTransform ),
           "in"_a, py::kw_only(), "out"_a, "options"_a = dip::StringSet{}, "process"_a = dip::BooleanArray{}, doc_strings::dip·InverseFourierTransform·Image·CL·Image·L·StringSet··BooleanArray· );
-   m.def( "OptimalFourierTransformSize", &dip::OptimalFourierTransformSize, "size"_a, "which"_a = dip::S::LARGER, "purpose"_a = dip::S::REAL, doc_strings::dip·OptimalFourierTransformSize·dip·uint··dip·String·CL·dip·String·CL );
+   m.def( "OptimalFourierTransformSize", &dip::OptimalFourierTransformSize, "size"_a, "which"_a = dip::S::LARGER, "purpose"_a = dip::S::REAL, doc_strings::dip·OptimalFourierTransformSize·dip·uint··String·CL·String·CL );
    m.def( "RieszTransform", py::overload_cast< dip::Image const&, dip::String const&, dip::String const&, dip::BooleanArray >( &dip::RieszTransform ),
           "in"_a, "inRepresentation"_a = dip::S::SPATIAL, "outRepresentation"_a = dip::S::SPATIAL, "process"_a = dip::BooleanArray{}, doc_strings::dip·RieszTransform·Image·CL·Image·L·String·CL·String·CL·BooleanArray· );
    m.def( "RieszTransform", py::overload_cast< dip::Image const&, dip::Image&, dip::String const&, dip::String const&, dip::BooleanArray >( &dip::RieszTransform ),
@@ -250,13 +250,13 @@ void init_analysis( py::module& m ) {
    m.def( "FrangiVesselness", py::overload_cast< dip::Image const&, dip::Image&, dip::FloatArray const&, dip::FloatArray, dip::String const&, dip::StringArray const& >( &dip::FrangiVesselness ),
           "in"_a, py::kw_only(), "out"_a, "sigmas"_a = dip::FloatArray{ 2.0 }, "parameters"_a = dip::FloatArray{}, "polarity"_a = dip::S::WHITE, "boundaryCondition"_a = dip::StringArray{}, doc_strings::dip·FrangiVesselness·Image·CL·Image·L·FloatArray·CL·FloatArray··String·CL·StringArray·CL );
    m.def( "MatchedFiltersLineDetector2D", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::String const&, dip::StringArray const& >( &dip::MatchedFiltersLineDetector2D ),
-          "in"_a, "sigma"_a = 2.0, "length"_a = 10.0, "polarity"_a = dip::S::WHITE, "boundaryCondition"_a = dip::StringArray{}, doc_strings::dip·MatchedFiltersLineDetector2D·Image·CL·Image·L·dip·dfloat··dip·dfloat··String·CL·StringArray·CL );
+          "in"_a, "sigma"_a = 2.0, "length"_a = 10.0, "polarity"_a = dip::S::WHITE, "boundaryCondition"_a = dip::StringArray{}, doc_strings::dip·MatchedFiltersLineDetector2D·Image·CL·Image·L·dfloat··dfloat··String·CL·StringArray·CL );
    m.def( "MatchedFiltersLineDetector2D", py::overload_cast< dip::Image const&, dip::Image&, dip::dfloat, dip::dfloat, dip::String const&, dip::StringArray const& >( &dip::MatchedFiltersLineDetector2D ),
-          "in"_a, py::kw_only(), "out"_a, "sigma"_a = 2.0, "length"_a = 10.0, "polarity"_a = dip::S::WHITE, "boundaryCondition"_a = dip::StringArray{}, doc_strings::dip·MatchedFiltersLineDetector2D·Image·CL·Image·L·dip·dfloat··dip·dfloat··String·CL·StringArray·CL );
+          "in"_a, py::kw_only(), "out"_a, "sigma"_a = 2.0, "length"_a = 10.0, "polarity"_a = dip::S::WHITE, "boundaryCondition"_a = dip::StringArray{}, doc_strings::dip·MatchedFiltersLineDetector2D·Image·CL·Image·L·dfloat··dfloat··String·CL·StringArray·CL );
    m.def( "DanielssonLineDetector", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::String const&, dip::StringArray const& >( &dip::DanielssonLineDetector ),
-          "in"_a, "sigmas"_a = dip::FloatArray{ 2.0 }, "polarity"_a = dip::S::WHITE, "boundaryCondition"_a = dip::StringArray{}, doc_strings::dip·DanielssonLineDetector·Image·CL·Image·L·dip·FloatArray·CL·String·CL·StringArray·CL );
+          "in"_a, "sigmas"_a = dip::FloatArray{ 2.0 }, "polarity"_a = dip::S::WHITE, "boundaryCondition"_a = dip::StringArray{}, doc_strings::dip·DanielssonLineDetector·Image·CL·Image·L·FloatArray·CL·String·CL·StringArray·CL );
    m.def( "DanielssonLineDetector", py::overload_cast< dip::Image const&, dip::Image&, dip::FloatArray const&, dip::String const&, dip::StringArray const& >( &dip::DanielssonLineDetector ),
-          "in"_a, py::kw_only(), "out"_a, "sigmas"_a = dip::FloatArray{ 2.0 }, "polarity"_a = dip::S::WHITE, "boundaryCondition"_a = dip::StringArray{}, doc_strings::dip·DanielssonLineDetector·Image·CL·Image·L·dip·FloatArray·CL·String·CL·StringArray·CL );
+          "in"_a, py::kw_only(), "out"_a, "sigmas"_a = dip::FloatArray{ 2.0 }, "polarity"_a = dip::S::WHITE, "boundaryCondition"_a = dip::StringArray{}, doc_strings::dip·DanielssonLineDetector·Image·CL·Image·L·FloatArray·CL·String·CL·StringArray·CL );
    m.def( "RORPOLineDetector", py::overload_cast< dip::Image const&, dip::uint, dip::String const& >( &dip::RORPOLineDetector ),
           "in"_a, "length"_a = 15, "polarity"_a = dip::S::WHITE, doc_strings::dip·RORPOLineDetector·Image·CL·Image·L·dip·uint··String·CL );
    m.def( "RORPOLineDetector", py::overload_cast< dip::Image const&, dip::Image&, dip::uint, dip::String const& >( &dip::RORPOLineDetector ),

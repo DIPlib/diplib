@@ -498,7 +498,7 @@ void init_image( py::module& m ) {
    img.def( "ForceContiguousData", &dip::Image::ForceContiguousData, doc_strings::dip·Image·ForceContiguousData );
    img.def( "Separate", &dip::Image::Separate, doc_strings::dip·Image·Separate );
    img.def( "Fill", py::overload_cast< dip::Image::Pixel const& >( &dip::Image::Fill ), "pixel"_a, doc_strings::dip·Image·Fill·Pixel·CL );
-   img.def( "Mask", &dip::Image::Mask, "mask"_a, doc_strings::dip·Image·Mask·dip·Image·CL );
+   img.def( "Mask", &dip::Image::Mask, "mask"_a, doc_strings::dip·Image·Mask·Image·CL );
 
    // Indexing into single pixel using coordinates
    img.def( "__getitem__", []( dip::Image const& self, dip::uint index ) -> dip::Image::Pixel { return self.At( index ); }, doc_strings::dip·Image·At·dip·uint··C );

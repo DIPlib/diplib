@@ -149,8 +149,8 @@ PYBIND11_MODULE( PyDIP_bin, m ) {
    units.def( py::init< dip::String const& >(), "string"_a, doc_strings::dip·Units·Units·dip·String·CL );
    units.def( "__repr__", &dip::Units::StringUnicode );
    units.def( "__bool__", &dip::Units::operator bool );
-   units.def( dip::dfloat() * py::self, doc_strings::dip·operatortimes·dip·dfloat··Units·CL );
-   units.def( py::self * dip::dfloat(), doc_strings::dip·operatortimes·Units·CL·dip·dfloat· );
+   units.def( dip::dfloat() * py::self, doc_strings::dip·operatortimes·dfloat··Units·CL );
+   units.def( py::self * dip::dfloat(), doc_strings::dip·operatortimes·Units·CL·dfloat· );
    units.def( "HasSameDimensions", &dip::Units::HasSameDimensions, doc_strings::dip·Units·HasSameDimensions·Units·CL·C );
    units.def( "IsDimensionless", &dip::Units::IsDimensionless, doc_strings::dip·Units·IsDimensionless·C );
    units.def( "IsPhysical", &dip::Units::IsPhysical, doc_strings::dip·Units·IsPhysical·C );
@@ -160,7 +160,7 @@ PYBIND11_MODULE( PyDIP_bin, m ) {
 
    auto physQ = py::class_< dip::PhysicalQuantity >( m, "PhysicalQuantity", "Encapsulates a quantity with physical units. Can be shorted to PQ." );
    physQ.def( py::init<>(), doc_strings::dip·PhysicalQuantity·PhysicalQuantity );
-   physQ.def( py::init< dip::dfloat, dip::Units >(), "magnitude"_a, "units"_a = dip::Units{}, doc_strings::dip·PhysicalQuantity·PhysicalQuantity·dip·dfloat··Units·CL );
+   physQ.def( py::init< dip::dfloat, dip::Units >(), "magnitude"_a, "units"_a = dip::Units{}, doc_strings::dip·PhysicalQuantity·PhysicalQuantity·dfloat··Units·CL );
    physQ.def( py::init< dip::Units >(), "units"_a, doc_strings::dip·PhysicalQuantity·PhysicalQuantity·Units·CL );
    physQ.def( "__repr__", []( dip::PhysicalQuantity const& self ) {
       std::ostringstream os;
@@ -179,16 +179,16 @@ PYBIND11_MODULE( PyDIP_bin, m ) {
    physQ.def( py::self -= py::self, doc_strings::dip·PhysicalQuantity·operatorminuseq·PhysicalQuantity· );
    physQ.def( py::self - py::self, doc_strings::dip·operatorminus·PhysicalQuantity··PhysicalQuantity·CL ); // NOLINT(*-redundant-expression)
    physQ.def( py::self *= py::self, doc_strings::dip·PhysicalQuantity·operatortimeseq·PhysicalQuantity·CL );
-   physQ.def( py::self *= dip::dfloat(), doc_strings::dip·PhysicalQuantity·operatortimeseq·dip·dfloat· );
+   physQ.def( py::self *= dip::dfloat(), doc_strings::dip·PhysicalQuantity·operatortimeseq·dfloat· );
    physQ.def( py::self * py::self, doc_strings::dip·operatortimes·PhysicalQuantity··PhysicalQuantity·CL );
-   physQ.def( py::self * dip::dfloat(), doc_strings::dip·operatortimes·PhysicalQuantity··dip·dfloat· );
-   physQ.def( dip::dfloat() * py::self, doc_strings::dip·operatortimes·dip·dfloat··PhysicalQuantity· );
+   physQ.def( py::self * dip::dfloat(), doc_strings::dip·operatortimes·PhysicalQuantity··dfloat· );
+   physQ.def( dip::dfloat() * py::self, doc_strings::dip·operatortimes·dfloat··PhysicalQuantity· );
    physQ.def( py::self /= py::self, doc_strings::dip·PhysicalQuantity·operatordiveq·PhysicalQuantity·CL );
-   physQ.def( py::self /= dip::dfloat(), doc_strings::dip·PhysicalQuantity·operatordiveq·dip·dfloat· );
+   physQ.def( py::self /= dip::dfloat(), doc_strings::dip·PhysicalQuantity·operatordiveq·dfloat· );
    physQ.def( py::self / py::self, doc_strings::dip·operatordiv·PhysicalQuantity··PhysicalQuantity·CL ); // NOLINT(*-redundant-expression)
-   physQ.def( py::self / dip::dfloat(), doc_strings::dip·operatordiv·PhysicalQuantity··dip·dfloat· );
-   physQ.def( dip::dfloat() / py::self, doc_strings::dip·operatordiv·dip·dfloat··PhysicalQuantity· );
-   physQ.def( "__pow__", []( dip::PhysicalQuantity a, dip::sint8 p ) { return a.Power( p ); }, py::is_operator(), doc_strings::dip·PhysicalQuantity·Power·dip·sint8··C );
+   physQ.def( py::self / dip::dfloat(), doc_strings::dip·operatordiv·PhysicalQuantity··dfloat· );
+   physQ.def( dip::dfloat() / py::self, doc_strings::dip·operatordiv·dfloat··PhysicalQuantity· );
+   physQ.def( "__pow__", []( dip::PhysicalQuantity a, dip::sint8 p ) { return a.Power( p ); }, py::is_operator(), doc_strings::dip·PhysicalQuantity·Power·sint8··C );
    physQ.def( py::self == py::self, doc_strings::dip·PhysicalQuantity·operatoreqeq·PhysicalQuantity·CL·C ); // NOLINT(*-redundant-expression)
    physQ.def( py::self != py::self, doc_strings::dip·PhysicalQuantity·operatornoteq·PhysicalQuantity·CL·C ); // NOLINT(*-redundant-expression)
    physQ.def( -py::self, doc_strings::dip·PhysicalQuantity·operatorminus·C );
@@ -233,8 +233,8 @@ PYBIND11_MODULE( PyDIP_bin, m ) {
    pixSz.def( "__setitem__", py::overload_cast< dip::uint, dip::PhysicalQuantity >( &dip::PixelSize::Set ));
    pixSz.def( py::self == py::self, doc_strings::dip·PixelSize·operatoreqeq·PixelSize·CL·C ); // NOLINT(*-redundant-expression)
    pixSz.def( py::self != py::self, doc_strings::dip·PixelSize·operatornoteq·PixelSize·CL·C ); // NOLINT(*-redundant-expression)
-   pixSz.def( "Scale", py::overload_cast< dip::uint, dip::dfloat >( &dip::PixelSize::Scale ), "d"_a, "s"_a, doc_strings::dip·PixelSize·Scale·dip·uint··dip·dfloat· );
-   pixSz.def( "Scale", py::overload_cast< dip::dfloat >( &dip::PixelSize::Scale ), "s"_a, doc_strings::dip·PixelSize·Scale·dip·dfloat· );
+   pixSz.def( "Scale", py::overload_cast< dip::uint, dip::dfloat >( &dip::PixelSize::Scale ), "d"_a, "s"_a, doc_strings::dip·PixelSize·Scale·dip·uint··dfloat· );
+   pixSz.def( "Scale", py::overload_cast< dip::dfloat >( &dip::PixelSize::Scale ), "s"_a, doc_strings::dip·PixelSize·Scale·dfloat· );
    pixSz.def( "Scale", py::overload_cast< dip::FloatArray const& >( &dip::PixelSize::Scale ), "s"_a, doc_strings::dip·PixelSize·Scale·FloatArray·CL );
    pixSz.def( "Invert", py::overload_cast< dip::uint >( &dip::PixelSize::Invert ), "d"_a, doc_strings::dip·PixelSize·Invert·dip·uint· );
    pixSz.def( "Invert", py::overload_cast<>( &dip::PixelSize::Invert ), doc_strings::dip·PixelSize·Invert);
@@ -246,7 +246,7 @@ PYBIND11_MODULE( PyDIP_bin, m ) {
    pixSz.def( "UnitLength", &dip::PixelSize::UnitLength, doc_strings::dip·PixelSize·UnitLength·C );
    pixSz.def( "UnitSize", &dip::PixelSize::UnitSize, "d"_a, doc_strings::dip·PixelSize·UnitSize·dip·uint··C );
    pixSz.def( "ForcePhysical", &dip::PixelSize::ForcePhysical, doc_strings::dip·PixelSize·ForcePhysical );
-   pixSz.def( "ApproximatelyEquals", &dip::PixelSize::ApproximatelyEquals, "rhs"_a, "nDims"_a, "tolerance"_a = 1e-6, doc_strings::dip·PixelSize·ApproximatelyEquals·PixelSize·CL·dip·uint··double··C );
+   pixSz.def( "ApproximatelyEquals", &dip::PixelSize::ApproximatelyEquals, "rhs"_a, "nDims"_a, "tolerance"_a = 1e-6, doc_strings::dip·PixelSize·ApproximatelyEquals·PixelSize·CL·dip·uint··dfloat··C );
    pixSz.def( "ToPixels", &dip::PixelSize::ToPixels, "in"_a, doc_strings::dip·PixelSize·ToPixels·PhysicalQuantityArray·CL·C );
    pixSz.def( "ToPhysical", &dip::PixelSize::ToPhysical, "in"_a, doc_strings::dip·PixelSize·ToPhysical·FloatArray·CL·C );
    py::implicitly_convertible< dip::PhysicalQuantity, dip::PixelSize >();
