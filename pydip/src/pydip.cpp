@@ -277,7 +277,7 @@ PYBIND11_MODULE( PyDIP_bin, m ) {
       ++self;
       return retval;
    } );
-   isi.def( "__repr__", []( dip::ImageSliceIterator& self ) { return "<ImageSliceIterator>"; } );
+   isi.def( "__repr__", []( dip::ImageSliceIterator& ) { return "<ImageSliceIterator>"; } );
    isi.def( "Image", []( dip::ImageSliceIterator& self ) { return *self; }, "Returns the slice that the iterator is currently pointing at" );
    isi.def( "IsAtEnd", &dip::ImageSliceIterator::IsAtEnd, doc_strings::dip·ImageSliceIterator·IsAtEnd·C );
    isi.def( "Coordinate", &dip::ImageSliceIterator::Coordinate, doc_strings::dip·ImageSliceIterator·Coordinate·C );
@@ -305,7 +305,7 @@ PYBIND11_MODULE( PyDIP_bin, m ) {
       ++self;
       return retval;
    } );
-   bli.def( "__repr__", []( dip::BresenhamLineIterator& self ) { return "<BresenhamLineIterator>"; } );
+   bli.def( "__repr__", []( dip::BresenhamLineIterator& ) { return "<BresenhamLineIterator>"; } );
    bli.def( "IsAtEnd", &dip::BresenhamLineIterator::IsAtEnd, doc_strings::dip·BresenhamLineIterator·IsAtEnd·C );
    bli.def( "Coordinates", &dip::BresenhamLineIterator::Coordinates, doc_strings::dip·BresenhamLineIterator·Coordinates·C );
    bli.def( "Length", &dip::BresenhamLineIterator::Length, doc_strings::dip·BresenhamLineIterator·Length·C );

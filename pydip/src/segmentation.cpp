@@ -113,9 +113,9 @@ void init_segmentation( py::module& m ) {
           "Like the C++ function, but with individual input values rather than a single\n"
           "`dip::PerObjectEllipsoidFitParameters` object collecting all algorithm parameters." );
    m.def( "Canny", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::dfloat, dip::dfloat, dip::String const&, dip::StringArray const& >( &dip::Canny ),
-          "in"_a, "sigmas"_a = dip::FloatArray{ 1 }, "lower"_a = 0.5, "upper"_a = 0.9, "selection"_a = dip::S::ALL, "boundaryCondition"_a = dip::StringArray{}, doc_strings::dip·Canny·Image·CL·Image·L·FloatArray·CL·dfloat··dfloat··String·CL );
+          "in"_a, "sigmas"_a = dip::FloatArray{ 1 }, "lower"_a = 0.5, "upper"_a = 0.9, "selection"_a = dip::S::ALL, "boundaryCondition"_a = dip::StringArray{}, doc_strings::dip·Canny·Image·CL·Image·L·FloatArray·CL·dfloat··dfloat··String·CL·StringArray·CL );
    m.def( "Canny", py::overload_cast< dip::Image const&, dip::Image&, dip::FloatArray const&, dip::dfloat, dip::dfloat, dip::String const&, dip::StringArray const& >( &dip::Canny ),
-          "in"_a, py::kw_only(), "out"_a, "sigmas"_a = dip::FloatArray{ 1 }, "lower"_a = 0.5, "upper"_a = 0.9, "selection"_a = dip::S::ALL, "boundaryCondition"_a = dip::StringArray{}, doc_strings::dip·Canny·Image·CL·Image·L·FloatArray·CL·dfloat··dfloat··String·CL );
+          "in"_a, py::kw_only(), "out"_a, "sigmas"_a = dip::FloatArray{ 1 }, "lower"_a = 0.5, "upper"_a = 0.9, "selection"_a = dip::S::ALL, "boundaryCondition"_a = dip::StringArray{}, doc_strings::dip·Canny·Image·CL·Image·L·FloatArray·CL·dfloat··dfloat··String·CL·StringArray·CL );
    m.def( "Superpixels", []( dip::Image const& in, dip::dfloat density, dip::dfloat compactness, dip::String const& method, dip::StringSet const& flags ) {
              return dip::Superpixels( in, RandomNumberGenerator(), density, compactness, method, flags );
           },
