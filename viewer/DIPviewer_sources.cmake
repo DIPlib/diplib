@@ -29,4 +29,5 @@ src/manager/proxy.cpp
 src/slice.cpp
 src/status.cpp
 src/tensor.cpp
+src/viewer.cpp
 )

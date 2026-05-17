@@ -1,5 +1,6 @@
 /*
  * (c)2017, Wouter Caarls
+ * (c)2024-2026, Cris Luengo
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +19,11 @@
 #define DIP_VIEWER_H
 
 #include <algorithm>
+#include <array>
 #include <cmath>
-#include <limits>
 #include <mutex>
 #include <ostream>
 #include <sstream>
-#include <string>
 #include <utility>
 #include <vector>
 
@@ -47,17 +47,48 @@ using FloatRangeArray = std::vector< FloatRange >;
 
 /// \brief Model that determines the \ref SliceViewer's behavior
 struct DIPVIEWER_NO_EXPORT ViewingOptions {
+
+   //
+   // NOTE!!!
+   // These first four enums must match 1:1 with the corresponding string arrays in
+   // viewer/src/viewer.cpp and in include/diplib/viewer/control.h
+   //
+
    /// \brief Complex-to-real mapping options
    enum class ComplexToReal : uint8 { Real, Imaginary, Magnitude, Phase };
+   /// \brief Translate a string to an enum for the complex-to-real mapping options
+   DIPVIEWER_EXPORT static ComplexToReal TranslateComplexToRealString( String const& string );
+   /// \brief Translate an enum for the complex-to-real mapping options to a string
+   DIPVIEWER_EXPORT static String ComplexToRealAsString( ComplexToReal value );
+   /// \brief Translate an enum for the complex-to-real mapping options to a longer description string
+   DIPVIEWER_EXPORT static String ComplexToRealDescription( ComplexToReal value );
 
    /// \brief Grey-value mapping options
    enum class Mapping : uint8 { ZeroOne, Angle, Normal, Modulo, Linear, Symmetric, Logarithmic };
+   /// \brief Translate a string to an enum for the grey-value mapping options
+   DIPVIEWER_EXPORT static Mapping TranslateMappingString( String const& string );
+   /// \brief Translate an enum for the grey-value mapping options to a string
+   DIPVIEWER_EXPORT static String MappingAsString( Mapping value );
+   /// \brief Translate an enum for the grey-value mapping options to a longer description string
+   DIPVIEWER_EXPORT static String MappingDescription( Mapping value );
 
    /// \brief Slice projection options
    enum class Projection : uint8 { None, Min, Mean, Max };
+   /// \brief Translate a string to an enum for the slice projection options
+   DIPVIEWER_EXPORT static Projection TranslateProjectionString( String const& string );
+   /// \brief Translate an enum for the slice projection options to a string
+   DIPVIEWER_EXPORT static String ProjectionAsString( Projection value );
+   /// \brief Translate an enum for the slice projection options to a longer description string
+   DIPVIEWER_EXPORT static String ProjectionDescription( Projection value );
 
    /// \brief Grey-value to color mapping options
    enum class LookupTable : uint8 { ColorSpace, RGB, Grey, Sequential, Divergent, Cyclic, Label };
+   /// \brief Translate a string to an enum for the grey-value to color mapping options
+   DIPVIEWER_EXPORT static LookupTable TranslateLookupTableString( String const& string );
+   /// \brief Translate an enum for the grey-value to color mapping options to a string
+   DIPVIEWER_EXPORT static String LookupTableAsString( LookupTable value );
+   /// \brief Translate an enum for the grey-value to color mapping options to a longer description string
+   DIPVIEWER_EXPORT static String LookupTableDescription( LookupTable value );
 
    /// \brief Defines which view (parts) need to be recalculated
    enum class Diff : uint8 { None, Draw, Place, Mapping, Projection, Complex };
@@ -270,10 +301,7 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions {
    /// \brief Sets automatic range based on current lookup table and mapping
    void setAutomaticRange() {
       if( lut_ == LookupTable::RGB ) {
-         FloatRange range = {
-            std::numeric_limits< dfloat >::infinity(),
-            -std::numeric_limits< dfloat >::infinity()
-         };
+         FloatRange range = { infinity, -infinity };
 
          for( dip::uint ii = 0; ii != color_elements_.size(); ++ii ) {
             if( color_elements_[ ii ] >= 0 && color_elements_[ ii ] < ( dip::sint )tensor_range_.size() ) {
@@ -323,26 +351,22 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions {
 
    /// \brief Returns a textual description of the current complex-to-real mapping
    String getComplexDescription() const {
-      String names[ ] = { "real part", "imaginary part", "magnitude (abs)", "phase" };
-      return names[ ( dip::uint )complex_ ];
+      return ComplexToRealDescription( complex_ );
    }
 
    /// \brief Returns a textual description of the current grey-value mapping
    String getMappingDescription() const {
-      String names[ ] = { "unit", "angle", "normal", "modulo", "linear", "symmetric around 0", "logarithmic" };
-      return names[ ( dip::uint )mapping_ ];
+      return MappingDescription( mapping_ );
    }
 
    /// \brief Returns a textual description of the current slice projection
    String getProjectionDescription() const {
-      String names[ ] = { "none (slice)", "minimum", "mean", "maximum" };
-      return names[ ( dip::uint )projection_ ];
+      return ProjectionDescription( projection_ );
    }
 
    /// \brief Returns a textual description of the current grey-value to color mapping
    String getLookupTableDescription() const {
-      String names[ ] = { "image colorspace (mapping inactive)", "ternary (RGB)", "grey-value", "perceptually linear", "divergent blue-red", "cyclic", "labels" };
-      return names[ ( dip::uint )lut_ ];
+      return LookupTableDescription( lut_ );
    }
 
    friend std::ostream& operator<<( std::ostream& os, const ViewingOptions& opt ) {

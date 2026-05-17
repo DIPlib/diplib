@@ -18,11 +18,6 @@
 #include "diplib/javaio.h"
 #include "diplib/simple_file_io.h"
 
-#include <pybind11/pybind11.h>
-
-using namespace pybind11::literals;
-namespace py = pybind11;
-
 bool AreDimensionsReversed() {
    return static_cast< py::object >( py::module_::import( "diplib" ).attr( "AreDimensionsReversed" ))().cast< bool >();
 }

@@ -1,5 +1,6 @@
 /*
  * (c)2017, Wouter Caarls
+ * (c)2026, Cris Luengo
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -121,6 +122,7 @@ class DIPVIEWER_CLASS_EXPORT SliceViewer : public Viewer {
          viewports_.clear();
       }
 
+      /// \brief Duplicate the SliceViewer window.
       std::shared_ptr< SliceViewer > clone() {
          Ptr sv = Create( original_, name_, ( dip::uint )width(), ( dip::uint )height() );
 
@@ -132,16 +134,23 @@ class DIPVIEWER_CLASS_EXPORT SliceViewer : public Viewer {
          return sv;
       }
 
+      /// \brief Return the (modifyable) options struct for this image display.
       ViewingOptions& options() override { return options_; }
+
+      /// \brief Return the image shown.
       const Image& image() override { return image_; }
+
+      /// \brief Return the original image shown.
       const Image& original() override { return original_; }
 
+      /// \brief Changes the image shown.
       void setImage( const Image& image ) override {
          Guard guard( *this );
          original_ = image;
          refresh_seq_++;
       }
 
+      /// \brief Recompute the display.
       void refreshImage() {
          Guard guard( *this );
          refresh_seq_++;
@@ -152,6 +161,142 @@ class DIPVIEWER_CLASS_EXPORT SliceViewer : public Viewer {
 
       /// \brief Link this viewer to another, compatible one.
       DIPVIEWER_EXPORT void link( SliceViewer& other );
+
+      // Convenience functions
+
+      /// \brief Return the visualized dimensions (MainX, MainY, LeftX, TopY). -1 means no dimension is used.
+      IntegerArray dims() const {
+         return options_.dims_;
+      }
+      /// \brief Set the dimensions to visualize (MainX, MainY, LeftX, TopY). Use -1 to not map to any image dimension.
+      void setDims( IntegerArray const& dims ) {
+         DIP_THROW_IF( dims.size() > 4, E::ARRAY_PARAMETER_WRONG_LENGTH );
+         DIP_THROW_IF(( dims < dip::sint{ -1 } ).any() || ( dims >= static_cast< dip::sint >( image_.Dimensionality() )).any(), E::INDEX_OUT_OF_RANGE );
+         // Fill unspecified dimensions with -1
+         Guard guard( *this );
+         IntegerArray newdims( 4, -1 );
+         for( dip::uint idx = 0; idx < dims.size(); ++idx ) {
+            for( dip::uint idx2 = 0; idx2 < idx; ++idx2 ) {
+               DIP_THROW_IF( dims[ idx2 ] != -1 && dims[ idx2 ] == dims[ idx ], E::INDEX_OUT_OF_RANGE );
+            }
+            newdims[ idx ] = dims[ idx ];
+         }
+         // By default, both Z projections use the same axis.
+         if( dims.size() == 3 ) {
+            newdims[ 3 ] = dims[ 2 ];
+         }
+         options_.dims_ = newdims;
+      }
+
+      /// \brief Get coordinates of selected point, which also determines which slice is shown.
+      UnsignedArray operatingPoint() const {
+         return options_.operating_point_;
+      }
+      /// \brief Set coordinates of selected point, which also determines which slice is shown.
+      void setOperatingPoint( UnsignedArray const& point ) {
+         Guard guard( *this );
+         DIP_THROW_IF( !( point < image_.Sizes() ), E::COORDINATES_OUT_OF_RANGE );
+         options_.operating_point_ = point;
+         updateLinkedViewers();
+      }
+
+      /// \brief Get what to do with complex numbers. One of: `"real"`, `"imag"`, `"magnitude"`, `"phase"`.
+      String complex() const {
+         return ViewingOptions::ComplexToRealAsString( options_.complex_ );
+      }
+      /// \brief Set what to do with complex numbers. One of: `"real"`, `"imag"`, `"magnitude"`, `"phase"`.
+      void setComplex( String const& complex ) {
+         Guard guard( *this );
+         options_.complex_ = ViewingOptions::TranslateComplexToRealString( complex );
+      }
+
+      /// \brief Get type of projection. One of: `"none"`, `"min"`, `"mean"`, `"max"`.
+      String projection() const {
+         return ViewingOptions::ProjectionAsString( options_.projection_ );
+      }
+      /// \brief Set type of projection. One of: `"none"`, `"min"`, `"mean"`, `"max"`.
+      void setProjection( String const& projection ) {
+         Guard guard( *this );
+         options_.projection_ = ViewingOptions::TranslateProjectionString( projection );
+      }
+
+      /// \brief Get labels used for axes. A string, one character per axis.
+      String labels() const {
+         return options_.labels_;
+      }
+      /// \brief Set labels to use for axes. A string, one character per axis.
+      void setLabels( String const& labels ) {
+         Guard guard( *this );
+         DIP_THROW_IF( labels.empty(), E::INVALID_PARAMETER );
+         options_.labels_ = labels;
+      }
+
+      /// \brief Get mapped value range (colorbar limits).
+      FloatRange mappingRange() const {
+         return options_.mapping_range_;
+      }
+      /// \brief Set mapped value range (colorbar limits).
+      void setMappingRange( FloatRange const& range ) {
+         Guard guard( *this );
+         options_.mapping_range_ = range;
+      }
+
+      /// \brief Get grey-value mapping options.
+      String mapping() const {
+         return ViewingOptions::MappingAsString( options_.mapping_ );
+      }
+      /// \brief Set grey-value mapping options, also sets mapping_range.
+      void setMapping( String const& mapping ) {
+         Guard guard( *this );
+         options_.mapping_ = ViewingOptions::TranslateMappingString( mapping );
+         options_.setMappingRange( options_.mapping_ );
+      }
+
+      /// \brief Get tensor element visualized.
+      dip::uint element() const {
+         return options_.element_;
+      }
+      /// \brief Set tensor element to visualize.
+      void setElement( dip::uint element ) {
+         Guard guard( *this );
+         DIP_THROW_IF( element >= image_.TensorElements(), E::INDEX_OUT_OF_RANGE );
+         options_.element_ = element;
+      }
+
+      /// \brief Get grey-value to color mapping option. One of: "original, "ternary", "grey", "sequential", "divergent", "periodic", "labels".
+      String lookupTable() const {
+         return ViewingOptions::LookupTableAsString( options_.lut_ );
+      }
+      /// \brief Set grey-value to color mapping option. One of: "original, "ternary", "grey", "sequential", "divergent", "periodic", "labels".
+      void setLookupTable( String const& lookupTable ) {
+         Guard guard( *this );
+         options_.lut_ = ViewingOptions::TranslateLookupTableString( lookupTable );
+      }
+
+      /// \brief Get the zoom factor per dimension.
+      FloatArray zoom() const {
+         return options_.zoom_;
+      }
+      /// \brief Set the zoom factor per dimension. Also determines relative viewport sizes.
+      void setZoom( FloatArray const& zoom ) {
+         Guard guard( *this );
+         DIP_THROW_IF( zoom.size() != image_.Dimensionality(), E::DIMENSIONALITIES_DONT_MATCH );
+         DIP_THROW_IF( ( zoom <= 0. ).any(), E::PARAMETER_OUT_OF_RANGE );
+         options_.zoom_ = zoom;
+         updateLinkedViewers();
+      }
+
+      /// \brief Get the display origin.
+      FloatArray origin() const {
+         return options_.origin_;
+      }
+      /// \brief Set the display origin, for moving the image around.
+      void setOrigin( FloatArray const& origin ) {
+         Guard guard( *this );
+         DIP_THROW_IF( origin.size() != image_.Dimensionality(), E::DIMENSIONALITIES_DONT_MATCH );
+         options_.origin_ = origin;
+         updateLinkedViewers();
+      }
 
    protected:
       DIPVIEWER_EXPORT explicit SliceViewer( const Image& image, String name = "SliceViewer", dip::uint width = 0, dip::uint height = 0 );

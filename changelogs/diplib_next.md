@@ -178,6 +178,9 @@ date: 2020-00-00
   It is also useful to display distance mappings: turn on this mode, then scale the intensities by dragging down
   from the top of the histogram on the right-hand side of the window.
 
+- Added a series of getter and setter functions to `dip::viewer::SliceViewer` to simplify modifying the image
+  display programatically.
+
 ### Changed functionality
 
 ### Bug fixes

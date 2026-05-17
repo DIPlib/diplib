@@ -27,7 +27,7 @@ if importlib.util.find_spec('.PyDIPviewer', __name__.rsplit('.', 1)[0]) is not N
         hasDIPviewer = True
     except:
         # If that fails, maybe the user has no OpenGL?
-        # TODO: do we want to bother the use with this?
+        # TODO: do we want to bother the user with this?
         pass
 
 if hasDIPviewer:

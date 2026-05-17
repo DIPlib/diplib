@@ -38,11 +38,10 @@ class DIPVIEWER_CLASS_EXPORT ControlViewPort : public ViewPort {
 
    public:
       explicit ControlViewPort( Viewer* viewer ) : ViewPort( viewer ) {
-         // NOTE! These strings must match the corresponding enums in include/diplib/viewer/viewer.h
-         lists_.push_back( { "SPA", "RGB", "GRY", "SEQ", "DIV", "CYC", "LBL" } );
-         lists_.push_back( { "0-1", "ANG", "255", "MOD", "LIN", "SYM", "LOG" } );
-         lists_.push_back( { "REA", "IMG", "MAG", "PHA" } );
-         lists_.push_back( { "SLC", "MIN", "MEA", "MAX" } );
+         lists_.push_back( { "SPA", "RGB", "GRY", "SEQ", "DIV", "CYC", "LBL" } ); // Must match the values in dip::viewer::ViewingOptions::LookupTable
+         lists_.push_back( { "0-1", "ANG", "255", "MOD", "LIN", "SYM", "LOG" } ); // Must match the values in dip::viewer::ViewingOptions::Mapping
+         lists_.push_back( { "REA", "IMG", "MAG", "PHA" } ); // Must match values in dip::viewer::ViewingOptions::ComplexToReal
+         lists_.push_back( { "SLC", "MIN", "MEA", "MAX" } ); // Must match values in dip::viewer::ViewingOptions::Projection
       }
 
       ControlViewPort( ControlViewPort const& ) = delete;
