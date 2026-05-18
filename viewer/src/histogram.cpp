@@ -237,6 +237,7 @@ void HistogramViewPort::motion(int button, int x, int y)
     drag_y_ = y;
 
     // Show we're not in a fixed mapping anymore
+    o.auto_mapping_ = false;
     switch (o.mapping_)
     {
       case ViewingOptions::Mapping::ZeroOne:

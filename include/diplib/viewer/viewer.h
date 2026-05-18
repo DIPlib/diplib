@@ -107,6 +107,7 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions {
    FloatRangeArray tensor_range_; ///< value range per tensor.
    FloatRange mapping_range_; ///< mapped value range (colorbar limits).
    Mapping mapping_; ///< Grey-value mapping options, sets mapping_range_.
+   bool auto_mapping_; ///< Automatically adapt mapping_range_ to histogram limits when image changes.
 
    // Color
    dip::uint element_; ///< Tensor element to visualize.
@@ -146,6 +147,7 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions {
       labels_ = "xyzw56789";
 
       // Mapping
+      auto_mapping_ = true;
       if( image.DataType().IsBinary() ) {
          mapping_ = Mapping::ZeroOne;
          mapping_range_ = { 0, 1 };
@@ -218,6 +220,9 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions {
          return Diff::Mapping;
       }
       if( mapping_ != options.mapping_ ) {
+         return Diff::Mapping;
+      }
+      if( auto_mapping_ != options.auto_mapping_ ) {
          return Diff::Mapping;
       }
       if( element_ != options.element_ ) {
@@ -328,8 +333,9 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions {
       }
    }
 
-   /// \brief Sets mapping range based on mapping
+   /// \brief Sets mapping range based on mapping. Turns on automatic mapping.
    void setMappingRange( ViewingOptions::Mapping mapping ) {
+      auto_mapping_ = true;
       switch( mapping ) {
          case ViewingOptions::Mapping::ZeroOne:
             mapping_range_ = { 0, 1 };

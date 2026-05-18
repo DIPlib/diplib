@@ -235,10 +235,11 @@ class DIPVIEWER_CLASS_EXPORT SliceViewer : public Viewer {
       FloatRange mappingRange() const {
          return options_.mapping_range_;
       }
-      /// \brief Set mapped value range (colorbar limits).
+      /// \brief Set mapped value range (colorbar limits). Disables automatic mapping.
       void setMappingRange( FloatRange const& range ) {
          Guard guard( *this );
          options_.mapping_range_ = range;
+         options_.auto_mapping_ = false;
       }
 
       /// \brief Get grey-value mapping options.

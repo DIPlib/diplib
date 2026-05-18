@@ -938,13 +938,8 @@ void SliceViewer::calculateTextures()
       options_.range_ = range;
       options_.tensor_range_ = tensor_range;
 
-      if (options.mapping_ == ViewingOptions::Mapping::Linear ||
-          options.mapping_ == ViewingOptions::Mapping::Symmetric ||
-          options.mapping_ == ViewingOptions::Mapping::Logarithmic)
-      {
-        // If we're on some automatic mapping more, adjust it.
+      if (options_.auto_mapping_)
         options_.setAutomaticRange();
-      }
 
       // Adjust model in case image properties changed
       options_.operating_point_.resize(image.Dimensionality(), 0);

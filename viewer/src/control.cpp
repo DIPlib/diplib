@@ -99,6 +99,7 @@ void ControlViewPort::click(int button, int state, int x, int y, int /*mods*/)
         break;
       case 2:
         o.complex_ = (ViewingOptions::ComplexToReal) opt;
+        o.auto_mapping_ = true;
         o.status_ = "Complex to real mapping set to " + o.getComplexDescription();
         break;
       case 3:

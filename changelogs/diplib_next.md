@@ -190,6 +190,9 @@ date: 2020-00-00
 
 - Offsets are no longer overwritten when updating the image being displayed.
 
+- When updating the image, the mapping range is only recalculated
+  automatically if it has not been manually adjusted.
+
 ### Build changes
 
 
