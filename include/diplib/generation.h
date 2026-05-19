@@ -22,7 +22,7 @@
 #include <utility>
 
 #include "diplib.h"
-#include "diplib/random.h"
+#include "diplib/random.h" // IWYU pragma: export
 
 // Forward declarations taken from the FreeType headers. This avoids making FreeType a dependency of these headers.
 using FT_Library = struct FT_LibraryRec_*;
