@@ -202,9 +202,9 @@ and that your chosen dependencies were found. Some hints to improve your configu
     these components will not work correctly unless the *DIPlib* library is a dynamic library.
 
   - If you installed `libomp`, but *CMake* couldn't find it (you'll see "Multithreading disabled" in the configuration
-    report), you might need to tell *CMake* where to find the library and header files. When building for Apple Silicon,
-    Add `-DOpenMP_CXX_INCLUDE_DIR=/opt/homebrew/opt/libomp/include -DCMAKE_CXX_FLAGS=-L/opt/homebrew/opt/libomp/lib`
-    to your *CMake* command  (for Intel-based Macs the paths should start with `/usr/local/opt/libomp/`).
+    report), you need to tell *CMake* where to find the library and header files. When building for Apple Silicon,
+    Add `-DOpenMP_ROOT=/opt/homebrew/opt/libomp` to your *CMake* command
+    (for Intel-based Macs the paths should be `/usr/local/opt/libomp`).
 
   - If you want to use the *GCC* compiler, add `-DCMAKE_C_COMPILER=gcc-11 -DCMAKE_CXX_COMPILER=g++-11`
     to the `cmake` command line. By default, `cmake` will find the compiler that came with *Xcode*.
