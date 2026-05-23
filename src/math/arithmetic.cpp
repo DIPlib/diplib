@@ -36,7 +36,7 @@ void Add(
    DIP_OVL_CALL_ASSIGN_ALL( scanLineFilter, Framework::NewDyadicScanLineFilter, (
          []( auto its ) { return dip::saturated_add( *its[ 0 ], *its[ 1 ] ); }
    ), dt );
-   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, dt, *scanLineFilter ));
+   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, dt, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim ));
 }
 
 //
@@ -50,7 +50,7 @@ void Subtract(
    DIP_OVL_CALL_ASSIGN_ALL( scanLineFilter, Framework::NewDyadicScanLineFilter, (
          []( auto its ) { return dip::saturated_sub( *its[ 0 ], *its[ 1 ] ); }
    ), dt );
-   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, dt, *scanLineFilter ));
+   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, dt, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim ));
 }
 
 //
@@ -365,7 +365,7 @@ void MultiplySampleWise(
    DIP_OVL_CALL_ASSIGN_ALL( scanLineFilter, Framework::NewDyadicScanLineFilter, (
          []( auto its ) { return dip::saturated_mul( *its[ 0 ], *its[ 1 ] ); }
    ), dt );
-   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, dt_out, *scanLineFilter ));
+   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, dt_out, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim ));
 }
 
 void MultiplyConjugate(
@@ -380,7 +380,7 @@ void MultiplyConjugate(
       DIP_OVL_CALL_ASSIGN_COMPLEX( scanLineFilter, Framework::NewDyadicScanLineFilter, (
             []( auto its ) { return dip::saturated_mul( *its[ 0 ], std::conj( *its[ 1 ] )); }, 4
       ), dt );
-      DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, dt_out, *scanLineFilter ));
+      DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, dt_out, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim ));
    } else {
       DIP_STACK_TRACE_THIS( MultiplySampleWise( lhs, rhs, out, dt_out ));
    }
@@ -398,7 +398,7 @@ void Divide(
    DIP_OVL_CALL_ASSIGN_FLEXBIN( scanLineFilter, Framework::NewDyadicScanLineFilter, (
          []( auto its ) { return dip::saturated_div( *its[ 0 ], *its[ 1 ] ); }
    ), dt );
-   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, dt_out, *scanLineFilter ));
+   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, dt_out, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim ));
 }
 
 //
@@ -417,7 +417,7 @@ void SafeDivide(
    DIP_OVL_CALL_ASSIGN_FLEX( scanLineFilter, Framework::NewDyadicScanLineFilter, (
          []( auto its ) { return dip::saturated_safediv( *its[ 0 ], *its[ 1 ] ); }
    ), dt );
-   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, dt_out, *scanLineFilter ));
+   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, dt_out, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim ));
 }
 
 //
@@ -437,7 +437,7 @@ void Modulo(
             []( auto its ) { return static_cast< decltype( *its[ 0 ] ) >( *its[ 0 ] % *its[ 1 ] ); }
       ), dt );
    }
-   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, dt, *scanLineFilter ));
+   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, dt, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim ));
 }
 
 //
@@ -455,7 +455,7 @@ void Power(
    DIP_OVL_CALL_ASSIGN_FLEX( scanLineFilter, Framework::NewDyadicScanLineFilter, (
          []( auto its ) { return std::pow( *its[ 0 ], *its[ 1 ] ); }, 20 // Rough guess at the cost
    ), dt );
-   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, dt_out, *scanLineFilter ));
+   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, dt_out, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim ));
 }
 
 //
@@ -496,6 +496,164 @@ void Invert(
 #include "doctest.h"
 #include "diplib/math.h"
 #include "diplib/testing.h"
+
+DOCTEST_TEST_CASE("[DIPlib] testing the element-wise arithmetic operators") {
+   // Case 1: floats
+   dip::Image a( {2, 2}, 1, dip::DT_SFLOAT );
+   a.At( 0, 0 ) = 0.0;
+   a.At( 0, 1 ) = 1.0;
+   a.At( 1, 0 ) = 100.0;
+   a.At( 1, 1 ) = 200.0;
+   dip::Image b( {2, 1}, 1, dip::DT_SFLOAT );
+   b.At( 0, 0 ) = 100.0;
+   b.At( 1, 0 ) = 200.0;
+   dip::Image result = a + b;
+   DOCTEST_CHECK( result.Sizes() == a.Sizes() );
+   DOCTEST_CHECK( result.DataType() == dip::DT_SFLOAT );
+   DOCTEST_CHECK( result.At( 0, 0 ) == 0.0f + 100.0f );
+   DOCTEST_CHECK( result.At( 0, 1 ) == 1.0f + 100.0f );
+   DOCTEST_CHECK( result.At( 1, 0 ) == 100.0f + 200.0f );
+   DOCTEST_CHECK( result.At( 1, 1 ) == 200.0f + 200.0f );
+   result = a - b;
+   DOCTEST_CHECK( result.Sizes() == a.Sizes() );
+   DOCTEST_CHECK( result.DataType() == dip::DT_SFLOAT );
+   DOCTEST_CHECK( result.At( 0, 0 ) == 0.0f - 100.0f );
+   DOCTEST_CHECK( result.At( 0, 1 ) == 1.0f - 100.0f );
+   DOCTEST_CHECK( result.At( 1, 0 ) == 100.0f - 200.0f );
+   DOCTEST_CHECK( result.At( 1, 1 ) == 200.0f - 200.0f );
+   result = dip::MultiplySampleWise( a, b );
+   DOCTEST_CHECK( result.Sizes() == a.Sizes() );
+   DOCTEST_CHECK( result.DataType() == dip::DT_SFLOAT );
+   DOCTEST_CHECK( result.At( 0, 0 ) == 0.0f * 100.0f );
+   DOCTEST_CHECK( result.At( 0, 1 ) == 1.0f * 100.0f );
+   DOCTEST_CHECK( result.At( 1, 0 ) == 100.0f * 200.0f );
+   DOCTEST_CHECK( result.At( 1, 1 ) == 200.0f * 200.0f );
+   result = a / b;
+   DOCTEST_CHECK( result.Sizes() == a.Sizes() );
+   DOCTEST_CHECK( result.DataType() == dip::DT_SFLOAT );
+   DOCTEST_CHECK( result.At( 0, 0 ) == 0.0f / 100.0f );
+   DOCTEST_CHECK( result.At( 0, 1 ) == 1.0f / 100.0f );
+   DOCTEST_CHECK( result.At( 1, 0 ) == 100.0f / 200.0f );
+   DOCTEST_CHECK( result.At( 1, 1 ) == 200.0f / 200.0f );
+   result = a % b;
+   DOCTEST_CHECK( result.Sizes() == a.Sizes() );
+   DOCTEST_CHECK( result.DataType() == dip::DT_SFLOAT );
+   DOCTEST_CHECK( result.At( 0, 0 ) == std::fmod( 0.0f, 100.0f ));
+   DOCTEST_CHECK( result.At( 0, 1 ) == std::fmod( 1.0f, 100.0f ));
+   DOCTEST_CHECK( result.At( 1, 0 ) == std::fmod( 100.0f, 200.0f ));
+   DOCTEST_CHECK( result.At( 1, 1 ) == std::fmod( 200.0f, 200.0f ));
+   result = Power( a, b );
+   DOCTEST_CHECK( result.Sizes() == a.Sizes() );
+   DOCTEST_CHECK( result.DataType() == dip::DT_SFLOAT );
+   DOCTEST_CHECK( result.At( 0, 0 ) == std::pow( 0.0f, 100.0f ));
+   DOCTEST_CHECK( result.At( 0, 1 ) == std::pow( 1.0f, 100.0f ));
+   DOCTEST_CHECK( result.At( 1, 0 ) == std::pow( 100.0f, 200.0f ));
+   DOCTEST_CHECK( result.At( 1, 1 ) == std::pow( 200.0f, 200.0f ));
+
+   // Case 1: complex
+   b.Convert( dip::DT_SCOMPLEX );
+   b.At( 0, 0 ) = dip::scomplex( 100.0, 50.0 );
+   b.At( 1, 0 ) = dip::scomplex( 200.0, -50.0 );
+   result = a + b;
+   DOCTEST_CHECK( result.Sizes() == a.Sizes() );
+   DOCTEST_CHECK( result.DataType() == dip::DT_SCOMPLEX );
+   DOCTEST_CHECK( result.At( 0, 0 ) == 0.0f + dip::scomplex( 100.0, 50.0 ) );
+   DOCTEST_CHECK( result.At( 0, 1 ) == 1.0f + dip::scomplex( 100.0, 50.0 ) );
+   DOCTEST_CHECK( result.At( 1, 0 ) == 100.0f + dip::scomplex( 200.0, -50.0 ) );
+   DOCTEST_CHECK( result.At( 1, 1 ) == 200.0f + dip::scomplex( 200.0, -50.0 ) );
+   result = a - b;
+   DOCTEST_CHECK( result.Sizes() == a.Sizes() );
+   DOCTEST_CHECK( result.DataType() == dip::DT_SCOMPLEX );
+   DOCTEST_CHECK( result.At( 0, 0 ) == 0.0f - dip::scomplex( 100.0, 50.0 ) );
+   DOCTEST_CHECK( result.At( 0, 1 ) == 1.0f - dip::scomplex( 100.0, 50.0 ) );
+   DOCTEST_CHECK( result.At( 1, 0 ) == 100.0f - dip::scomplex( 200.0, -50.0 ) );
+   DOCTEST_CHECK( result.At( 1, 1 ) == 200.0f - dip::scomplex( 200.0, -50.0 ) );
+   result = dip::MultiplySampleWise( a, b );
+   DOCTEST_CHECK( result.Sizes() == a.Sizes() );
+   DOCTEST_CHECK( result.DataType() == dip::DT_SCOMPLEX );
+   DOCTEST_CHECK( result.At( 0, 0 ) == 0.0f * dip::scomplex( 100.0, 50.0 ) );
+   DOCTEST_CHECK( result.At( 0, 1 ) == 1.0f * dip::scomplex( 100.0, 50.0 ) );
+   DOCTEST_CHECK( result.At( 1, 0 ) == 100.0f * dip::scomplex( 200.0, -50.0 ) );
+   DOCTEST_CHECK( result.At( 1, 1 ) == 200.0f * dip::scomplex( 200.0, -50.0 ) );
+   result = dip::MultiplyConjugate( a, b );
+   DOCTEST_CHECK( result.Sizes() == a.Sizes() );
+   DOCTEST_CHECK( result.DataType() == dip::DT_SCOMPLEX );
+   DOCTEST_CHECK( result.At( 0, 0 ) == 0.0f * dip::scomplex( 100.0, -50.0 ) );
+   DOCTEST_CHECK( result.At( 0, 1 ) == 1.0f * dip::scomplex( 100.0, -50.0 ) );
+   DOCTEST_CHECK( result.At( 1, 0 ) == 100.0f * dip::scomplex( 200.0, 50.0 ) );
+   DOCTEST_CHECK( result.At( 1, 1 ) == 200.0f * dip::scomplex( 200.0, 50.0 ) );
+   result = a / b;
+   DOCTEST_CHECK( result.Sizes() == a.Sizes() );
+   DOCTEST_CHECK( result.DataType() == dip::DT_SCOMPLEX );
+   DOCTEST_CHECK( result.At( 0, 0 ) == 0.0f / dip::scomplex( 100.0, 50.0 ) );
+   DOCTEST_CHECK( result.At( 0, 1 ) == 1.0f / dip::scomplex( 100.0, 50.0 ) );
+   DOCTEST_CHECK( result.At( 1, 0 ) == 100.0f / dip::scomplex( 200.0, -50.0 ) );
+   DOCTEST_CHECK( result.At( 1, 1 ) == 200.0f / dip::scomplex( 200.0, -50.0 ) );
+   DOCTEST_CHECK_THROWS( result = b % a );
+   result = Power( a, b );
+   DOCTEST_CHECK( result.Sizes() == a.Sizes() );
+   DOCTEST_CHECK( result.DataType() == dip::DT_SCOMPLEX );
+   DOCTEST_CHECK( result.At( 0, 0 ) == std::pow( 0.0f, dip::scomplex( 100.0, 50.0 ) ));
+   DOCTEST_CHECK( result.At( 0, 1 ) == std::pow( 1.0f, dip::scomplex( 100.0, 50.0 ) ));
+   DOCTEST_CHECK( result.At( 1, 0 ) == std::pow( 100.0f, dip::scomplex( 200.0, -50.0 ) ));
+   DOCTEST_CHECK( result.At( 1, 1 ) == std::pow( 200.0f, dip::scomplex( 200.0, -50.0 ) ));
+
+   // Case 3: uint8
+   a.Convert( dip::DT_UINT8 );
+   b.Convert( dip::DT_UINT8 );
+   b.At( 0, 0 ) = 100;
+   b.At( 1, 0 ) = 200;
+   result = dip::Add( a, b, dip::DT_UINT8 );
+   DOCTEST_CHECK( result.Sizes() == a.Sizes() );
+   DOCTEST_CHECK( result.DataType() == dip::DT_UINT8 );
+   DOCTEST_CHECK( result.At( 0, 0 ) == 0 + 100 );
+   DOCTEST_CHECK( result.At( 0, 1 ) == 1 + 100 );
+   DOCTEST_CHECK( result.At( 1, 0 ) == 255 );
+   DOCTEST_CHECK( result.At( 1, 1 ) == 255 );
+   result = dip::Subtract( a, b, dip::DT_UINT8 );
+   DOCTEST_CHECK( result.Sizes() == a.Sizes() );
+   DOCTEST_CHECK( result.DataType() == dip::DT_UINT8 );
+   DOCTEST_CHECK( result.At( 0, 0 ) == 0 );
+   DOCTEST_CHECK( result.At( 0, 1 ) == 0 );
+   DOCTEST_CHECK( result.At( 1, 0 ) == 0 );
+   DOCTEST_CHECK( result.At( 1, 1 ) == 0 );
+   result = dip::MultiplySampleWise( a, b, dip::DT_UINT8 );
+   DOCTEST_CHECK( result.Sizes() == a.Sizes() );
+   DOCTEST_CHECK( result.DataType() == dip::DT_UINT8 );
+   DOCTEST_CHECK( result.At( 0, 0 ) == 0 * 100 );
+   DOCTEST_CHECK( result.At( 0, 1 ) == 1 * 100 );
+   DOCTEST_CHECK( result.At( 1, 0 ) == 255 );
+   DOCTEST_CHECK( result.At( 1, 1 ) == 255 );
+   result = dip::Divide( a, b, dip::DT_UINT8 );
+   DOCTEST_CHECK( result.Sizes() == a.Sizes() );
+   DOCTEST_CHECK( result.DataType() == dip::DT_UINT8 );
+   DOCTEST_CHECK( result.At( 0, 0 ) == 0 / 100 );
+   DOCTEST_CHECK( result.At( 0, 1 ) == 1 / 100 );
+   DOCTEST_CHECK( result.At( 1, 0 ) == 100 / 200 );
+   DOCTEST_CHECK( result.At( 1, 1 ) == 200 / 200 );
+   result = dip::Modulo( a, b, dip::DT_UINT8 );
+   DOCTEST_CHECK( result.Sizes() == a.Sizes() );
+   DOCTEST_CHECK( result.DataType() == dip::DT_UINT8 );
+   DOCTEST_CHECK( result.At( 0, 0 ) == 0 );
+   DOCTEST_CHECK( result.At( 0, 1 ) == 1 );
+   DOCTEST_CHECK( result.At( 1, 0 ) == 100 );
+   DOCTEST_CHECK( result.At( 1, 1 ) == 0 );
+   result = Power( a, b, dip::DT_UINT8 );
+   DOCTEST_CHECK( result.Sizes() == a.Sizes() );
+   DOCTEST_CHECK( result.DataType() == dip::DT_UINT8 );
+   DOCTEST_CHECK( result.At( 0, 0 ) == 0 );
+   DOCTEST_CHECK( result.At( 0, 1 ) == 1 );
+   DOCTEST_CHECK( result.At( 1, 0 ) == 255 );
+   DOCTEST_CHECK( result.At( 1, 1 ) == 255 );
+   result = Power( a, 1.1, dip::DT_UINT8 );
+   DOCTEST_CHECK( result.Sizes() == a.Sizes() );
+   DOCTEST_CHECK( result.DataType() == dip::DT_UINT8 );
+   DOCTEST_CHECK( result.At( 0, 0 ) == 0 );
+   DOCTEST_CHECK( result.At( 0, 1 ) == 1 );
+   DOCTEST_CHECK( result.At( 1, 0 ) == 158 );
+   DOCTEST_CHECK( result.At( 1, 1 ) == 255 );
+   // TODO: SafeDivide, Invert
+}
 
 DOCTEST_TEST_CASE("[DIPlib] testing the matrix multiplication operation") {
    // Case 1: general case:
@@ -611,7 +769,7 @@ DOCTEST_TEST_CASE("[DIPlib] inplace arithmetic produces correct values") {
    intim *= 2;
    DOCTEST_CHECK( dip::testing::CompareImages( intim, floatim ));
    floatim *= 0.5;
-   intim *= 0.5; // There's a bug where this value is converted to int before multiplying
+   intim *= 0.5; // There was a bug where this value is converted to int before multiplying
    DOCTEST_CHECK( dip::testing::CompareImages( intim, floatim ));
 }
 

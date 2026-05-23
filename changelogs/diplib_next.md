@@ -74,6 +74,8 @@ date: 2020-00-00
   that the slice returned by the iterator after calling any of these functions didn't match the coordinate, and
   could point to out-of-bounds data.
 
+- Element-wise arithmetic, bitwise and comparison operators should be a bit faster now for non-scalar images.
+
 ### Updated dependencies
 
 - Updated LibTIFF to version 4.7.1.
