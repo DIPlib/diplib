@@ -385,12 +385,12 @@ template<>
 [[deprecated( "VariadicScanLineFilter is less efficient with tensor inputs, ensure the Scalar template parameter is set to true." )]]
 inline void Config_VariadicScanLineFilter_DeprecationWarningImplementation< false >() {}
 
-/// An implementation of the \ref ScanLinefilter for N input images and 1 output image.
+/// An implementation of the \ref dip::Framework::ScanLineFilter for N input images and 1 output image.
 ///
 /// Here, all buffers are of the same data type, and the scalar operation applied to each sample is the lambda
 /// function of type F, passed to the constructor. All input and output images must have the same number of tensor
 /// elements, and in the same order. If the template parameter `Scalar` is `true`, the input images are expected
-/// to be scalar. Use this in combination with the \ref ip::Framework::ScanOption::TensorAsSpatialDim option to
+/// to be scalar. Use this in combination with the \ref dip::Framework::ScanOption::TensorAsSpatialDim option to
 /// \ref dip::Framework::Scan if input images are not already scalar. Processing is more efficient when the tensor
 /// dimension is seen as a spatial dimension.
 ///
