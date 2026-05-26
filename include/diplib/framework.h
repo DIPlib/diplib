@@ -378,11 +378,21 @@ inline void ScanDyadic(
    out.ReshapeTensor( outTensor );
 }
 
-/// An implementation of the ScanLinefilter for N input images and 1 output image.
+template< bool Scalar >
+inline void Config_VariadicScanLineFilter_DeprecationWarningImplementation() {}
+
+template<>
+[[deprecated( "VariadicScanLineFilter is less efficient with tensor inputs, ensure the Scalar template parameter is set to true." )]]
+inline void Config_VariadicScanLineFilter_DeprecationWarningImplementation< false >() {}
+
+/// An implementation of the \ref ScanLinefilter for N input images and 1 output image.
 ///
 /// Here, all buffers are of the same data type, and the scalar operation applied to each sample is the lambda
 /// function of type F, passed to the constructor. All input and output images must have the same number of tensor
-/// elements, and in the same order.
+/// elements, and in the same order. If the template parameter `Scalar` is `true`, the input images are expected
+/// to be scalar. Use this in combination with the \ref ip::Framework::ScanOption::TensorAsSpatialDim option to
+/// \ref dip::Framework::Scan if input images are not already scalar. Processing is more efficient when the tensor
+/// dimension is seen as a spatial dimension.
 ///
 /// When `N` = 1, the resulting object can be passed to the \ref dip::Framework::ScanMonadic function. When `N` = 2,
 /// you can use the \ref dip::Framework::ScanDyadic function. For any other `N`, or when \ref dip::Framework::ScanDyadic
@@ -397,8 +407,8 @@ inline void ScanDyadic(
 /// dip::Image out;
 /// dip::dfloat offset = 40;
 /// auto sampleOperator = [ = ]( std::array< dip::sfloat const*, 2 > its ) { return ( *its[ 0 ] * 100 ) / ( *its[ 1 ] * 10 ) + offset; };
-/// dip::Framework::VariadicScanLineFilter< 2, dip::sfloat, decltype( sampleOperator ) > scanLineFilter( sampleOperator );
-/// dip::Framework::ScanDyadic( lhs, rhs, out, dip::DT_SFLOAT, dip::DT_SFLOAT, scanLineFilter );
+/// dip::Framework::VariadicScanLineFilter< 2, dip::sfloat, decltype( sampleOperator ), true > scanLineFilter( sampleOperator );
+/// dip::Framework::ScanDyadic( lhs, rhs, out, dip::DT_SFLOAT, dip::DT_SFLOAT, scanLineFilter, dip::Framework::ScanOption::TensorAsSpatialDim );
 /// ```
 ///
 /// `sampleOperator` is a lambda function, which captures `offset` by value (note that capturing by reference will
@@ -414,7 +424,7 @@ inline void ScanDyadic(
 /// ```cpp
 /// template< typename TPI, typename F >
 /// std::unique_ptr< dip::Framework::ScanLineFilter > NewFilter( F func ) {
-///    return static_cast< std::unique_ptr< dip::Framework::ScanLineFilter >>( new dip::Framework::VariadicScanLineFilter< 1, TPI, F >( func ));
+///    return static_cast< std::unique_ptr< dip::Framework::ScanLineFilter >>( new dip::Framework::VariadicScanLineFilter< 1, TPI, F, true >( func ));
 /// }
 /// // ...
 /// dip::Image in = ...;
@@ -437,18 +447,19 @@ inline void ScanDyadic(
 /// image. The output is captured in a variable and passed to the scan function.
 ///
 /// For values of `N` from 1 to 4 there are pre-defined functions just like the `NewFilter` function above:
-/// \ref dip::Framework::NewMonadicScanLineFilter, \ref dip::Framework::NewDyadicScanLineFilter,
-/// \ref dip::Framework::NewTriadicScanLineFilter, \ref dip::Framework::NewTetradicScanLineFilter.
+/// \ref dip::Framework::NewScalarMonadicScanLineFilter, \ref dip::Framework::NewScalarDyadicScanLineFilter,
+/// \ref dip::Framework::NewScalarTriadicScanLineFilter, \ref dip::Framework::NewScalarTetradicScanLineFilter.
 /// These functions take an optional second input argument `cost`, which specifies the cost in cycles to execute
 /// a single call of `func`. This cost is used to determine if it's worthwhile to parallelize the operation, see
 /// \ref design_multithreading.
-template< dip::uint N, typename TPI, typename F >
+template< dip::uint N, typename TPI, typename F, bool Scalar = false >
 class DIP_NO_EXPORT VariadicScanLineFilter : public ScanLineFilter {
-   // Note that N is a compile-time constant, and consequently the compiler should be able to optimize all the loops
-   // over N.
+   // Note that N is a small compile-time constant, and consequently the compiler should be able to optimize all the loops over N.
    public:
       static_assert( N > 0, "VariadicScanLineFilter does not work without input images" );
-      VariadicScanLineFilter( F const& func, dip::uint cost = 1 ) : func_( func ), cost_( cost ) {}
+      VariadicScanLineFilter( F const& func, dip::uint cost = 1 ) : func_( func ), cost_( cost ) {
+         Config_VariadicScanLineFilter_DeprecationWarningImplementation< Scalar >();
+      }
       dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint nTensorElements ) override {
          return cost_ * nTensorElements;
       }
@@ -460,10 +471,13 @@ class DIP_NO_EXPORT VariadicScanLineFilter : public ScanLineFilter {
          std::array< dip::sint, N > inTensorStride;
          dip::uint const bufferLength = params.bufferLength;
          dip::uint const tensorLength = params.outBuffer[ 0 ].tensorLength; // all buffers have same number of tensor elements
+         if( Scalar ) {
+            DIP_ASSERT( tensorLength == 1 );
+         }
          for( dip::uint ii = 0; ii < N; ++ii ) {
             in[ ii ] = static_cast< TPI const* >( params.inBuffer[ ii ].buffer );
             inStride[ ii ] = params.inBuffer[ ii ].stride;
-            if( tensorLength > 1 ) {
+            if( Scalar && ( tensorLength > 1 )) {
                inTensorStride[ ii ] = params.inBuffer[ ii ].tensorStride;
             }
             DIP_ASSERT( params.inBuffer[ ii ].tensorLength == tensorLength );
@@ -471,7 +485,7 @@ class DIP_NO_EXPORT VariadicScanLineFilter : public ScanLineFilter {
          TPI* out = static_cast< TPI* >( params.outBuffer[ 0 ].buffer );
          dip::sint const outStride = params.outBuffer[ 0 ].stride;
          dip::sint const outTensorStride = params.outBuffer[ 0 ].tensorStride;
-         if( tensorLength > 1 ) {
+         if( Scalar && ( tensorLength > 1 )) {
             for( dip::uint kk = 0; kk < bufferLength; ++kk ) {
                std::array< TPI const*, N > inT = in;
                TPI* outT = out;
@@ -503,31 +517,63 @@ class DIP_NO_EXPORT VariadicScanLineFilter : public ScanLineFilter {
 };
 
 /// \brief Support for quickly defining monadic operators (1 input image, 1 output image).
-/// See \ref dip::Framework::VariadicScanLineFilter.
+/// Deprecated, use \ref NewScalarMonadicScanLineFilter instead.
 template< typename TPI, typename F >
+[[ deprecated( "Use NewScalarMonadicScanLineFilter() instead" ) ]]
 inline std::unique_ptr< ScanLineFilter > NewMonadicScanLineFilter( F const& func, dip::uint cost = 1 ) {
    return static_cast< std::unique_ptr< ScanLineFilter >>( new VariadicScanLineFilter< 1, TPI, F >( func, cost ));
 }
 
 /// \brief Support for quickly defining dyadic operators (2 input images, 1 output image).
-/// See \ref dip::Framework::VariadicScanLineFilter.
+/// Deprecated, use \ref NewScalarDyadicScanLineFilter instead.
 template< typename TPI, typename F >
+[[ deprecated( "Use NewScalarDyadicScanLineFilter() instead" ) ]]
 inline std::unique_ptr< ScanLineFilter > NewDyadicScanLineFilter( F const& func, dip::uint cost = 1 ) {
    return static_cast< std::unique_ptr< ScanLineFilter >>( new VariadicScanLineFilter< 2, TPI, F >( func, cost ));
 }
 
 /// \brief Support for quickly defining triadic operators (3 input images, 1 output image).
-/// See \ref dip::Framework::VariadicScanLineFilter.
+/// Deprecated, use \ref NewScalarTriadicScanLineFilter instead.
 template< typename TPI, typename F >
+[[ deprecated( "Use NewScalarTriadicScanLineFilter() instead" ) ]]
 inline std::unique_ptr< ScanLineFilter > NewTriadicScanLineFilter( F const& func, dip::uint cost = 1 ) {
    return static_cast< std::unique_ptr< ScanLineFilter >>( new VariadicScanLineFilter< 3, TPI, F >( func, cost ));
 }
 
 /// \brief Support for quickly defining tetradic operators (4 input images, 1 output image).
-/// See \ref dip::Framework::VariadicScanLineFilter.
+/// Deprecated, use \ref NewScalarTetradicScanLineFilter instead.
 template< typename TPI, typename F >
+[[ deprecated( "Use NewScalarTetradicScanLineFilter() instead" ) ]]
 inline std::unique_ptr< ScanLineFilter > NewTetradicScanLineFilter( F const& func, dip::uint cost = 1 ) {
    return static_cast< std::unique_ptr< ScanLineFilter >>( new VariadicScanLineFilter< 4, TPI, F >( func, cost ));
+}
+
+/// \brief Support for quickly defining monadic operators (1 input image, 1 output image) on scalar images.
+/// See \ref dip::Framework::VariadicScanLineFilter.
+template< typename TPI, typename F >
+inline std::unique_ptr< ScanLineFilter > NewScalarMonadicScanLineFilter( F const& func, dip::uint cost = 1 ) {
+   return static_cast< std::unique_ptr< ScanLineFilter >>( new VariadicScanLineFilter< 1, TPI, F, true >( func, cost ));
+}
+
+/// \brief Support for quickly defining dyadic operators (2 input images, 1 output image) on scalar images.
+/// See \ref dip::Framework::VariadicScanLineFilter.
+template< typename TPI, typename F >
+inline std::unique_ptr< ScanLineFilter > NewScalarDyadicScanLineFilter( F const& func, dip::uint cost = 1 ) {
+   return static_cast< std::unique_ptr< ScanLineFilter >>( new VariadicScanLineFilter< 2, TPI, F, true >( func, cost ));
+}
+
+/// \brief Support for quickly defining triadic operators (3 input images, 1 output image) on scalar images.
+/// See \ref dip::Framework::VariadicScanLineFilter.
+template< typename TPI, typename F >
+inline std::unique_ptr< ScanLineFilter > NewScalarTriadicScanLineFilter( F const& func, dip::uint cost = 1 ) {
+   return static_cast< std::unique_ptr< ScanLineFilter >>( new VariadicScanLineFilter< 3, TPI, F, true >( func, cost ));
+}
+
+/// \brief Support for quickly defining tetradic operators (4 input images, 1 output image) on scalar images.
+/// See \ref dip::Framework::VariadicScanLineFilter.
+template< typename TPI, typename F >
+inline std::unique_ptr< ScanLineFilter > NewScalarTetradicScanLineFilter( F const& func, dip::uint cost = 1 ) {
+   return static_cast< std::unique_ptr< ScanLineFilter >>( new VariadicScanLineFilter< 4, TPI, F, true >( func, cost ));
 }
 
 

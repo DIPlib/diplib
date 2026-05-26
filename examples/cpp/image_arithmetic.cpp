@@ -22,7 +22,7 @@
 
 template< class TPI, class F >
 std::unique_ptr< dip::Framework::ScanLineFilter > NewFilter( F func ) {
-   return static_cast< std::unique_ptr< dip::Framework::ScanLineFilter >>( new dip::Framework::VariadicScanLineFilter< 1, TPI, F >( func ));
+   return static_cast< std::unique_ptr< dip::Framework::ScanLineFilter >>( new dip::Framework::VariadicScanLineFilter< 1, TPI, F, true >( func ));
 }
 
 int main() {
@@ -86,8 +86,8 @@ int main() {
    auto sampleOperator = [ = ]( std::array< dip::sfloat const*, 2 > its ) {
       return ( decltype( *its[ 0 ] ))(( *its[ 0 ] * 100 ) / ( *its[ 1 ] * 10 ) + decltype( *its[ 0 ] )( offset ));
    };
-   dip::Framework::VariadicScanLineFilter< 2, dip::sfloat, decltype( sampleOperator ) > diadicLineFilter( sampleOperator );
-   dip::Framework::ScanDyadic( in1, in2, tmp, dip::DT_SFLOAT, dip::DT_SFLOAT, dip::DT_SFLOAT, diadicLineFilter );
+   dip::Framework::VariadicScanLineFilter< 2, dip::sfloat, decltype( sampleOperator ), true > diadicLineFilter( sampleOperator );
+   dip::Framework::ScanDyadic( in1, in2, tmp, dip::DT_SFLOAT, dip::DT_SFLOAT, dip::DT_SFLOAT, diadicLineFilter, dip::Framework::ScanOption::TensorAsSpatialDim  );
    timer.Stop();
    std::cout << "diadicLineFilter: " << timer << '\n';
    dip::testing::CompareImages( out, tmp );
@@ -97,10 +97,10 @@ int main() {
    tmp = 0; // reset to show we're really doing the computation
    timer.Reset();
    std::unique_ptr< dip::Framework::ScanLineFilter > diadicLineFilter2;
-   DIP_OVL_CALL_ASSIGN_REAL( diadicLineFilter2, dip::Framework::NewDyadicScanLineFilter, (
+   DIP_OVL_CALL_ASSIGN_REAL( diadicLineFilter2, dip::Framework::NewScalarDyadicScanLineFilter, (
          [ = ]( auto its ) { return ( decltype( *its[ 0 ] ))(( *its[ 0 ] * 100 ) / ( *its[ 1 ] * 10 ) + decltype( *its[ 0 ] )( offset )); }
    ), dt );
-   dip::Framework::ScanDyadic( in1, in2, tmp, dt, dt, dt, *diadicLineFilter2 );
+   dip::Framework::ScanDyadic( in1, in2, tmp, dt, dt, dt, *diadicLineFilter2, dip::Framework::ScanOption::TensorAsSpatialDim  );
    timer.Stop();
    std::cout << "diadicLineFilter2: " << timer << '\n';
    dip::testing::CompareImages( out, tmp );

@@ -32,7 +32,7 @@ void And(
 ) {
    DataType dt = lhs.DataType();
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
-   DIP_OVL_CALL_ASSIGN_INT_OR_BIN( scanLineFilter, Framework::NewDyadicScanLineFilter, (
+   DIP_OVL_CALL_ASSIGN_INT_OR_BIN( scanLineFilter, Framework::NewScalarDyadicScanLineFilter, (
          []( auto its ) { return static_cast< decltype( *its[ 0 ] ) >( *its[ 0 ] & *its[ 1 ] ); } // integer promotion causes compiler warnings
    ), dt );
    DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, dt, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim ));
@@ -46,7 +46,7 @@ void Or(
 ) {
    DataType dt = lhs.DataType();
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
-   DIP_OVL_CALL_ASSIGN_INT_OR_BIN( scanLineFilter, Framework::NewDyadicScanLineFilter, (
+   DIP_OVL_CALL_ASSIGN_INT_OR_BIN( scanLineFilter, Framework::NewScalarDyadicScanLineFilter, (
          []( auto its ) { return static_cast< decltype( *its[ 0 ] ) >( *its[ 0 ] | *its[ 1 ] ); } // integer promotion causes compiler warnings
    ), dt );
    DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, dt, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim ));
@@ -60,7 +60,7 @@ void Xor(
 ) {
    DataType dt = lhs.DataType();
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
-   DIP_OVL_CALL_ASSIGN_INT_OR_BIN( scanLineFilter, Framework::NewDyadicScanLineFilter, (
+   DIP_OVL_CALL_ASSIGN_INT_OR_BIN( scanLineFilter, Framework::NewScalarDyadicScanLineFilter, (
          []( auto its ) { return static_cast< decltype( *its[ 0 ] ) >( *its[ 0 ] ^ *its[ 1 ] ); } // integer promotion causes compiler warnings
    ), dt );
    DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, dt, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim ));
@@ -77,7 +77,7 @@ void Not(
       return;
    }
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
-   DIP_OVL_CALL_ASSIGN_INTEGER( scanLineFilter, Framework::NewMonadicScanLineFilter, (
+   DIP_OVL_CALL_ASSIGN_INTEGER( scanLineFilter, Framework::NewScalarMonadicScanLineFilter, (
          []( auto its ) { return static_cast< decltype( *its[ 0 ] ) >( ~*its[ 0 ] ); } // integer promotion causes compiler warnings
    ), dt );
    DIP_STACK_TRACE_THIS( Framework::ScanMonadic( in, out, dt, dt, 1, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim ));

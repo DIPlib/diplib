@@ -33,7 +33,7 @@ void Add(
       DataType dt
 ) {
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
-   DIP_OVL_CALL_ASSIGN_ALL( scanLineFilter, Framework::NewDyadicScanLineFilter, (
+   DIP_OVL_CALL_ASSIGN_ALL( scanLineFilter, Framework::NewScalarDyadicScanLineFilter, (
          []( auto its ) { return dip::saturated_add( *its[ 0 ], *its[ 1 ] ); }
    ), dt );
    DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, dt, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim ));
@@ -47,7 +47,7 @@ void Subtract(
       DataType dt
 ) {
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
-   DIP_OVL_CALL_ASSIGN_ALL( scanLineFilter, Framework::NewDyadicScanLineFilter, (
+   DIP_OVL_CALL_ASSIGN_ALL( scanLineFilter, Framework::NewScalarDyadicScanLineFilter, (
          []( auto its ) { return dip::saturated_sub( *its[ 0 ], *its[ 1 ] ); }
    ), dt );
    DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, dt, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim ));
@@ -362,7 +362,7 @@ void MultiplySampleWise(
 ) {
    DataType dt = DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() );
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
-   DIP_OVL_CALL_ASSIGN_ALL( scanLineFilter, Framework::NewDyadicScanLineFilter, (
+   DIP_OVL_CALL_ASSIGN_ALL( scanLineFilter, Framework::NewScalarDyadicScanLineFilter, (
          []( auto its ) { return dip::saturated_mul( *its[ 0 ], *its[ 1 ] ); }
    ), dt );
    DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, dt_out, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim ));
@@ -377,7 +377,7 @@ void MultiplyConjugate(
    DataType dt = DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() );
    if( rhs.DataType().IsComplex() && dt.IsComplex() ) {
       std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
-      DIP_OVL_CALL_ASSIGN_COMPLEX( scanLineFilter, Framework::NewDyadicScanLineFilter, (
+      DIP_OVL_CALL_ASSIGN_COMPLEX( scanLineFilter, Framework::NewScalarDyadicScanLineFilter, (
             []( auto its ) { return dip::saturated_mul( *its[ 0 ], std::conj( *its[ 1 ] )); }, 4
       ), dt );
       DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, dt_out, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim ));
@@ -395,7 +395,7 @@ void Divide(
 ) {
    DataType dt = DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() );
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
-   DIP_OVL_CALL_ASSIGN_FLEXBIN( scanLineFilter, Framework::NewDyadicScanLineFilter, (
+   DIP_OVL_CALL_ASSIGN_FLEXBIN( scanLineFilter, Framework::NewScalarDyadicScanLineFilter, (
          []( auto its ) { return dip::saturated_div( *its[ 0 ], *its[ 1 ] ); }
    ), dt );
    DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, dt_out, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim ));
@@ -414,7 +414,7 @@ void SafeDivide(
       return;
    }
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
-   DIP_OVL_CALL_ASSIGN_FLEX( scanLineFilter, Framework::NewDyadicScanLineFilter, (
+   DIP_OVL_CALL_ASSIGN_FLEX( scanLineFilter, Framework::NewScalarDyadicScanLineFilter, (
          []( auto its ) { return dip::saturated_safediv( *its[ 0 ], *its[ 1 ] ); }
    ), dt );
    DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, dt_out, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim ));
@@ -429,11 +429,11 @@ void Modulo(
 ) {
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
    if( dt.IsFloat() ) {
-      DIP_OVL_CALL_ASSIGN_FLOAT( scanLineFilter, Framework::NewDyadicScanLineFilter, (
+      DIP_OVL_CALL_ASSIGN_FLOAT( scanLineFilter, Framework::NewScalarDyadicScanLineFilter, (
             []( auto its ) { return std::fmod( *its[ 0 ], *its[ 1 ] ); }
       ), dt );
    } else {
-      DIP_OVL_CALL_ASSIGN_INTEGER( scanLineFilter, Framework::NewDyadicScanLineFilter, (
+      DIP_OVL_CALL_ASSIGN_INTEGER( scanLineFilter, Framework::NewScalarDyadicScanLineFilter, (
             []( auto its ) { return static_cast< decltype( *its[ 0 ] ) >( *its[ 0 ] % *its[ 1 ] ); }
       ), dt );
    }
@@ -452,7 +452,7 @@ void Power(
    if( dt.IsBinary() ) {
       dt = DataType::SuggestFlex( dt_out );
    }
-   DIP_OVL_CALL_ASSIGN_FLEX( scanLineFilter, Framework::NewDyadicScanLineFilter, (
+   DIP_OVL_CALL_ASSIGN_FLEX( scanLineFilter, Framework::NewScalarDyadicScanLineFilter, (
          []( auto its ) { return std::pow( *its[ 0 ], *its[ 1 ] ); }, 20 // Rough guess at the cost
    ), dt );
    DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, dt_out, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim ));
@@ -483,7 +483,7 @@ void Invert(
 ) {
    DataType dt = in.DataType();
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
-   DIP_OVL_CALL_ASSIGN_ALL( scanLineFilter, Framework::NewMonadicScanLineFilter, (
+   DIP_OVL_CALL_ASSIGN_ALL( scanLineFilter, Framework::NewScalarMonadicScanLineFilter, (
          []( auto its ) { return saturated_inv( *its[ 0 ] ); }
    ), dt );
    DIP_STACK_TRACE_THIS( Framework::ScanMonadic( in, out, dt, dt, 1, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim ));

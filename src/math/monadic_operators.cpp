@@ -94,7 +94,7 @@ inline std::unique_ptr< Framework::ScanLineFilter > NewBinScanLineFilter( F cons
       DIP_THROW_IF( !in.DataType().IsA( inputDomain_ ), E::DATA_TYPE_NOT_SUPPORTED ); \
       DataType dtype = DataType::SuggestFlex( in.DataType() ); \
       std::unique_ptr <Framework::ScanLineFilter> scanLineFilter; \
-      DIP_OVL_CALL_ASSIGN_FLEX( scanLineFilter, Framework::NewMonadicScanLineFilter, ( functionLambda_, cost_ ), dtype ); \
+      DIP_OVL_CALL_ASSIGN_FLEX( scanLineFilter, Framework::NewScalarMonadicScanLineFilter, ( functionLambda_, cost_ ), dtype ); \
       DIP_STACK_TRACE_THIS( Framework::ScanMonadic( in, out, dtype, dtype, in.TensorElements(), *scanLineFilter, \
             Framework::ScanOption::NoSingletonExpansion + Framework::ScanOption::TensorAsSpatialDim )); \
    }
@@ -104,7 +104,7 @@ inline std::unique_ptr< Framework::ScanLineFilter > NewBinScanLineFilter( F cons
       DIP_THROW_IF( !in.DataType().IsA( inputDomain_ ), E::DATA_TYPE_NOT_SUPPORTED ); \
       DataType dtype = DataType::SuggestFloat( in.DataType() ); \
       std::unique_ptr <Framework::ScanLineFilter> scanLineFilter; \
-      DIP_OVL_CALL_ASSIGN_FLOAT( scanLineFilter, Framework::NewMonadicScanLineFilter, ( functionLambda_, cost_ ), dtype ); \
+      DIP_OVL_CALL_ASSIGN_FLOAT( scanLineFilter, Framework::NewScalarMonadicScanLineFilter, ( functionLambda_, cost_ ), dtype ); \
       DIP_STACK_TRACE_THIS( Framework::ScanMonadic( in, out, dtype, dtype, in.TensorElements(), *scanLineFilter, \
             Framework::ScanOption::NoSingletonExpansion + Framework::ScanOption::TensorAsSpatialDim )); \
    }
@@ -114,7 +114,7 @@ inline std::unique_ptr< Framework::ScanLineFilter > NewBinScanLineFilter( F cons
       DIP_THROW_IF( !in.DataType().IsA( inputDomain_ ), E::DATA_TYPE_NOT_SUPPORTED ); \
       DataType dtype = DataType::SuggestFloat( in.DataType() ); \
       std::unique_ptr <Framework::ScanLineFilter> scanLineFilter; \
-      DIP_OVL_CALL_ASSIGN_FLOAT( scanLineFilter, Framework::NewMonadicScanLineFilter, ( functionLambda_, cost_ ), dtype ); \
+      DIP_OVL_CALL_ASSIGN_FLOAT( scanLineFilter, Framework::NewScalarMonadicScanLineFilter, ( functionLambda_, cost_ ), dtype ); \
       DIP_STACK_TRACE_THIS( Framework::ScanMonadic( in, out, dtype, dtype, in.TensorElements(), *scanLineFilter, \
             Framework::ScanOption::NoSingletonExpansion + Framework::ScanOption::TensorAsSpatialDim )); \
    }
@@ -289,7 +289,7 @@ void Conjugate( Image const& in, Image& out ) {
    DataType dtype = in.DataType();
    if( dtype.IsComplex() ) {
       std::unique_ptr <Framework::ScanLineFilter> scanLineFilter;
-      DIP_OVL_CALL_ASSIGN_COMPLEX( scanLineFilter, Framework::NewMonadicScanLineFilter, (
+      DIP_OVL_CALL_ASSIGN_COMPLEX( scanLineFilter, Framework::NewScalarMonadicScanLineFilter, (
             []( auto its ) { return std::conj( *its[ 0 ] ); }
       ), dtype );
       DIP_STACK_TRACE_THIS( Framework::ScanMonadic( in, out, dtype, dtype, in.TensorElements(), *scanLineFilter,

@@ -85,7 +85,7 @@ void Clip(
       high = infinity;
    }
    std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
-   DIP_OVL_CALL_ASSIGN_REAL( scanLineFilter, Framework::NewMonadicScanLineFilter, (
+   DIP_OVL_CALL_ASSIGN_REAL( scanLineFilter, Framework::NewScalarMonadicScanLineFilter, (
          [ = ]( auto its ) { return clamp( *its[ 0 ], clamp_cast< std::remove_reference_t< decltype( *its[ 0 ] ) >>( low ),
                                                       clamp_cast< std::remove_reference_t< decltype( *its[ 0 ] ) >>( high )); }, 2
    ), dtype );
@@ -162,7 +162,7 @@ void Zero(
    DataType dtype = in.DataType();
    DIP_THROW_IF( !dtype.IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
-   DIP_OVL_CALL_ASSIGN_REAL( scanLineFilter, Framework::NewMonadicScanLineFilter, (
+   DIP_OVL_CALL_ASSIGN_REAL( scanLineFilter, Framework::NewScalarMonadicScanLineFilter, (
          [ = ]( auto its ) { return ( static_cast< dfloat >( *its[ 0 ] ) < threshold ) ? static_cast< decltype( *its[ 0 ] ) >( 0 ) : *its[ 0 ]; }, 2
    ), dtype );
    DIP_STACK_TRACE_THIS( Framework::ScanMonadic( in, out, dtype, dtype, in.TensorElements(), *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim ));
@@ -174,7 +174,7 @@ void Shrinkage(
       dfloat threshold
 ) {
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
-   std::unique_ptr< Framework::ScanLineFilter > scanLineFilter = Framework::NewMonadicScanLineFilter< dfloat >(
+   std::unique_ptr< Framework::ScanLineFilter > scanLineFilter = Framework::NewScalarMonadicScanLineFilter< dfloat >(
          [ = ]( auto its ) { return ( *its[ 0 ] > threshold ) ? ( *its[ 0 ] - threshold )
                                                               : (( *its[ 0 ] < -threshold ) ? ( *its[ 0 ] + threshold )
                                                                                             : 0.0 ); }, 2 );

@@ -35,7 +35,7 @@ void Atan2( Image const& y, Image const& x, Image& out ) {
    DIP_THROW_IF( !y.IsScalar() || !x.IsScalar(), E::IMAGE_NOT_SCALAR );
    DataType dt = DataType::SuggestArithmetic( y.DataType(), x.DataType() );
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
-   DIP_OVL_CALL_ASSIGN_FLOAT( scanLineFilter, Framework::NewDyadicScanLineFilter, (
+   DIP_OVL_CALL_ASSIGN_FLOAT( scanLineFilter, Framework::NewScalarDyadicScanLineFilter, (
          []( auto its ) { return std::atan2( *its[ 0 ], *its[ 1 ] ); }, 20
    ), dt );
    ImageRefArray outar{ out };
@@ -46,7 +46,7 @@ void Hypot( Image const& a, Image const& b, Image& out ) {
    DIP_THROW_IF( !a.IsScalar() || !b.IsScalar(), E::IMAGE_NOT_SCALAR );
    DataType dt = DataType::SuggestArithmetic( a.DataType(), b.DataType() );
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
-   DIP_OVL_CALL_ASSIGN_FLOAT( scanLineFilter, Framework::NewDyadicScanLineFilter, (
+   DIP_OVL_CALL_ASSIGN_FLOAT( scanLineFilter, Framework::NewScalarDyadicScanLineFilter, (
          []( auto its ) { return std::hypot( *its[ 0 ], *its[ 1 ] ); }, 20 // rough guess at the cost
    ), dt );
    ImageRefArray outar{ out };
@@ -125,7 +125,7 @@ void SignedInfimum( Image const& a, Image const& b, Image& out ) {
    DataType dt = DataType::SuggestSigned( a.DataType() );
    dt = DataType::SuggestDyadicOperation( dt, b.DataType() );
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
-   DIP_OVL_CALL_ASSIGN_SIGNEDREAL( scanLineFilter, Framework::NewDyadicScanLineFilter, (
+   DIP_OVL_CALL_ASSIGN_SIGNEDREAL( scanLineFilter, Framework::NewScalarDyadicScanLineFilter, (
          []( auto its ) { return *its[ 0 ] > *its[ 1 ] ? static_cast< decltype( *its[ 1 ] ) >( -( *its[ 1 ] )) : *its[ 0 ]; }
    ), dt );
    ImageRefArray outar{ out };

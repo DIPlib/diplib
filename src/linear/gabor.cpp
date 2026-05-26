@@ -208,10 +208,10 @@ void ApplyScaleFilters(
          tmp.Protect();
       }
       dfloat wavelength = wavelengths[ scale ];
-      auto lineFilter = Framework::NewMonadicScanLineFilter< sfloat >( [ wavelength, expScaling ]( auto its ){
+      auto lineFilter = Framework::NewScalarMonadicScanLineFilter< sfloat >( [ wavelength, expScaling ]( auto its ){
          return static_cast< sfloat >( std::exp( -std::pow( std::log( *its[ 0 ] * wavelength ), 2 ) * expScaling ));
       }, 50 );
-      Framework::ScanMonadic( radius, tmp, DT_SFLOAT, DT_SFLOAT, 1, *lineFilter );
+      Framework::ScanMonadic( radius, tmp, DT_SFLOAT, DT_SFLOAT, 1, *lineFilter, Framework::ScanOption::TensorAsSpatialDim );
       if( ftIn.IsForged() ) {
          Multiply( tmp, ftIn, outar[ scale ] ); // output is complex-valued
       }
@@ -352,10 +352,10 @@ void LogGaborFilterBank(
       rotMatrix.ReshapeTensor( 2, 2 );
       Image radialFilter = rotMatrix * coord;
       Angle( radialFilter, radialFilter );
-      auto lineFilter = Framework::NewMonadicScanLineFilter< sfloat >( [ expScaling ]( auto its ){
+      auto lineFilter = Framework::NewScalarMonadicScanLineFilter< sfloat >( [ expScaling ]( auto its ){
          return static_cast< sfloat >( std::exp( static_cast< dfloat >( *its[ 0 ] ) * static_cast< dfloat >( *its[ 0 ] ) * -expScaling ));
       }, 30 );
-      Framework::ScanMonadic( radialFilter, radialFilter, DT_SFLOAT, DT_SFLOAT, 1, *lineFilter );
+      Framework::ScanMonadic( radialFilter, radialFilter, DT_SFLOAT, DT_SFLOAT, 1, *lineFilter, Framework::ScanOption::TensorAsSpatialDim );
       // Filter each scale with this angle selection filter
       for( dip::uint scale = 0; scale < nFrequencyScales; ++scale ) {
          Image destination = out[ UnsignedArray{ orientation, scale } ];

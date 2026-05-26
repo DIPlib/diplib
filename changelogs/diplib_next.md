@@ -42,6 +42,21 @@ date: 2020-00-00
 - The `dipview` and `dipviewjava` command-line tools will now first attempt to read a file as if it were a multi-page
   TIFF file where the pages compose a 3D image. If it fails, it proceeds as it did previously.
 
+- `dip::Framework::VariadicScanLineFilter` is more efficient when the input images are scalar. And because it applies
+  the same operation to every scalar, its function is identical when treating the tensor dimension as a spatial
+  dimension, making the images scalar. This is accomplished by using the `dip::Framework::ScanOption::TensorAsSpatialDim`
+  option in `dip::Framework::Scan()`/`dip::Framework::ScanMonadic()`/`dip::Framework::ScanDyadic()`. With these changes,
+  element-wise arithmetic, bitwise and comparison operators should be a bit faster now for non-scalar images.
+  To enforce proper use, we have:
+    - Added a fourth template parameter `Scalar` to `dip::Framework::VariadicScanLineFilter`, which defaults to
+      `false` to avoid changing the behavior of existing code. But instantiating this template with `Scalar == false`
+      will generate a deprecation warning. When set to `true` input images must be scalar.
+    - Added `dip::Framework::NewScalarMonadicScanLineFilter()`, `dip::Framework::NewScalarDyadicScanLineFilter()`,
+      `dip::Framework::NewScalarTriadicScanLineFilter()` and `dip::Framework::NewScalarTetradicScanLineFilter()`,
+      replacing `dip::Framework::NewMonadicScanLineFilter()`, `dip::Framework::NewDyadicScanLineFilter()`,
+      `dip::Framework::NewTriadicScanLineFilter()` and `dip::Framework::NewTetradicScanLineFilter()`, which are now
+      deprecated.
+
 ### Bug fixes
 
 - `dip::Image::Mask` used multiplication for masking, which doesn't work to mask out NaN or Infinity values.
@@ -73,8 +88,6 @@ date: 2020-00-00
 - `dip::ImageSliceIterator::SetCoordinate()`, `Set()` and `Reset()` didn't update the internal data pointer, meaning
   that the slice returned by the iterator after calling any of these functions didn't match the coordinate, and
   could point to out-of-bounds data.
-
-- Element-wise arithmetic, bitwise and comparison operators should be a bit faster now for non-scalar images.
 
 ### Updated dependencies
 

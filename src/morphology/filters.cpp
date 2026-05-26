@@ -508,7 +508,7 @@ void HitAndMiss(
       DIP_STACK_TRACE_THIS( dil = Dilation( in, miss, boundaryCondition ));
       DataType dt = in.DataType();
       std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
-      DIP_OVL_CALL_ASSIGN_REAL( scanLineFilter, Framework::NewTriadicScanLineFilter, (
+      DIP_OVL_CALL_ASSIGN_REAL( scanLineFilter, Framework::NewScalarTriadicScanLineFilter, (
             []( auto its ) { //  -> std::remove_reference_t< decltype( *its[ 0 ] ) >
                auto in = *its[ 0 ];
                auto ero = *its[ 1 ];

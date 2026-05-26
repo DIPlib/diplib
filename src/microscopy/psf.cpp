@@ -61,7 +61,7 @@ void IncoherentOTF(
    std::unique_ptr< Framework::ScanLineFilter > filter;
    if( defocus == 0 ) {    // In-focus OTF
 
-      filter = Framework::NewMonadicScanLineFilter< sfloat >(
+      filter = Framework::NewScalarMonadicScanLineFilter< sfloat >(
             [ = ]( auto its ) {
 
                dfloat r = *its[ 0 ] * 2.0 * oversampling;
@@ -74,7 +74,7 @@ void IncoherentOTF(
    } else {
       if( stokseth ) {     // Out-of-focus OTF: Stokseth formulation
 
-         filter = Framework::NewMonadicScanLineFilter< sfloat >(
+         filter = Framework::NewScalarMonadicScanLineFilter< sfloat >(
                [ = ]( auto its ) {
 
                   dfloat r = *its[ 0 ] * 2.0 * oversampling;
@@ -91,7 +91,7 @@ void IncoherentOTF(
 
       } else {             // Out-of-focus OTF: Hopkins formulation
 
-         filter = Framework::NewMonadicScanLineFilter< sfloat >(
+         filter = Framework::NewScalarMonadicScanLineFilter< sfloat >(
                [ = ]( auto its ) {
 
                   dfloat r = *its[ 0 ] * 2.0 * oversampling;
@@ -162,7 +162,7 @@ void IncoherentPSF(
    }
    DIP_STACK_TRACE_THIS( FillRadiusCoordinate( radius ));
    dfloat cutoff = pi / ( 2.0 * oversampling );
-   std::unique_ptr< Framework::ScanLineFilter > filter = Framework::NewMonadicScanLineFilter< sfloat >(
+   std::unique_ptr< Framework::ScanLineFilter > filter = Framework::NewScalarMonadicScanLineFilter< sfloat >(
          [ = ]( auto its ) {
             dfloat r = *its[ 0 ] * cutoff;
             if( r == 0.0 ) { return 1.0f; }
