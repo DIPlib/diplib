@@ -35,6 +35,7 @@
 #include <vector>
 
 #include "diplib/library/export.h"
+#include "diplib/library/error.h"
 #include "diplib/library/types.h"
 #include "diplib/library/sample_iterator.h"
 
@@ -83,67 +84,53 @@ constexpr inline dip::uint gcd( dip::uint a, dip::uint b ) {
 /// \brief Integer division, unsigned, return ceil.
 template< typename T, std::enable_if_t< std::is_integral< T >::value && !std::is_signed< T >::value, int > = 0 >
 constexpr T div_ceil( T lhs, T rhs ) {
-   if(( lhs == 0 ) || ( rhs == 0 )) {
-      return 0;
-   }
-   return ( lhs - 1 ) / rhs + 1;
+   DIP_ASSERT( rhs != 0 );
+   return ( lhs == 0 ) ? 0 : (( lhs - 1 ) / rhs + 1 );
 }
 
 /// \brief Integer division, signed, return ceil. If signs differ, adding or subtracting one from `lhs` should not overflow.
 template< typename T, std::enable_if_t< std::is_integral< T >::value && std::is_signed< T >::value, int > = 0 >
 constexpr T div_ceil( T lhs, T rhs ) {
-   if(( lhs == 0 ) || ( rhs == 0 )) {
-      return 0;
-   }
-   if(( lhs ^ rhs ) < 0 ) {
-      return lhs / rhs;
-   }
-   if( lhs < 0 ) {
-      return ( lhs + 1 ) / rhs + 1;
-   }
-   return ( lhs - 1 ) / rhs + 1;
+   DIP_ASSERT( rhs != 0 );
+   // Adapted from: https://stackoverflow.com/a/46265641/7328782
+   T out = lhs / rhs;
+   return ( out * rhs == lhs ) ? out : ( out + !(( lhs < 0 ) ^ ( rhs < 0 )));
 }
 
 /// \brief Integer division, unsigned, return floor.
 template< typename T, std::enable_if_t< std::is_integral< T >::value && !std::is_signed< T >::value, int > = 0 >
 constexpr T div_floor( T lhs, T rhs ) {
-   if(( lhs == 0 ) || ( rhs == 0 )) {
-      return 0;
-   }
+   DIP_ASSERT( rhs != 0 );
    return lhs / rhs;
 }
 
 /// \brief Integer division, signed, return floor. If signs differ, adding or subtracting one from `lhs` should not overflow.
 template< typename T, std::enable_if_t< std::is_integral< T >::value && std::is_signed< T >::value, int > = 0 >
 constexpr T div_floor( T lhs, T rhs ) {
-   if(( lhs == 0 ) || ( rhs == 0 )) {
-      return 0;
-   }
-   if(( lhs ^ rhs ) < 0 ) {
-      if( lhs < 0 ) {
-         return ( lhs + 1 ) / rhs - 1;
-      }
-      return ( lhs - 1 ) / rhs - 1;
-   }
-   return lhs / rhs;
+   DIP_ASSERT( rhs != 0 );
+   // Adapted from: https://stackoverflow.com/a/46265641/7328782
+   T out = lhs / rhs;
+   return ( out * rhs == lhs ) ? out : ( out - (( lhs < 0 ) ^ ( rhs < 0 )));
 }
 
 /// \brief Integer division, return rounded.
 template< typename T, typename = std::enable_if_t< std::is_integral< T >::value, T >>
 constexpr T div_round( T lhs, T rhs ) {
+   DIP_ASSERT( rhs != 0 );
    // Adapted from: https://stackoverflow.com/a/60009773/7328782
-   return ( lhs < 0 ) != ( rhs < 0 ) ? (( lhs - rhs / 2 ) / rhs )
-                                     : (( lhs + rhs / 2 ) / rhs );
+   return (( lhs ^ rhs ) < 0 ) ? (( lhs - rhs / 2 ) / rhs ) : (( lhs + rhs / 2 ) / rhs );
 }
 
 /// \brief Integer modulo, result is always positive, as opposed to % operator.
 constexpr inline dip::uint modulo( dip::uint value, dip::uint period ) {
+   DIP_ASSERT( period != 0 );
    return value % period;
 }
 
 /// \brief Integer modulo, result is always positive, as opposed to % operator.
 /// `period` must be positive, this is not tested for.
 constexpr inline dip::sint modulo( dip::sint value, dip::sint period ) {
+   DIP_ASSERT( period != 0 );
    dip::sint out = value % period;
    if( out < 0 ) {
       out += period; // If period is negative, we need to subtract here.

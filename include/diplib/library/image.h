@@ -156,7 +156,9 @@ class DIP_CLASS_EXPORT ExternalInterface {
 class DIP_CLASS_EXPORT AlignedAllocInterface : public ExternalInterface {
    private:
       // Private constructor to enforce the singleton interface
-      explicit AlignedAllocInterface( dip::uint alignment ) : alignment_( alignment ) {}
+      explicit AlignedAllocInterface( dip::uint alignment ) : alignment_( alignment ) {
+         DIP_ASSERT( alignment_ > 0 );
+      }
 
       // Alignment in bytes
       dip::uint alignment_;
