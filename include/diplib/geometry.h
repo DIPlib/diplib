@@ -461,12 +461,11 @@ inline void Skew(
    FloatArray shearArray( nDims, 0.0 );
    shearArray[ skew ] = std::tan( shear );
    dip::uint origin = in.Size( axis ) / 2;
-   BoundaryCondition bc;
+   BoundaryCondition bc{};
    DIP_START_STACK_TRACE
       bc = StringToBoundaryCondition( boundaryCondition );
    DIP_END_STACK_TRACE
-   BoundaryConditionArray bca( 1, bc );
-   Skew( in, out, shearArray, axis, origin, interpolationMethod, bca );
+   Skew( in, out, shearArray, axis, origin, interpolationMethod, { bc } );
 }
 DIP_NODISCARD inline Image Skew(
       Image const& in,
