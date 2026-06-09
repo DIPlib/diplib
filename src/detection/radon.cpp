@@ -218,7 +218,7 @@ RadonCircleParametersArray RadonCircleSubpixelMaxima(
 
    // Find local maxima
    Image localMaxima;
-   DIP_STACK_TRACE_THIS( localMaxima = WatershedMaxima( in, {}, 1, threshold, 0, S::LABELS ));
+   DIP_STACK_TRACE_THIS( localMaxima = WatershedMaxima( in, {}, 0, threshold, 0, S::LABELS ));
    // But not on the edge of the image
    SetBorder( localMaxima );
 
