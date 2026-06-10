@@ -89,8 +89,11 @@ date: 2020-00-00
   that the slice returned by the iterator after calling any of these functions didn't match the coordinate, and
   could point to out-of-bounds data.
 
-- `dip::RadonTransformCircles` now sets the `connectivity` parameter to `WatershedMaxima()` to 0, instead of 1. This should
+- `dip::RadonTransformCircles()` now sets the `connectivity` parameter to `WatershedMaxima()` to 0, instead of 1. This should
   significanlty improve the quality of the local maxima detected. See [discussion #227](https://github.com/DIPlib/diplib/discussions/227).
+
+- `dip::FindHoughCircles()` did not pass the `range` parameter to the `dip::PointDistanceDistribution()` sub-function.
+  See [issue #228](https://github.com/DIPlib/diplib/issues/228).
 
 ### Updated dependencies
 

@@ -322,7 +322,7 @@ FloatCoordinateArray FindHoughCircles(
 
    // Get radius distributions
    Distribution dist;
-   DIP_STACK_TRACE_THIS( dist = PointDistanceDistribution( in, centers ));
+   DIP_STACK_TRACE_THIS( dist = PointDistanceDistribution( in, centers, range ));
 
    // Find radii
    std::vector< dfloat > radii;
