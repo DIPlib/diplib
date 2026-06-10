@@ -837,7 +837,7 @@ DIP_NODISCARD inline Image Divergence(
    return out;
 }
 
-/// \brief Computes the Hessian of the image, resulting in a symmetric *NxN* tensor image, if the input
+/// \brief Computes the Hessian of the image, resulting in a symmetric *N*&times;*N* tensor image, if the input
 /// was *N*-dimensional.
 ///
 /// The Hessian of input image $f$ is given by $\mathbf{H} = \nabla \nabla^T f$, with tensor components

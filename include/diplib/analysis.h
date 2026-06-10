@@ -428,7 +428,7 @@ DIP_NODISCARD inline Image FourierMellinMatch2D(
 /// then there is a line-like structure. The associated eigenvalues indicate the orientation of this structure.
 /// See the literature references below for more information.
 ///
-/// `in` must be a scalar, real-valued image. `out` will be a symmetric NxN tensor image, where N is the number
+/// `in` must be a scalar, real-valued image. `out` will be a symmetric *N*&times;*N* tensor image, where *N* is the number
 /// of dimensions in `in`. Out is computed by:
 ///
 /// ```cpp

@@ -2453,7 +2453,7 @@ doc_url_pairs = [
     ('dip.DT_COUNT', 'dip-Histogram.html#dip-DT_COUNT'),
     ('dip.operator+', 'dip-Histogram.html#dip-operator%2B-Histogram-CL-Histogram-CL'),
     ('dip.operator-', 'dip-Histogram.html#dip-operator--Histogram-CL-Histogram-CL'),
-    ('dip.operator<<', 'dip-Distribution.html#dip-operator%3C%3C-std-ostream-L-Histogram-CL'),
+    ('dip.operator<<', 'dip-Histogram.html#dip-operator%3C%3C-std-ostream-L-Histogram-CL'),
     ('dip.CumulativeHistogram', 'histograms.html#dip-CumulativeHistogram-Histogram-CL'),
     ('dip.Smooth', 'histograms.html#dip-Smooth-Histogram-CL-FloatArray-CL'),
     ('dip.Smooth', 'histograms.html#dip-Smooth-Histogram-CL-dfloat-'),

@@ -111,14 +111,14 @@ class DIP_NO_EXPORT Tensor {
       /// }
       /// ```
       enum class Shape : uint8 {
-            COL_VECTOR = 0,   ///< a vector (stores n elements), default vector shape
-            ROW_VECTOR,       ///< a row vector (stores n elements)
-            COL_MAJOR_MATRIX, ///< a matrix (stores n x m elements), default matrix shape
-            ROW_MAJOR_MATRIX, ///< a row-major matrix (stores n x m elements)
-            DIAGONAL_MATRIX,  ///< a diagonal matrix (stores n elements)
-            SYMMETRIC_MATRIX, ///< a symmetric matrix (stores n(n+1)/2 elements)
-            UPPTRIANG_MATRIX, ///< an upper-triangular matrix (stores n(n+1)/2 elements)
-            LOWTRIANG_MATRIX, ///< a lower-triangular matrix (stores n(n+1)/2 elements)
+            COL_VECTOR = 0,   ///< a vector (stores *n* elements), default vector shape
+            ROW_VECTOR,       ///< a row vector (stores *n* elements)
+            COL_MAJOR_MATRIX, ///< a matrix (stores *n*&times;*m* elements), default matrix shape
+            ROW_MAJOR_MATRIX, ///< a row-major matrix (stores *n*&times;*m* elements)
+            DIAGONAL_MATRIX,  ///< a diagonal matrix (stores *n* elements)
+            SYMMETRIC_MATRIX, ///< a symmetric matrix (stores *n*(*n*+1)/2 elements)
+            UPPTRIANG_MATRIX, ///< an upper-triangular matrix (stores *n*(*n*+1)/2 elements)
+            LOWTRIANG_MATRIX, ///< a lower-triangular matrix (stores *n*(*n*+1)/2 elements)
       };
 
       struct ShapeString {

@@ -717,7 +717,7 @@ inline Histogram operator-( Histogram const& lhs, Histogram const& rhs ) {
 
 /// \brief You can output a \ref dip::Histogram to `std::cout` or any other stream. Some
 /// information about the histogram is printed.
-/// \relates dip::Distribution
+/// \relates dip::Histogram
 inline std::ostream& operator<<(
       std::ostream& os,
       Histogram const& histogram

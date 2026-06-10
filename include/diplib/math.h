@@ -659,8 +659,8 @@ DIP_NODISCARD inline Image PseudoInverse( Image const& in, dfloat tolerance = 1e
 
 /// \brief Computes the "thin" singular value decomposition of the matrix at each pixel in image `in`.
 ///
-/// For an input image `in` with a tensor size of NxP, and with M the smaller of N and P, `out` is a
-/// vector image with M elements, corresponding to the singular values, sorted in decreasing order.
+/// For an input image `in` with a tensor size of *N*&times;*P*, and with *M* the smaller of *N* and *P*, `out` is a
+/// vector image with *M* elements, corresponding to the singular values, sorted in decreasing order.
 ///
 /// Use \ref dip::SingularValueDecomposition if you need the full decomposition.
 ///
@@ -671,8 +671,8 @@ DIP_MONADIC_OPERATOR( SingularValues )
 
 /// \brief Computes the "thin" singular value decomposition of the matrix at each pixel in image `in`.
 ///
-/// For an input image `A` with a tensor size of NxP, and with M the smaller of N and P, `S` is a
-/// square diagonal MxM matrix, `U` is a NxM matrix, and V is a PxM matrix. These matrices satisfy
+/// For an input image `A` with a tensor size of *N*&times;*P*, and with *M* the smaller of *N* and *P*, `S` is a
+/// square diagonal *M*&times;*M* matrix, `U` is a *N*&times;*M* matrix, and `V` is a *P*&times;*M* matrix. These matrices satisfy
 /// the relation $A = USV^*$.
 ///
 /// The (diagonal) elements of `S` are the singular values, sorted in decreasing order.
@@ -685,8 +685,8 @@ DIP_EXPORT void SingularValueDecomposition( Image const& A, Image& U, Image& S, 
 /// \brief Creates an image whose pixels are identity matrices.
 ///
 /// `out` will have the same sizes as `in`, and with a tensor representation of a diagonal matrix
-/// with a size concordant to that of the tensor representation of `in`. For example, for an N-vector
-/// image, the resulting output matrix image will be NxN. `out` will be of type \ref dip::DT_SFLOAT.
+/// with a size concordant to that of the tensor representation of `in`. For example, for an *N*-vector
+/// image, the resulting output matrix image will be *N*&times;*N*. `out` will be of type \ref dip::DT_SFLOAT.
 inline void Identity( Image const& in, Image& out ) {
    dip::uint telems = std::max( in.TensorColumns(), in.TensorRows() );
    out.ReForge( in.Sizes(), telems, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
