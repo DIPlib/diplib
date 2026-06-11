@@ -270,13 +270,22 @@ CoordinateArray FindHoughMaxima(
 Distribution PointDistanceDistribution(
       Image const& in,
       CoordinateArray const& points,
-      UnsignedArray range
+      UnsignedArray range,
+      StringSet const& options
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
 
    if( range.empty() ) {
       range = { 0, static_cast< dip::uint >( std::ceil( std::sqrt( in.Sizes().norm_square() ))) };
+   }
+   bool normalize = false;
+   for( auto const& option : options ) {
+      if( option == "normalized" ) {
+         normalize = true;
+      } else {
+         DIP_THROW_INVALID_FLAG( option );
+      }
    }
 
    auto coordComp = in.OffsetToCoordinatesComputer();
@@ -297,7 +306,7 @@ Distribution PointDistanceDistribution(
 
          dip::sint bin = round_cast( dist - static_cast< dfloat >( range[ 0 ] ));
          if( bin >= 0 && bin < static_cast< dip::sint >( steps )) {
-            distribution[ static_cast< dip::uint >( bin ) ].Y( cid )++;
+            distribution[ static_cast< dip::uint >( bin ) ].Y( cid ) += normalize ? ( 1.0 / dist ) : 1.0;
          }
       }
    }
@@ -310,7 +319,8 @@ FloatCoordinateArray FindHoughCircles(
       Image const& gv,
       UnsignedArray const& range,
       dfloat distance,
-      dfloat fraction
+      dfloat fraction,
+      StringSet const& options
 ) {
    // Perform Hough transform for circle centers
    Image hough;
@@ -322,7 +332,7 @@ FloatCoordinateArray FindHoughCircles(
 
    // Get radius distributions
    Distribution dist;
-   DIP_STACK_TRACE_THIS( dist = PointDistanceDistribution( in, centers, range ));
+   DIP_STACK_TRACE_THIS( dist = PointDistanceDistribution( in, centers, range, options ));
 
    // Find radii
    std::vector< dfloat > radii;

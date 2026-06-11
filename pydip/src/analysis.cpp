@@ -210,10 +210,10 @@ void init_analysis( py::module& m ) {
           "in"_a, "gv"_a, py::kw_only(), "out"_a, "range"_a = dip::UnsignedArray{}, doc_strings::dip·HoughTransformCircleCenters·Image·CL·Image·CL·Image·L·UnsignedArray·CL );
    m.def( "FindHoughMaxima", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat >( &dip::FindHoughMaxima ),
           "in"_a, "distance"_a = 10.0, "fraction"_a = 0.1, doc_strings::dip·FindHoughMaxima·Image·CL·dfloat··dfloat· );
-   m.def( "PointDistanceDistribution", py::overload_cast< dip::Image const&, dip::CoordinateArray const&, dip::UnsignedArray >( &dip::PointDistanceDistribution ),
-          "in"_a, "points"_a, "range"_a = dip::UnsignedArray{}, doc_strings::dip·PointDistanceDistribution·Image·CL·CoordinateArray·CL·UnsignedArray· );
-   m.def( "FindHoughCircles", py::overload_cast< dip::Image const&, dip::Image const&, dip::UnsignedArray const&, dip::dfloat, dip::dfloat >( &dip::FindHoughCircles ),
-          "in"_a, "gv"_a, "range"_a = dip::UnsignedArray{}, "distance"_a = 10.0, "fraction"_a = 0.1, doc_strings::dip·FindHoughCircles·Image·CL·Image·CL·UnsignedArray·CL·dfloat··dfloat· );
+   m.def( "PointDistanceDistribution", py::overload_cast< dip::Image const&, dip::CoordinateArray const&, dip::UnsignedArray, dip::StringSet const& >( &dip::PointDistanceDistribution ),
+          "in"_a, "points"_a, "range"_a = dip::UnsignedArray{}, "options"_a = dip::StringSet{}, doc_strings::dip·PointDistanceDistribution·Image·CL·CoordinateArray·CL·UnsignedArray··StringSet·CL );
+   m.def( "FindHoughCircles", py::overload_cast< dip::Image const&, dip::Image const&, dip::UnsignedArray const&, dip::dfloat, dip::dfloat, dip::StringSet const& >( &dip::FindHoughCircles ),
+          "in"_a, "gv"_a, "range"_a = dip::UnsignedArray{}, "distance"_a = 10.0, "fraction"_a = 0.1, "options"_a = dip::StringSet{}, doc_strings::dip·FindHoughCircles·Image·CL·Image·CL·UnsignedArray·CL·dfloat··dfloat··StringSet·CL );
 
    m.def( "RadonTransformCircles", []( dip::Image const& in, dip::Range radii, dip::dfloat sigma, dip::dfloat threshold, dip::String const& mode, dip::StringSet const& options ) {
                  dip::Image out;

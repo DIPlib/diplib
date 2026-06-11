@@ -66,7 +66,7 @@ namespace dip {
 /// the input images.
 ///
 /// `range` must be empty, or have exactly two elements representing the minimum and maximum radius to
-//. be considered. If empty, the minimum radius is 0, and the maximum is the length of the image diagonal.
+/// be considered. If empty, the minimum radius is 0, and the maximum is the length of the image diagonal.
 DIP_EXPORT void HoughTransformCircleCenters(
       Image const& in,
       Image const& gv,
@@ -102,10 +102,14 @@ DIP_EXPORT CoordinateArray FindHoughMaxima(
 ///
 /// `range` must be empty, or have exactly two elements representing the minimum and maximum distance to
 /// be considered. If empty, the minimum distance is 0, and the maximum is the length of the image diagonal.
+///
+/// If `options` contains `"normalized"`, then the output pixel counts will be normalized by the distance.
+/// With this option, complete circles will have a larger weight than incomplete circles, no matter their size.
 DIP_EXPORT Distribution PointDistanceDistribution(
       Image const& in,
       CoordinateArray const& points,
-      UnsignedArray range = {}
+      UnsignedArray range = {},
+      StringSet const& options = {}
 );
 
 /// \brief Find circles in 2D binary images.
@@ -124,6 +128,9 @@ DIP_EXPORT Distribution PointDistanceDistribution(
 /// `fraction` is the minimum height of a peak in the Hough transform, with respect to the largest peak,
 /// that should be considered, again to suppress noisy results.
 ///
+/// If `options` contains `"normalized"`, then complete circles will be prioritized over incomplete
+/// circles, no matter their size.
+///
 /// The output array contains three values per circle found: the x and y coordinates, and the radius.
 ///
 /// Example usage:
@@ -137,7 +144,8 @@ DIP_EXPORT FloatCoordinateArray FindHoughCircles(
       Image const& gv,
       UnsignedArray const& range = {},
       dfloat distance = 10.0,
-      dfloat fraction = 0.1
+      dfloat fraction = 0.1,
+      StringSet const& options = {}
 );
 
 

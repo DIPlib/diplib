@@ -57,6 +57,9 @@ date: 2020-00-00
       `dip::Framework::NewTriadicScanLineFilter()` and `dip::Framework::NewTetradicScanLineFilter()`, which are now
       deprecated.
 
+- `dip::FindHoughCircles()` and its sub-function `dip::PointDistanceDistribution()` have a new argument `options`,
+  through which one can pass the option `"normalized"` to avoid a bias towards larger circles.
+
 ### Bug fixes
 
 - `dip::Image::Mask` used multiplication for masking, which doesn't work to mask out NaN or Infinity values.

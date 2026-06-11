@@ -1609,8 +1609,8 @@ constexpr char const* dip·RichardsonLucy·Image·CL·Image·CL·Image·L·dfloa
 constexpr char const* dip·FastIterativeShrinkageThresholding·Image·CL·Image·CL·Image·L·dfloat··dfloat··dip·uint··dip·uint··StringSet·CL = "Fast Iterative Shrinkage-Thresholding (FISTA) deconvolution.";
 constexpr char const* dip·HoughTransformCircleCenters·Image·CL·Image·CL·Image·L·UnsignedArray·CL = "Hough transform for circles in 2D binary images.";
 constexpr char const* dip·FindHoughMaxima·Image·CL·dfloat··dfloat· = "Find local maxima in Hough parameter space.";
-constexpr char const* dip·PointDistanceDistribution·Image·CL·CoordinateArray·CL·UnsignedArray· = "Compute distance distribution for a set of points.";
-constexpr char const* dip·FindHoughCircles·Image·CL·Image·CL·UnsignedArray·CL·dfloat··dfloat· = "Find circles in 2D binary images.";
+constexpr char const* dip·PointDistanceDistribution·Image·CL·CoordinateArray·CL·UnsignedArray··StringSet·CL = "Compute distance distribution for a set of points.";
+constexpr char const* dip·FindHoughCircles·Image·CL·Image·CL·UnsignedArray·CL·dfloat··dfloat··StringSet·CL = "Find circles in 2D binary images.";
 constexpr char const* dip·RadonCircleParameters = "Stores the parameters for one hypersphere (circle, sphere).";
 constexpr char const* dip·RadonCircleParameters·origin = "Coordinates of the origin of the hypersphere";
 constexpr char const* dip·RadonCircleParameters·radius = "Radius of the hypersphere";
