@@ -196,13 +196,13 @@ void init_morphology( py::module& m ) {
           "Like the C++ function, but using an internal `dip::Random` object." );
 
    m.def( "Maxima", py::overload_cast< dip::Image const&, dip::uint, dip::String const& >( &dip::Maxima ),
-          "in"_a, "connectivity"_a = 0, "output"_a = dip::S::BINARY, doc_strings::dip·Minima·Image·CL·Image·L·dip·uint··String·CL );
-   m.def( "Maxima", py::overload_cast< dip::Image const&, dip::Image&, dip::uint, dip::String const& >( &dip::Maxima ),
-          "in"_a, py::kw_only(), "out"_a, "connectivity"_a = 0, "output"_a = dip::S::BINARY, doc_strings::dip·Minima·Image·CL·Image·L·dip·uint··String·CL );
-   m.def( "Minima", py::overload_cast< dip::Image const&, dip::uint, dip::String const& >( &dip::Minima ),
           "in"_a, "connectivity"_a = 0, "output"_a = dip::S::BINARY, doc_strings::dip·Maxima·Image·CL·Image·L·dip·uint··String·CL );
-   m.def( "Minima", py::overload_cast< dip::Image const&, dip::Image&, dip::uint, dip::String const& >( &dip::Minima ),
+   m.def( "Maxima", py::overload_cast< dip::Image const&, dip::Image&, dip::uint, dip::String const& >( &dip::Maxima ),
           "in"_a, py::kw_only(), "out"_a, "connectivity"_a = 0, "output"_a = dip::S::BINARY, doc_strings::dip·Maxima·Image·CL·Image·L·dip·uint··String·CL );
+   m.def( "Minima", py::overload_cast< dip::Image const&, dip::uint, dip::String const& >( &dip::Minima ),
+          "in"_a, "connectivity"_a = 0, "output"_a = dip::S::BINARY, doc_strings::dip·Minima·Image·CL·Image·L·dip·uint··String·CL );
+   m.def( "Minima", py::overload_cast< dip::Image const&, dip::Image&, dip::uint, dip::String const& >( &dip::Minima ),
+          "in"_a, py::kw_only(), "out"_a, "connectivity"_a = 0, "output"_a = dip::S::BINARY, doc_strings::dip·Minima·Image·CL·Image·L·dip·uint··String·CL );
    m.def( "WatershedMinima", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::dfloat, dip::uint, dip::String const& >( &dip::WatershedMinima ),
           "in"_a, "mask"_a = dip::Image{}, "connectivity"_a = 1, "maxDepth"_a = 1, "maxSize"_a = 0, "output"_a = dip::S::BINARY, doc_strings::dip·WatershedMinima·Image·CL·Image·CL·Image·L·dip·uint··dfloat··dip·uint··String·CL );
    m.def( "WatershedMinima", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image&, dip::uint, dip::dfloat, dip::uint, dip::String const& >( &dip::WatershedMinima ),
