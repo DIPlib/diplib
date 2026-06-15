@@ -1037,7 +1037,8 @@ void SliceViewer::link(SliceViewer &other)
   Guard guard(*this);
   Guard guard2(other);
 
-  DIP_THROW_IF( other.image().Sizes() != image().Sizes(), E::DIMENSIONALITIES_DONT_MATCH );
+  for (dip::uint ii=0; ii < std::min(image().Dimensionality(), other.image().Dimensionality()); ++ii)
+    DIP_THROW_IF( image().Size(ii) != other.image().Size(ii), E::SIZES_DONT_MATCH );
 
   // Take settings from link source
   link_->update(other.options());

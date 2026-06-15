@@ -207,6 +207,8 @@ date: 2020-00-00
 
 ### Changed functionality
 
+- Programmatic linking now follows the same rules as manual linking with respect to dimensionality.
+
 ### Bug fixes
 
 - When choosing the labeled color map, a rounding error in the mapping from grayvalues to color map indices became
