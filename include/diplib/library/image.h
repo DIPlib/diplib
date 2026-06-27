@@ -644,6 +644,7 @@ class DIP_NO_EXPORT Image {
       /// \see dip::Image::GetSimpleStrideAndOrigin, dip::Image::HasSimpleStride, dip::Image::HasNormalStrides,
       /// dip::Image::IsSingletonExpanded, dip::Image::Strides, dip::Image::TensorStride
       bool HasContiguousData() const {
+         DIP_THROW_IF( sizes_.size() != strides_.size(), E::NO_STRIDES ); // Can happen if the image is not forged.
          dip::uint size = NumberOfPixels() * TensorElements();
          dip::sint start = 0;
          dip::uint sz = 0;

@@ -161,6 +161,7 @@ constexpr char const* NTENSORELEM_DONT_MATCH = "Number of tensor elements doesn'
 
 // image properties errors
 constexpr char const* NO_NORMAL_STRIDE = "Image has a non-normal stride";
+constexpr char const* NO_STRIDES = "Non-forged image doesn't have strides correctly defined";
 constexpr char const* IMAGE_NOT_COLOR = "Image is not color";
 constexpr char const* INCONSISTENT_COLORSPACE = "Image's number of tensor elements and color space are inconsistent";
 

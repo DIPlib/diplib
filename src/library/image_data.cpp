@@ -342,6 +342,7 @@ void Image::MatchStrideOrder( Image const& src ) {
 // Normal strides are the default ones:
 // increasing in value, and with contiguous data.
 bool Image::HasNormalStrides() const {
+   DIP_THROW_IF( sizes_.size() != strides_.size(), E::NO_STRIDES ); // Can happen if the image is not forged.
    if (( tensor_.Elements() > 1 ) && ( tensorStride_ != 1 )) {
       return false;
    }
@@ -384,7 +385,7 @@ bool Image::IsSingletonExpanded() const {
 
 
 // Return a pointer to the start of the data and a single stride to
-// walk through all pixels. If this is not possible, porigin==nullptr.
+// walk through all pixels. If this is not possible, origin==nullptr.
 std::pair< dip::sint, void* > Image::GetSimpleStrideAndOrigin() const {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    dip::sint sstride{};
