@@ -74,6 +74,7 @@ setup_kwargs = dict(
 
 s = setuptools.setup(**setup_kwargs)
 name = os.path.join(bdist_root, wheel_name(s))
-print(f"To install, run\n    {r'${Python_EXECUTABLE}'} -m pip install --upgrade {name}")
+executable = r'${Python_EXECUTABLE}'
+print(f"To install, run\n    {executable} -m pip install --upgrade {name}")
 with open('$<TARGET_FILE_DIR:PyDIP_bin>/wheel.txt', 'w') as f:
     print(name, file=f)
