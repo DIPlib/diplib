@@ -2,9 +2,10 @@
 # set $PYPI_TOKEN to the PyPI token for the diplib project
 
 # Setup
-export PYTHON_VERSIONS=(3.11 3.12 3.13 3.14)
+export PYTHON_VERSIONS=(3.12)
 for v in ${PYTHON_VERSIONS[@]}; do
    brew install python@$v
+   brew link --overwrite python@$v  # Hopefully solves an issue with Python 3.12 on the macos-15-intel runner
 done;
 # The install above might have changed the default version of `python3`, so we need to reinstall packages:
 python3 -m pip config set global.break-system-packages true
