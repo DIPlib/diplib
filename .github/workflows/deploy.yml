@@ -11,7 +11,7 @@ jobs:
 
       - name: Install
         # Install libraries and Python packages we need
-        run: python3 -m pip install -U twine
+        run: python3 -m pip install -U twine packaging
 
       - name: Deploy
         run: bash tools/build/deploy_linux.sh
@@ -19,7 +19,7 @@ jobs:
           PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
 
   deploy_macos_x86_64:
-    runs-on: macos-13
+    runs-on: macos-15-intel
 
     steps:
       - uses: actions/checkout@v4
@@ -41,7 +41,7 @@ jobs:
           BUILD_THREADS: 3
 
   deploy_macos_aarch64:
-    runs-on: macos-14
+    runs-on: macos-15
 
     steps:
       - uses: actions/checkout@v4

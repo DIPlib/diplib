@@ -12,18 +12,18 @@ mkdir build
 cd build
 mkdir wheelhouse
 
-python -m wget https://sourceforge.net/projects/freeglut/files/freeglut/3.0.0/freeglut-3.0.0.tar.gz/download
+python -m wget https://sourceforge.net/projects/freeglut/files/freeglut/3.8.0/freeglut-3.8.0.tar.gz/download
 python -c "import tarfile; tar = tarfile.open('download'); tar.extractall()"
-cd freeglut-3.0.0
+cd freeglut-3.8.0
 mkdir build
 cd build
-cmake .. -A x64
+cmake .. -A x64 -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 cmake --build . --config Release
 cd ..
 cd ..
 
 REM Basic configuration
-cmake .. -A x64 -DFREEGLUT_INCLUDE_DIR=%CD%\freeglut-3.0.0\include -DFREEGLUT_LIBRARY=%CD%\freeglut-3.0.0\build\lib\Release\freeglut_static.lib -DFREEGLUT_STATIC=On -DDIP_BUILD_DIPIMAGE=Off -DDIP_PYDIP_WHEEL_INCLUDE_LIBS=On -DDIP_ENABLE_UNICODE=Off
+cmake .. -A x64 -DFREEGLUT_INCLUDE_DIR=%CD%\freeglut-3.8.0\include -DFREEGLUT_LIBRARY=%CD%\freeglut-3.8.0\build\lib\Release\freeglut_static.lib -DFREEGLUT_STATIC=On -DDIP_BUILD_DIPIMAGE=Off -DDIP_PYDIP_WHEEL_INCLUDE_LIBS=On -DDIP_ENABLE_UNICODE=Off
 
 REM Python 3.11
 C:\hostedtoolcache\windows\Python\%PYTHON311%\x64\python.exe -m pip install setuptools wheel build
