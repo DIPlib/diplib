@@ -39,9 +39,6 @@ date: 2020-00-00
 - `dip::Tile()` has relaxed requirements for input image sizes. It is now possible to tile images of different sizes
   as long as the images on the same row have the same height, and images on the same column have the same width.
 
-- The `dipview` and `dipviewjava` command-line tools will now first attempt to read a file as if it were a multi-page
-  TIFF file where the pages compose a 3D image. If it fails, it proceeds as it did previously.
-
 - `dip::Framework::VariadicScanLineFilter` is more efficient when the input images are scalar. And because it applies
   the same operation to every scalar, its function is identical when treating the tensor dimension as a spatial
   dimension, making the images scalar. This is accomplished by using the `dip::Framework::ScanOption::TensorAsSpatialDim`
@@ -137,9 +134,10 @@ date: 2020-00-00
 
 - The `dipzoom` drag interactions in `dipshow` windows now also propagate to linked windows.
 
-- All functions should now work correctly when given modern-style strings (`""`) as input, instead of the old-style
-  strings (actually char arrays, `''`). Previously, all functions implemented in M-code assumed string inputs were
-  the old-style strings, but functions implemented in MEX-files accepted both.
+- All functions should now work correctly when given modern-style strings (`""`) as input. Previously, all
+  functions implemented in M-code assumed string inputs were the old-style strings (actually char arrays, `''`),
+  and would give (sometimes strange) errors with modern strings. Functions implemented in MEX-files always accepted
+  both types of string.
 
 (See also bugfixes to *DIPlib*.)
 
@@ -157,7 +155,8 @@ date: 2020-00-00
 
 - Added `dip.Dice()`.
 
-- Added bindings for `dip::BresenhamLineIterator`, `dip::ImageSliceIterator` and `dip::ImageTensorIterator()`.
+- Added bindings for a few specific iterators: `dip.BresenhamLineIterator`, `dip.ImageSliceIterator` and
+  `dip.ImageTensorIterator()` (which is a function that returns a `dip.ImageSliceIterator` object).
 
 ### Changed functionality
 
@@ -165,18 +164,14 @@ date: 2020-00-00
   now has the output image protected. This allows the user to write into the sub-image with confidence.
   See [issue #204](https://github.com/DIPlib/diplib/issues/204).
 
-- The Python version of the `dipview` utility is changed in the same way as the C++ version: The tool will first attempt
-  to read a file as if it were a multi-page TIFF file where the pages compose a 3D image. If it fails, it proceeds
-  as it did previously.
-
 - `dip.PhysicalQuantity` has a new alias `dip.PQ`, making it easier to write code that works with physical quantities
   and pixel sizes.
 
-- For *DIPlib* functions that take a `dip::Range` as input, the Python bindings instead take a `slice` object. They
-  now also take a tuple instead, defined in the same way as the `slice()` constructor except that `None` cannot be
+- For *DIPlib* functions that take a `dip::Range` as input, the Python bindings take a `slice` object. Now they
+  can also take a tuple, defined in the same way as the `slice()` constructor except that `None` cannot be
   given. For example, instead of `slice(5, 10)` you can now write `(5, 10)`. Note that `(5,)` is the same as `(0, 5)`,
   because that is how `slice()` is defined. `slice(None, None)` is the same as `slice(0, -1)` which now can be
-  written as `(0, -1)` (or simply `()`).
+  written as `(0, -1)`, or simply `()`.
 
 (See also changes to *DIPlib*.)
 
@@ -198,7 +193,7 @@ date: 2020-00-00
 
 - Added the `dip::viewer::ViewingOptions::Mapping::Modulo` scaling option (shown as "MOD" in the UI). It computes
   the scaled pixel value modulo 256, but skipping 0 (i.e. values 0-255 are unchanged, 256 maps to 1, etc.). This
-  is useful with the "labels" color map: if there are more then 255 objects, the color map will repeat correctly.
+  is useful with the "labels" color map: if there are more than 255 objects, the color map will repeat correctly.
   It is also useful to display distance mappings: turn on this mode, then scale the intensities by dragging down
   from the top of the histogram on the right-hand side of the window.
 
@@ -233,3 +228,12 @@ date: 2020-00-00
 ### Bug fixes
 
 ### Build changes
+
+
+
+
+## Changes to the `dipview` tool
+
+- The `dipview` and `dipviewjava` command-line tools will now first attempt to read a file as if it were a multi-page
+  TIFF file where the pages compose a 3D image. If this fails, they proceeds as they did previously, reading only
+  the first page.

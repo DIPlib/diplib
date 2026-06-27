@@ -191,7 +191,7 @@ The operation is always applied to the first value of a multi-valued feature. Us
 
 One can combine multiple `LabelMap` objects together using element-wise Boolean operators `&`, `|` and `^`.
 Also the unary element-wise negation operator `~` can be used. But be aware of the precendence
-of these operators in Python
+of these operators in Python.
 
 In this `LabelMap` object, each label (object ID) is mapped to a new value.
 Those labels mapped to 0 are the rows that will be removed when the mapping is applied to a measurement
