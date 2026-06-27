@@ -37,7 +37,8 @@ set(DIP_COPYRIGHT_YEAR "2023")
 ```
 (Of course the version number and year could be different from what is shown here.)
 
-Update the version number and the copyright year (if appropriate).
+Update the version number and the copyright year (if appropriate). Also update the copyright year in
+any `README.md` files.
 
 ### 3. Test
 
@@ -71,7 +72,8 @@ completes. Check the "Download files" tab for the latest version, for example ht
 
 If any wheel is missing, update the `.github/workflows/deploy.yml` workflow and/or the build script files under
 `tools/build/` to only build and upload the missing packages (and of course fix the reason these packages were
-not build). Note that you cannot upload a package that already exists on PyPI, and the action will fail if you try.
+not build). You can do this in a branch, bringing only the final fixes into main. Note that you cannot upload a
+package that already exists on PyPI, and the action will fail if you try.
 
 ### 6. Build the documentation
 

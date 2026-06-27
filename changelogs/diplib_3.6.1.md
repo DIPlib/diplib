@@ -1,0 +1,228 @@
+---
+layout: post
+title: "Changes DIPlib 3.6.1"
+date: 2026-06-27
+---
+
+## Changes to *DIPlib*
+
+### New functionality
+
+- Added a `"antisym reflect"` (`dip::BoundaryCondition::ANTISYMMETRIC_REFLECT`) boundary condition. It is similar to
+  `"asym mirror"`, but ensures the derivative is constant at the image boundary.
+  See [Issue #214](https://github.com/DIPlib/diplib/issues/214).
+
+- Added `dip::Image::Pixel::ExpandTensor()`.
+
+- TIFF files can now be read and written using ZSTD compression, if configured during build, using the *zstd* library
+  on the system (i.e. is not part of the DIPlib source distribution, and is not enabled by default).
+
+- Added `dip::Dice`, which does the opposite of `dip::Tile`.
+
+### Changed functionality
+
+- The `"label"` color map produced by `dip::ColorMapLut()` and used by `dip::ApplyColorMap()` now has 60 unique colors,
+  up from 19. Only the first 6 colors are the same as before. This also affects the labeled image display in DIPviewer,
+  and in the Python and MATLAB packages.
+
+- The stream insertion operator (`<<`) for `dip::Image` now also notes if the image is protected, if the data is external,
+  if it has an `ExternalInterface` attached, and if the data is contiguous.
+
+- `dip::Image::HasContiguousData()` and `dip::Image::HasNormalStrides()` no longer check if the image is forged or not.
+  These functions only check the sizes and strides of the image, which can be set before the image is forged.
+
+- `dip::ExternalInterface` has a new virtual member function `Name()` that derived classes can overload to give
+  themselves a name.
+
+- `dip::Canny()` has a new `boundaryCondition` argument, that is passed through when computing the gradient.
+
+- `dip::Tile()` has relaxed requirements for input image sizes. It is now possible to tile images of different sizes
+  as long as the images on the same row have the same height, and images on the same column have the same width.
+
+- `dip::Framework::VariadicScanLineFilter` is more efficient when the input images are scalar. And because it applies
+  the same operation to every scalar, its function is identical when treating the tensor dimension as a spatial
+  dimension, making the images scalar. This is accomplished by using the `dip::Framework::ScanOption::TensorAsSpatialDim`
+  option in `dip::Framework::Scan()`/`dip::Framework::ScanMonadic()`/`dip::Framework::ScanDyadic()`. With these changes,
+  element-wise arithmetic, bitwise and comparison operators should be a bit faster now for non-scalar images.
+  To enforce proper use, we have:
+    - Added a fourth template parameter `Scalar` to `dip::Framework::VariadicScanLineFilter`, which defaults to
+      `false` to avoid changing the behavior of existing code. But instantiating this template with `Scalar == false`
+      will generate a deprecation warning. When set to `true` input images must be scalar.
+    - Added `dip::Framework::NewScalarMonadicScanLineFilter()`, `dip::Framework::NewScalarDyadicScanLineFilter()`,
+      `dip::Framework::NewScalarTriadicScanLineFilter()` and `dip::Framework::NewScalarTetradicScanLineFilter()`,
+      replacing `dip::Framework::NewMonadicScanLineFilter()`, `dip::Framework::NewDyadicScanLineFilter()`,
+      `dip::Framework::NewTriadicScanLineFilter()` and `dip::Framework::NewTetradicScanLineFilter()`, which are now
+      deprecated.
+
+- `dip::FindHoughCircles()` and its sub-function `dip::PointDistanceDistribution()` have a new argument `options`,
+  through which one can pass the option `"normalized"` to avoid a bias towards larger circles.
+
+### Bug fixes
+
+- `dip::Image::Mask` used multiplication for masking, which doesn't work to mask out NaN or Infinity values.
+
+- `dip::NormalizedConvolution` and `dip::NormalizedDifferentialConvolution` didn't handle NaN or infinity input values
+  correctly if they were masked out. This now works correctly for the case of binary mask image. For non-binary masks,
+  the user is now warned by the documentation to remove such values from the image before the convolution.
+  See [issue #211](https://github.com/DIPlib/diplib/issues/211).
+
+- The low-level B-spline interpolation function had a bug that could sometimes cause the program to crash.
+  See [issue #212](https://github.com/DIPlib/diplib/issues/212).
+
+- `dip::Rotation()` has a bug if the `"periodic"` boundary condition is given. It now throws an exception if this
+  boundary condition is used, rather than potentially crashing the program.
+
+- The numeric function `dip::modulo()` didn't handle all cases correctly.
+
+- `operator%()` and the unary `operator-()` for `dip::Image::Pixel` inputs threw a "data type not supported" exception
+  for single-precision float pixels.
+
+- `dip::ReadPixelWithBoundaryCondition()` didn't implement the boundary conditions exactly the same way as all other
+  functions in this library, it now produces the exact same values for the modes that it supports.
+
+- Projection functions that compute sums (`dip::Sum()`, `dip::Mean()`, `dip::SumAbs()`, `dip::MeanAbs()`, `dip::SumSquare()`,
+  `dip::MeanSquare()`, `dip::SumSquareModulus()`, `dip::MeanSquareModulus()`) or products (`dip::Product()`, `dip::GeometricMean()`)
+  now do the computation using double precision internally, before casting to the output data type (typically
+  single-precision float). This should lead to better precision for large images.
+
+- `dip::ImageSliceIterator::SetCoordinate()`, `Set()` and `Reset()` didn't update the internal data pointer, meaning
+  that the slice returned by the iterator after calling any of these functions didn't match the coordinate, and
+  could point to out-of-bounds data.
+
+- `dip::RadonTransformCircles()` now sets the `connectivity` parameter to `WatershedMaxima()` to 0, instead of 1. This should
+  significanlty improve the quality of the local maxima detected. See [discussion #227](https://github.com/DIPlib/diplib/discussions/227).
+
+- `dip::FindHoughCircles()` did not pass the `range` parameter to the `dip::PointDistanceDistribution()` sub-function.
+  See [issue #228](https://github.com/DIPlib/diplib/issues/228).
+
+### Updated dependencies
+
+- Updated LibTIFF to version 4.7.1.
+
+### Build changes
+
+- Suppress some warnings when building libjpeg with GCC
+
+
+
+
+## Changes to *DIPimage*
+
+### New functionality
+
+- Added the overload `dip_image/nnz`.
+
+### Changed functionality
+
+- Added the `'exclude_out_of_bounds_values'` option to `diphist`.
+
+- In the `dipzoom` mode of the `dipshow` window, double-clicking no longer zooms to 100%. Instead,
+  the second click in the double-click repeats the action of the first click. Use shift-click to
+  zoom to 100%.
+
+- The `diplink` command no longer silently ignores erroneous window handles in its input arguments.
+  It now also accepts `string` inputs.
+
+- `dip_image/tensorfun` with the options `'isempty'`, `'islogical'`, `'isreal'`, `'ndims'` or `'prodofsize'`
+  now returns an array with one element per tensor element, instead of an array matching the tensor sizes.
+  This makes these options logically compatible with the other options (`'max'`, `'mean'`, etc.).
+
+(See also changes to *DIPlib*.)
+
+### Bug fixes
+
+- When linking one or more windows, their zoom level is now adjusted to the controlling window.
+
+- The `dipzoom` drag interactions in `dipshow` windows now also propagate to linked windows.
+
+- All functions should now work correctly when given modern-style strings (`""`) as input. Previously, all
+  functions implemented in M-code assumed string inputs were the old-style strings (actually char arrays, `''`),
+  and would give (sometimes strange) errors with modern strings. Functions implemented in MEX-files always accepted
+  both types of string.
+
+(See also bugfixes to *DIPlib*.)
+
+
+
+
+## Changes to *PyDIP*
+
+### New functionality
+
+- Added bindings for three functions that manipulate the image's data segment: `dip.Image.ForceNormalStrides()`,
+  `dip.Image.ForceContiguousData()` and `dip.Image.Separate()`.
+
+- Added `dip.Dice()`.
+
+- Added bindings for a few specific iterators: `dip.BresenhamLineIterator`, `dip.ImageSliceIterator` and
+  `dip.ImageTensorIterator()` (which is a function that returns a `dip.ImageSliceIterator` object).
+
+### Changed functionality
+
+- Regular indexing (such as `img[10:40:2, :]`), which creates a new image that shares data with the original image,
+  now has the output image protected. This allows the user to write into the sub-image with confidence.
+  See [issue #204](https://github.com/DIPlib/diplib/issues/204).
+
+- `dip.PhysicalQuantity` has a new alias `dip.PQ`, making it easier to write code that works with physical quantities
+  and pixel sizes.
+
+- For *DIPlib* functions that take a `dip::Range` as input, the Python bindings take a `slice` object. Now they
+  can also take a tuple, defined in the same way as the `slice()` constructor except that `None` cannot be
+  given. For example, instead of `slice(5, 10)` you can now write `(5, 10)`. Note that `(5,)` is the same as `(0, 5)`,
+  because that is how `slice()` is defined. `slice(None, None)` is the same as `slice(0, -1)` which now can be
+  written as `(0, -1)`, or simply `()`.
+
+(See also changes to *DIPlib*.)
+
+### Bug fixes
+
+- `dip.Rotation2D()` and `dip.Rotation3D()` use the `"add zeros"` boundary condition by default, like the C++
+  functions do.
+
+(See also bugfixes to *DIPlib*.)
+
+
+
+
+## Changes to *DIPviewer*
+
+### New functionality
+
+- Added the `dip::viewer::ViewingOptions::Mapping::Modulo` scaling option (shown as "MOD" in the UI). It computes
+  the scaled pixel value modulo 256, but skipping 0 (i.e. values 0-255 are unchanged, 256 maps to 1, etc.). This
+  is useful with the "labels" color map: if there are more than 255 objects, the color map will repeat correctly.
+  It is also useful to display distance mappings: turn on this mode, then scale the intensities by dragging down
+  from the top of the histogram on the right-hand side of the window.
+
+- Added a series of getter and setter functions to `dip::viewer::SliceViewer` to simplify modifying the image
+  display programatically.
+
+### Changed functionality
+
+- Programmatic linking now follows the same rules as manual linking with respect to dimensionality.
+
+### Bug fixes
+
+- When choosing the labeled color map, a rounding error in the mapping from grayvalues to color map indices became
+  apparent, noticeable in a few objects getting the same color as the object with the previous ID.
+
+- Offsets are no longer overwritten when updating the image being displayed.
+
+- When updating the image, the mapping range is only recalculated
+  automatically if it has not been manually adjusted.
+
+
+
+
+## Changes to *DIPjavaio*
+
+None.
+
+
+
+
+## Changes to the `dipview` tool
+
+- The `dipview` and `dipviewjava` command-line tools will now first attempt to read a file as if it were a multi-page
+  TIFF file where the pages compose a 3D image. If this fails, they proceeds as they did previously, reading only
+  the first page.
