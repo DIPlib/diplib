@@ -17,7 +17,7 @@ python -c "import tarfile; tar = tarfile.open('download'); tar.extractall()"
 cd freeglut-3.8.0
 mkdir build
 cd build
-cmake .. -A x64 -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+cmake .. -A x64
 cmake --build . --config Release
 cd ..
 cd ..
@@ -26,25 +26,25 @@ REM Basic configuration
 cmake .. -A x64 -DFREEGLUT_INCLUDE_DIR=%CD%\freeglut-3.8.0\include -DFREEGLUT_LIBRARY=%CD%\freeglut-3.8.0\build\lib\Release\freeglut_static.lib -DFREEGLUT_STATIC=On -DDIP_BUILD_DIPIMAGE=Off -DDIP_PYDIP_WHEEL_INCLUDE_LIBS=On -DDIP_ENABLE_UNICODE=Off
 
 REM Python 3.11
-C:\hostedtoolcache\windows\Python\%PYTHON311%\x64\python.exe -m pip install setuptools wheel build
+C:\hostedtoolcache\windows\Python\%PYTHON311%\x64\python.exe -m pip install -U setuptools wheel build
 cmake .. -A x64 -DPython_EXECUTABLE=C:\hostedtoolcache\windows\Python\%PYTHON311%\x64\python.exe
 cmake --build . --target bdist_wheel --config Release
 copy pydip\Release\staging\dist\*.whl wheelhouse
 
 REM Python 3.12
-C:\hostedtoolcache\windows\Python\%PYTHON312%\x64\python.exe -m pip install setuptools wheel build
+C:\hostedtoolcache\windows\Python\%PYTHON312%\x64\python.exe -m pip install -U setuptools wheel build
 cmake .. -A x64 -DPython_EXECUTABLE=C:\hostedtoolcache\windows\Python\%PYTHON312%\x64\python.exe
 cmake --build . --target bdist_wheel --config Release
 copy pydip\Release\staging\dist\*.whl wheelhouse
 
 REM Python 3.13
-C:\hostedtoolcache\windows\Python\%PYTHON313%\x64\python.exe -m pip install setuptools wheel build
+C:\hostedtoolcache\windows\Python\%PYTHON313%\x64\python.exe -m pip install -U setuptools wheel build
 cmake .. -A x64 -DPython_EXECUTABLE=C:\hostedtoolcache\windows\Python\%PYTHON313%\x64\python.exe
 cmake --build . --target bdist_wheel --config Release
 copy pydip\Release\staging\dist\*.whl wheelhouse
 
 REM Python 3.14
-C:\hostedtoolcache\windows\Python\%PYTHON314%\x64\python.exe -m pip install setuptools wheel build
+C:\hostedtoolcache\windows\Python\%PYTHON314%\x64\python.exe -m pip install -U setuptools wheel build
 cmake .. -A x64 -DPython_EXECUTABLE=C:\hostedtoolcache\windows\Python\%PYTHON314%\x64\python.exe
 cmake --build . --target bdist_wheel --config Release
 copy pydip\Release\staging\dist\*.whl wheelhouse
