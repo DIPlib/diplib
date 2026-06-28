@@ -3,9 +3,6 @@ REM Run this on Windows 10 with VS C++ build tools installed
 REM Get Python versions
 
 FOR /F "tokens=*" %%g IN ('dir C:\hostedtoolcache\windows\Python\3.11.* /B') do (SET PYTHON311=%%g)
-FOR /F "tokens=*" %%g IN ('dir C:\hostedtoolcache\windows\Python\3.12.* /B') do (SET PYTHON312=%%g)
-FOR /F "tokens=*" %%g IN ('dir C:\hostedtoolcache\windows\Python\3.13.* /B') do (SET PYTHON313=%%g)
-FOR /F "tokens=*" %%g IN ('dir C:\hostedtoolcache\windows\Python\3.14.* /B') do (SET PYTHON314=%%g)
 
 REM Setup
 mkdir build
@@ -28,24 +25,6 @@ cmake .. -A x64 -DFREEGLUT_INCLUDE_DIR=%CD%\freeglut-3.8.0\include -DFREEGLUT_LI
 REM Python 3.11
 C:\hostedtoolcache\windows\Python\%PYTHON311%\x64\python.exe -m pip install -U setuptools wheel build
 cmake .. -A x64 -DPython_EXECUTABLE=C:\hostedtoolcache\windows\Python\%PYTHON311%\x64\python.exe
-cmake --build . --target bdist_wheel --config Release
-copy pydip\Release\staging\dist\*.whl wheelhouse
-
-REM Python 3.12
-C:\hostedtoolcache\windows\Python\%PYTHON312%\x64\python.exe -m pip install -U setuptools wheel build
-cmake .. -A x64 -DPython_EXECUTABLE=C:\hostedtoolcache\windows\Python\%PYTHON312%\x64\python.exe
-cmake --build . --target bdist_wheel --config Release
-copy pydip\Release\staging\dist\*.whl wheelhouse
-
-REM Python 3.13
-C:\hostedtoolcache\windows\Python\%PYTHON313%\x64\python.exe -m pip install -U setuptools wheel build
-cmake .. -A x64 -DPython_EXECUTABLE=C:\hostedtoolcache\windows\Python\%PYTHON313%\x64\python.exe
-cmake --build . --target bdist_wheel --config Release
-copy pydip\Release\staging\dist\*.whl wheelhouse
-
-REM Python 3.14
-C:\hostedtoolcache\windows\Python\%PYTHON314%\x64\python.exe -m pip install -U setuptools wheel build
-cmake .. -A x64 -DPython_EXECUTABLE=C:\hostedtoolcache\windows\Python\%PYTHON314%\x64\python.exe
 cmake --build . --target bdist_wheel --config Release
 copy pydip\Release\staging\dist\*.whl wheelhouse
 
