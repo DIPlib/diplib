@@ -195,6 +195,7 @@ measurement/feature_aspect_ratio_feret.h
 measurement/feature_bending_energy.h
 measurement/feature_cartesian_box.h
 measurement/feature_center.h
+measurement/feature_centroid_diameter.h
 measurement/feature_circularity.h
 measurement/feature_common_stuff.h
 measurement/feature_convex_area.h
