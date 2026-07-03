@@ -938,6 +938,7 @@ class DIP_CLASS_EXPORT Composite : public Base {
 /// `"Maximum"`                 | Maximum coordinates of the object |
 /// `"CartesianBox"`            | Cartesian box size of the object in all dimensions |
 /// `"Feret"`                   | Maximum and minimum object diameters | 2D (CC)
+/// `"CentroidDiameter"`        | Maximum and minimum object diameters through the centroid | 2D (CC)
 /// `"Radius"`                  | Statistics on radius of object | 2D (CC)
 /// `"ConvexArea"`              | Area of the convex hull | 2D (CC)
 /// `"ConvexPerimeter"`         | Perimeter of the convex hull | 2D (CC)
