@@ -63,6 +63,9 @@ Currently, *DIPlib 3* has interfaces or bindings to the following packages:
 - *Vigra*: the \ref dip_vigra_interface provides copyless conversion to and from
   [*Vigra*](http://ukoethe.github.io/vigra/) images.
 
+  - *Qt*: the \ref dip_qimage_interface provides copyless conversion to and from
+  [*Qt*](https://www.qt.io)'s `QImage`.
+
 The *DIPlib* project further contains these additional modules:
 
 - \ref dipviewer: an interactive image display utility.
