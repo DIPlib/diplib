@@ -192,6 +192,22 @@ if(DIP_BUILD_DIPVIEWER)
 
 endif(DIP_BUILD_DIPVIEWER)
 
+## An example that needs Qt, compile only if Qt is available
+
+find_package(Qt6 QUIET COMPONENTS Widgets)
+if(Qt6_FOUND)
+
+   # An example program that uses both DIPlib and Qt's QImage
+   add_executable(qt_with_dip external_interfaces/qt_with_dip.cpp)
+   target_compile_definitions(qt_with_dip PRIVATE DIP_EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
+   target_link_libraries(qt_with_dip DIP Qt6::Widgets)
+   set_target_properties(qt_with_dip PROPERTIES AUTOMOC ON)
+
+   add_dependencies(examples
+                    qt_with_dip
+                    )
+
+endif()
 
 ### ---
 
