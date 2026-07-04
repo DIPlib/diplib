@@ -39,6 +39,7 @@
 #include "feature_perimeter.h"
 #include "feature_surface_area.h"
 #include "feature_feret.h"
+#include "feature_centroid_diameter.h"
 #include "feature_convex_area.h"
 #include "feature_convex_perimeter.h"
 // Shape
@@ -92,6 +93,7 @@ MeasurementTool::MeasurementTool() {
    Register( new Feature::FeatureMaximum );
    Register( new Feature::FeatureCartesianBox );
    Register( new Feature::FeatureFeret );
+   Register( new Feature::FeatureCentroidDiameter );
    Register( new Feature::FeatureRadius );
    Register( new Feature::FeatureConvexArea );
    Register( new Feature::FeatureConvexPerimeter );
