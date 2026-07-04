@@ -18,26 +18,6 @@
 namespace dip {
 namespace Feature {
 
-
-/// \brief Maximum and minimum object diameters, measured as chords through the object's centroid.
-///
-/// For every point on the object's boundary, the object's width is computed as the distance to
-/// the boundary point diametrically opposite it (in the direction rotated by `pi`), as seen from
-/// the object's centroid (see \ref "Center"). The minimum and maximum of this width, taken over
-/// the whole boundary, are reported, together with the angle at which each was found.
-///
-/// !!! note
-///     This is related to, but distinct from, the classical "Martin diameter" of the particle
-///     characterization literature, which is the chord that divides the particle's area in half
-///     at a given angle. `CentroidDiameter` instead always passes through the centroid. This is
-///     considerably cheaper to compute (the classical Martin diameter requires a search for the
-///     area-bisecting position at each angle, rather than a single lookup), and the two measures
-///     coincide for centrally symmetric shapes, but they can diverge for strongly asymmetric ones.
-///
-/// Unlike \ref "Feret", which is based on the object's convex hull, `CentroidDiameter` uses the
-/// object's full boundary. This makes it sensitive to concave defects (a chip, notch, or flat
-/// spot) that `Feret` cannot detect by construction: the convex hull bridges over any concavity,
-/// whereas a chord through the centroid can pass right through it.
 class FeatureCentroidDiameter : public PolygonBased {
    public:
       FeatureCentroidDiameter() : PolygonBased( { "CentroidDiameter", "Maximum and minimum object diameters through the centroid (2D)", false } ) {};
