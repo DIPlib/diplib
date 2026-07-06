@@ -1,12 +1,16 @@
 # dox++ configuration file for DIPlib
 
 [clang]
-compiler flags = -std=c++14
+# Setting std=c++17 for Qt6.
+compiler flags = -std=c++17
                  -DMATLAB_MEXCMD_RELEASE=R2017b
+                 -Wno-unused-command-line-argument
+                 @Qt6_COMPILE_OPTIONS@
 include directories = @PROJECT_SOURCE_DIR@/include/
                       @Matlab_INCLUDE_DIRS@
                       @OpenCV_INCLUDE_DIRS@
                       @Vigra_INCLUDE_DIRS@
+                      @Qt6_INCLUDE_DIRS@
 
 [log]
 level = warning

@@ -71,6 +71,18 @@ if(DOXPP_FOUND)
       set(Vigra_INCLUDE_DIRS "")
    endif()
 
+   find_package(Qt6 QUIET COMPONENTS Widgets)
+   set(Qt6_COMPILE_OPTIONS "")
+   set(Qt6_INCLUDE_DIRS "")
+   if(Qt6_FOUND)
+      list(JOIN Qt6Widgets_INCLUDE_DIRS " " Qt6_INCLUDE_DIRS)
+      if (APPLE)
+         # NOTE! This assumes Qt was installed through Homebrew. I wish this was easier.
+         set(Qt6_COMPILE_OPTIONS "-framework QtWidgets -framework QtCore -framework QtGui -framework QtDBus -F/opt/homebrew/lib")
+      endif()
+   else()
+   endif()
+
    configure_file("${CMAKE_CURRENT_LIST_DIR}/dox++config.in" "${CMAKE_CURRENT_BINARY_DIR}/dox++config" @ONLY)
 
    file(GLOB DOC_SOURCES

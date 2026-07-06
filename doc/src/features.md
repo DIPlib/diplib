@@ -116,7 +116,7 @@ isotropic pixels.
 Computes the maximum and minimum object diameter measured as a chord through the object's
 centroid. For every point on the object's boundary, the width of the object is computed as
 the distance to the boundary point diametrically opposite it (in the direction rotated by
-\f$\pi\f$), as seen from the object's centroid. The minimum and maximum of this width, taken
+$\pi$), as seen from the object's centroid. The minimum and maximum of this width, taken
 over the whole boundary, are reported, together with the angle at which each was found.
 
 Note that the chain code measures work only for 2D images, and expect objects to be a single

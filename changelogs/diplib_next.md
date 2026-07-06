@@ -8,6 +8,12 @@ date: 2020-00-00
 
 ### New functionality
 
+- Added the *DIPlib*-*Qt* interface in the header file `dip_qimage_interface.h`, with namespace `dip_qimage`.
+  See [PR #233](https://github.com/DIPlib/diplib/pull/233).
+
+- Added new measurement feature `"CentroidDiameter"`.
+  See [PR #232](https://github.com/DIPlib/diplib/pull/232).
+
 ### Changed functionality
 
 ### Bug fixes
