@@ -88,9 +88,9 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
             knownFeatures.emplace( "skewness", it.value() );
             knownFeatures.emplace( "excesskurtosis", it.value() );
          }
-         it = knownFeatures.find( "mass" );
+         it = knownFeatures.find( "sum" );
          if( it != knownFeatures.end() ) {
-            knownFeatures.emplace( "sum", it.value() );
+            knownFeatures.emplace( "mass", it.value() );
          }
          // Find requested features in map, using case-insensitive search, and copy name with correct case
          for( auto& f : features ) {

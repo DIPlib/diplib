@@ -20,9 +20,9 @@ namespace dip {
 namespace Feature {
 
 
-class FeatureMass : public LineBased {
+class FeatureSum : public LineBased {
    public:
-      FeatureMass() : LineBased( { "Mass", "Mass of object (sum of object intensity)", true } ) {};
+      FeatureSum() : LineBased( { "Sum", "Sum of object intensity", { "Mass" }, true } ) {};
 
       ValueInformationArray Initialize( Image const& /*label*/, Image const& grey, dip::uint nObjects ) override {
          nTensor_ = grey.TensorElements();
@@ -83,8 +83,8 @@ class FeatureMass : public LineBased {
       }
 
    private:
-      dip::uint nTensor_;
-      std::vector< dfloat > data_;
+      dip::uint nTensor_{};
+      std::vector< dfloat > data_{};
 };
 
 

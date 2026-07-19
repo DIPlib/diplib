@@ -21,7 +21,7 @@ namespace Feature {
 
 class FeatureEccentricity : public PolygonBased {
    public:
-      FeatureEccentricity() : PolygonBased( { "Eccentricity", "Aspect ratio of best fit ellipse (2D)", false } ) {};
+      FeatureEccentricity() : PolygonBased( { "Eccentricity", "Aspect ratio of best fit ellipse (chain-code method, 2D)", false } ) {};
 
       ValueInformationArray Initialize( Image const&, Image const&, dip::uint ) override {
          ValueInformationArray out( 1 );

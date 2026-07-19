@@ -22,7 +22,7 @@ namespace Feature {
 
 class FeatureRoundness : public Composite {
    public:
-      FeatureRoundness() : Composite( { "Roundness", "Roundness of the object (2D)", false } ) {};
+      FeatureRoundness() : Composite( { "Roundness", "Roundness of the object (chain-code method, 2D)", false } ) {};
 
       ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          DIP_THROW_IF( label.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
@@ -59,10 +59,10 @@ class FeatureRoundness : public Composite {
       }
 
    private:
-      dip::uint sizeIndex_;
-      dip::uint perimIndex_;
-      dfloat scale_;
-      bool hasIndex_;
+      dip::uint sizeIndex_{};
+      dip::uint perimIndex_{};
+      dfloat scale_{};
+      bool hasIndex_{};
 };
 
 

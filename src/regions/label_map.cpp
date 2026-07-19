@@ -97,7 +97,7 @@ Measurement LabelMap::Apply( Measurement const& in ) const {
    // Copy over all the feature information
    std::vector< Measurement::FeatureInformation > const& features = in.Features();
    for( dip::uint ii = 0; ii < features.size(); ++ii ) {
-      out.AddFeature( features[ ii ].name, in.Values( features[ ii ].name ) );
+      out.AddFeature( features[ ii ].name, in.Values( features[ ii ].name ), features[ ii ].aliases );
    }
    // Allocate memory for all features and objects
    out.Forge();

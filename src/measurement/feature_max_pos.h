@@ -94,10 +94,10 @@ class FeatureMaxPos : public LineBased {
       }
 
    private:
-      dip::uint nD_;
-      FloatArray scales_;
-      std::vector< dip::uint > pos_; // size of this array is nObjects. Index as data_[ objectIndex ]
-      std::vector< dfloat > data_; // size of this array is nObjects * nD_. Index as data_[ objectIndex * nD_ ]
+      dip::uint nD_{};
+      FloatArray scales_{};
+      std::vector< dip::uint > pos_{}; // size of this array is nObjects. Index as data_[ objectIndex ]
+      std::vector< dfloat > data_{}; // size of this array is nObjects * nD_. Index as data_[ objectIndex * nD_ ]
 };
 
 

@@ -22,7 +22,7 @@ namespace Feature {
 
 class FeatureConvexity : public Composite {
    public:
-      FeatureConvexity() : Composite( { "Convexity", "Ratio of perimeter of convex hull to perimeter of object (2D)", false } ) {};
+      FeatureConvexity() : Composite( { "Convexity", "Ratio of perimeter of convex hull to perimeter of object (chain-code method, 2D)", false } ) {};
 
       ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          DIP_THROW_IF( label.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
@@ -54,9 +54,9 @@ class FeatureConvexity : public Composite {
       }
 
    private:
-      dip::uint perimeterIndex_;
-      dip::uint convexIndex_;
-      bool hasIndex_;
+      dip::uint perimeterIndex_{};
+      dip::uint convexIndex_{};
+      bool hasIndex_{};
 };
 
 

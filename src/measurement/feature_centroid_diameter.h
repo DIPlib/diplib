@@ -20,7 +20,7 @@ namespace Feature {
 
 class FeatureCentroidDiameter : public PolygonBased {
    public:
-      FeatureCentroidDiameter() : PolygonBased( { "CentroidDiameter", "Maximum and minimum object diameters through the centroid (2D)", false } ) {};
+      FeatureCentroidDiameter() : PolygonBased( { "CentroidDiameter", "Maximum and minimum object diameters through the centroid (chain-code method, 2D)", false } ) {};
 
       ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          ValueInformationArray out( 4 );
@@ -39,8 +39,8 @@ class FeatureCentroidDiameter : public PolygonBased {
 
       void Measure( Polygon const& polygon, Measurement::ValueIterator output ) override {
          struct Sample {
-            dfloat angle;
-            dfloat radius;
+            dfloat angle{};
+            dfloat radius{};
          };
          VertexFloat centroid = polygon.Centroid();
          std::vector< Sample > samples;
@@ -114,7 +114,7 @@ class FeatureCentroidDiameter : public PolygonBased {
       }
 
    private:
-      dfloat scale_;
+      dfloat scale_{};
 };
 
 

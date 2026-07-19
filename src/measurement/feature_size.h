@@ -86,8 +86,8 @@ class FeatureSize : public LineBased {
       }
 
    private:
-      dfloat scale_;
-      std::vector< dip::uint > data_;
+      dfloat scale_{};
+      std::vector< dip::uint > data_{};
 };
 
 

@@ -1,5 +1,5 @@
 /*
- * (c)2016-2024, Cris Luengo.
+ * (c)2016-2026, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -67,12 +67,15 @@ enum class DIP_NO_EXPORT Type : uint8 {
 
 /// \brief Information about a measurement feature
 struct DIP_NO_EXPORT Information {
-   String name;                 ///< The name of the feature, used to identify it
-   String description;          ///< A description of the feature, to be shown to the user
+   String name{};               ///< The name of the feature, used to identify it
+   String description{};        ///< A description of the feature, to be shown to the user
+   StringArray aliases{};       ///< Alternative names for the feature
    bool needsGreyValue = false; ///< Does the feature need a grey-value image?
    Information() = default;
    Information( String name, String description, bool needsGreyValue = false ) :
-         name( std::move( name )), description( std::move( description )), needsGreyValue( needsGreyValue ) {}
+         name( std::move( name )), description( std::move( description )), aliases(), needsGreyValue( needsGreyValue ) {}
+   Information( String name, String description, StringArray aliases, bool needsGreyValue = false ) :
+         name( std::move( name )), description( std::move( description )), aliases( std::move( aliases )), needsGreyValue( needsGreyValue ) {}
 };
 
 /// \brief Information about the known measurement features
@@ -81,8 +84,8 @@ using InformationArray = std::vector< Information >;
 
 /// \brief Information about a measurement value, one of the components of a feature
 struct DIP_NO_EXPORT ValueInformation {
-   String name; ///< A short string that identifies the value
-   Units units; ///< The units for the value
+   String name{}; ///< A short string that identifies the value
+   Units units{}; ///< The units for the value
 };
 
 /// \brief Information about the values of a measurement feature, or all values of all measurement features
@@ -176,10 +179,13 @@ class DIP_NO_EXPORT Measurement {
       /// \brief Structure containing information about the features stored in a \ref dip::Measurement object
       struct DIP_NO_EXPORT FeatureInformation {
          String name;            ///< Name of the feature
+         StringArray aliases;    ///< Alternative names for the feature
          dip::uint startColumn;  ///< Column for first value of feature
          dip::uint numberValues; ///< Number of vales in feature
          FeatureInformation( String name, dip::uint startColumn, dip::uint numberValues )
-               : name( std::move( name )), startColumn( startColumn ), numberValues( numberValues ) {}
+               : name( std::move( name )), aliases(), startColumn( startColumn ), numberValues( numberValues ) {}
+         FeatureInformation( String name, StringArray aliases, dip::uint startColumn, dip::uint numberValues )
+               : name( std::move( name )), aliases( std::move( aliases )), startColumn( startColumn ), numberValues( numberValues ) {}
       };
 
       /// \brief An iterator to visit all features (column groups) in the \ref dip::Measurement table. Can also
@@ -456,21 +462,21 @@ class DIP_NO_EXPORT Measurement {
       };
 
       /// \brief Adds a feature to a raw `Measurement` object.
-      void AddFeature( String const& name, Feature::ValueInformationArray const& values ) {
+      void AddFeature( String const& name, Feature::ValueInformationArray const& values, StringArray const& aliases = {} ) {
          DIP_THROW_IF( IsForged(), E::MEASUREMENT_NOT_RAW );
          DIP_THROW_IF( name.empty(), "No feature name given" );
          DIP_THROW_IF( FeatureExists( name ), "Feature already present: " + name );
          DIP_THROW_IF( values.empty(), "A feature needs at least one value" );
-         AddFeature_( name, values.cbegin(), values.cend() );
+         AddFeature_( name, aliases, values.cbegin(), values.cend() );
       }
 
       /// \brief Adds a feature to a raw `Measurement` object if it is not already there.
-      void EnsureFeature( String const& name, Feature::ValueInformationArray const& values ) {
+      void EnsureFeature( String const& name, Feature::ValueInformationArray const& values, StringArray const& aliases = {} ) {
          DIP_THROW_IF( IsForged(), E::MEASUREMENT_NOT_RAW );
          DIP_THROW_IF( name.empty(), "No feature name given" );
          if( !FeatureExists( name )) {
             DIP_THROW_IF( values.empty(), "A feature needs at least one value" );
-            AddFeature_( name, values.cbegin(), values.cend() );
+            AddFeature_( name, aliases, values.cbegin(), values.cend() );
          }
       }
 
@@ -706,6 +712,7 @@ class DIP_NO_EXPORT Measurement {
 
       void AddFeature_(
             String const& name,
+            StringArray const& aliases,
             Feature::ValueInformationArray::const_iterator valuesBegin,
             Feature::ValueInformationArray::const_iterator valuesEnd
       ) {
@@ -716,8 +723,11 @@ class DIP_NO_EXPORT Measurement {
             *out = *valuesBegin;
          }
          dip::uint index = features_.size();
-         features_.emplace_back( name, startIndex, n );
+         features_.emplace_back( name, aliases, startIndex, n );
          featureIndices_.emplace( name, index );
+         for( auto const& alias : aliases ) {
+            featureIndices_.emplace( alias, index );
+         }
       }
 
       UnsignedArray objects_;                         // the rows of the table (maps row indices to objectIDs)
@@ -954,15 +964,15 @@ class DIP_CLASS_EXPORT Composite : public Base {
 /// `"Eccentricity"`            | Aspect ratio of best fit ellipse | 2D (CC)
 /// `"BendingEnergy"`           | Bending energy of object perimeter | 2D (CC)
 ///                             | **Intensity features**{ .m-text .m-success } |
-///  `"Mass"`                   | Mass of object (sum of object intensity) | Tensor grey
-///  `"Mean"`                   | Mean object intensity | Tensor grey
-///  `"StandardDeviation"`      | Standard deviation of object intensity | Tensor grey
-///  `"Statistics"`             | Mean, standard deviation, skewness and excess kurtosis of object intensity | Scalar grey
-///  `"DirectionalStatistics"`  | Directional mean and standard deviation of object intensity | Scalar grey
-///  `"MaxVal"`                 | Maximum object intensity | Tensor grey
-///  `"MinVal"`                 | Minimum object intensity | Tensor grey
-///  `"MaxPos"`                 | Position of pixel with maximum intensity | Scalar grey
-///  `"MinPos"`                 | Position of pixel with minimum intensity | Scalar grey
+/// `"Sum"` (alias `"Mass"`)    | Sum of object intensity | Tensor grey
+/// `"Mean"`                    | Mean object intensity | Tensor grey
+/// `"StandardDeviation"`       | Standard deviation of object intensity | Tensor grey
+/// `"Statistics"`              | Mean, standard deviation, skewness and excess kurtosis of object intensity | Scalar grey
+/// `"DirectionalStatistics"`   | Directional mean and standard deviation of object intensity | Scalar grey
+/// `"MaxVal"`                  | Maximum object intensity | Tensor grey
+/// `"MinVal"`                  | Minimum object intensity | Tensor grey
+/// `"MaxPos"`                  | Position of pixel with maximum intensity | Scalar grey
+/// `"MinPos"`                  | Position of pixel with minimum intensity | Scalar grey
 ///                             | **Moments of binary object**{ .m-text .m-success } |
 /// `"Center"`                  | Coordinates of the geometric mean of the object |
 /// `"Mu"`                      | Elements of the inertia tensor |
@@ -1029,6 +1039,9 @@ class DIP_NO_EXPORT MeasurementTool {
             dip::uint index = features_.size();
             features_.emplace_back( std::move( smartpointer ));
             featureIndices_.emplace( name, index );
+            for( auto const& alias : feature->information.aliases ) {
+               featureIndices_.emplace( alias, index );
+            }
          } else {
             smartpointer = nullptr; // deallocates the feature we received, we don't need it, we already have one with that name
          }

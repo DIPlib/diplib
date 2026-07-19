@@ -83,8 +83,8 @@ class FeatureMinVal : public LineBased {
       }
 
    private:
-      dip::uint nTensor_;
-      std::vector< dfloat > data_;
+      dip::uint nTensor_{};
+      std::vector< dfloat > data_{};
 };
 
 

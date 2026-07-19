@@ -83,9 +83,9 @@ class FeatureMinimum : public LineBased {
       }
 
    private:
-      dip::uint nD_;
-      FloatArray scales_;
-      std::vector< dip::uint > data_; // size of this array is nObjects * nD_. Index as data_[ objectIndex * nD_ ]
+      dip::uint nD_{};
+      FloatArray scales_{};
+      std::vector< dip::uint > data_{}; // size of this array is nObjects * nD_. Index as data_[ objectIndex * nD_ ]
 };
 
 

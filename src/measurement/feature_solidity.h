@@ -22,7 +22,7 @@ namespace Feature {
 
 class FeatureSolidity : public Composite {
    public:
-      FeatureSolidity() : Composite( { "Solidity", "Area fraction of convex hull covered by object (2D)", false } ) {};
+      FeatureSolidity() : Composite( { "Solidity", "Area fraction of convex hull covered by object (chain-code method, 2D)", false } ) {};
 
       ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          DIP_THROW_IF( label.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
@@ -51,9 +51,9 @@ class FeatureSolidity : public Composite {
       }
 
    private:
-      dip::uint sizeIndex_;
-      dip::uint convexIndex_;
-      bool hasIndex_;
+      dip::uint sizeIndex_{};
+      dip::uint convexIndex_{};
+      bool hasIndex_{};
 };
 
 

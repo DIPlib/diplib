@@ -98,9 +98,9 @@ class FeatureCartesianBox : public LineBased {
          dip::uint min = std::numeric_limits< dip::uint >::max();
          dip::uint max = 0;
       };
-      dip::uint nD_;
-      FloatArray scales_;
-      std::vector< MinMaxCoord > data_; // size of this array is nObjects * nD_. Index as data_[ objectIndex * nD_ ]
+      dip::uint nD_{};
+      FloatArray scales_{};
+      std::vector< MinMaxCoord > data_{}; // size of this array is nObjects * nD_. Index as data_[ objectIndex * nD_ ]
 };
 
 

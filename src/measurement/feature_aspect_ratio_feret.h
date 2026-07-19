@@ -22,7 +22,7 @@ namespace Feature {
 
 class FeatureAspectRatioFeret : public Composite {
    public:
-      FeatureAspectRatioFeret() : Composite( { "AspectRatioFeret", "Feret-based aspect ratio (2D)", false } ) {};
+      FeatureAspectRatioFeret() : Composite( { "AspectRatioFeret", "Feret-based aspect ratio (chain-code method, 2D)", false } ) {};
 
       ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          DIP_THROW_IF( label.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
@@ -49,8 +49,8 @@ class FeatureAspectRatioFeret : public Composite {
       }
 
    private:
-      dip::uint feretIndex_;
-      bool hasIndex_;
+      dip::uint feretIndex_{};
+      bool hasIndex_{};
 };
 
 

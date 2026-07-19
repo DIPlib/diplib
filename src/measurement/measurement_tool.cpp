@@ -1,5 +1,5 @@
 /*
- * (c)2016-2022, Cris Luengo.
+ * (c)2016-2026, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -55,7 +55,7 @@
 #include "feature_eccentricity.h"
 #include "feature_bending_energy.h"
 // Intensity
-#include "feature_mass.h"
+#include "feature_sum.h"
 #include "feature_mean.h"
 #include "feature_stdandard_deviation.h"
 #include "feature_statistics.h"
@@ -109,7 +109,7 @@ MeasurementTool::MeasurementTool() {
    Register( new Feature::FeatureEccentricity );
    Register( new Feature::FeatureBendingEnergy );
    // Intensity
-   Register( new Feature::FeatureMass );
+   Register( new Feature::FeatureSum );
    Register( new Feature::FeatureMean );
    Register( new Feature::FeatureStandardDeviation );
    Register( new Feature::FeatureStatistics );
@@ -219,7 +219,7 @@ Measurement MeasurementTool::Measure(
          featureArray.push_back( feature );
          DIP_START_STACK_TRACE
             Feature::ValueInformationArray values = feature->Initialize( label, grey, measurement.NumberOfObjects() );
-            measurement.AddFeature( name, values );
+            measurement.AddFeature( feature->information.name, values, feature->information.aliases );
          DIP_END_STACK_TRACE
          if( feature->type == Feature::Type::COMPOSITE ) {
             StringArray names = dynamic_cast< Feature::Composite* >( feature )->Dependencies();
@@ -397,7 +397,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::MeasurementTool::Measure" ) {
          "EllipseVariance",
          "Eccentricity",
          "BendingEnergy",
-         "Mass",
+         "Sum",
          "Mean",
          "StandardDeviation",
          "Statistics",
@@ -459,7 +459,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::MeasurementTool::Measure" ) {
    DOCTEST_CHECK( std::abs( msr_obj[ "EllipseVariance" ][ 0 ] - 0 ) < 0.02 );
    DOCTEST_CHECK( std::abs( msr_obj[ "Eccentricity" ][ 0 ] - 0 ) < 1e-6 );
    DOCTEST_CHECK( std::abs( msr_obj[ "BendingEnergy" ][ 0 ] - 2 * dip::pi / r ) < 0.03 );
-   DOCTEST_CHECK( std::abs( msr_obj[ "Mass" ][ 0 ] - dip::pi * r * r ) < 8 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Sum" ][ 0 ] - dip::pi * r * r ) < 8 );
    DOCTEST_CHECK( msr_obj[ "Mean" ][ 0 ] == 1 );
    DOCTEST_CHECK( msr_obj[ "StandardDeviation" ][ 0 ] == 0 );
    DOCTEST_CHECK( msr_obj[ "Statistics" ][ 0 ] == 1 );
@@ -531,7 +531,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::MeasurementTool::Measure" ) {
          "EllipseVariance",
          "Eccentricity",
          "BendingEnergy",
-         "Mass",
+         "Sum",
          "Mean",
          "StandardDeviation",
          "Statistics",
@@ -589,7 +589,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::MeasurementTool::Measure" ) {
    DOCTEST_CHECK( std::abs( msr_obj[ "EllipseVariance" ][ 0 ] - 0 ) < 0.02 );
    DOCTEST_CHECK( std::abs( msr_obj[ "Eccentricity" ][ 0 ] - 0 ) < 1e-6 );
    DOCTEST_CHECK( std::abs( msr_obj[ "BendingEnergy" ][ 0 ] - 2 * dip::pi / r / ps ) < 0.03 / ps );
-   DOCTEST_CHECK( std::abs( msr_obj[ "Mass" ][ 0 ] - 2 * dip::pi * r * r ) < 2 * 16 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Sum" ][ 0 ] - 2 * dip::pi * r * r ) < 2 * 16 );
    DOCTEST_CHECK( msr_obj[ "Mean" ][ 0 ] == 2 );
    DOCTEST_CHECK( msr_obj[ "StandardDeviation" ][ 0 ] == 0 );
    DOCTEST_CHECK( msr_obj[ "Statistics" ][ 0 ] == 2 );
@@ -660,7 +660,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::MeasurementTool::Measure" ) {
          "EllipseVariance",
          "Eccentricity",
          "BendingEnergy",
-         "Mass",
+         "Sum",
          "Mean",
          "StandardDeviation",
          "Statistics",
@@ -718,7 +718,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::MeasurementTool::Measure" ) {
    DOCTEST_CHECK( std::abs( msr_obj[ "EllipseVariance" ][ 0 ] - 0 ) < 0.02 );
    DOCTEST_CHECK( std::abs( msr_obj[ "Eccentricity" ][ 0 ] - 0 ) < 1e-6 );
    DOCTEST_CHECK( std::abs( msr_obj[ "BendingEnergy" ][ 0 ] - 2 * dip::pi / r ) < 0.03 );
-   DOCTEST_CHECK( std::abs( msr_obj[ "Mass" ][ 0 ] - 2 * dip::pi * r * r ) < 2 * 16 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Sum" ][ 0 ] - 2 * dip::pi * r * r ) < 2 * 16 );
    DOCTEST_CHECK( msr_obj[ "Mean" ][ 0 ] == 2 );
    DOCTEST_CHECK( msr_obj[ "StandardDeviation" ][ 0 ] == 0 );
    DOCTEST_CHECK( msr_obj[ "Statistics" ][ 0 ] == 2 );
@@ -764,6 +764,15 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::MeasurementTool::Measure" ) {
    DOCTEST_CHECK( std::abs( msr_obj[ "GreyDimensionsCube" ][ 1 ] - 2 * r * std::sqrt( 12.0 / 16.0 ) * ps ) < 0.1 * ps );
    DOCTEST_CHECK( std::abs( msr_obj[ "GreyDimensionsEllipsoid" ][ 0 ] - 2 * r * ps * yscale ) < 0.2 * ps * yscale );
    DOCTEST_CHECK( std::abs( msr_obj[ "GreyDimensionsEllipsoid" ][ 1 ] - 2 * r * ps ) < 0.2 * ps );
+
+   // Test feature aliases
+   msr = measurementTool.Measure( img, img, { "Mass" } );
+   DOCTEST_REQUIRE( msr.IsForged() );
+   DOCTEST_REQUIRE( msr.ObjectExists( 2 ));
+   DOCTEST_REQUIRE( msr.FeatureExists( "Mass" ));
+   DOCTEST_CHECK( msr.FeatureExists( "Sum" ));
+   msr_obj = msr[ 2 ];
+   DOCTEST_CHECK( std::abs( msr_obj[ "Mass" ][ 0 ] - 2 * dip::pi * r * r ) < 2 * 16 );
 }
 
 #endif // DIP_CONFIG_ENABLE_DOCTEST

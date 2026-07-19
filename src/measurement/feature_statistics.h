@@ -80,7 +80,7 @@ class FeatureStatistics : public LineBased {
       }
 
    private:
-      std::vector< StatisticsAccumulator > data_;
+      std::vector< StatisticsAccumulator > data_{};
 };
 
 

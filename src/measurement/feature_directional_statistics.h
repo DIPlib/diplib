@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-#include <cmath>
 
 namespace dip {
 namespace Feature {
@@ -76,7 +75,7 @@ class FeatureDirectionalStatistics : public LineBased {
       }
 
    private:
-      std::vector< DirectionalStatisticsAccumulator > data_;
+      std::vector< DirectionalStatisticsAccumulator > data_{};
 };
 
 

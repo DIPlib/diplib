@@ -92,9 +92,9 @@ class FeatureCenter : public LineBased {
       }
 
    private:
-      dip::uint nD_;
-      FloatArray scales_;
-      std::vector< dfloat > data_; // size of this array is nObjects * ( nD_ + 1 ). Index as data_[ objectIndex * ( nD_ + 1 ) ]
+      dip::uint nD_{};
+      FloatArray scales_{};
+      std::vector< dfloat > data_{}; // size of this array is nObjects * ( nD_ + 1 ). Index as data_[ objectIndex * ( nD_ + 1 ) ]
 };
 
 

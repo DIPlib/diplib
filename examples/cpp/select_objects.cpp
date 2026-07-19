@@ -20,12 +20,12 @@ int main() {
    dip::Image label = dip::Label( input > 0 );
    // Obtain sum of pixels per label
    dip::MeasurementTool measurementTool;
-   auto msr = measurementTool.Measure( label, input, { "Mass" } );
+   auto msr = measurementTool.Measure( label, input, { "Sum" } );
 
    // -- Method 1: the old-fashioned way
 
    // Paint each label with the measured value
-   dip::Image feature = dip::ObjectToMeasurement( label, msr[ "Mass" ] );
+   dip::Image feature = dip::ObjectToMeasurement( label, msr[ "Sum" ] );
    // Create output as a copy of the input, with low feature values set to 0
    dip::Image output1 = input.Copy();
    output1.At( feature < 100000 ) = 0;
@@ -35,7 +35,7 @@ int main() {
    // -- Method 2: the new way with LabelMap.
 
    // Select the objects
-   dip::LabelMap labelMap = msr[ "Mass" ] >= 100000;
+   dip::LabelMap labelMap = msr[ "Sum" ] >= 100000;
    dip::Image mask = labelMap.Apply( label ) > 0;
    // Create output with only selected objects from input
    dip::Image output2 = input.Copy();

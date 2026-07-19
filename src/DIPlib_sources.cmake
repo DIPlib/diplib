@@ -216,7 +216,6 @@ measurement/feature_grey_mu.h
 measurement/feature_grey_size.h
 measurement/feature_inertia.h
 measurement/feature_major_axes.h
-measurement/feature_mass.h
 measurement/feature_max_pos.h
 measurement/feature_max_val.h
 measurement/feature_maximum.h
@@ -235,6 +234,7 @@ measurement/feature_solid_area.h
 measurement/feature_solidity.h
 measurement/feature_statistics.h
 measurement/feature_stdandard_deviation.h
+measurement/feature_sum.h
 measurement/feature_surface_area.cpp
 measurement/feature_surface_area.h
 measurement/image_chain_code.cpp

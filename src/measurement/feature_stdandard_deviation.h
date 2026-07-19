@@ -83,8 +83,8 @@ class FeatureStandardDeviation : public LineBased {
       }
 
    private:
-      dip::uint nTensor_;
-      std::vector< FastVarianceAccumulator > data_;
+      dip::uint nTensor_{};
+      std::vector< FastVarianceAccumulator > data_{};
 };
 
 

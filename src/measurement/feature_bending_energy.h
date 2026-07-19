@@ -38,7 +38,7 @@ class FeatureBendingEnergy : public ChainCodeBased {
       }
 
    private:
-      dfloat scale_;
+      dfloat scale_{};
 };
 
 

@@ -88,8 +88,8 @@ class FeatureMean : public LineBased {
          dfloat sum = 0;
          dip::uint number = 0;
       };
-      dip::uint nTensor_;
-      std::vector< Data > data_;
+      dip::uint nTensor_{};
+      std::vector< Data > data_{};
 };
 
 

@@ -1,4 +1,4 @@
-\comment (c)2016-2024, Cris Luengo.
+\comment (c)2016-2026, Cris Luengo.
 \comment Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 
 \comment Licensed under the Apache License, Version 2.0 [the "License"];
@@ -293,7 +293,7 @@ This value is reported in physical units, but only for isotropic (square) pixels
 
 \section intensity_features Intensity features
 
-\subsection intensity_features_Mass Mass
+\subsection intensity_features_Sum Sum
 The sum of the grey-value image intensities across the object.
 The `grey` image can be a tensor image, one value per tensor element (channel) is produced.
 
@@ -419,10 +419,10 @@ have the same units, else pixel sizes are ignored.
 \section grey_moments Moments of grey-value object
 
 \subsection grey_moments_GreySize GreySize
-The zero order moment of the object. Same as the \ref intensity_features_Mass feature,
-but multiplied by the physical size of a pixel. If object pixels have a value of 1, and
-background pixels have a value of 0, then this feature is the size of the grey-value
-object.
+The integral over the object, equivalent to the zero order moment.
+Same as the \ref intensity_features_Sum feature, but multiplied by the physical size of a pixel.
+If object pixels have a value of 1, and background pixels have a value of 0, then this feature
+is the size of the grey-value object.
 
 This value is reported in physical units, anisotropic pixels are taken into account.
 

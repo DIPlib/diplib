@@ -21,7 +21,7 @@ namespace Feature {
 
 class FeatureEllipseVariance : public PolygonBased {
    public:
-      FeatureEllipseVariance() : PolygonBased( { "EllipseVariance", "Distance to best fit ellipse (2D)", false } ) {};
+      FeatureEllipseVariance() : PolygonBased( { "EllipseVariance", "Distance to best fit ellipse (chain-code method, 2D)", false } ) {};
 
       ValueInformationArray Initialize( Image const&, Image const&, dip::uint ) override {
          ValueInformationArray out( 1 );

@@ -67,11 +67,11 @@ class FeatureP2A : public Composite {
       }
 
    private:
-      dip::uint sizeIndex_;
-      dip::uint perimIndex_;
-      dip::uint nD_;
-      dfloat scale_;
-      bool hasIndex_;
+      dip::uint sizeIndex_{};
+      dip::uint perimIndex_{};
+      dip::uint nD_{};
+      dfloat scale_{};
+      bool hasIndex_{};
 };
 
 

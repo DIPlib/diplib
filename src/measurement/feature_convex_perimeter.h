@@ -22,7 +22,7 @@ namespace Feature {
 
 class FeatureConvexPerimeter : public ConvexHullBased {
    public:
-      FeatureConvexPerimeter() : ConvexHullBased( { "ConvexPerimeter", "Perimeter of the convex hull (2D)", false } ) {};
+      FeatureConvexPerimeter() : ConvexHullBased( { "ConvexPerimeter", "Perimeter of the convex hull (chain-code method, 2D)", false } ) {};
 
       ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          ValueInformationArray out( 1 );
@@ -38,7 +38,7 @@ class FeatureConvexPerimeter : public ConvexHullBased {
       }
 
    private:
-      dfloat scale_;
+      dfloat scale_{};
 };
 
 

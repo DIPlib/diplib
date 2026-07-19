@@ -58,9 +58,9 @@ class FeatureDimensionsCube : public Composite {
       }
 
    private:
-      dip::uint muIndex_;
-      bool hasIndex_;
-      dip::uint nD_;
+      dip::uint muIndex_{};
+      bool hasIndex_{};
+      dip::uint nD_{};
 };
 
 

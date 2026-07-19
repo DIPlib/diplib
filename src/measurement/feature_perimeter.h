@@ -46,7 +46,7 @@ class FeaturePerimeter : public ChainCodeBased {
       }
 
    private:
-      dfloat scale_;
+      dfloat scale_{};
       bool includeBoundaryPixels = false;
 };
 

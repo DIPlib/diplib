@@ -80,9 +80,9 @@ class FeatureGreyMu : public LineBased {
       }
 
    private:
-      dip::uint nD_;       // number of dimensions (2 or 3).
-      FloatArray scales_;  // nOut values.
-      std::vector< MomentAccumulator > data_; // size of this array is nObjects.
+      dip::uint nD_{};       // number of dimensions (2 or 3).
+      FloatArray scales_{};  // nOut values.
+      std::vector< MomentAccumulator > data_{}; // size of this array is nObjects.
 };
 
 

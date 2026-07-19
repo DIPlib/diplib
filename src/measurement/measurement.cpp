@@ -1,5 +1,5 @@
 /*
- * (c)2017-2024, Cris Luengo.
+ * (c)2017-2026, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -204,7 +204,7 @@ Measurement operator+( Measurement const& lhs, Measurement const& rhs ) {
    dip::uint index = 0;
    for( auto const& f : lhs.features_ ) {
       auto b = lhs.values_.begin() + static_cast< dip::sint >( f.startColumn );
-      out.AddFeature_( f.name, b, b + static_cast< dip::sint >( f.numberValues ));
+      out.AddFeature_( f.name, f.aliases, b, b + static_cast< dip::sint >( f.numberValues ));
       for( dip::uint ii = 0; ii < out.features_.back().numberValues; ++ii ) {
          lhsColumnIndex[ index++ ] = out.features_.back().startColumn + ii;
       }
@@ -214,7 +214,7 @@ Measurement operator+( Measurement const& lhs, Measurement const& rhs ) {
       if( it == out.featureIndices_.end() ) {
          // Add the feature
          auto b = rhs.values_.begin() + static_cast< dip::sint >( f.startColumn );
-         out.AddFeature_( f.name, b, b + static_cast< dip::sint >( f.numberValues ));
+         out.AddFeature_( f.name, f.aliases, b, b + static_cast< dip::sint >( f.numberValues ));
          for( dip::uint ii = 0; ii < f.numberValues; ++ii ) {
             lhsColumnIndex.push_back( NOT_THERE );
             rhsColumnIndex.push_back( f.startColumn + ii );
@@ -504,7 +504,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Measurement" ) {
       values.resize( 1 );
       values[ 0 ].name = "Bla";
       values[ 0 ].units = dip::Units::SquareMeter();
-      msr1.AddFeature( "Feature2", values );
+      msr1.AddFeature( "Feature2", values, { "Alias2" } );
 
       values.resize( 3 );
       values[ 0 ].name = "Foo";
@@ -535,6 +535,8 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Measurement" ) {
    DOCTEST_REQUIRE( msr1.NumberOfValues() == 3 );
    DOCTEST_REQUIRE( msr1.FeatureExists( "Feature1" ));
    DOCTEST_REQUIRE( msr1.FeatureExists( "Feature2" ));
+   DOCTEST_CHECK( msr1.FeatureExists( "Alias2" ));
+   DOCTEST_CHECK_FALSE( msr1.FeatureExists( "Feature3" ));
    DOCTEST_CHECK( msr1.NumberOfValues( "Feature1" ) == 2 );
    DOCTEST_CHECK( msr1.NumberOfValues( "Feature2" ) == 1 );
    DOCTEST_CHECK( msr1.ValueIndex( "Feature1" ) == 0 );
@@ -552,6 +554,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Measurement" ) {
    DOCTEST_REQUIRE( msr2.NumberOfValues() == 5 );
    DOCTEST_REQUIRE( msr2.FeatureExists( "Feature1" ));
    DOCTEST_REQUIRE( msr2.FeatureExists( "Feature3" ));
+   DOCTEST_CHECK_FALSE( msr2.FeatureExists( "Feature2" ));
    DOCTEST_CHECK( msr2.NumberOfValues( "Feature1" ) == 2 );
    DOCTEST_CHECK( msr2.NumberOfValues( "Feature3" ) == 3 );
    DOCTEST_CHECK( msr2.ValueIndex( "Feature1" ) == 0 );
@@ -632,6 +635,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Measurement" ) {
    DOCTEST_REQUIRE( res.FeatureExists( "Feature1" ));
    DOCTEST_REQUIRE( res.FeatureExists( "Feature2" ));
    DOCTEST_REQUIRE( res.FeatureExists( "Feature3" ));
+   DOCTEST_CHECK( res.FeatureExists( "Alias2" ));
    DOCTEST_CHECK( res.NumberOfValues( "Feature1" ) == 2 );
    DOCTEST_CHECK( res.NumberOfValues( "Feature2" ) == 1 );
    DOCTEST_CHECK( res.NumberOfValues( "Feature3" ) == 3 );

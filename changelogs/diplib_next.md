@@ -14,7 +14,13 @@ date: 2020-00-00
 - Added new measurement feature `"CentroidDiameter"`.
   See [PR #232](https://github.com/DIPlib/diplib/pull/232).
 
+- Measurement features can now have aliases. The alias can be used anywhere of its canonical name to refer
+  to the feature, and one does not need to be consistent about which of the names is used.
+
 ### Changed functionality
+
+- The "Mass" measurement feature is renamed to "Sum", which should reduce confusion. "Mass" is an alias,
+  so old code will continue to work as before.
 
 ### Bug fixes
 

@@ -22,7 +22,7 @@ namespace Feature {
 
 class FeatureCircularity : public PolygonBased {
    public:
-      FeatureCircularity() : PolygonBased( { "Circularity", "Circularity of the object (2D)", false } ) {};
+      FeatureCircularity() : PolygonBased( { "Circularity", "Circularity of the object (chain-code method, 2D)", false } ) {};
 
       ValueInformationArray Initialize( Image const&, Image const&, dip::uint ) override {
          ValueInformationArray out( 1 );

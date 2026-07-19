@@ -22,7 +22,7 @@ namespace Feature {
 
 class FeatureSolidArea : public PolygonBased {
    public:
-      FeatureSolidArea() : PolygonBased( { "SolidArea", "Area of object with any holes filled (2D)", false } ) {};
+      FeatureSolidArea() : PolygonBased( { "SolidArea", "Area of object with any holes filled (chain-code method, 2D)", false } ) {};
 
       ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          ValueInformationArray out( 1 );
@@ -38,7 +38,7 @@ class FeatureSolidArea : public PolygonBased {
       }
 
    private:
-      dfloat scale_;
+      dfloat scale_{};
 };
 
 
