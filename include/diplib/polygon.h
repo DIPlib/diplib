@@ -422,6 +422,14 @@ struct DIP_NO_EXPORT FeretValues {
    dfloat minAngle = 0.0;           ///< The angle at which `minDiameter` was measured
 };
 
+/// \brief Holds the two output values of the \ref dip::Polygon::CentroidDiameter function.
+struct DIP_NO_EXPORT CentroidDiameterValues {
+   dfloat maxDiameter = 0.0;   ///< The maximum diameter through the centroid
+   dfloat minDiameter = 0.0;   ///< The minimum diameter through the centroid
+   dfloat maxAngle = 0.0;      ///< The angle at which `maxDiameter` was measured
+   dfloat minAngle = 0.0;      ///< The angle at which `minDiameter` was measured
+};
+
 /// \brief Holds the various output values of the \ref dip::Polygon::RadiusStatistics function.
 class DIP_NO_EXPORT RadiusValues {
    public:
@@ -661,6 +669,19 @@ struct DIP_NO_EXPORT Polygon {
    /// \brief Returns statistics on the radii of the polygon. The radii are the distances between the given centroid
    /// and each of the vertices.
    DIP_EXPORT RadiusValues RadiusStatistics( VertexFloat const& g ) const;
+
+   /// \brief Returns the maximum and minimum diameters through the centroid. For each vertex, the diameter is
+   /// the sum of its distance to the centroid and the (linearly interpolated) distance to the centroid of the
+   /// point directly opposite it, at the same angle plus &pi;. The angle at which each extreme was found is
+   /// also returned.
+   CentroidDiameterValues CentroidDiameter() const {
+      VertexFloat g = Centroid();
+      return CentroidDiameter( g );
+   }
+
+   /// \brief Returns the maximum and minimum diameters through the given centroid. See the other overload for
+   /// details.
+   DIP_EXPORT CentroidDiameterValues CentroidDiameter( VertexFloat const& g ) const;
 
    /// \brief Compares a polygon to the ellipse with the same covariance matrix, returning the coefficient of
    /// variation of the distance of vertices to the ellipse.

@@ -135,6 +135,71 @@ RadiusValues Polygon::RadiusStatistics( VertexFloat const& g ) const {
    return radius;
 }
 
+CentroidDiameterValues Polygon::CentroidDiameter( VertexFloat const& g ) const {
+   struct Sample {
+      dfloat angle{};
+      dfloat radius{};
+   };
+   std::vector< Sample > samples;
+   samples.reserve( vertices.size() );
+   for( auto const& v : vertices ) {
+      dfloat dx = v.x - g.x;
+      dfloat dy = v.y - g.y;
+      samples.push_back( { std::atan2( dy, dx ), std::hypot( dx, dy ) } );
+   }
+   CentroidDiameterValues out;
+   if( samples.size() < 2 ) {
+      return out; // Degenerate polygon, not enough vertices to compute a meaningful diameter.
+   }
+   std::sort( samples.begin(), samples.end(), []( Sample const& a, Sample const& b ) {
+      return a.angle < b.angle;
+   } );
+   dip::uint n = samples.size();
+
+   // Linearly interpolates the object's radius at an arbitrary angle, between the two nearest samples.
+   auto radiusAt = [ & ]( dfloat angle ) {
+      while( angle < -pi ) {
+         angle += 2.0 * pi;
+      }
+      while( angle >= pi ) {
+         angle -= 2.0 * pi;
+      }
+      dip::uint idx = static_cast< dip::uint >( std::lower_bound( samples.begin(), samples.end(), angle,
+            []( Sample const& s, dfloat a ) { return s.angle < a; } ) - samples.begin() );
+      dip::uint i0 = ( idx == 0 ) ? ( n - 1 ) : ( idx - 1 );
+      dip::uint i1 = idx % n;
+      dfloat a0 = samples[ i0 ].angle;
+      dfloat a1 = samples[ i1 ].angle;
+      dfloat da = a1 - a0;
+      if( da < 0 ) {
+         da += 2.0 * pi;
+      }
+      dfloat t = angle - a0;
+      if( t < 0 ) {
+         t += 2.0 * pi;
+      }
+      t = ( da < 1e-9 ) ? 0.0 : ( t / da );
+      return samples[ i0 ].radius + t * ( samples[ i1 ].radius - samples[ i0 ].radius );
+   };
+
+   dfloat diameterMin = std::numeric_limits< dfloat >::max();
+   dfloat diameterMax = 0;
+   for( auto const& s : samples ) {
+      dfloat diameter = s.radius + radiusAt( s.angle + pi );
+      if( diameter < diameterMin ) {
+         diameterMin = diameter;
+         out.minAngle = s.angle;
+      }
+      if( diameter > diameterMax ) {
+         diameterMax = diameter;
+         out.maxAngle = s.angle;
+      }
+   }
+   out.maxDiameter = diameterMax;
+   out.minDiameter = diameterMin;
+   return out;
+}
+
 dfloat Polygon::EllipseVariance( VertexFloat const& g, dip::CovarianceMatrix const& C ) const {
    // Inverse of covariance matrix
    dip::CovarianceMatrix U = C.Inv();
