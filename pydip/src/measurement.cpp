@@ -1,6 +1,6 @@
 /*
  * (c)2017-2021, Flagship Biosciences, Inc., written by Cris Luengo.
- * (c)2022-2025, Cris Luengo.
+ * (c)2022-2026, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -583,7 +583,9 @@ void init_measurement( py::module& m ) {
    chain.def( "BendingEnergy", &dip::ChainCode::BendingEnergy, doc_strings::dip·ChainCode·BendingEnergy·C );
    chain.def( "BoundingBox", &dip::ChainCode::BoundingBox, doc_strings::dip·ChainCode·BoundingBox·C );
    chain.def( "LongestRun", &dip::ChainCode::LongestRun, doc_strings::dip·ChainCode·LongestRun·C );
-   chain.def( "Polygon", &dip::ChainCode::Polygon, "borderCodes"_a = dip::S::KEEP, doc_strings::dip·ChainCode·Polygon·String·CL·C );
+   chain.def( "Polygon", py::overload_cast< dip::String const& >( &dip::ChainCode::Polygon, py::const_ ), "borderCodes"_a = dip::S::KEEP, doc_strings::dip·ChainCode·Polygon·String·CL·C );
+   chain.def( "Polygon", py::overload_cast< dip::Image const&, dip::dfloat, dip::String const& >( &dip::ChainCode::Polygon, py::const_ ), "gray"_a,
+              "threshold"_a = 0.0, "interpolation"_a = dip::S::LINEAR, doc_strings::dip·ChainCode·Polygon·Image·CL·dfloat··String·CL·C );
    chain.def( "Image", py::overload_cast<>( &dip::ChainCode::Image, py::const_ ), doc_strings::dip·ChainCode·Image·dip·Image·L·C );
    chain.def( "Image", py::overload_cast< dip::Image& >( &dip::ChainCode::Image, py::const_ ), "out"_a, doc_strings::dip·ChainCode·Image·dip·Image·L·C );
    chain.def( "Coordinates", &dip::ChainCode::Coordinates, doc_strings::dip·ChainCode·Coordinates·C );
@@ -593,5 +595,6 @@ void init_measurement( py::module& m ) {
    m.def( "GetImageChainCodes", py::overload_cast< dip::Image const&, std::vector< dip::LabelType > const&, dip::uint >( &dip::GetImageChainCodes ),
           "labels"_a, "objectIDs"_a = dip::UnsignedArray{}, "connectivity"_a = 2, doc_strings::dip·GetImageChainCodes·Image·CL·std·vectorltLabelTypegt·CL·dip·uint· );
    m.def( "GetSingleChainCode", &dip::GetSingleChainCode, "labels"_a, "startCoord"_a, "connectivity"_a = 2, doc_strings::dip·GetSingleChainCode·Image·CL·UnsignedArray·CL·dip·uint· );
-
+   m.def( "RefinePolygon", &dip::RefinePolygon, "polygon"_a, "gray"_a, "gradient"_a = dip::Image(), "threshold"_a = 0.0,
+          "interpolation"_a = dip::S::LINEAR, "stepSize"_a = 0.7, doc_strings::dip·RefinePolygon·Polygon·L·Image·CL·Image·CL·dfloat··String·CL·dfloat· );
 }

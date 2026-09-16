@@ -159,11 +159,7 @@ dip::Polygon ChainCode::Polygon( String const& borderCodes ) const {
    // This function works only for 8-connected chain codes, convert it if it's 4-connected.
    ChainCode const& cc = is8connected ? *this : ConvertTo8Connected();
 
-   std::array< VertexFloat, 4 > pts;
-   pts[ 0 ] = {  0.0, -0.5 };
-   pts[ 1 ] = { -0.5,  0.0 };
-   pts[ 2 ] = {  0.0,  0.5 };
-   pts[ 3 ] = {  0.5,  0.0 };
+   std::array< VertexFloat, 4 > pts = {{{ 0.0, -0.5 }, { -0.5, 0.0 }, { 0.0, 0.5 }, { 0.5, 0.0 }}};
 
    VertexFloat pos { dfloat( cc.start.x ), dfloat( cc.start.y ) };
    dip::Polygon polygon;

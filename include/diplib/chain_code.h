@@ -229,6 +229,24 @@ struct DIP_NO_EXPORT ChainCode {
    ///       <http://blogs.mathworks.com/steve/2011/10/04/binary-image-convex-hull-algorithm-notes/>.
    DIP_EXPORT dip::Polygon Polygon( String const& borderCodes = S::KEEP ) const;
 
+   /// \brief Returns a polygon representation of the object.
+   ///
+   /// Creates a refined polygon where each vertex lies on a point where `gray` is equal to `threshold`, after interpolation.
+   /// Consequently, the polygon represents the object much better than the one obtained through the purely discrete
+   /// overload above, and therefore any measurements obtained from it are more precise. Best precision is obtained
+   /// for objects that are large and smooth. Sharp angles are not necessarily represented correctly, the polygon
+   /// can cut them like it does in the discrete case above. For a bias analysis, see \ref dip::RefinePolygon.
+   ///
+   /// `gray` must be the 2D, gray-scale image that `this` was obtained from. The object to be measured should have a
+   /// uniform gray-value, as should the background, and the transition between the two should be sufficiently smooth
+   /// (i.e. the image is sampled correctly according to Nyquist). `threshold` is the half-way value between foreground
+   /// and background intensities, and would have been used to obtain a binary image that `this` was extracted from.
+   ///
+   /// `interpolation` is either `"linear"` or `"3-cubic"`. Two or four pixels in a line perpendicular to the contour
+   /// are extracted. The intersection of the interpolated linear or 3rd order cubic spline with `threshold` is determined.
+   /// That is where the vertex is placed.
+   DIP_EXPORT dip::Polygon Polygon( Image const& gray, dfloat threshold = 0.0, String const& interpolation = S::LINEAR ) const;
+
    /// Returns the convex hull of the object, see \ref dip::ChainCode::Polygon.
    dip::ConvexHull ConvexHull() const {
       return Polygon().ConvexHull();

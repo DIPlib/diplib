@@ -1,5 +1,5 @@
 /*
- * (c)2016-2025, Cris Luengo.
+ * (c)2016-2026, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -328,6 +328,13 @@ inline VertexFloat operator/( VertexInteger const& lhs, VertexFloat const& rhs )
                     static_cast< dfloat >( lhs.y ) };
    out /= rhs;
    return out;
+}
+
+/// \brief Unary minus, reflects the vertex across the origin.
+/// \relates dip::Vertex
+template< typename T >
+inline Vertex< T > operator-( Vertex< T > lhs ) {
+   return { -lhs.x, -lhs.y };
 }
 
 /// \brief Encodes a bounding box in a 2D image by the top left and bottom right corners (both coordinates included in the box).
@@ -865,6 +872,73 @@ struct DIP_NO_EXPORT ConvexHull : dip::Polygon {
 inline dip::ConvexHull Polygon::ConvexHull() const {
    return dip::ConvexHull( *this );
 }
+
+/// \brief Refine a polygon by shifting each vertex to the nearest sub-pixel location where the image is equal to threshold.
+///
+/// After refinement, the polygon more closely matches the object in the image, allowing more precise measurements.
+/// This works well for sufficiently large objects with sufficiently smooth contours. Sharp angles can be cut off because
+/// there is no mechanism to move a vertex to the corner. A polygon approximation of a shape will always cut off
+/// tiny bits of the area; the vertices are exactly on the boundary, the edges joining them will deviate from the
+/// boundary if the boundary is curved.
+///
+/// For a disk, the area of the polygon can be shawn to be $\frac{\pi s^2}{6}$ pixels
+/// smaller than the disk, where $s$ is the distance between vertices. This bias applies to any smooth shape, as the
+/// bias relates to the integral over the curvature, which is identical for any closed curve (think of concave and
+/// convex areas cancelling each other out). The perimeter measure has a bias that relates to the bending energy
+/// (the integral of the square of the curvature), and thus increases with curvature and shape complexity.
+///
+/// One way to improve precision and accuracy is to add vertices to the polygon, see \ref dip::Polygon::Augment.
+///
+/// `gray` must be a 2D, gray-scale image that that relates to `polygon`. The object to be measured should have a
+/// uniform gray-value, as should the background, and the transition between the two should be sufficiently smooth
+/// (i.e. the image is sampled correctly according to Nyquist). `threshold` is the half-way value between foreground
+/// and background intensities, and would have been used to obtain a binary representation of the object.
+///
+/// `gradient` should be equal to `dip::Gradient( gray )`, and will be computed if not given. In the case of multiple
+/// objects in an image, it is cheaper to compute the gradient only once, and pass it into each call to this function.
+///
+/// Each vertex must be within `stepSize` pixels of the location with value `threshold`. Ideally, the polygon is obtained
+/// from the chain code of this binary object, through \ref dip::ChainCode::Polygon. In this case, the polygon is
+/// never more than 0.5 pixels away, the default of 0.7 gives some leeway in case of imprecise normals. The smaller the
+/// step size is, the more precise the boundary location can be determined, within limits.
+///
+/// `dip::ChainCode::Polygon` has an overload
+/// that returns a refined shape, and which is cheaper than this function. The advantage of this function is that
+/// it can be used with a modified polygon, or with a polygon obtained through different means. Also, the vertices
+/// tend to stay spaced better with this function.
+///
+/// `interpolation` is either `"linear"` or `"3-cubic"`. Points along the image gradient at each vertex are
+/// sampled from the image using interpolation, at a distance of `stepSize` from each other. Then the intersection of
+/// the interpolated linear or 3rd order cubic spline with `threshold` is determined.
+///
+/// The return value is the number of vertices that could not be shifted. The algorithm fails to shift a vertex if:
+///  - it is too close to the image edge or outside the image domain, or
+///  - it is too far in the normal direction from the `threshold` value in `gray`.
+/// If the return value is not zero, measurements on the polygon will likely have a larger error. It is recommended
+/// to try again with a larger value of `stepSize`.
+///
+/// Example:
+/// ```cpp
+/// dip::Image img = dip::Image( { 256, 256 }, 1 );
+/// img.Fill( 0 );
+/// dip::dfloat threshold = 1;
+/// dip::DrawBandlimitedBall( img, 200, { 128, 128 }, { 2 * threshold }, "filled", 2 );
+/// dip::Image labels = dip::Label( img > threshold );
+/// dip::ChainCodeArray ccs = dip::GetImageChainCodes( labels ); // Should only be one chain code
+/// dip::Polygon polygon = ccs[ 0 ].Polygon();
+/// dip::RefinePolygon( polygon, img, {}, threshold );
+/// std::cout << "Area: " << polygon.Area() << '\n';
+/// std::cout << "Perimeter: " << polygon.Perimeter() << '\n';
+/// ```
+DIP_EXPORT dip::uint RefinePolygon(
+      Polygon& polygon,
+      Image const& gray,
+      Image const& gradient = {},
+      dfloat threshold = 0.0,
+      String const& interpolation = S::CUBIC_ORDER_3,
+      dfloat stepSize = 0.7
+);
+
 
 /// \endgroup
 

@@ -62,17 +62,22 @@ add_executable(test_binary cpp/test_binary.cpp)
 target_compile_definitions(test_binary PRIVATE DIP_EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
 target_link_libraries(test_binary DIP)
 
+# This program shows how to use dip::ChainCode::Polygon and dip::RefinePolygon
+add_executable(outline_representation cpp/outline_representation.cpp)
+target_link_libraries(outline_representation DIP)
+
 # The `examples` target builds them all
 add_custom_target(examples DEPENDS
-                  image_arithmetic
-                  register_measurement_feature
-                  time_dilations
-                  variance
-                  fractal_dimension
-                  radial_mean
-                  time_openmp
-                  test_binary
-                  )
+        image_arithmetic
+        register_measurement_feature
+        time_dilations
+        variance
+        fractal_dimension
+        radial_mean
+        time_openmp
+        test_binary
+        outline_representation
+)
 
 ## A set of examples that need DIPviewer, compile only if DIPviewer is available
 
@@ -141,16 +146,19 @@ if(DIP_BUILD_DIPVIEWER)
    target_link_libraries(detect_circles DIP DIPviewer)
 
    add_dependencies(examples
-                    viewer
-                    display
-                    fileviewer
-                    select_objects
-                    color_quantization
-                    filter_image
-                    geometric_transformation
-                    oversegmentation
-                    using_measurement_tool
-                    )
+           viewer
+           display
+           fileviewer
+           select_objects
+           color_quantization
+           filter_image
+           geometric_transformation
+           oversegmentation
+           graph_cut_segmentation
+           using_measurement_tool
+           blend_images
+           detect_circles
+   )
 
    ## An example that needs OpenCV, compile only if OpenCV is available
 
@@ -162,9 +170,7 @@ if(DIP_BUILD_DIPVIEWER)
       target_compile_definitions(opencv_with_dip PRIVATE DIP_EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
       target_link_libraries(opencv_with_dip DIP DIPviewer ${OpenCV_LIBS})
 
-      add_dependencies(examples
-                       opencv_with_dip
-                       )
+      add_dependencies(examples opencv_with_dip)
 
    endif()
 
@@ -184,9 +190,7 @@ if(DIP_BUILD_DIPVIEWER)
          target_compile_options(vigra_with_dip PRIVATE -Wno-conversion -Wno-sign-conversion -Wno-deprecated-copy -Wno-parentheses)
       endif()
 
-      add_dependencies(examples
-                       vigra_with_dip
-                       )
+      add_dependencies(examples vigra_with_dip)
 
    endif()
 
@@ -203,9 +207,7 @@ if(Qt6_FOUND)
    target_link_libraries(qt_with_dip DIP Qt6::Widgets)
    set_target_properties(qt_with_dip PROPERTIES AUTOMOC ON)
 
-   add_dependencies(examples
-                    qt_with_dip
-                    )
+   add_dependencies(examples qt_with_dip)
 
 endif()
 

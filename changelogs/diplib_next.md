@@ -11,11 +11,20 @@ date: 2020-00-00
 - Added the *DIPlib*-*Qt* interface in the header file `dip_qimage_interface.h`, with namespace `dip_qimage`.
   See [PR #233](https://github.com/DIPlib/diplib/pull/233).
 
+- Added `dip::Polygon::CentroidDiameter()`.
+  See [PR #235](https://github.com/DIPlib/diplib/pull/235).
+
 - Added new measurement feature `"CentroidDiameter"`.
   See [PR #232](https://github.com/DIPlib/diplib/pull/232).
 
 - Measurement features can now have aliases. The alias can be used anywhere of its canonical name to refer
   to the feature, and one does not need to be consistent about which of the names is used.
+
+- Added an overload to `dip::ChainCode::Polygon()` that takes a gray-scale image as input, and uses interpolation
+  to produce a polygon that more accurately represents the object.
+
+- Added `dip::RefinePolygon()`, which moves the vertices of a polygon to align more precisely with the outline
+  of an object.
 
 ### Changed functionality
 

@@ -244,6 +244,7 @@ measurement/measurement.cpp
 measurement/measurement_tool.cpp
 measurement/object_to_measurement.cpp
 measurement/polygon.cpp
+measurement/refine_polygon.cpp
 microscopy/attenuation_correction.cpp
 microscopy/colocalization.cpp
 microscopy/psf.cpp
