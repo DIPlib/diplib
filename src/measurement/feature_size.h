@@ -22,7 +22,7 @@ namespace Feature {
 
 class FeatureSize : public LineBased {
    public:
-      FeatureSize() : LineBased( { "Size", "Number of object pixels", false } ) {};
+      FeatureSize() : LineBased( { "Size", "Number of object pixels", { "Area", "Volume" }, false } ) {};
 
       ValueInformationArray Initialize( Image const& label, Image const&, dip::uint nObjects ) override {
          data_.clear();

@@ -940,7 +940,7 @@ class DIP_CLASS_EXPORT Composite : public Base {
 /// Measurement name            | Description       | Limitations
 /// --------------------------- | ----------------- | -----------
 ///                             | **Size features**{ .m-text .m-success } |
-/// `"Size"`                    | Number of object pixels |
+/// `"Size"` (alias `"Area"`, `"Volume"`) | Size of the object (equal to the number of object pixels), i.e. area in 2D or volume in 3D |
 /// `"SolidArea"`               | Area of object with any holes filled | 2D (CC)
 /// `"Perimeter"`               | Length of the object perimeter | 2D (CC)
 /// `"SurfaceArea"`             | Surface area of object | 3D
@@ -981,7 +981,8 @@ class DIP_CLASS_EXPORT Composite : public Base {
 /// `"DimensionsCube"`          | Extent along the principal axes of a cube | 2D & 3D
 /// `"DimensionsEllipsoid"`     | Extent along the principal axes of an ellipsoid | 2D & 3D
 ///                             | **Moments of grey-value object**{ .m-text .m-success } |
-/// `"Gravity"`                 | Coordinates of the center of mass of the object | Scalar grey
+/// `"GreySize"` (alias `"GreyArea"`, `"GreyVolume"`) | Grey-weighted size of the object, i.e. area in 2D or volume in 3D | Scalar grey
+/// `"Gravity"` (alias `"GreyCenter"`) | Coordinates of the center of mass (grey-weighted geometric mean) of the object | Scalar grey
 /// `"GreyMu"`                  | Elements of the grey-weighted inertia tensor | Scalar grey
 /// `"GreyInertia"`             | Grey-weighted moments of inertia of the object | Scalar grey
 /// `"GreyMajorAxes"`           | Grey-weighted principal axes of the object | Scalar grey

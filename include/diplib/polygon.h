@@ -828,7 +828,7 @@ struct DIP_NO_EXPORT Polygon {
    /// If the point lies within numerical precision to the boundary of the polygon, the algorithm
    /// will also return true.
    ///
-   /// Note that, when testing for mutliple points, it likely is more efficient to render the
+   /// Note that, when testing for multiple points, it likely is more efficient to render the
    /// polygon (\ref dip::DrawPolygon2D) and test points by indexing into that image.
    DIP_EXPORT bool Contains( VertexFloat point ) const;
 };

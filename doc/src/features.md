@@ -34,7 +34,7 @@ it is not possible to use pixel units (e.g. "1.0 px x 1.2 px").
 
 \section size_features Size features
 
-\subsection size_features_Size Size
+\subsection size_features_Size Size (aliases: Area, Volume)
 Counts the number of object pixels to give an unbiased estimate of the object's area
 (2D), volume (3D), or hyper-volume (nD). If the image has a known pixel size, the number
 of pixels is multiplied by the size of each pixel to convert the estimate into physical units.
@@ -293,7 +293,7 @@ This value is reported in physical units, but only for isotropic (square) pixels
 
 \section intensity_features Intensity features
 
-\subsection intensity_features_Sum Sum
+\subsection intensity_features_Sum Sum (alias: Mass)
 The sum of the grey-value image intensities across the object.
 The `grey` image can be a tensor image, one value per tensor element (channel) is produced.
 
@@ -418,7 +418,7 @@ have the same units, else pixel sizes are ignored.
 
 \section grey_moments Moments of grey-value object
 
-\subsection grey_moments_GreySize GreySize
+\subsection grey_moments_GreySize GreySize (alias: GreyArea, GreyVolume)
 The integral over the object, equivalent to the zero order moment.
 Same as the \ref intensity_features_Sum feature, but multiplied by the physical size of a pixel.
 If object pixels have a value of 1, and background pixels have a value of 0, then this feature
@@ -426,7 +426,7 @@ is the size of the grey-value object.
 
 This value is reported in physical units, anisotropic pixels are taken into account.
 
-\subsection grey_moments_Gravity Gravity
+\subsection grey_moments_Gravity Gravity (alias: GreyCenter)
 Coordinates of the center of mass of the object, which is the first order normalized
 moment of the binary shape weighted by the grey-value image's intensities.
 There is one value per image dimension. If the image has a known pixel size, the values

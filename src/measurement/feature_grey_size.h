@@ -22,7 +22,7 @@ namespace Feature {
 
 class FeatureGreySize : public LineBased {
    public:
-      FeatureGreySize() : LineBased( { "GreySize", "Integral over object (sum of intensities times size of a pixel)", true } ) {};
+      FeatureGreySize() : LineBased( { "GreySize", "Integral over object (sum of intensities times size of a pixel)", { "GreyArea", "GreyVolume" }, true } ) {};
 
       ValueInformationArray Initialize( Image const& label, Image const& grey, dip::uint nObjects ) override {
          nTensor_ = grey.TensorElements();

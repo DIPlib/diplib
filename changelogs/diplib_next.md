@@ -20,6 +20,9 @@ date: 2020-00-00
 - Measurement features can now have aliases. The alias can be used anywhere of its canonical name to refer
   to the feature, and one does not need to be consistent about which of the names is used.
 
+- The "Gravity" measurement feature now has an alias "GreyCenter". The "Size" measurement feature now has
+  aliases "Area" and "Volume". The "GreySize" measurement feature now has aliases "GreyArea" and "GreyVolume".
+
 - Added an overload to `dip::ChainCode::Polygon()` that takes a gray-scale image as input, and uses interpolation
   to produce a polygon that more accurately represents the object.
 

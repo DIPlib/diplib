@@ -22,7 +22,7 @@ namespace Feature {
 
 class FeatureGravity : public LineBased {
    public:
-      FeatureGravity() : LineBased( { "Gravity", "Coordinates of the center-of-mass of the grey-value object", true } ) {};
+      FeatureGravity() : LineBased( { "Gravity", "Coordinates of the center-of-mass of the grey-value object", { "GreyCenter" }, true } ) {};
 
       ValueInformationArray Initialize( Image const& label, Image const& grey, dip::uint nObjects ) override {
          DIP_THROW_IF( !grey.IsScalar(), E::IMAGE_NOT_SCALAR );
