@@ -18,7 +18,8 @@ date: 2020-00-00
   See [PR #232](https://github.com/DIPlib/diplib/pull/232).
 
 - Measurement features can now have aliases. The alias can be used anywhere of its canonical name to refer
-  to the feature, and one does not need to be consistent about which of the names is used.
+  to the feature, and one does not need to be consistent about which of the names is used. Adds
+  `dip::Measurement::FeatureInformation::aliases`.
 
 - The "Gravity" measurement feature now has an alias "GreyCenter". The "Size" measurement feature now has
   aliases "Area" and "Volume". The "GreySize" measurement feature now has aliases "GreyArea" and "GreyVolume".
@@ -70,6 +71,9 @@ None, but see bugfixes to *DIPlib*.
 ### New functionality
 
 ### Changed functionality
+
+- The `FeatureInformation` named tuple that is output by `dip.Measurement.Features()` has an additional
+  value `aliases`.
 
 (See also changes to *DIPlib*.)
 

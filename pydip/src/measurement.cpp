@@ -98,7 +98,7 @@ class type_caster< dip::VertexInteger > {
       PYBIND11_TYPE_CASTER( type, _( "VertexInteger" ));
 };
 
-DIP_OUTPUT_TYPE_CASTER( Measurement::FeatureInformation, "FeatureInformation", "name startColumn numberValues", src.name, src.startColumn, src.numberValues )
+DIP_OUTPUT_TYPE_CASTER( Measurement::FeatureInformation, "FeatureInformation", "name aliases startColumn numberValues", src.name, src.aliases, src.startColumn, src.numberValues )
 DIP_OUTPUT_TYPE_CASTER( Feature::ValueInformation, "ValueInformation", "name units", src.name, src.units )
 
 DIP_OUTPUT_TYPE_CASTER( BoundingBoxFloat, "BoundingBoxFloat", "topLeft bottomRight", VertexTuple( src.topLeft ), VertexTuple( src.bottomRight ) )
