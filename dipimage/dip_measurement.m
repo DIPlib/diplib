@@ -16,7 +16,7 @@
 %
 %   Two DIP_MEASUREMENT objects can be concatenated into a single object,
 %   either vertically (if they measure the same features on different
-%   objects) or horizontally (if they measure different feature on the same
+%   objects) or horizontally (if they measure different features on the same
 %   objects). For example, if we were to measure intensities in separate R,
 %   G and B channels of an image, we could merge the results into a single
 %   DIP_MEASUREMENT object:
@@ -37,7 +37,7 @@
 %            3      62.988679       6.535849       4.696855
 %           ...
 
-% (c)2017-2019, Cris Luengo.
+% (c)2017-2026, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)2008, Michael van Ginkel.
 %
@@ -68,7 +68,8 @@ classdef dip_measurement
       %   Features(ii).Name: string, feature name
       %   Features(ii).StartColumn: start column in Data.
       %   Features(ii).NumberValues: number of columns in Data.
-      Features = struct('Name',{},'StartColumn',{},'NumberValues',{})
+      %   Features(ii).Aliases: cell array of feature name aliases.
+      Features = struct('Name',{},'StartColumn',{},'NumberValues',{},'Aliases',{})
       %Values - Struct array with value (column) names and units.
       %   Values(ii).Name: string, value name
       %   Values(ii).Units: string, units for the value
@@ -86,9 +87,18 @@ classdef dip_measurement
 
       % ------- PRIVATE METHODS -------
 
-      function I = FindFeature(obj,name)
+      function I = FindFeature(obj,name,nothrow)
          I = find(strcmpi(name,{obj.Features.Name}),1,'first');
          if isempty(I)
+            for ii = 1:numel(obj.Features)
+               I = find(strcmpi(name,obj.Features(ii).Aliases),1,'first');
+               if ~isempty(I)
+                  I = ii;
+                  break
+               end
+            end
+         end
+         if (nargin<3 || ~nothrow) && isempty(I)
             error('Feature not available')
          end
       end
@@ -120,7 +130,7 @@ classdef dip_measurement
          if ~isnumeric(objects) || ~isvector(objects) || any(mod(objects,1))
             error('OBJECTS input incorrect');
          end
-         if ~isstruct(features) || ~isfield(features,'Name') || ~isfield(features,'StartColumn') || ~isfield(features,'NumberValues')
+         if ~isstruct(features) || ~isfield(features,'Name') || ~isfield(features,'StartColumn') || ~isfield(features,'NumberValues') || ~isfield(features,'Aliases')
             error('FEATURES input incorrect');
          end
          index = 1;
@@ -137,6 +147,9 @@ classdef dip_measurement
             end
             if ~isnumeric(features(ii).NumberValues) || ~isscalar(features(ii).NumberValues) || mod(features(ii).NumberValues,1) || features(ii).NumberValues<1
                error('FEATURES.NumberValues must be a positive scalar integer');
+            end
+            if ~iscellstr(features(ii).Aliases)
+               error('FEATURES.Aliases must be a cell array of strings');
             end
             index = index + features(ii).NumberValues;
          end
@@ -223,6 +236,16 @@ classdef dip_measurement
          out = {obj.Features.Name};
       end
 
+      function out = fieldnamealiases(obj)
+         %FIELDNAMEALIASES   Get measurement name aliases.
+         %   NAMES = FIELDNAMEALIASES(M) returns the aliases of the measurement
+         %   names in the dip_measurement object M, as a cell array of strings.
+         %
+         %   These names can be used by evaluating M.NAME, as an alternative
+         %   to the canonical names returned by FIELDNAMES(M).
+         out = cat(2,obj.Features.Aliases);
+      end
+
       function f = isfield(obj,id)
          %ISFIELD   True if measurement is in dip_measurement object
          %   ISFIELD(M,'featureID') returns true if 'featureID' is the
@@ -230,7 +253,7 @@ classdef dip_measurement
          if nargin<2
             error('Feature name required')
          end
-         f = strcmpi('id',id) || any(strcmpi(id,{obj.Features.Name}));
+         f = strcmpi('id',id) || ~isempty(obj.FindFeature(id,true));
       end
 
       function obj = rmfield(obj,id)

@@ -1,5 +1,5 @@
 /*
- * (c)2017-2021, Cris Luengo.
+ * (c)2017-2026, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
  *
@@ -44,6 +44,9 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
                   std::cout << " *";
                }
                std::cout << '\n';
+               for( auto const& alias : feature.aliases ) {
+                  std::cout << " - '" << alias << "': alias to '" << feature.name << "'\n";
+               }
             }
             std::cout << "Features marked with a \"*\" require a grey-value input image.\n";
             return;
@@ -69,14 +72,21 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       dip::StringArray features;
       if( nrhs > 2 ) {
          features = dml::GetStringArray( prhs[ 2 ] );
+         // We need to allow for case-insensitive use of the feature names. We do a case-insensitive
+         // lookup to find the feature name the user meant.
          // Find known feature names
          auto infoArray = measurementTool.Features();
-         // Put lower-case version of names in a map
-         tsl::robin_map< dip::String, dip::uint > knownFeatures;
+         // Put lower-case version of names and aliases in a map
+         tsl::robin_map< dip::String, dip::String > knownFeatures;
          for( dip::uint ii = 0; ii < infoArray.size(); ++ii ) {
-            dip::String name = infoArray[ ii ].name;
-            dip::ToLowerCase( name );
-            knownFeatures.emplace( name, ii );
+            dip::String lower_case_name = infoArray[ ii ].name;
+            dip::ToLowerCase( lower_case_name );
+            knownFeatures.emplace( lower_case_name, infoArray[ ii ].name );
+            for( auto alias : infoArray[ ii ].aliases ) {
+               dip::String lower_case_alias = alias;
+               dip::ToLowerCase( lower_case_alias );
+               knownFeatures.emplace( lower_case_alias, alias );
+            }
          }
          // Put in aliases for backwards compatibility
          auto it = knownFeatures.find( "standarddeviation" );
@@ -88,16 +98,12 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
             knownFeatures.emplace( "skewness", it.value() );
             knownFeatures.emplace( "excesskurtosis", it.value() );
          }
-         it = knownFeatures.find( "sum" );
-         if( it != knownFeatures.end() ) {
-            knownFeatures.emplace( "mass", it.value() );
-         }
          // Find requested features in map, using case-insensitive search, and copy name with correct case
          for( auto& f : features ) {
             dip::ToLowerCase( f );
             it = knownFeatures.find( f );
-            DIP_THROW_IF( it == knownFeatures.end(), "Feature name not recognized" );
-            f = infoArray[ it.value() ].name;
+            DIP_THROW_IF( it == knownFeatures.end(), "Feature name not recognized: " + f );
+            f = it.value();
          }
       } else {
          features = { "Size" };
@@ -125,13 +131,14 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       // - Objects
       mxInputArgs[ 0 ] = dml::GetArray( msr.Objects() );
       // - Features
-      char const* featuresFieldNames[ 3 ] = { "Name", "StartColumn", "NumberValues" };
-      mxInputArgs[ 1 ] = mxCreateStructMatrix( 1, msr.NumberOfFeatures(), 3, featuresFieldNames );
+      char const* featuresFieldNames[ 4 ] = { "Name", "StartColumn", "NumberValues", "Aliases" };
+      mxInputArgs[ 1 ] = mxCreateStructMatrix( 1, msr.NumberOfFeatures(), 4, featuresFieldNames );
       auto dipFeatures = msr.Features();
       for( dip::uint ii = 0; ii < dipFeatures.size(); ++ii ) {
          mxSetFieldByNumber( mxInputArgs[ 1 ], ii, 0, dml::GetArray( dipFeatures[ ii ].name ));
          mxSetFieldByNumber( mxInputArgs[ 1 ], ii, 1, dml::GetArray( dipFeatures[ ii ].startColumn + 1 ));
          mxSetFieldByNumber( mxInputArgs[ 1 ], ii, 2, dml::GetArray( dipFeatures[ ii ].numberValues ));
+         mxSetFieldByNumber( mxInputArgs[ 1 ], ii, 3, dml::GetArray( dipFeatures[ ii ].aliases ));
       }
       // - Values
       char const* valuesFieldNames[ 2 ] = { "Name", "Units" };

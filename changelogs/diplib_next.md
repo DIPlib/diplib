@@ -47,6 +47,10 @@ date: 2020-00-00
 
 ### New functionality
 
+- The `dip_measurement` object recognizes measurement feature aliases when indexing.
+
+- Added function `fieldnamealiases` for inputs of type `dip_measurement`.
+
 ### Changed functionality
 
 (See also changes to *DIPlib*.)
