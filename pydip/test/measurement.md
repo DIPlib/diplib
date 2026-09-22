@@ -108,7 +108,7 @@ Finally, we can retrieve all object IDs and information about all features:
     >>> m.Objects()
     [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 20, 21, 22, 23, 25, 26, 28, 29, 30, 31, 32, 33, 35, 37, 38, 39, 40, 41, 42, 43, 44, 45, 47, 48, 49, 50, 52, 53, 54, 55]
     >>> m.Features()
-    [FeatureInformation(name='Size', startColumn=0, numberValues=1), FeatureInformation(name='Solidity', startColumn=1, numberValues=1), FeatureInformation(name='Statistics', startColumn=2, numberValues=4), FeatureInformation(name='ConvexArea', startColumn=6, numberValues=1)]
+    [FeatureInformation(name='Size', aliases=['Area', 'Volume'], startColumn=0, numberValues=1), FeatureInformation(name='Solidity', aliases=[], startColumn=1, numberValues=1), FeatureInformation(name='Statistics', aliases=[], startColumn=2, numberValues=4), FeatureInformation(name='ConvexArea', aliases=[], startColumn=6, numberValues=1)]
     >>> m.Values()
     [ValueInformation(name='', units=...), ValueInformation(name='', units=), ValueInformation(name='Mean', units=), ValueInformation(name='StdDev', units=), ValueInformation(name='Skewness', units=), ValueInformation(name='ExcessKurtosis', units=), ValueInformation(name='', units=...)]
 
