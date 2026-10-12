@@ -4,9 +4,9 @@
 %  [image_out, offset] = umbra(image_in)
 %
 % LITERATURE:
-%  H.J.A.M. Heijmans, A note on the umbra transform in gray-scale morphology
+%  H.J.A.M. Heijmans, A note on the umbra transform in grey-scale morphology
 %  Pattern Recognition Letters, 14(11):877-881, 1993
- 
+
 % (c)2018, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %

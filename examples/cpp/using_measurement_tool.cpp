@@ -57,7 +57,7 @@ void WriteFeatureData(
 
 int main() {
 
-   // The input grayscale image.
+   // The input greyscale image.
    dip::Image input = dip::ImageRead( DIP_EXAMPLES_DIR "/cermet.ics" );
 
    // Normally images coming off a microscope have metadata indicating the pixel size, dip::ImageRead
@@ -81,13 +81,13 @@ int main() {
    // Display our measurements as a table to the console.
    std::cout << msr;
 
-   // Display the "EllipseVariance" feature by painting each object with the feature as the grayscale,
+   // Display the "EllipseVariance" feature by painting each object with the feature as the greyscale,
    // and displaying this image using a color map.
    dip::Image ellipseVariance = dip::ObjectToMeasurement( labels, msr[ "EllipseVariance" ] );
    auto win1 = dip::viewer::Show( ellipseVariance, "The EllipseVariance feature" );
    win1->options().lut_ = dip::viewer::ViewingOptions::LookupTable::Sequential;
 
-   // Write the "StandardDeviation" value on the original gray-scale image, and display.
+   // Write the "StandardDeviation" value on the original grey-scale image, and display.
    dip::Image outline = binary - dip::Erosion( binary, { 3, "diamond" } );
    dip::Image stdev = dip::Overlay( input, outline, { 0, 210, 0 } );
    WriteFeatureData( stdev, msr[ "Center" ], msr[ "StandardDeviation" ] );

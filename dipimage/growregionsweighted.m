@@ -1,11 +1,11 @@
 %GROWREGIONSWEIGHTED   Grow labeled regions with a speed function given by a grey-value image
 %
 % SYNOPSIS:
-%  image_out = growregionsweighted(label_image,gray_image,mask,chamfer,distance)
+%  image_out = growregionsweighted(label_image,grey_image,mask,chamfer,distance)
 %
 % PARAMETERS:
 %  label_image: a labeled image (of unsigned integer type).
-%  gray_image:  a real-valued gray-scale image, or [].
+%  grey_image:  a real-valued gray-scale image, or [].
 %  mask:        binary image to constrain the operation, or [].
 %  chamfer:     ignored (kept for backwards compatibility)
 %  distance:    how far regions are grown.

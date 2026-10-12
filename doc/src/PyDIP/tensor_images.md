@@ -26,7 +26,7 @@ Note that the image itself is not a matrix or a tensor. An image can be seen as 
 array, but we don't apply matrix multiplication or other linear algebra on the image as a matrix.
 But each pixel can be a matrix, or a vector, and we can apply linear algebra on the pixels.
 
-Images with a single channel, gray-scale images, are referred to as "scalar images" in *DIPlib*.
+Images with a single channel, grey-scale images, are referred to as "scalar images" in *DIPlib*.
 
 If the channels (i.e. tensor elements) are organized as a vector, it is a "vector image". Color images are
 always vector images. Each pixel is a vector that represents a point in the color space.
@@ -174,11 +174,11 @@ the image has the right number of channels, and it will not touch the pixel data
 and conversions. In *PyDIP*, `dip.ColorSpaceManager` is a sub-module that references an internally stored
 global `dip::ColorSpaceManager` object. You can query the existence and properties of a color space,
 but not define new ones (as that requires writing C++ code). `dip.ColorSpaceManager.Convert()` converts
-from any known color space to any other color space, including gray scale. See \ref dip::ColorSpaceManager
+from any known color space to any other color space, including grey scale. See \ref dip::ColorSpaceManager
 for a list of currently known color spaces.
 
 The conversion functions assume a specific gamut (each color space defines the range of the values for each channel).
-These values do not change with the data type of the image. For example, a gray-scale image is assumed to be in
+These values do not change with the data type of the image. For example, a grey-scale image is assumed to be in
 the range 0-255, whether the image is `UINT8`, `SINT16` or `DFLOAT`. But the range of values is irrelevant when
 displaying, as the image display can scale data (see \ref pum_display). That is, the gamut is only relevant when
 applying color space conversions.

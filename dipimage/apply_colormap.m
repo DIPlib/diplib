@@ -1,4 +1,4 @@
-%APPLY_COLORMAP   Apply a color map to a gray-scale image
+%APPLY_COLORMAP   Apply a color map to a grey-scale image
 %
 % SYNOPSIS:
 %  image_out = apply_colormap(image_in,colormap)

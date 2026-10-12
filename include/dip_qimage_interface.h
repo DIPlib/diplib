@@ -53,7 +53,7 @@
 ///   them: an image with a wider range (e.g. 16-bit unsigned data read from a PNG or TIFF file) must be scaled to
 ///   the 0-255 range before conversion, or the result will be clipped to white.
 ///
-/// - Only 1 (grayscale), 3 (RGB) or 4 (RGBA) channels are supported, mapping to `QImage::Format_Grayscale8`,
+/// - Only 1 (greyscale), 3 (RGB) or 4 (RGBA) channels are supported, mapping to `QImage::Format_Grayscale8`,
 ///   `QImage::Format_RGB888` and `QImage::Format_RGBA8888`, respectively. The tensor stride must be 1 (interleaved
 ///   channels), matching *DIPlib*'s default.
 ///
@@ -77,7 +77,7 @@ inline QImage::Format GetQImageFormat( dip::uint channels ) {
       case 1: return QImage::Format_Grayscale8;
       case 3: return QImage::Format_RGB888;
       case 4: return QImage::Format_RGBA8888;
-      default: DIP_THROW( "QImage interface only supports 1 (gray), 3 (RGB) or 4 (RGBA) channels" );
+      default: DIP_THROW( "QImage interface only supports 1 (grey), 3 (RGB) or 4 (RGBA) channels" );
    }
 }
 

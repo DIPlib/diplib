@@ -149,9 +149,9 @@ class DIP_CLASS_EXPORT ColorSpaceConverter {
 /// it is therefore often advantageous to convert the image to (linear) RGB for computation (or some
 /// other desired color space).
 ///
-/// When converting to/from gray, it is assumed that gray is linear (i.e. a weighted addition of the linear R, G and B
+/// When converting to/from grey, it is assumed that grey is linear (i.e. a weighted addition of the linear R, G and B
 /// values, the weights depending on the white point). But in the case of HSI and ISH color spaces, the I channel is the
-/// gray channel; I is a non-weighted mean of linear RGB, the conversion does not take the white point into account.
+/// grey channel; I is a non-weighted mean of linear RGB, the conversion does not take the white point into account.
 ///
 /// # Defining a new color space
 ///
@@ -380,7 +380,7 @@ class DIP_NO_EXPORT ColorSpaceManager {
 /// The alpha channel is expected to be in the range [0, `scaling`]. The output image is of the
 /// same data type as `in`, but will have 3 channels and be in he sRGB color space.
 ///
-/// If `in` has two channels, it is assumed to be a gray-scale image with an alpha channel,
+/// If `in` has two channels, it is assumed to be a grey-scale image with an alpha channel,
 /// and the output will be scalar. Otherwise, if `in` is not sRGBA, it is returned as-is.
 ///
 /// The alpha channel is assumed to not be pre-multiplied.

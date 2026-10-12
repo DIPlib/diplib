@@ -461,7 +461,7 @@ DIP_EXPORT void ImageWriteTIFF(
 /// The function tries to open `filename` as given first, and if that fails, it appends ".jpg" and ".jpeg" to the
 /// name and tries again.
 ///
-/// JPEG images are either gray-scale (scalar) or sRGB images, the color space information will be set accordingly.
+/// JPEG images are either grey-scale (scalar) or sRGB images, the color space information will be set accordingly.
 ///
 /// The pixels per inch value in the JPEG file will be used to set the pixel size of `out`.
 DIP_EXPORT FileInformation ImageReadJPEG( Image& out, String const& filename );
@@ -530,7 +530,7 @@ DIP_NODISCARD inline std::vector< uint8 > ImageWriteJPEG( Image const& image, di
 /// The function tries to open `filename` as given first, and if that fails, it appends ".png" to the
 /// name and tries again.
 ///
-/// PNG images are either gray-scale (scalar) or sRGB images, the color space information will be set accordingly.
+/// PNG images are either grey-scale (scalar) or sRGB images, the color space information will be set accordingly.
 /// If the image has an alpha channel, it will be the second or fourth tensor element in `out`.
 /// Use \ref ApplyAlphaChannel to ensure the image has no alpha channel.
 ///
@@ -571,7 +571,7 @@ DIP_NODISCARD DIP_EXPORT FileInformation ImageReadPNGInfo( void const* buffer, d
 /// `image` must be 2D, and have between one and four tensor elements.
 /// If the image has three or four tensor elements, it will be saved as an sRGB image, even if the color space
 /// is not sRGB (no color space conversion is done, the data is simply tagged as sRGB); otherwise it will be saved
-/// as a grayscale image.
+/// as a greyscale image.
 /// If the image has two or four tensor elements, the last tensor element is assumed to be the alpha channel.
 /// If the image data type is \ref dip::DT_UINT8, \ref dip::DT_UINT16 or \ref dip::DT_BIN, it will be written as-is.
 /// Otherwise, the image will be converted to `dip::DT_UINT8` (complex numbers are cast to real values

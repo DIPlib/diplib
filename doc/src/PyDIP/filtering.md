@@ -126,7 +126,7 @@ user it looks like the operation is working in-place, but in reality there's a t
 \section pum_filtering_color Filtering color images
 
 With some functions, like `dip.Gauss()`, we can process color images normally. However, many functions
-require a scalar (gray-scale) image as input. This is mostly the case for functions where it doesn't
+require a scalar (grey-scale) image as input. This is mostly the case for functions where it doesn't
 make sense to work on color (for example `dip.Watershed()`), or where the operation is ambiguous on
 color (for example `dip.Dilation()`). We'll use this latter function as an example.
 

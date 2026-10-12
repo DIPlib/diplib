@@ -141,25 +141,25 @@ VertexFloat Interpolate(
 }
 
 dfloat SamplePixelInterpolated(
-   Image const& gray,
+   Image const& grey,
    VertexFloat position,
    InterpolationFunctionPointer interpolationFunction
 ) {
-   return ResampleAtUnchecked( gray, { position.x, position.y }, interpolationFunction ).As< dfloat >();
+   return ResampleAtUnchecked( grey, { position.x, position.y }, interpolationFunction ).As< dfloat >();
 }
 
 } // namespace
 
-dip::Polygon ChainCode::Polygon( dip::Image const& gray, dfloat threshold, String const& interpolation ) const {
-   DIP_THROW_IF( !gray.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !gray.IsScalar(), E::IMAGE_NOT_SCALAR );
-   DIP_THROW_IF( gray.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
+dip::Polygon ChainCode::Polygon( dip::Image const& grey, dfloat threshold, String const& interpolation ) const {
+   DIP_THROW_IF( !grey.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !grey.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( grey.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( codes.size() == 1, "Received a weird chain code as input (N==1)" );
    DIP_THROW_IF( Empty() || codes.empty(), "Received empty chain code" );
    bool cubic{};
    DIP_STACK_TRACE_THIS( cubic = BooleanFromString( interpolation, S::CUBIC_ORDER_3, S::LINEAR ));
    SampleFunction sampleFunction{};
-   DIP_OVL_ASSIGN_REAL( sampleFunction, SamplePixels, gray.DataType() );
+   DIP_OVL_ASSIGN_REAL( sampleFunction, SamplePixels, grey.DataType() );
    FloatArray samples( cubic ? 4 : 2 );
 
    // This function works only for 8-connected chain codes, convert it if it's 4-connected.
@@ -183,18 +183,18 @@ dip::Polygon ChainCode::Polygon( dip::Image const& gray, dfloat threshold, Strin
             l += 4;
          }
          l -= k;
-         vertices.push_back( Interpolate( gray, pos, cardinal[ k ], sampleFunction, threshold, cubic, samples ));
+         vertices.push_back( Interpolate( grey, pos, cardinal[ k ], sampleFunction, threshold, cubic, samples ));
          // TODO: Every time we go around the corner, we could add a vertex at the corner, interpolating diagonally.
          if( l != 0 ) {
             DecrementMod4( k );
-            vertices.push_back( Interpolate( gray, pos, cardinal[ k ], sampleFunction, threshold, cubic, samples ));
+            vertices.push_back( Interpolate( grey, pos, cardinal[ k ], sampleFunction, threshold, cubic, samples ));
             if( l <= 2 ) {
                DecrementMod4( k );
-               vertices.push_back( Interpolate( gray, pos, cardinal[ k ], sampleFunction, threshold, cubic, samples ));
+               vertices.push_back( Interpolate( grey, pos, cardinal[ k ], sampleFunction, threshold, cubic, samples ));
                if( l == 1 ) {
                   // This case is only possible if n is odd and n==m+4
                   DecrementMod4( k );
-                  vertices.push_back( Interpolate( gray, pos, cardinal[ k ], sampleFunction, threshold, cubic, samples ));
+                  vertices.push_back( Interpolate( grey, pos, cardinal[ k ], sampleFunction, threshold, cubic, samples ));
                }
             }
          }
@@ -207,30 +207,30 @@ dip::Polygon ChainCode::Polygon( dip::Image const& gray, dfloat threshold, Strin
 
 dip::uint RefinePolygon(
       Polygon& polygon,
-      Image const& gray,
+      Image const& grey,
       Image const& c_gradient,
       dfloat threshold,
       String const& interpolation,
       dfloat stepSize
 ) {
-   DIP_THROW_IF( !gray.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !gray.IsScalar(), E::IMAGE_NOT_SCALAR );
-   DIP_THROW_IF( gray.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
+   DIP_THROW_IF( !grey.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !grey.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( grey.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
    dip::Image gradient;
    if( c_gradient.IsForged() ) {
       gradient = c_gradient.QuickCopy();
       DIP_THROW_IF( gradient.TensorElements() != 2, E::NTENSORELEM_DONT_MATCH );
-      DIP_THROW_IF( gradient.Sizes() != gray.Sizes(), E::SIZES_DONT_MATCH );
+      DIP_THROW_IF( gradient.Sizes() != grey.Sizes(), E::SIZES_DONT_MATCH );
    } else {
-      gradient = dip::Gradient( gray );
+      gradient = dip::Gradient( grey );
    }
    DIP_THROW_IF( stepSize <= 0, E::INVALID_PARAMETER );
    bool cubic{};
    DIP_STACK_TRACE_THIS( cubic = BooleanFromString( interpolation, S::CUBIC_ORDER_3, S::LINEAR ));
    dip::sint margin = ceil_cast( stepSize * ( cubic ? 2 : 1 ));
    BoundingBoxInteger validArea{{ margin, margin },
-                                { static_cast< dip::sint >( gray.Size( 0 )) - margin - 1, static_cast< dip::sint >( gray.Size( 1 )) - margin - 1 }};
-   InterpolationFunctionPointer grayInterpolator = PrepareResampleAtUnchecked( gray, interpolation );
+                                { static_cast< dip::sint >( grey.Size( 0 )) - margin - 1, static_cast< dip::sint >( grey.Size( 1 )) - margin - 1 }};
+   InterpolationFunctionPointer greyInterpolator = PrepareResampleAtUnchecked( grey, interpolation );
    InterpolationFunctionPointer gradientInterpolator = PrepareResampleAtUnchecked( gradient, interpolation );
    dip::uint nFailed = 0;
    for( dip::uint ii = 0; ii < polygon.vertices.size(); ++ii ) {
@@ -248,16 +248,16 @@ dip::uint RefinePolygon(
          continue;
       }
       VertexFloat step = normal / Norm( normal ) * stepSize;
-      dfloat p0 = SamplePixelInterpolated( gray, vertex, grayInterpolator ) - threshold;
+      dfloat p0 = SamplePixelInterpolated( grey, vertex, greyInterpolator ) - threshold;
       if( p0 > 0 ) {
          // We need to step downhill, not up
          step = -step;
       }
-      dfloat p1 = SamplePixelInterpolated( gray, vertex + step, grayInterpolator ) - threshold;
+      dfloat p1 = SamplePixelInterpolated( grey, vertex + step, greyInterpolator ) - threshold;
       if(( p0 > 0 ) == ( p1 > 0 )) {
          // We're too far away from the threshold value, try again with a larger step size
          step *= 1.5;  // Note that this will reduce the accuracy of the interpolation
-         p1 = SamplePixelInterpolated( gray, vertex + step, grayInterpolator ) - threshold;
+         p1 = SamplePixelInterpolated( grey, vertex + step, greyInterpolator ) - threshold;
          if(( p0 > 0 ) == ( p1 > 0 )) {
             // We're still too far away, we cannot move the vertex
             ++nFailed;
@@ -266,8 +266,8 @@ dip::uint RefinePolygon(
       }
       dfloat t{};
       if( cubic ) {
-         dfloat p_1 = SamplePixelInterpolated( gray, vertex - step, grayInterpolator ) - threshold;
-         dfloat p2 = SamplePixelInterpolated( gray, vertex + step * 2, grayInterpolator ) - threshold;
+         dfloat p_1 = SamplePixelInterpolated( grey, vertex - step, greyInterpolator ) - threshold;
+         dfloat p2 = SamplePixelInterpolated( grey, vertex + step * 2, greyInterpolator ) - threshold;
          t = FindZeroCubic( p_1, p0, p1, p2 );
       } else {
          t = FindZeroLinear( p0, p1 );

@@ -41,7 +41,7 @@ img.Show('log')  # uses logarithmic mapping
 ```
 
 Type `help(dip.Show)` in Python to learn about many more options, including setting
-the color map, defining how complex data is mapped to grayscale, and how higher-dimensional
+the color map, defining how complex data is mapped to greyscale, and how higher-dimensional
 images are mapped to the 2D display.
 
 

@@ -178,7 +178,7 @@ DIP_NODISCARD inline Image BinaryOpening(
 /// This is much faster than applying \ref dip::Dilation with a disk structuring element of diameter `2 * distance`,
 /// for larger sizes.
 ///
-/// For other structuring element shapes, or for gray-scale images, use \ref dip::Dilation. See also \ref dip::BinaryDilation.
+/// For other structuring element shapes, or for grey-scale images, use \ref dip::Dilation. See also \ref dip::BinaryDilation.
 DIP_EXPORT void IsotropicDilation(
       Image const& in,
       Image& out,
@@ -199,7 +199,7 @@ DIP_NODISCARD inline Image IsotropicDilation(
 /// This is much faster than applying \ref dip::Erosion with a disk structuring element of diameter `2 * distance`,
 /// for larger sizes.
 ///
-/// For other structuring element shapes, or for gray-scale images, use \ref dip::Erosion. See also \ref dip::BinaryErosion.
+/// For other structuring element shapes, or for grey-scale images, use \ref dip::Erosion. See also \ref dip::BinaryErosion.
 DIP_EXPORT void IsotropicErosion(
       Image const& in,
       Image& out,
@@ -218,7 +218,7 @@ DIP_NODISCARD inline Image IsotropicErosion(
 ///
 /// Composition of \ref dip::IsotropicDilation and \ref dip::IsotropicErosion.
 ///
-/// For other structuring element shapes, or for gray-scale images, use \ref dip::Closing. See also \ref dip::BinaryClosing.
+/// For other structuring element shapes, or for grey-scale images, use \ref dip::Closing. See also \ref dip::BinaryClosing.
 inline void IsotropicClosing(
       Image const& in,
       Image& out,
@@ -240,7 +240,7 @@ DIP_NODISCARD inline Image IsotropicClosing(
 ///
 /// Composition of \ref dip::IsotropicErosion and \ref dip::IsotropicDilation.
 ///
-/// For other structuring element shapes, or for gray-scale images, use \ref dip::Opening. See also \ref dip::BinaryOpening.
+/// For other structuring element shapes, or for grey-scale images, use \ref dip::Opening. See also \ref dip::BinaryOpening.
 inline void IsotropicOpening(
       Image const& in,
       Image& out,
@@ -273,7 +273,7 @@ DIP_NODISCARD inline Image IsotropicOpening(
 /// The algorithm is repeated `iterations` times. Pass 0 to continue until propagation is completed. With
 /// `iterations==0`, a faster algorithm is used.
 ///
-/// See also \ref dip::MorphologicalReconstruction, which is less flexible but works for gray-scale images.
+/// See also \ref dip::MorphologicalReconstruction, which is less flexible but works for grey-scale images.
 DIP_EXPORT void BinaryPropagation(
       Image const& inSeed,
       Image const& inMask,

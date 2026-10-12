@@ -353,20 +353,20 @@ void ImposeMinima(
    Image seed = in.Similar();
    seed.Fill( Image::Sample::Maximum( seed.DataType() ));
    DIP_STACK_TRACE_THIS( seed.At( marker ) = Image::Sample::Minimum( seed.DataType() ));
-   // We need to make sure the 'gray' image doesn't have local minima containing multiple minima in 'seed'. So we
+   // We need to make sure the 'grey' image doesn't have local minima containing multiple minima in 'seed'. So we
    // add 1 in case of floating point images, and add 1 only to the minimal values for integer images.
-   Image gray = in.Copy();
-   if( gray.DataType().IsFloat() ) {
-      // We can add 1 to 'gray', we're unlikely to overflow (though we're also unlikely to have any pixels at the minimum value, so this might not be necessary at all).
-      gray += 1;
+   Image grey = in.Copy();
+   if( grey.DataType().IsFloat() ) {
+      // We can add 1 to 'grey', we're unlikely to overflow (though we're also unlikely to have any pixels at the minimum value, so this might not be necessary at all).
+      grey += 1;
    } else {
-      // If we add 1 to 'gray', we could overflow. Instead we compute max(gray,min+1).
+      // If we add 1 to 'grey', we could overflow. Instead we compute max(grey,min+1).
       auto floor = Image::Sample::Minimum( seed.DataType() );
       floor += 1;
-      DIP_STACK_TRACE_THIS( Supremum( gray, Image( floor ), gray ));
+      DIP_STACK_TRACE_THIS( Supremum( grey, Image( floor ), grey ));
    }
-   Infimum( gray, seed, gray );
-   DIP_STACK_TRACE_THIS( MorphologicalReconstruction( seed, gray, out, connectivity, S::EROSION ));
+   Infimum( grey, seed, grey );
+   DIP_STACK_TRACE_THIS( MorphologicalReconstruction( seed, grey, out, connectivity, S::EROSION ));
 }
 
 } // namespace dip

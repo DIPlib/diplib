@@ -29,7 +29,7 @@ int main( int argc, char** argv ) {
    dip::Tile( { image, image, image, image, image, image, image, image, image, image, image, image }, image, { 4, 3 } );
    std::cout << image;
 
-   std::cout << "\nTimes below are for grayscale vs binary version of operator.\n";
+   std::cout << "\nTimes below are for greyscale vs binary version of operator.\n";
    std::cout << "Each operator is applied " << reps << " times.\n";
 
    //dip::SetNumberOfThreads( 1 ); // Uncomment this line if you don't want to allow dip::Dilation and dip::EuclideanDistanceTransform to use parallelism

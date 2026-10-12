@@ -889,12 +889,12 @@ inline dip::ConvexHull Polygon::ConvexHull() const {
 ///
 /// One way to improve precision and accuracy is to add vertices to the polygon, see \ref dip::Polygon::Augment.
 ///
-/// `gray` must be a 2D, gray-scale image that that relates to `polygon`. The object to be measured should have a
-/// uniform gray-value, as should the background, and the transition between the two should be sufficiently smooth
+/// `grey` must be a 2D, grey-scale image that that relates to `polygon`. The object to be measured should have a
+/// uniform grey-value, as should the background, and the transition between the two should be sufficiently smooth
 /// (i.e. the image is sampled correctly according to Nyquist). `threshold` is the half-way value between foreground
 /// and background intensities, and would have been used to obtain a binary representation of the object.
 ///
-/// `gradient` should be equal to `dip::Gradient( gray )`, and will be computed if not given. In the case of multiple
+/// `gradient` should be equal to `dip::Gradient( grey )`, and will be computed if not given. In the case of multiple
 /// objects in an image, it is cheaper to compute the gradient only once, and pass it into each call to this function.
 ///
 /// Each vertex must be within `stepSize` pixels of the location with value `threshold`. Ideally, the polygon is obtained
@@ -913,7 +913,7 @@ inline dip::ConvexHull Polygon::ConvexHull() const {
 ///
 /// The return value is the number of vertices that could not be shifted. The algorithm fails to shift a vertex if:
 ///  - it is too close to the image edge or outside the image domain, or
-///  - it is too far in the normal direction from the `threshold` value in `gray`.
+///  - it is too far in the normal direction from the `threshold` value in `grey`.
 /// If the return value is not zero, measurements on the polygon will likely have a larger error. It is recommended
 /// to try again with a larger value of `stepSize`.
 ///
@@ -932,7 +932,7 @@ inline dip::ConvexHull Polygon::ConvexHull() const {
 /// ```
 DIP_EXPORT dip::uint RefinePolygon(
       Polygon& polygon,
-      Image const& gray,
+      Image const& grey,
       Image const& gradient = {},
       dfloat threshold = 0.0,
       String const& interpolation = S::CUBIC_ORDER_3,

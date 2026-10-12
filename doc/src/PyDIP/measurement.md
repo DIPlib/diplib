@@ -22,19 +22,19 @@ attached to the image, and taken into account by many functions in the *DIPlib* 
 reports measurements in physical units instead of pixels if the image has pixel size information.
 Note that pixels do not need to be isotropic, it is possible to give a different pixel size for each dimension.
 ```python
-gray = dip.ImageReadICS('examples/cermet.ics')
-gray.SetPixelSize(1, "um")  # "um" is easier to type than "μm", but they mean the same thing
-gray.Show()
+grey = dip.ImageReadICS('examples/cermet.ics')
+grey.SetPixelSize(1, "um")  # "um" is easier to type than "μm", but they mean the same thing
+grey.Show()
 ```
 ![The 'cermet' image](basics-7.png)
 
 Next, we threshold and label the image, then measure some basic features. Because 'Solidity' depends on the
 'ConvexArea' measurement, we get that one too in the output. 
 ```python
-bin_img = gray < 120
+bin_img = grey < 120
 label = dip.Label(bin_img, minSize=30)
 label = dip.EdgeObjectsRemove(label)
-measurement = dip.MeasurementTool.Measure(label, gray, ['Size', 'Solidity', 'Statistics'])
+measurement = dip.MeasurementTool.Measure(label, grey, ['Size', 'Solidity', 'Statistics'])
 print(measurement)
 ```
 ```none

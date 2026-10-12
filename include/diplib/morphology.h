@@ -348,7 +348,7 @@ DIP_EXPORT void BasicMorphology(
 /// If the structuring element $S$ is a set (i.e. a binary image, or a footprint), the dilation of image $f$
 /// is defined as $(\delta f)(x) = \bigvee\limits_{z \in S} f(x+z)$ (the supremum or maximum over the pixels
 /// covered by the structuring element).
-/// For gray-scale structuring elements, it is defined as $(\delta f)(x) = \bigvee\limits_{z} f(x+z) + S(z)$.
+/// For grey-scale structuring elements, it is defined as $(\delta f)(x) = \bigvee\limits_{z} f(x+z) + S(z)$.
 ///
 /// `se` defines the structuring element, see \ref dip::StructuringElement for options and details.
 ///
@@ -384,7 +384,7 @@ DIP_NODISCARD inline Image Dilation(
 /// If the structuring element $S$ is a set (i.e. a binary image, or a footprint), the erosion of image $f$
 /// is defined as $(\epsilon f)(x) = \bigwedge\limits_{z \in S} f(x+z)$ (the infimum or minimum over the pixels
 /// covered by the structuring element).
-/// For gray-scale structuring elements, it is defined as $(\epsilon f)(x) = \bigwedge\limits_{z} f(x+z) - S(z)$.
+/// For grey-scale structuring elements, it is defined as $(\epsilon f)(x) = \bigwedge\limits_{z} f(x+z) - S(z)$.
 ///
 /// `se` defines the structuring element, see \ref dip::StructuringElement for options and details.
 ///
@@ -1641,7 +1641,7 @@ DIP_NODISCARD inline Image AreaClosing(
 /// \brief Computes the volume opening or closing. This is a parametric opening.
 ///
 /// The volume opening removes all local maxima that have a volume smaller than the given parameter `filterSize`. The
-/// "volume" is the integral over the pixel values, offset by the graylevel at which the maximum is cut.
+/// "volume" is the integral over the pixel values, offset by the greylevel at which the maximum is cut.
 /// The volume closing is the dual operation.
 ///
 /// Comparing to the area opening, which removes peaks by the area of their support, this function removes peaks by

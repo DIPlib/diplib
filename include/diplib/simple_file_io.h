@@ -181,7 +181,7 @@ DIP_NODISCARD inline Image ImageRead(
 /// Image data is converted to 8-bit unsigned integer, without scaling.
 ///
 /// The PNG format can store 2D images with 1 to 4 tensor elements. Images with 3 or 4 tensor elements are always
-/// tagged as sRGB, those with 1 or 2 as grayscale. The 2nd or 4th tensor element is the alpha channel.
+/// tagged as sRGB, those with 1 or 2 as greyscale. The 2nd or 4th tensor element is the alpha channel.
 /// Image data is converted to 8-bit unsigned integer, without scaling, unless the image is binary or 16-bit unsigned
 /// integer.
 ///

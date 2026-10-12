@@ -117,4 +117,4 @@ See [DIPimage_on_Windows.md](DIPimage_on_Windows.md) and [DIPimage_on_Linux.md](
 details on how to build these releases.
 
 Upload the releases to GitHub by editing the release you created in step 8, and drag-dropping the release files
-onto the web page, or by clicking the big gray attachment bar on the page and selecting the files to upload.
+onto the web page, or by clicking the big grey attachment bar on the page and selecting the files to upload.

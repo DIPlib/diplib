@@ -32,7 +32,7 @@ The image sizes are ordered x, y, z, etc. For a 2D image this means you pass (wi
 a = dip.Image((20, 10), 1, "UINT8")
 a.Fill(3)
 ```
-The number of tensor elements defaults to 1 (i.e. a grayscale image), and the data type defaults
+The number of tensor elements defaults to 1 (i.e. a greyscale image), and the data type defaults
 to single-precision float.
 
 Note that the image will not be initialized, the pixel values will be undefined. We used the
@@ -203,10 +203,10 @@ b.Show()
 ```
 ![DIP image with bilateral filter applied](basics-13.png)
 
-Some filters are specific for gray-value images (these are called "scalar images" everywhere in the documentation).
-Here we apply such an image by first converting the image to gray scale.
+Some filters are specific for grey-value images (these are called "scalar images" everywhere in the documentation).
+Here we apply such an image by first converting the image to grey scale.
 ```python
-b = dip.ColorSpaceManager.Convert(b, 'gray')
+b = dip.ColorSpaceManager.Convert(b, 'grey')
 dip.Canny(b, upper=0.99).Show()
 ```
 ![Salient edges of DIP image](basics-14.png)
