@@ -20,7 +20,7 @@ namespace Feature {
 
 class FeatureCentroidDiameter : public PolygonBased {
    public:
-      FeatureCentroidDiameter() : PolygonBased( { "CentroidDiameter", "Maximum and minimum object diameters through the centroid (chain-code method, 2D)", false } ) {};
+      FeatureCentroidDiameter() : PolygonBased( { "CentroidDiameter", "Maximum and minimum object diameters through the centroid", false } ) {};
 
       ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          ValueInformationArray out( 4 );

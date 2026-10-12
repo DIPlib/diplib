@@ -39,16 +39,11 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
             auto features = measurementTool.Features();
             std::cout << features.size() << " measurement features available:\n";
             for( auto const& feature : features ) {
-               std::cout << " - '" << feature.name << "': " << feature.description;
-               if( feature.needsGreyValue ) {
-                  std::cout << " *";
-               }
-               std::cout << '\n';
+               std::cout << " - '" << feature.name << "': " << feature.description << '\n';
                for( auto const& alias : feature.aliases ) {
                   std::cout << " - '" << alias << "': alias to '" << feature.name << "'\n";
                }
             }
-            std::cout << "Features marked with a \"*\" require a grey-value input image.\n";
             return;
          }
          if( str == "features" ) {

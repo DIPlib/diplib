@@ -22,7 +22,7 @@ namespace Feature {
 
 class FeaturePerimeter : public ChainCodeBased {
    public:
-      FeaturePerimeter() : ChainCodeBased( { "Perimeter", "Length of the object perimeter  (chain-code method, 2D)", false } ) {};
+      FeaturePerimeter() : ChainCodeBased( { "Perimeter", "Length of the object perimeter", false } ) {};
 
       void Configure( String const& parameter, dfloat value ) override {
          if( parameter == "include boundary pixels" ) {

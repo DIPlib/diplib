@@ -22,7 +22,7 @@ namespace Feature {
 
 class FeatureFeret : public ConvexHullBased {
    public:
-      FeatureFeret() : ConvexHullBased( { "Feret", "Maximum and minimum object diameters (chain-code method, 2D)", false } ) {};
+      FeatureFeret() : ConvexHullBased( { "Feret", "Maximum and minimum object diameters", false } ) {};
 
       ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          ValueInformationArray out( 5 );

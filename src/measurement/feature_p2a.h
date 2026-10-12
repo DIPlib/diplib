@@ -22,7 +22,7 @@ namespace Feature {
 
 class FeatureP2A : public Composite {
    public:
-      FeatureP2A() : Composite( { "P2A", "Perimeter to area ratio of the object (2D & 3D)", false } ) {};
+      FeatureP2A() : Composite( { "P2A", "Perimeter to area ratio of the object", false } ) {};
 
       ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          nD_ = label.Dimensionality();

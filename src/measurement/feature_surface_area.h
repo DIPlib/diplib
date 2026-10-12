@@ -35,7 +35,7 @@ namespace Feature {
 
 class FeatureSurfaceArea : public ImageBased {
    public:
-      FeatureSurfaceArea() : ImageBased( { "SurfaceArea", "surface area of object (3D)", false } ) {};
+      FeatureSurfaceArea() : ImageBased( { "SurfaceArea", "Surface area of object (3D)", false } ) {};
 
       ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          DIP_THROW_IF( label.Dimensionality() != 3, E::DIMENSIONALITY_NOT_SUPPORTED );

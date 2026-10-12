@@ -22,7 +22,7 @@ namespace Feature {
 
 class FeatureDimensionsEllipsoid : public Composite {
    public:
-      FeatureDimensionsEllipsoid() : Composite( { "DimensionsEllipsoid", "Extent along the principal axes of an ellipsoid (2D & 3D)", false } ) {};
+      FeatureDimensionsEllipsoid() : Composite( { "DimensionsEllipsoid", "Extent along the principal axes of an ellipsoid", false } ) {};
 
       ValueInformationArray Initialize( Image const& label, Image const&, dip::uint /*nObjects*/ ) override {
          nD_ = label.Dimensionality();

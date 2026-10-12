@@ -22,7 +22,7 @@ namespace Feature {
 
 class FeatureRadius : public PolygonBased {
    public:
-      FeatureRadius() : PolygonBased( { "Radius", "Statistics on radius of object (chain-code method, 2D)", false } ) {};
+      FeatureRadius() : PolygonBased( { "Radius", "Statistics on radius of object", false } ) {};
 
       ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          ValueInformationArray out( 4 );

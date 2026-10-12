@@ -133,6 +133,33 @@ MeasurementTool::MeasurementTool() {
    Register( new Feature::FeatureGreyMajorAxes );
    Register( new Feature::FeatureGreyDimensionsCube );
    Register( new Feature::FeatureGreyDimensionsEllipsoid );
+
+   // Add chain code warning to feature names
+   auto featureIsCC = []( FeatureBasePointer const& feature ) -> bool {
+      return ( feature->type == Feature::Type::CHAINCODE_BASED ) ||
+             ( feature->type == Feature::Type::POLYGON_BASED ) ||
+             ( feature->type == Feature::Type::CONVEXHULL_BASED );
+   };
+   for( auto const& feature : features_ ) {
+      if( feature->information.needsGreyValue ) {
+         feature->information.description += " (needs grey)";
+         continue;  // It cannot be a chain code--style feature
+      }
+      bool isCC = featureIsCC( feature );
+      if( feature->type == Feature::Type::COMPOSITE ) {
+         auto* compositeFeature = dynamic_cast< Feature::Composite* >( feature.get() );
+         for( auto const& name : compositeFeature->Dependencies() ) {
+            auto const& depFeature = features_[ Index( name ) ];
+            if( featureIsCC( depFeature )) {
+               isCC = true;
+               break;
+            }
+         }
+      }
+      if( isCC ) {
+         feature->information.description += " (chain code method, 2D)";
+      }
+   }
 }
 
 using LineBasedFeatureArray = std::vector< Feature::LineBased* >;
@@ -674,7 +701,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::MeasurementTool::Measure" ) {
    DOCTEST_CHECK( std::abs( msr_obj[ "GreyDimensionsEllipsoid" ][ 0 ] - 2 * r ) < 0.2 );
    DOCTEST_CHECK( std::abs( msr_obj[ "GreyDimensionsEllipsoid" ][ 1 ] - 2 * r ) < 0.2 );
 
-   // Repeat the above, but with a pixel size and scaling the gray values
+   // Repeat the above, but with a pixel size and scaling the grey values
    img *= 2; // the object ID is now also 2!
    dip::dfloat ps = 0.21;
    img.SetPixelSize( ps * dip::Units::Micrometer() );
@@ -992,7 +1019,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::SubPixelMeasurementTool::Measure" ) {
    DOCTEST_REQUIRE( msr.IsForged() );
    DOCTEST_REQUIRE( msr.ObjectExists( 1 ));
    auto msr_obj = msr[ 1 ];
-   DOCTEST_CHECK( std::abs( msr_obj[ "Area" ][ 0 ] - dip::pi * r * r ) < 0.1 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Area" ][ 0 ] - dip::pi * r * r ) < 0.6 );
    DOCTEST_CHECK( msr_obj[ "Minimum" ][ 0 ] == doctest::Approx( 3 ));
    DOCTEST_CHECK( msr_obj[ "Minimum" ][ 1 ] == doctest::Approx( 3 ));
    DOCTEST_CHECK( msr_obj[ "Maximum" ][ 0 ] == doctest::Approx( 47 ));

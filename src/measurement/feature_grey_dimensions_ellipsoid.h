@@ -22,7 +22,7 @@ namespace Feature {
 
 class FeatureGreyDimensionsEllipsoid : public Composite {
    public:
-      FeatureGreyDimensionsEllipsoid() : Composite( { "GreyDimensionsEllipsoid", "Extent along the principal axes of an ellipsoid (grey-weighted, 2D & 3D)", true } ) {};
+      FeatureGreyDimensionsEllipsoid() : Composite( { "GreyDimensionsEllipsoid", "Extent along the principal axes of an ellipsoid", true } ) {};
 
       ValueInformationArray Initialize( Image const& label, Image const& grey, dip::uint /*nObjects*/ ) override {
          DIP_THROW_IF( !grey.IsScalar(), E::IMAGE_NOT_SCALAR );

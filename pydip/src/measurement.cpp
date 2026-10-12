@@ -288,17 +288,12 @@ void init_measurement( py::module& m ) {
                 auto features = measurementTool().Features();
                 std::vector< std::tuple< dip::String, dip::String >> out;
                 for( auto const& f : features ) {
-                   dip::String description = f.description;
-                   if( f.needsGreyValue ) {
-                      description += "*";
-                   }
-                   out.emplace_back( f.name, description );
+                   out.emplace_back( f.name, f.description );
                 }
                 return out;
              },
              "Returns a list of tuples. Each tuple has two strings: the name of a feature\n"
-             "and its description. If the description ends with a '*' character, a gray-value\n"
-             "image is required for the feature." );
+             "and its description." );
 
    // dip::SubPixelMeasurementTool
    auto sptool = m.def_submodule( "SubPixelMeasurementTool",

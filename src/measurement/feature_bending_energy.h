@@ -22,7 +22,7 @@ namespace Feature {
 
 class FeatureBendingEnergy : public ChainCodeBased {
    public:
-      FeatureBendingEnergy() : ChainCodeBased( { "BendingEnergy", "Bending energy of object perimeter (chain-code method, 2D)", false } ) {};
+      FeatureBendingEnergy() : ChainCodeBased( { "BendingEnergy", "Bending energy of object perimeter", false } ) {};
 
       ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          ValueInformationArray out( 1 );

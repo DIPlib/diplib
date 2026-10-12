@@ -765,7 +765,7 @@ namespace Feature {
 /// \brief The abstract base class for all measurement features.
 class DIP_CLASS_EXPORT Base {
    public:
-      Information const information; ///< Information on the feature
+      Information information; ///< Information on the feature
       Type const type; ///< The type of the measurement
 
       Base( Information information, Type const type ) : information( std::move( information )), type( type ) {}
@@ -1045,8 +1045,6 @@ class DIP_NO_EXPORT MeasurementTool {
             for( auto const& alias : feature->information.aliases ) {
                featureIndices_.emplace( alias, index );
             }
-         } else {
-            smartpointer = nullptr; // deallocates the feature we received, we don't need it, we already have one with that name
          }
       }
 

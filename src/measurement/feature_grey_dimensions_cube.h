@@ -22,7 +22,7 @@ namespace Feature {
 
 class FeatureGreyDimensionsCube : public Composite {
    public:
-      FeatureGreyDimensionsCube() : Composite( { "GreyDimensionsCube", "Extent along the principal axes of a cube (grey-weighted, 2D & 3D) ", true } ) {};
+      FeatureGreyDimensionsCube() : Composite( { "GreyDimensionsCube", "Extent along the principal axes of a cube", true } ) {};
 
       ValueInformationArray Initialize( Image const& label, Image const& grey, dip::uint /*nObjects*/ ) override {
          DIP_THROW_IF( !grey.IsScalar(), E::IMAGE_NOT_SCALAR );
