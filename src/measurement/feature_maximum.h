@@ -1,5 +1,5 @@
 /*
- * (c)2016-2022, Cris Luengo.
+ * (c)2016-2026, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -90,6 +90,33 @@ class FeatureMaximum : public LineBased {
       dip::uint nD_{};
       FloatArray scales_{};
       std::vector< dip::uint > data_{}; // size of this array is nObjects * nD_. Index as data_[ objectIndex * nD_ ]
+};
+
+
+class FeaturePolygonMaximum : public PolygonBased {
+   public:
+      FeaturePolygonMaximum() : PolygonBased( { "Maximum", "Maximum coordinates of the object", false } ) {};
+
+      ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
+         ValueInformationArray out( 2 );
+         PixelSize ps = label.PixelSize();
+         ps.ForcePhysical();
+         for( dip::uint ii = 0; ii < 2; ++ii ) {
+            scales_[ ii ] = ps[ ii ].magnitude;
+            out[ ii ].units = ps[ ii ].units;
+            out[ ii ].name = String( "dim" ) + std::to_string( ii );
+         }
+         return out;
+      }
+
+      void Measure( Polygon const& polygon, Measurement::ValueIterator output ) override {
+         auto bb = polygon.BoundingBox();
+         output[ 0 ] = static_cast< dfloat >( bb.bottomRight.x ) * scales_[ 0 ];
+         output[ 1 ] = static_cast< dfloat >( bb.bottomRight.y ) * scales_[ 1 ];
+      }
+
+   private:
+      dfloat scales_[ 2 ];
 };
 
 

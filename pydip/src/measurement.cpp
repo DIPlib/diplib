@@ -119,6 +119,11 @@ dip::MeasurementTool& measurementTool() {
    return tool;
 }
 
+dip::SubPixelMeasurementTool& subPixelMeasurementTool() {
+   static dip::SubPixelMeasurementTool tool;
+   return tool;
+}
+
 template< typename MeasurementValues >
 py::object MeasurementValuesToList( MeasurementValues values ) {
    py::list list( values.size() );
@@ -294,6 +299,29 @@ void init_measurement( py::module& m ) {
              "Returns a list of tuples. Each tuple has two strings: the name of a feature\n"
              "and its description. If the description ends with a '*' character, a gray-value\n"
              "image is required for the feature." );
+
+   // dip::SubPixelMeasurementTool
+   auto sptool = m.def_submodule( "SubPixelMeasurementTool",
+                                "A tool to quantify objects in a 2D image with sub-pixel precision.\n\n"
+                                "This is a submodule that uses a static `dip::SubPixelMeasurementTool` object. Functions\n"
+                                "defined in this module correspond to the object member functions in C++." );
+   sptool.def( "Configure", []( dip::String const& feature, dip::String const& parameter, dip::dfloat value ) {
+      subPixelMeasurementTool().Configure( feature, parameter, value );
+   }, "feature"_a, "parameter"_a, "value"_a, doc_strings::dip·MeasurementTool·Configure·String·CL·String·CL·dfloat··C );
+   sptool.def( "Measure", []( dip::Image const& label, dip::Image const& grey, dip::StringArray const& features, dip::dfloat threshold, dip::String const& interpolation, dip::UnsignedArray const& objectIDs ) {
+      return subPixelMeasurementTool().Measure( label, grey, features, threshold, interpolation, objectIDs );
+   }, "label"_a, "grey"_a = dip::Image{}, "features"_a = dip::StringArray{ "Area" }, "threshold"_a = 0, "interpolation"_a = dip::S::LINEAR, "objectIDs"_a = dip::StringArray{}, doc_strings::dip·SubPixelMeasurementTool·Measure·Image·CL·Image·CL·StringArray··dfloat··String·CL·UnsignedArray·CL·C );
+   sptool.def( "Features", []() {
+                auto features = subPixelMeasurementTool().Features();
+                std::vector< std::tuple< dip::String, dip::String >> out;
+                for( auto const& f : features ) {
+                   dip::String description = f.description;
+                   out.emplace_back( f.name, description );
+                }
+                return out;
+             },
+             "Returns a list of tuples. Each tuple has two strings: the name of a feature\n"
+             "and its description." );
 
    // dip::Measurement
    auto meas = py::class_< dip::Measurement >( m, "Measurement", py::buffer_protocol(), doc_strings::dip·Measurement );

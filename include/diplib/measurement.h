@@ -48,7 +48,9 @@ struct DIP_NO_EXPORT ConvexHull;
 /// \brief The measurement infrastructure and functionality.
 ///
 /// The \ref dip::MeasurementTool class provides the main interface to the
-/// functionality in this module. Quantification results are encapsulated in
+/// functionality in this module. 2D images with specific properties can be
+/// measured more precisely using \ref dip::SubPixelMeasurementTool.
+/// Quantification results are encapsulated in
 /// an object of the \ref dip::Measurement class.
 /// \addtogroup
 
@@ -1098,7 +1100,10 @@ class DIP_NO_EXPORT MeasurementTool {
          return out;
       }
 
-   private:
+   protected:
+      // A constructor that doesn't register any measurement functions. Useful for derived classes
+      // to register only what they need.
+      MeasurementTool( bool ) {}
 
       std::vector< FeatureBasePointer > features_;
       tsl::robin_map< String, dip::uint > featureIndices_;
@@ -1112,6 +1117,107 @@ class DIP_NO_EXPORT MeasurementTool {
          DIP_THROW_IF( it == featureIndices_.end(), "Feature name not known: " + name );
          return it.value();
       }
+};
+
+
+/// \brief Performs sub-pixel precise measurements on 2D images.
+///
+/// The SubPixelMeasurementTool class knows about defined polygon-based measurement features,
+/// and can apply them to a 2D image with sub-pixel precision through its
+/// \ref dip::SubPixelMeasurementTool::Measure method.
+///
+/// This class is very similar to \ref dip::MeasurementTool, but differs in that it uses a
+/// grey-level image to refine the object outlines (see \ref dip::ChainCode::Polygon(Image const&, dfloat, String const&))
+/// before applying the polygon-based and convex-hull-based measurement features. This only works in 2D, and
+/// is not as fast as `dip::MeasurementTool`. Objects are measured from their outline as if they were solid, any
+/// holes in the objects are ignored.
+///
+/// ```cpp
+/// dip::SubPixelMeasurementTool tool;
+/// dip::Image img = ...
+/// dip::float threshold = 0.5;
+/// dip::Image label = Label( img > threshold );
+/// dip::Measurement msr = tool.Measure( label, img, { "Area", "Perimeter" }, threshold );
+/// std::cout << "Area of object with label 1 is " << msr[ "Area" ][ 1 ][ 0 ] << '\n';
+/// ```
+///
+/// By default, the features in the following table are defined:
+///
+/// Measurement name            | Description
+/// --------------------------- | -----------------
+///                             | **Size features**{ .m-text .m-success }
+/// `"Area"` (alias `"SolidArea"`, `"Size"`) | Area of the object
+/// `"Perimeter"`               | Length of the object perimeter
+/// `"Minimum"`                 | Minimum coordinates of the object
+/// `"Maximum"`                 | Maximum coordinates of the object
+/// `"CartesianBox"`            | Cartesian box size of the object in all dimensions
+/// `"Feret"`                   | Maximum and minimum object diameters
+/// `"CentroidDiameter"`        | Maximum and minimum object diameters through the centroid
+/// `"Radius"`                  | Statistics on radius of object
+/// `"ConvexArea"`              | Area of the convex hull
+/// `"ConvexPerimeter"`         | Perimeter of the convex hull
+///                             | **Shape features**{ .m-text .m-success }
+/// `"AspectRatioFeret"`        | Feret-based aspect ratio
+/// `"P2A"`                     | Perimeter to area ratio of the object
+/// `"Roundness"`               | Roundness of the object
+/// `"Circularity"`             | Circularity of the object
+/// `"PodczeckShapes"`          | Podczeck shape descriptors
+/// `"Solidity"`                | Area fraction of convex hull covered by object
+/// `"Convexity"`               | Ratio of perimeter of convex hull to perimeter of object
+/// `"EllipseVariance"`         | Distance to best fit ellipse
+/// `"Eccentricity"`            | Aspect ratio of best fit ellipse
+/// `"BendingEnergy"`           | Bending energy of object perimeter
+///                             | **Moments of binary object**{ .m-text .m-success }
+/// `"Center"`                  | Coordinates of the geometric mean of the object
+/// `"Mu"`                      | Elements of the inertia tensor
+/// `"Inertia"`                 | Moments of inertia of the binary object
+/// `"MajorAxes"`               | Principal axes of the binary object
+/// `"DimensionsCube"`          | Extent along the principal axes of a cube
+/// `"DimensionsEllipsoid"`     | Extent along the principal axes of an ellipsoid
+///
+/// Note that some features are derived from others, and will cause the features they depend on to be included in the
+/// output measurement object.
+///
+/// See \ref features for more information on each of these features.
+///
+/// It is possible for the user to define new measurement features, and register them with the `SubPixelMeasurementTool` through the
+/// \ref dip::MeasurementTool::Register method. The new feature then becomes available in the \ref dip::SubPixelMeasurementTool::Measure
+/// method just like any of the default features.
+class DIP_NO_EXPORT SubPixelMeasurementTool : public MeasurementTool {
+   public:
+
+      /// \brief Constructor.
+      DIP_EXPORT SubPixelMeasurementTool();
+
+      /// \brief Measures one or more features on one or more objects in the labeled image.
+      ///
+      /// `label` is a labeled image (any unsigned integer type, and scalar), and `grey` is a real-valued
+      /// image that `label` was derived from. Thresholding `grey` at `threshold` must yield the same set
+      /// of pixels in `label`. If this is not the case, measurement results are not precise. `grey` must
+      /// additionally have a smooth transition from foreground to background intensities at the object
+      /// edges. `interpolation` is the interpolation method used to find the edge location, valid values
+      /// are `"linear"` and `"3-cubic"`. See \ref dip::ChainCode::Polygon(Image const&, dfloat, String const&).
+      ///
+      /// `features` is an array with feature names. See the \ref dip::MeasurementTool::Features method for
+      /// information on how to obtain those names. Some features are composite features, they compute
+      /// values based on other features. Thus, it is possible that the output \ref dip::Measurement object
+      /// contains features not directly requested, but needed to compute another feature.
+      ///
+      /// `objectIDs` is an array with the IDs of objects to measure, If any of the IDs is not a label
+      /// in the `label` image, the resulting measures will be zero or otherwise marked as invalid. If
+      /// an empty array is given (the default), all objects in the labeled image are measured. If there
+      /// are no objects to be measured, a raw \ref dip::Measurement object is returned.
+      ///
+      /// The output \ref dip::Measurement structure contains measurements that take the pixel size of
+      /// the `label` image into account. Those of `grey` are ignored.
+      DIP_EXPORT Measurement Measure(
+            Image const& label,
+            Image const& grey,
+            StringArray features, // we take a copy of this array
+            dfloat threshold = 0,
+            String const& interpolation = S::LINEAR,
+            UnsignedArray const& objectIDs = {}
+      ) const;
 };
 
 

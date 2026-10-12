@@ -183,8 +183,8 @@ Measurement MeasurementTool::Measure(
       UnsignedArray const& objectIDs,
       dip::uint connectivity
 ) const {
-
    // Check input
+   DIP_THROW_IF( !label.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !label.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !label.DataType().IsUInt(), E::DATA_TYPE_NOT_SUPPORTED );
    if( grey.IsForged() ) {
@@ -361,12 +361,177 @@ Measurement MeasurementTool::Measure(
    return measurement;
 }
 
+
+SubPixelMeasurementTool::SubPixelMeasurementTool() : MeasurementTool( true ) {
+   // Size
+   Register( new Feature::FeaturePolygonArea );
+   Register( new Feature::FeaturePolygonPerimeter );
+   Register( new Feature::FeaturePolygonMinimum );
+   Register( new Feature::FeaturePolygonMaximum );
+   Register( new Feature::FeaturePolygonCartesianBox );
+   Register( new Feature::FeatureFeret );
+   Register( new Feature::FeatureCentroidDiameter );
+   Register( new Feature::FeatureRadius );
+   Register( new Feature::FeaturePolygonConvexArea );
+   Register( new Feature::FeatureConvexPerimeter );
+   // Shape
+   Register( new Feature::FeatureAspectRatioFeret );
+   Register( new Feature::FeatureP2A );
+   Register( new Feature::FeatureRoundness );
+   Register( new Feature::FeatureCircularity );
+   Register( new Feature::FeaturePodczeckShapes );
+   Register( new Feature::FeatureSolidity );
+   Register( new Feature::FeatureConvexity );
+   Register( new Feature::FeatureEllipseVariance );
+   Register( new Feature::FeatureEccentricity );
+   Register( new Feature::FeaturePolygonBendingEnergy );
+   // Binary moments
+   Register( new Feature::FeaturePolygonCenter );
+   Register( new Feature::FeaturePolygonMu );
+   Register( new Feature::FeatureInertia );
+   Register( new Feature::FeatureMajorAxes );
+   Register( new Feature::FeatureDimensionsCube );
+   Register( new Feature::FeatureDimensionsEllipsoid );
+}
+
+Measurement SubPixelMeasurementTool::Measure(
+      Image const& label,
+      Image const& grey,
+      StringArray features,
+      dfloat threshold,
+      String const& interpolation,
+      UnsignedArray const& objectIDs
+) const {
+   // Check input
+   DIP_THROW_IF( !label.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !label.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( !label.DataType().IsUInt(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( !grey.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !grey.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( !grey.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_STACK_TRACE_THIS( grey.CompareProperties( label, Option::CmpProp::Sizes ));
+
+   Measurement measurement;
+
+   // Fill out the object IDs
+   std::vector< LabelType > labelList;
+   if( objectIDs.empty() ) {
+      labelList = ListObjectLabels( label, Image{}, S::EXCLUDE );
+      UnsignedArray ids( labelList.size() );
+      std::copy( labelList.begin(), labelList.end(), ids.begin() );
+      measurement.SetObjectIDs( ids );
+   } else {
+      measurement.SetObjectIDs( objectIDs );
+   }
+
+   // Parse the features array and prepare measurements
+   DIP_THROW_IF( features.empty(), "No features given" );
+   FeatureArray featureArray;
+   featureArray.reserve( features.size() );
+   for( dip::uint ii = 0; ii < features.size(); ++ii ) { // NOTE! `features` can expand every iteration
+      String const& name = features[ ii ];
+      if( !measurement.FeatureExists( name )) {
+         Feature::Base* feature = features_[ Index( name ) ].get();
+         DIP_ASSERT( !feature->information.needsGreyValue );
+         featureArray.push_back( feature );
+         DIP_START_STACK_TRACE
+            Feature::ValueInformationArray values = feature->Initialize( label, grey, measurement.NumberOfObjects() );
+            measurement.AddFeature( feature->information.name, values, feature->information.aliases );
+         DIP_END_STACK_TRACE
+         if( feature->type == Feature::Type::COMPOSITE ) {
+            StringArray names = dynamic_cast< Feature::Composite* >( feature )->Dependencies();
+            for( auto const& n : names ) {
+               features.push_back( n ); // Add features needed for composite measure to the list of features to process in this loop
+            }
+         }
+      }
+   }
+
+   // Allocate memory for all features and objects
+   measurement.Forge();
+   if( measurement.NumberOfObjects() == 0 ) {
+      // There's no objects to be measured. We're done.
+      return measurement;
+   }
+
+   // Figure out which types of measurements we want to do
+   bool doPolygonBased = false;
+   bool doConvHullBased = false;
+   bool doComposite = false;
+   for( auto const& feature : featureArray ) {
+      switch( feature->type ) {
+         case Feature::Type::LINE_BASED:
+         case Feature::Type::IMAGE_BASED:
+         case Feature::Type::CHAINCODE_BASED:
+            DIP_ASSERT( true );
+            break;
+         case Feature::Type::POLYGON_BASED:
+            doPolygonBased = true;
+            break;
+         case Feature::Type::CONVEXHULL_BASED:
+            doConvHullBased = true;
+            break;
+         case Feature::Type::COMPOSITE:
+            doComposite = true;
+            break;
+      }
+   }
+   DIP_ASSERT( doPolygonBased || doConvHullBased );
+
+   // Let the chaincode based functions do their work
+   if( labelList.empty() ) {
+      auto const& ids = measurement.Objects();
+      labelList.resize( ids.size() );
+      std::transform( ids.begin(), ids.end(), labelList.begin(), []( dip::uint v ){ return CastLabelType( v ); } );
+   }
+   ChainCodeArray chainCodeArray = GetImageChainCodes( label, labelList, 2 );
+   auto itCC = chainCodeArray.begin();
+   auto itObj = measurement.FirstObject(); // these two arrays are ordered the same way
+   do {
+      Polygon polygon = itCC->Polygon( grey, threshold, interpolation );
+      ConvexHull convexHull;
+      if( doConvHullBased ) {
+         convexHull = polygon.ConvexHull();
+      }
+      for( auto const& feature : featureArray ) {
+         if( feature->type == Feature::Type::POLYGON_BASED ) {
+            auto cell = itObj[ feature->information.name ];
+            dynamic_cast< Feature::PolygonBased* >( feature )->Measure( polygon, cell.data() );
+         } else if( feature->type == Feature::Type::CONVEXHULL_BASED ) {
+            auto cell = itObj[ feature->information.name ];
+            dynamic_cast< Feature::ConvexHullBased* >( feature )->Measure( convexHull, cell.data() );
+         }
+      }
+   } while( ++itCC, ++itObj );
+
+   // Let the composite functions do their work
+   if( doComposite ) {
+      Measurement::IteratorObject row = measurement.FirstObject();
+      do {
+         for( auto const& feature : featureArray ) {
+            if( feature->type == Feature::Type::COMPOSITE ) {
+               auto cell = row[ feature->information.name ];
+               dynamic_cast< Feature::Composite* >( feature )->Compose( row, cell.data() );
+            }
+         }
+      } while( ++row );
+   }
+
+   // Clean up
+   for( auto const& feature : featureArray ) {
+      feature->Cleanup();
+   }
+
+   return measurement;
+}
+
 } // namespace dip
 
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 #include "diplib/generation.h"
+#include "diplib/mapping.h"
 
 DOCTEST_TEST_CASE( "[DIPlib] testing dip::MeasurementTool::Measure" ) {
    // A test image with a single circle
@@ -383,6 +548,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::MeasurementTool::Measure" ) {
          "CartesianBox",
          "Perimeter",
          "Feret",
+         "CentroidDiameter",
          "SolidArea",
          "ConvexArea",
          "ConvexPerimeter",
@@ -438,6 +604,8 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::MeasurementTool::Measure" ) {
    DOCTEST_CHECK( std::abs( msr_obj[ "Feret" ][ 2 ] - 2 * r ) < 1.1 );
    // DOCTEST_CHECK( msr_obj[ "Feret" ][ 3 ] == 0); // arbitrary angle, ignore
    // DOCTEST_CHECK( msr_obj[ "Feret" ][ 4 ] == 0); // arbitrary angle, ignore
+   DOCTEST_CHECK( std::abs( msr_obj[ "CentroidDiameter" ][ 0 ] - 2 * r ) < 1 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "CentroidDiameter" ][ 1 ] - 2 * r ) < 1.1 );
    DOCTEST_CHECK( std::abs( msr_obj[ "SolidArea" ][ 0 ] - dip::pi * r * r ) < 8 );
    DOCTEST_CHECK( std::abs( msr_obj[ "ConvexArea" ][ 0 ] - dip::pi * r * r ) < 17 );
    DOCTEST_CHECK( std::abs( msr_obj[ "ConvexPerimeter" ][ 0 ] - 2 * dip::pi * r ) < 1.5 );
@@ -517,6 +685,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::MeasurementTool::Measure" ) {
          "CartesianBox",
          "Perimeter",
          "Feret",
+         "CentroidDiameter",
          "SolidArea",
          "ConvexArea",
          "ConvexPerimeter",
@@ -568,6 +737,8 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::MeasurementTool::Measure" ) {
    DOCTEST_CHECK( std::abs( msr_obj[ "Feret" ][ 0 ] - 2 * r * ps ) < 1 * ps );
    DOCTEST_CHECK( std::abs( msr_obj[ "Feret" ][ 1 ] - 2 * r * ps ) < 1.1 * ps );
    DOCTEST_CHECK( std::abs( msr_obj[ "Feret" ][ 2 ] - 2 * r * ps ) < 1.1 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "CentroidDiameter" ][ 0 ] - 2 * r * ps ) < 1 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "CentroidDiameter" ][ 1 ] - 2 * r * ps ) < 1.1 * ps );
    DOCTEST_CHECK( std::abs( msr_obj[ "SolidArea" ][ 0 ] - dip::pi * r * r * ps * ps ) < 8 * ps * ps );
    DOCTEST_CHECK( std::abs( msr_obj[ "ConvexArea" ][ 0 ] - dip::pi * r * r * ps * ps ) < 17 * ps );
    DOCTEST_CHECK( std::abs( msr_obj[ "ConvexPerimeter" ][ 0 ] - 2 * dip::pi * r * ps ) < 1.5 * ps );
@@ -646,6 +817,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::MeasurementTool::Measure" ) {
          "CartesianBox",
          "Perimeter",
          "Feret",
+         "CentroidDiameter",
          "SolidArea",
          "ConvexArea",
          "ConvexPerimeter",
@@ -697,6 +869,8 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::MeasurementTool::Measure" ) {
    DOCTEST_CHECK( std::abs( msr_obj[ "Feret" ][ 0 ] - 2 * r ) < 1 );
    DOCTEST_CHECK( std::abs( msr_obj[ "Feret" ][ 1 ] - 2 * r ) < 1.1 );
    DOCTEST_CHECK( std::abs( msr_obj[ "Feret" ][ 2 ] - 2 * r ) < 1.1 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "CentroidDiameter" ][ 0 ] - 2 * r ) < 1 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "CentroidDiameter" ][ 1 ] - 2 * r ) < 1.1 );
    DOCTEST_CHECK( std::abs( msr_obj[ "SolidArea" ][ 0 ] - dip::pi * r * r * ps * ps * yscale  ) < 8 * ps * ps * yscale  );
    DOCTEST_CHECK( std::abs( msr_obj[ "ConvexArea" ][ 0 ] - dip::pi * r * r * ps * ps * yscale  ) < 17 * ps * yscale  );
    DOCTEST_CHECK( std::abs( msr_obj[ "ConvexPerimeter" ][ 0 ] - 2 * dip::pi * r ) < 1.5 );
@@ -773,6 +947,267 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::MeasurementTool::Measure" ) {
    DOCTEST_CHECK( msr.FeatureExists( "Sum" ));
    msr_obj = msr[ 2 ];
    DOCTEST_CHECK( std::abs( msr_obj[ "Mass" ][ 0 ] - 2 * dip::pi * r * r ) < 2 * 16 );
+}
+
+DOCTEST_TEST_CASE( "[DIPlib] testing dip::SubPixelMeasurementTool::Measure" ) {
+   // A test image with a single circle
+   dip::dfloat r = 22;
+   dip::Image img = r - dip::CreateRadiusCoordinate( { 50, 50 } );
+   img = dip::ErfClip( img, 0.0, 3.0 );
+   dip::Image lab = img > 0;
+   lab.Convert( dip::DT_UINT8 ); // copyless conversion from binary to unsigned integer -- like calling dip::Label()!
+
+   // Measure everything
+   dip::SubPixelMeasurementTool measurementTool;
+   auto msr = measurementTool.Measure( lab, img, {
+         "Area",
+         "Minimum",
+         "Maximum",
+         "CartesianBox",
+         "Perimeter",
+         "Feret",
+         "CentroidDiameter",
+         "ConvexArea",
+         "ConvexPerimeter",
+         "AspectRatioFeret",
+         "Radius",
+         "P2A",
+         "Roundness",
+         "Circularity",
+         "PodczeckShapes",
+         "Solidity",
+         "Convexity",
+         "EllipseVariance",
+         "Eccentricity",
+         "BendingEnergy",
+         "Center",
+         "Mu",
+         "Inertia",
+         "MajorAxes",
+         "DimensionsCube",
+         "DimensionsEllipsoid",
+   } );
+
+   // Verify all measurements
+   DOCTEST_REQUIRE( msr.IsForged() );
+   DOCTEST_REQUIRE( msr.ObjectExists( 1 ));
+   auto msr_obj = msr[ 1 ];
+   DOCTEST_CHECK( std::abs( msr_obj[ "Area" ][ 0 ] - dip::pi * r * r ) < 0.1 );
+   DOCTEST_CHECK( msr_obj[ "Minimum" ][ 0 ] == doctest::Approx( 3 ));
+   DOCTEST_CHECK( msr_obj[ "Minimum" ][ 1 ] == doctest::Approx( 3 ));
+   DOCTEST_CHECK( msr_obj[ "Maximum" ][ 0 ] == doctest::Approx( 47 ));
+   DOCTEST_CHECK( msr_obj[ "Maximum" ][ 1 ] == doctest::Approx( 47 ));
+   DOCTEST_CHECK( msr_obj[ "CartesianBox" ][ 0 ] == doctest::Approx( 2 * r ));
+   DOCTEST_CHECK( msr_obj[ "CartesianBox" ][ 1 ] == doctest::Approx( 2 * r ));
+   DOCTEST_CHECK( std::abs( msr_obj[ "Perimeter" ][ 0 ] - 2 * dip::pi * r ) < 0.04 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Feret" ][ 0 ] - 2 * r ) < 0.04 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Feret" ][ 1 ] - 2 * r ) < 0.04 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Feret" ][ 2 ] - 2 * r ) < 0.04 );
+   // DOCTEST_CHECK( msr_obj[ "Feret" ][ 3 ] == 0); // arbitrary angle, ignore
+   // DOCTEST_CHECK( msr_obj[ "Feret" ][ 4 ] == 0); // arbitrary angle, ignore
+   DOCTEST_CHECK( std::abs( msr_obj[ "CentroidDiameter" ][ 0 ] - 2 * r ) < 0.04 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "CentroidDiameter" ][ 1 ] - 2 * r ) < 0.04 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "ConvexArea" ][ 0 ] - dip::pi * r * r ) < 0.6 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "ConvexPerimeter" ][ 0 ] - 2 * dip::pi * r ) < 0.04 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "AspectRatioFeret" ][ 0 ] - 1 ) < 1e-6 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Radius" ][ 0 ] - r ) < 0.02 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Radius" ][ 1 ] - r ) < 0.002 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Radius" ][ 2 ] - r ) < 0.02 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Radius" ][ 3 ] - 0 ) < 0.005 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "P2A" ][ 0 ] - 1 ) < 5e-5 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Roundness" ][ 0 ] - 1 ) < 5e-4 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Circularity" ][ 0 ] - 0 ) < 5e-4 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "PodczeckShapes" ][ 0 ] - dip::pi / 4 ) < 1e-3 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "PodczeckShapes" ][ 1 ] - 1 ) < 2e-3 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "PodczeckShapes" ][ 2 ] - dip::pi / 2 ) < 2e-3 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "PodczeckShapes" ][ 3 ] - 1 ) < 2e-3 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "PodczeckShapes" ][ 4 ] - dip::pi ) < 2e-3 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Solidity" ][ 0 ] - 1 ) < 5e-4 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Convexity" ][ 0 ] - 1 ) < 1e-6 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "EllipseVariance" ][ 0 ] - 0 ) < 5e-4 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Eccentricity" ][ 0 ] - 0 ) < 2e-8 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "BendingEnergy" ][ 0 ] - 2 * dip::pi / r ) < 0.1 );
+   DOCTEST_CHECK( msr_obj[ "Center" ][ 0 ] == doctest::Approx( 25 ));
+   DOCTEST_CHECK( msr_obj[ "Center" ][ 1 ] == doctest::Approx( 25 ));
+   DOCTEST_CHECK( std::abs( msr_obj[ "Mu" ][ 0 ] - r * r / 4 ) < 0.07 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Mu" ][ 1 ] - r * r / 4 ) < 0.07 );
+   DOCTEST_CHECK( msr_obj[ "Mu" ][ 2 ] == doctest::Approx( 0 ));
+   DOCTEST_CHECK( std::abs( msr_obj[ "Inertia" ][ 0 ] - r * r / 4 ) < 0.07 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Inertia" ][ 1 ] - r * r / 4 ) < 0.07 );
+   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 0 ] == 1 );
+   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 1 ] == 0 );
+   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 2 ] == 0 );
+   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 3 ] == 1 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsCube" ][ 0 ] - 2 * r * std::sqrt( 12.0 / 16.0 )) < 0.02 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsCube" ][ 1 ] - 2 * r * std::sqrt( 12.0 / 16.0 )) < 0.02 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsEllipsoid" ][ 0 ] - 2 * r ) < 0.02 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsEllipsoid" ][ 1 ] - 2 * r ) < 0.02 );
+
+   // Repeat the above, but with a pixel size
+   dip::dfloat ps = 0.21;
+   lab.SetPixelSize( ps * dip::Units::Micrometer() );
+   msr = measurementTool.Measure( lab, img, {
+         "Area",
+         "Minimum",
+         "Maximum",
+         "CartesianBox",
+         "Perimeter",
+         "Feret",
+         "CentroidDiameter",
+         "ConvexArea",
+         "ConvexPerimeter",
+         "AspectRatioFeret",
+         "Radius",
+         "P2A",
+         "Roundness",
+         "Circularity",
+         "PodczeckShapes",
+         "Solidity",
+         "Convexity",
+         "EllipseVariance",
+         "Eccentricity",
+         "BendingEnergy",
+         "Center",
+         "Mu",
+         "Inertia",
+         "MajorAxes",
+         "DimensionsCube",
+         "DimensionsEllipsoid",
+   } );
+   DOCTEST_REQUIRE( msr.IsForged() );
+   DOCTEST_REQUIRE( msr.ObjectExists( 1 ));
+   msr_obj = msr[ 1 ];
+   DOCTEST_CHECK( std::abs( msr_obj[ "Area" ][ 0 ] - dip::pi * r * r * ps * ps ) < 0.6 * ps * ps );
+   DOCTEST_CHECK( msr_obj[ "Minimum" ][ 0 ] == doctest::Approx( 3 * ps ));
+   DOCTEST_CHECK( msr_obj[ "Minimum" ][ 1 ] == doctest::Approx( 3 * ps ));
+   DOCTEST_CHECK( msr_obj[ "Maximum" ][ 0 ] == doctest::Approx( 47 * ps ));
+   DOCTEST_CHECK( msr_obj[ "Maximum" ][ 1 ] == doctest::Approx( 47 * ps ));
+   DOCTEST_CHECK( msr_obj[ "CartesianBox" ][ 0 ] == doctest::Approx(( 2 * r ) * ps ));
+   DOCTEST_CHECK( msr_obj[ "CartesianBox" ][ 1 ] == doctest::Approx(( 2 * r ) * ps ));
+   DOCTEST_CHECK( std::abs( msr_obj[ "Perimeter" ][ 0 ] - 2 * dip::pi * r * ps ) < 0.04 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Feret" ][ 0 ] - 2 * r * ps ) < 0.04 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Feret" ][ 1 ] - 2 * r * ps ) < 0.04 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Feret" ][ 2 ] - 2 * r * ps ) < 0.04 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "CentroidDiameter" ][ 0 ] - 2 * r * ps ) < 0.04 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "CentroidDiameter" ][ 1 ] - 2 * r * ps ) < 0.04 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "ConvexArea" ][ 0 ] - dip::pi * r * r * ps * ps ) < 0.6 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "ConvexPerimeter" ][ 0 ] - 2 * dip::pi * r * ps ) < 0.04 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "AspectRatioFeret" ][ 0 ] - 1 ) < 1e-6 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Radius" ][ 0 ] - r * ps ) < 0.02 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Radius" ][ 1 ] - r * ps ) < 0.002 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Radius" ][ 2 ] - r * ps ) < 0.02 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Radius" ][ 3 ] - 0 ) < 0.005 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "P2A" ][ 0 ] - 1 ) < 5e-5 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Roundness" ][ 0 ] - 1 ) < 5e-4 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Circularity" ][ 0 ] - 0 ) < 5e-4 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "PodczeckShapes" ][ 0 ] - dip::pi / 4 ) < 1e-3 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "PodczeckShapes" ][ 1 ] - 1 ) < 2e-3 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "PodczeckShapes" ][ 2 ] - dip::pi / 2 ) < 2e-3 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "PodczeckShapes" ][ 3 ] - 1 ) < 2e-3 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "PodczeckShapes" ][ 4 ] - dip::pi ) < 2e-3 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Solidity" ][ 0 ] - 1 ) < 5e-4 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Convexity" ][ 0 ] - 1 ) < 1e-6 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "EllipseVariance" ][ 0 ] - 0 ) < 5e-4 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Eccentricity" ][ 0 ] - 0 ) < 2e-8 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "BendingEnergy" ][ 0 ] - 2 * dip::pi / r / ps ) < 0.1 / ps );
+   DOCTEST_CHECK( msr_obj[ "Center" ][ 0 ] == doctest::Approx( 25 * ps ));
+   DOCTEST_CHECK( msr_obj[ "Center" ][ 1 ] == doctest::Approx( 25 * ps ));
+   DOCTEST_CHECK( std::abs( msr_obj[ "Mu" ][ 0 ] - r * r / 4 * ps * ps ) < 0.07 * ps * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Mu" ][ 1 ] - r * r / 4 * ps * ps ) < 0.07 * ps * ps );
+   DOCTEST_CHECK( msr_obj[ "Mu" ][ 2 ] == doctest::Approx( 0 ));
+   DOCTEST_CHECK( std::abs( msr_obj[ "Inertia" ][ 0 ] - r * r / 4 * ps * ps ) < 0.07 * ps * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Inertia" ][ 1 ] - r * r / 4 * ps * ps ) < 0.07 * ps * ps );
+   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 0 ] == 1 );
+   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 1 ] == 0 );
+   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 2 ] == 0 );
+   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 3 ] == 1 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsCube" ][ 0 ] - 2 * r * std::sqrt( 12.0 / 16.0 ) * ps ) < 0.02 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsCube" ][ 1 ] - 2 * r * std::sqrt( 12.0 / 16.0 ) * ps ) < 0.02 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsEllipsoid" ][ 0 ] - 2 * r * ps ) < 0.02 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsEllipsoid" ][ 1 ] - 2 * r * ps ) < 0.02 * ps );
+
+   // Repeat the above, but with an anisotropic pixel size
+   dip::dfloat yscale = 1.3;
+   lab.SetPixelSize( 1, yscale * ps * dip::Units::Micrometer() );
+   msr = measurementTool.Measure( lab, img, {
+         "Area",
+         "Minimum",
+         "Maximum",
+         "CartesianBox",
+         "Perimeter",
+         "Feret",
+         "CentroidDiameter",
+         "ConvexArea",
+         "ConvexPerimeter",
+         "AspectRatioFeret",
+         "Radius",
+         "P2A",
+         "Roundness",
+         "Circularity",
+         "PodczeckShapes",
+         "Solidity",
+         "Convexity",
+         "EllipseVariance",
+         "Eccentricity",
+         "BendingEnergy",
+         "Center",
+         "Mu",
+         "Inertia",
+         "MajorAxes",
+         "DimensionsCube",
+         "DimensionsEllipsoid",
+   } );
+   DOCTEST_REQUIRE( msr.IsForged() );
+   DOCTEST_REQUIRE( msr.ObjectExists( 1 ));
+   msr_obj = msr[ 1 ];
+   DOCTEST_CHECK( std::abs( msr_obj[ "Area" ][ 0 ] - dip::pi * r * r * ps * ps * yscale ) < 0.6 * ps * ps * yscale );
+   DOCTEST_CHECK( msr_obj[ "Minimum" ][ 0 ] == doctest::Approx( 3 * ps ));
+   DOCTEST_CHECK( msr_obj[ "Minimum" ][ 1 ] == doctest::Approx( 3 * ps * yscale ));
+   DOCTEST_CHECK( msr_obj[ "Maximum" ][ 0 ] == doctest::Approx( 47 * ps ));
+   DOCTEST_CHECK( msr_obj[ "Maximum" ][ 1 ] == doctest::Approx( 47 * ps * yscale ));
+   DOCTEST_CHECK( msr_obj[ "CartesianBox" ][ 0 ] == doctest::Approx(( 2 * r ) * ps ));
+   DOCTEST_CHECK( msr_obj[ "CartesianBox" ][ 1 ] == doctest::Approx(( 2 * r ) * ps * yscale ));
+   DOCTEST_CHECK( std::abs( msr_obj[ "Perimeter" ][ 0 ] - 2 * dip::pi * r ) < 0.04 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Feret" ][ 0 ] - 2 * r ) < 0.04 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Feret" ][ 1 ] - 2 * r ) < 0.04 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Feret" ][ 2 ] - 2 * r ) < 0.04 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "CentroidDiameter" ][ 0 ] - 2 * r ) < 0.04 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "CentroidDiameter" ][ 1 ] - 2 * r ) < 0.04 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "ConvexArea" ][ 0 ] - dip::pi * r * r * ps * ps * yscale  ) < 0.6 * ps * yscale  );
+   DOCTEST_CHECK( std::abs( msr_obj[ "ConvexPerimeter" ][ 0 ] - 2 * dip::pi * r ) < 0.04 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "AspectRatioFeret" ][ 0 ] - 1 ) < 1e-6 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Radius" ][ 0 ] - r ) < 0.02 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Radius" ][ 1 ] - r ) < 0.002 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Radius" ][ 2 ] - r ) < 0.02 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Radius" ][ 3 ] - 0 ) < 0.005 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "P2A" ][ 0 ] - 1 ) < 5e-5 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Roundness" ][ 0 ] - 1 ) < 5e-4 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Circularity" ][ 0 ] - 0 ) < 5e-4 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "PodczeckShapes" ][ 0 ] - dip::pi / 4 ) < 1e-3 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "PodczeckShapes" ][ 1 ] - 1 ) < 2e-3 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "PodczeckShapes" ][ 2 ] - dip::pi / 2 ) < 2e-3 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "PodczeckShapes" ][ 3 ] - 1 ) < 2e-3 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "PodczeckShapes" ][ 4 ] - dip::pi ) < 2e-3 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Solidity" ][ 0 ] - 1 ) < 5e-4 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Convexity" ][ 0 ] - 1 ) < 1e-6 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "EllipseVariance" ][ 0 ] - 0 ) < 5e-4 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Eccentricity" ][ 0 ] - 0 ) < 2e-8 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "BendingEnergy" ][ 0 ] - 2 * dip::pi / r ) < 0.1 );
+   DOCTEST_CHECK( msr_obj[ "Center" ][ 0 ] == doctest::Approx( 25 * ps ));
+   DOCTEST_CHECK( msr_obj[ "Center" ][ 1 ] == doctest::Approx( 25 * ps * yscale  ));
+   DOCTEST_CHECK( std::abs( msr_obj[ "Mu" ][ 0 ] - r * r / 4 * ps * ps ) < 0.07 * ps * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Mu" ][ 1 ] - r * r / 4 * ps * ps * yscale * yscale ) < 0.07 * ps * ps * yscale * yscale  );
+   DOCTEST_CHECK( msr_obj[ "Mu" ][ 2 ] == doctest::Approx( 0 ));
+   DOCTEST_CHECK( std::abs( msr_obj[ "Inertia" ][ 0 ] - r * r / 4 * ps * ps * yscale * yscale ) < 0.07 * ps * ps * yscale * yscale );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Inertia" ][ 1 ] - r * r / 4 * ps * ps ) < 0.07 * ps * ps );
+   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 0 ] == 0 );
+   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 1 ] == 1 );
+   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 2 ] == 1 );
+   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 3 ] == 0 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsCube" ][ 0 ] - 2 * r * std::sqrt( 12.0 / 16.0 ) * ps * yscale ) < 0.02 * ps * yscale );
+   DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsCube" ][ 1 ] - 2 * r * std::sqrt( 12.0 / 16.0 ) * ps ) < 0.02 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsEllipsoid" ][ 0 ] - 2 * r * ps * yscale ) < 0.02 * ps * yscale );
+   DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsEllipsoid" ][ 1 ] - 2 * r * ps ) < 0.02 * ps );
 }
 
 #endif // DIP_CONFIG_ENABLE_DOCTEST

@@ -1,5 +1,5 @@
 /*
- * (c)2016-2022, Cris Luengo.
+ * (c)2016-2026, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -88,6 +88,37 @@ class FeatureSize : public LineBased {
    private:
       dfloat scale_{};
       std::vector< dip::uint > data_{};
+};
+
+
+class FeaturePolygonArea : public PolygonBased {
+   // Just like FeatureSolidArea, but without the +0.5 you need for binary case.
+   public:
+      FeaturePolygonArea() : PolygonBased( { "Area", "Area of object", { "Size", "SolidArea" }, false } ) {};
+
+      ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
+         ValueInformationArray out( 1 );
+         PhysicalQuantity unitArea = label.PixelSize().UnitSize( label.Dimensionality() );
+         scale_ = unitArea.magnitude;
+         out[ 0 ].units = unitArea.units;
+         out[ 0 ].name = "";
+         return out;
+      }
+
+      void Measure( Polygon const& polygon, Measurement::ValueIterator output ) override {
+         // The area of an object with a smooth outline is larger than the area of the polygon with
+         // vertices along the outline because the polygon cuts off bits of the object. The larger the
+         // local curvature, the larger the area cut off. But this evens out, and in the end we have
+         // a fixed bias of pi s^2 / 6 for any closed curve with sufficiently low curvature (with
+         // very high curvature, the approximation no longer holds as the 1/r^2 part is no longer
+         // negligible). s here is the sampling distance.
+         dfloat s = polygon.Length() / static_cast< dfloat >( polygon.vertices.size() );
+         dfloat bias = pi * s * s / 6;
+         *output = ( polygon.Area() + bias ) * scale_;
+      }
+
+   private:
+      dfloat scale_{};
 };
 
 

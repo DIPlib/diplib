@@ -1,5 +1,5 @@
 /*
- * (c)2016-2022, Cris Luengo.
+ * (c)2016-2026, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -81,6 +81,28 @@ class FeatureMu : public LineBased {
       dip::uint nD_{};       // number of dimensions (2 or 3).
       FloatArray scales_{};  // nOut values.
       std::vector< MomentAccumulator > data_{}; // size of this array is nObjects.
+};
+
+
+class FeaturePolygonMu : public PolygonBased {
+   public:
+      FeaturePolygonMu() : PolygonBased( { "Mu", "Elements of the inertia tensor", false } ) {};
+
+      ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
+         ValueInformationArray out;
+         std::tie( out, scales_ ) = MuInformation( 2, label.PixelSize() );
+         return out;
+      }
+
+      void Measure( Polygon const& polygon, Measurement::ValueIterator output ) override {
+         auto cm = polygon.CovarianceMatrixSolid();
+         output[ 0 ] = cm.yy() * scales_[ 0 ];
+         output[ 1 ] = cm.xx() * scales_[ 1 ];
+         output[ 2 ] = -cm.xy() * scales_[ 2 ];
+      }
+
+   private:
+      FloatArray scales_{};
 };
 
 

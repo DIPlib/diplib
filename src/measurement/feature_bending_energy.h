@@ -1,5 +1,5 @@
 /*
- * (c)2016-2022, Cris Luengo.
+ * (c)2016-2026, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,6 +35,28 @@ class FeatureBendingEnergy : public ChainCodeBased {
 
       void Measure( ChainCode const& chainCode, Measurement::ValueIterator output ) override {
          *output = chainCode.BendingEnergy() * scale_;
+      }
+
+   private:
+      dfloat scale_{};
+};
+
+
+class FeaturePolygonBendingEnergy : public PolygonBased {
+   public:
+      FeaturePolygonBendingEnergy() : PolygonBased( { "BendingEnergy", "Bending energy of object perimeter", false } ) {};
+
+      ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
+         ValueInformationArray out( 1 );
+         PhysicalQuantity pq = label.PixelSize().UnitLength().Power( - 1 );
+         scale_ = pq.magnitude;
+         out[ 0 ].units = pq.units;
+         out[ 0 ].name = "";
+         return out;
+      }
+
+      void Measure( Polygon const& polygon, Measurement::ValueIterator output ) override {
+         *output = polygon.BendingEnergy() * scale_;
       }
 
    private:

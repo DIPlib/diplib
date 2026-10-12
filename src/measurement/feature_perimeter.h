@@ -1,5 +1,5 @@
 /*
- * (c)2016-2022, Cris Luengo.
+ * (c)2016-2026, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -48,6 +48,28 @@ class FeaturePerimeter : public ChainCodeBased {
    private:
       dfloat scale_{};
       bool includeBoundaryPixels = false;
+};
+
+
+class FeaturePolygonPerimeter : public PolygonBased {
+   public:
+      FeaturePolygonPerimeter() : PolygonBased( { "Perimeter", "Length of the object perimeter", false } ) {};
+
+      ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
+         ValueInformationArray out( 1 );
+         PhysicalQuantity pq = label.PixelSize().UnitLength();
+         scale_ = pq.magnitude;
+         out[ 0 ].units = pq.units;
+         out[ 0 ].name = "";
+         return out;
+      }
+
+      void Measure( Polygon const& polygon, Measurement::ValueIterator output ) override {
+         *output = polygon.Length() * scale_;
+      }
+
+   private:
+      dfloat scale_{};
 };
 
 
