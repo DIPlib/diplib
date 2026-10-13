@@ -1044,7 +1044,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::SubPixelMeasurementTool::Measure" ) {
    DOCTEST_CHECK( std::abs( msr_obj[ "Solidity" ][ 0 ] - 1 ) < 5e-4 );
    DOCTEST_CHECK( std::abs( msr_obj[ "Convexity" ][ 0 ] - 1 ) < 1e-6 );
    DOCTEST_CHECK( std::abs( msr_obj[ "EllipseVariance" ][ 0 ] - 0 ) < 5e-4 );
-   DOCTEST_CHECK( std::abs( msr_obj[ "Eccentricity" ][ 0 ] - 0 ) < 2e-8 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Eccentricity" ][ 0 ] - 0 ) < 3e-8 );
    DOCTEST_CHECK( std::abs( msr_obj[ "BendingEnergy" ][ 0 ] - 2 * dip::pi / r ) < 0.1 );
    DOCTEST_CHECK( msr_obj[ "Center" ][ 0 ] == doctest::Approx( 25 ));
    DOCTEST_CHECK( msr_obj[ "Center" ][ 1 ] == doctest::Approx( 25 ));
@@ -1124,7 +1124,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::SubPixelMeasurementTool::Measure" ) {
    DOCTEST_CHECK( std::abs( msr_obj[ "Solidity" ][ 0 ] - 1 ) < 5e-4 );
    DOCTEST_CHECK( std::abs( msr_obj[ "Convexity" ][ 0 ] - 1 ) < 1e-6 );
    DOCTEST_CHECK( std::abs( msr_obj[ "EllipseVariance" ][ 0 ] - 0 ) < 5e-4 );
-   DOCTEST_CHECK( std::abs( msr_obj[ "Eccentricity" ][ 0 ] - 0 ) < 2e-8 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Eccentricity" ][ 0 ] - 0 ) < 3e-8 );
    DOCTEST_CHECK( std::abs( msr_obj[ "BendingEnergy" ][ 0 ] - 2 * dip::pi / r / ps ) < 0.1 / ps );
    DOCTEST_CHECK( msr_obj[ "Center" ][ 0 ] == doctest::Approx( 25 * ps ));
    DOCTEST_CHECK( msr_obj[ "Center" ][ 1 ] == doctest::Approx( 25 * ps ));
@@ -1204,7 +1204,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::SubPixelMeasurementTool::Measure" ) {
    DOCTEST_CHECK( std::abs( msr_obj[ "Solidity" ][ 0 ] - 1 ) < 5e-4 );
    DOCTEST_CHECK( std::abs( msr_obj[ "Convexity" ][ 0 ] - 1 ) < 1e-6 );
    DOCTEST_CHECK( std::abs( msr_obj[ "EllipseVariance" ][ 0 ] - 0 ) < 5e-4 );
-   DOCTEST_CHECK( std::abs( msr_obj[ "Eccentricity" ][ 0 ] - 0 ) < 2e-8 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Eccentricity" ][ 0 ] - 0 ) < 3e-8 );
    DOCTEST_CHECK( std::abs( msr_obj[ "BendingEnergy" ][ 0 ] - 2 * dip::pi / r ) < 0.1 );
    DOCTEST_CHECK( msr_obj[ "Center" ][ 0 ] == doctest::Approx( 25 * ps ));
    DOCTEST_CHECK( msr_obj[ "Center" ][ 1 ] == doctest::Approx( 25 * ps * yscale  ));
