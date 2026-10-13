@@ -95,7 +95,7 @@ dfloat FindZeroLinear( dfloat p0, dfloat p1 ) {
 template< typename TPI >
 void SamplePixels( Image const& in, FloatArray& out, VertexInteger const& startCoords, VertexInteger const& step ) {
    DIP_ASSERT( in.DataType() == DataType( TPI( 0 )));
-   TPI const* ptr = static_cast< TPI const* >( in.Data() );
+   TPI const* ptr = static_cast< TPI const* >( in.Origin() );
    auto coords = startCoords;
    for( dfloat& value : out ) {
       DIP_ASSERT( coords.x >= 0 && coords.x < static_cast< dip::sint >( in.Size( 0 )));
@@ -287,6 +287,10 @@ dip::uint RefinePolygon(
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 
+#include "diplib/generation.h"
+#include "diplib/measurement.h"
+#include "diplib/regions.h"
+
 DOCTEST_TEST_CASE("[DIPlib] testing FindZeroCubic()") {
    dip::dfloat t = dip::FindZeroCubic( -1.5, -0.5, 0.5, 1.5 );
    DOCTEST_CHECK( t == doctest::Approx( 0.5 ));
@@ -299,6 +303,37 @@ DOCTEST_TEST_CASE("[DIPlib] testing FindZeroLinear()") {
    DOCTEST_CHECK( t == doctest::Approx( 0.5 ));
    t = dip::FindZeroLinear( -0.1, 0.9 );
    DOCTEST_CHECK( t == doctest::Approx( 0.1 ));
+}
+
+DOCTEST_TEST_CASE("[DIPlib] testing ChainCode::Polygon(grey) and SubPixelMeasurementTool on an image view") {
+   // A band-limited disk, off the pixel grid, in a larger image. We measure it in a view of that image,
+   // and in a copy of the same view. The two must give identical results.
+   dip::dfloat r = 20;
+   dip::Image big( { 80, 80 }, 1, dip::DT_SFLOAT );
+   big.Fill( 0 );
+   dip::DrawBandlimitedBall( big, 2 * r, { 40.3, 44.6 }, { 1 }, "filled", 1.0, 3.0 );
+   dip::Image view = big.At( dip::Range( 10, 69 ), dip::Range( 15, 74 ));
+   dip::Image copy = view.Copy();
+   DOCTEST_REQUIRE( view.Origin() != view.Data() ); // the bug was triggered only in this case
+   dip::Image lab = dip::Label( copy > 0.5 );
+   dip::ChainCodeArray ccs = dip::GetImageChainCodes( lab );
+   DOCTEST_REQUIRE( ccs.size() == 1 );
+   for( char const* interpolation : { "linear", "3-cubic" } ) {
+      dip::Polygon pc = ccs[ 0 ].Polygon( copy, 0.5, interpolation );
+      dip::Polygon pv = ccs[ 0 ].Polygon( view, 0.5, interpolation );
+      DOCTEST_REQUIRE( pv.vertices.size() == pc.vertices.size() );
+      DOCTEST_CHECK( std::abs( pc.Area() - dip::pi * r * r ) < 0.6 );
+      DOCTEST_CHECK( pv.Area() == doctest::Approx( pc.Area() ));
+      DOCTEST_CHECK( pv.Length() == doctest::Approx( pc.Length() ));
+   }
+   dip::SubPixelMeasurementTool measurementTool;
+   auto mc = measurementTool.Measure( lab, copy, { "Area", "Perimeter" }, 0.5, "3-cubic" );
+   auto mv = measurementTool.Measure( lab, view, { "Area", "Perimeter" }, 0.5, "3-cubic" );
+   DOCTEST_REQUIRE( mc.ObjectExists( 1 ));
+   DOCTEST_REQUIRE( mv.ObjectExists( 1 ));
+   DOCTEST_CHECK( std::abs( mc[ 1 ][ "Area" ][ 0 ] - dip::pi * r * r ) < 0.6 );
+   DOCTEST_CHECK( mv[ 1 ][ "Area" ][ 0 ] == doctest::Approx( mc[ 1 ][ "Area" ][ 0 ] ));
+   DOCTEST_CHECK( mv[ 1 ][ "Perimeter" ][ 0 ] == doctest::Approx( mc[ 1 ][ "Perimeter" ][ 0 ] ));
 }
 
 #endif // DIP_CONFIG_ENABLE_DOCTEST
