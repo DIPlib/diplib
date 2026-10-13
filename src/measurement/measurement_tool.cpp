@@ -560,6 +560,16 @@ Measurement SubPixelMeasurementTool::Measure(
 #include "diplib/generation.h"
 #include "diplib/mapping.h"
 
+bool AreOrthogonalAxisAlignedUnitVectors( dip::Measurement::IteratorObject::Iterator const& it ) {
+   dip::dfloat x1 = it[ 0 ];
+   dip::dfloat y1 = it[ 1 ];
+   dip::dfloat x2 = it[ 2 ];
+   dip::dfloat y2 = it[ 3 ];
+   // The vector (x1,y1) is orthogonal to (x2,y2).
+   // Either x1 is 1, or y1 is 1, the other is 0.
+   return ( x1 * y1 == 0.0 ) && ( x1 + y1 == 1.0 ) && ( x1 == y2 ) && ( x2 == y1 );
+}
+
 DOCTEST_TEST_CASE( "[DIPlib] testing dip::MeasurementTool::Measure" ) {
    // A test image with a single circle
    dip::dfloat r = 22;
@@ -676,10 +686,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::MeasurementTool::Measure" ) {
    DOCTEST_CHECK( msr_obj[ "Mu" ][ 2 ] == 0 );
    DOCTEST_CHECK( std::abs( msr_obj[ "Inertia" ][ 0 ] - r * r / 4 ) < 0.6 );
    DOCTEST_CHECK( std::abs( msr_obj[ "Inertia" ][ 1 ] - r * r / 4 ) < 0.6 );
-   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 0 ] == 1 );
-   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 1 ] == 0 );
-   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 2 ] == 0 );
-   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 3 ] == 1 );
+   DOCTEST_CHECK( AreOrthogonalAxisAlignedUnitVectors( msr_obj[ "MajorAxes" ] ));
    DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsCube" ][ 0 ] - 2 * r * std::sqrt( 12.0 / 16.0 )) < 0.1 );
    DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsCube" ][ 1 ] - 2 * r * std::sqrt( 12.0 / 16.0 )) < 0.1 );
    DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsEllipsoid" ][ 0 ] - 2 * r ) < 0.2 );
@@ -692,10 +699,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::MeasurementTool::Measure" ) {
    DOCTEST_CHECK( msr_obj[ "GreyMu" ][ 2 ] == 0 );
    DOCTEST_CHECK( std::abs( msr_obj[ "GreyInertia" ][ 0 ] - r * r / 4 ) < 0.6 );
    DOCTEST_CHECK( std::abs( msr_obj[ "GreyInertia" ][ 1 ] - r * r / 4 ) < 0.6 );
-   DOCTEST_CHECK( msr_obj[ "GreyMajorAxes" ][ 0 ] == 1 );
-   DOCTEST_CHECK( msr_obj[ "GreyMajorAxes" ][ 1 ] == 0 );
-   DOCTEST_CHECK( msr_obj[ "GreyMajorAxes" ][ 2 ] == 0 );
-   DOCTEST_CHECK( msr_obj[ "GreyMajorAxes" ][ 3 ] == 1 );
+   DOCTEST_CHECK( AreOrthogonalAxisAlignedUnitVectors( msr_obj[ "GreyMajorAxes" ] ));
    DOCTEST_CHECK( std::abs( msr_obj[ "GreyDimensionsCube" ][ 0 ] - 2 * r * std::sqrt( 12.0 / 16.0 )) < 0.1 );
    DOCTEST_CHECK( std::abs( msr_obj[ "GreyDimensionsCube" ][ 1 ] - 2 * r * std::sqrt( 12.0 / 16.0 )) < 0.1 );
    DOCTEST_CHECK( std::abs( msr_obj[ "GreyDimensionsEllipsoid" ][ 0 ] - 2 * r ) < 0.2 );
@@ -809,10 +813,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::MeasurementTool::Measure" ) {
    DOCTEST_CHECK( msr_obj[ "Mu" ][ 2 ] == 0 );
    DOCTEST_CHECK( std::abs( msr_obj[ "Inertia" ][ 0 ] - r * r / 4 * ps * ps ) < 0.6 * ps * ps );
    DOCTEST_CHECK( std::abs( msr_obj[ "Inertia" ][ 1 ] - r * r / 4 * ps * ps ) < 0.6 * ps * ps );
-   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 0 ] == 1 );
-   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 1 ] == 0 );
-   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 2 ] == 0 );
-   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 3 ] == 1 );
+   DOCTEST_CHECK( AreOrthogonalAxisAlignedUnitVectors( msr_obj[ "MajorAxes" ] ));
    DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsCube" ][ 0 ] - 2 * r * std::sqrt( 12.0 / 16.0 ) * ps ) < 0.1 * ps );
    DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsCube" ][ 1 ] - 2 * r * std::sqrt( 12.0 / 16.0 ) * ps ) < 0.1 * ps );
    DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsEllipsoid" ][ 0 ] - 2 * r * ps ) < 0.2 * ps );
@@ -825,10 +826,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::MeasurementTool::Measure" ) {
    DOCTEST_CHECK( msr_obj[ "GreyMu" ][ 2 ] == 0 );
    DOCTEST_CHECK( std::abs( msr_obj[ "GreyInertia" ][ 0 ] - r * r / 4 * ps * ps ) < 0.6 * ps * ps );
    DOCTEST_CHECK( std::abs( msr_obj[ "GreyInertia" ][ 1 ] - r * r / 4 * ps * ps ) < 0.6 * ps * ps );
-   DOCTEST_CHECK( msr_obj[ "GreyMajorAxes" ][ 0 ] == 1 );
-   DOCTEST_CHECK( msr_obj[ "GreyMajorAxes" ][ 1 ] == 0 );
-   DOCTEST_CHECK( msr_obj[ "GreyMajorAxes" ][ 2 ] == 0 );
-   DOCTEST_CHECK( msr_obj[ "GreyMajorAxes" ][ 3 ] == 1 );
+   DOCTEST_CHECK( AreOrthogonalAxisAlignedUnitVectors( msr_obj[ "GreyMajorAxes" ] ));
    DOCTEST_CHECK( std::abs( msr_obj[ "GreyDimensionsCube" ][ 0 ] - 2 * r * std::sqrt( 12.0 / 16.0 ) * ps ) < 0.1 * ps );
    DOCTEST_CHECK( std::abs( msr_obj[ "GreyDimensionsCube" ][ 1 ] - 2 * r * std::sqrt( 12.0 / 16.0 ) * ps ) < 0.1 * ps );
    DOCTEST_CHECK( std::abs( msr_obj[ "GreyDimensionsEllipsoid" ][ 0 ] - 2 * r * ps ) < 0.2 * ps );
@@ -941,10 +939,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::MeasurementTool::Measure" ) {
    DOCTEST_CHECK( msr_obj[ "Mu" ][ 2 ] == 0 );
    DOCTEST_CHECK( std::abs( msr_obj[ "Inertia" ][ 0 ] - r * r / 4 * ps * ps * yscale * yscale ) < 0.6 * ps * ps * yscale * yscale );
    DOCTEST_CHECK( std::abs( msr_obj[ "Inertia" ][ 1 ] - r * r / 4 * ps * ps ) < 0.6 * ps * ps );
-   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 0 ] == 0 );
-   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 1 ] == 1 );
-   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 2 ] == 1 );
-   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 3 ] == 0 );
+   DOCTEST_CHECK( AreOrthogonalAxisAlignedUnitVectors( msr_obj[ "MajorAxes" ] ));
    DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsCube" ][ 0 ] - 2 * r * std::sqrt( 12.0 / 16.0 ) * ps * yscale ) < 0.1 * ps * yscale );
    DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsCube" ][ 1 ] - 2 * r * std::sqrt( 12.0 / 16.0 ) * ps ) < 0.1 * ps );
    DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsEllipsoid" ][ 0 ] - 2 * r * ps * yscale ) < 0.2 * ps * yscale );
@@ -957,10 +952,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::MeasurementTool::Measure" ) {
    DOCTEST_CHECK( msr_obj[ "GreyMu" ][ 2 ] == 0 );
    DOCTEST_CHECK( std::abs( msr_obj[ "GreyInertia" ][ 0 ] - r * r / 4 * ps * ps * yscale * yscale ) < 0.6 * ps * ps * yscale * yscale );
    DOCTEST_CHECK( std::abs( msr_obj[ "GreyInertia" ][ 1 ] - r * r / 4 * ps * ps ) < 0.6 * ps * ps );
-   DOCTEST_CHECK( msr_obj[ "GreyMajorAxes" ][ 0 ] == 0 );
-   DOCTEST_CHECK( msr_obj[ "GreyMajorAxes" ][ 1 ] == 1 );
-   DOCTEST_CHECK( msr_obj[ "GreyMajorAxes" ][ 2 ] == 1 );
-   DOCTEST_CHECK( msr_obj[ "GreyMajorAxes" ][ 3 ] == 0 );
+   DOCTEST_CHECK( AreOrthogonalAxisAlignedUnitVectors( msr_obj[ "GreyMajorAxes" ] ));
    DOCTEST_CHECK( std::abs( msr_obj[ "GreyDimensionsCube" ][ 0 ] - 2 * r * std::sqrt( 12.0 / 16.0 ) * ps * yscale ) < 0.1 * ps * yscale );
    DOCTEST_CHECK( std::abs( msr_obj[ "GreyDimensionsCube" ][ 1 ] - 2 * r * std::sqrt( 12.0 / 16.0 ) * ps ) < 0.1 * ps );
    DOCTEST_CHECK( std::abs( msr_obj[ "GreyDimensionsEllipsoid" ][ 0 ] - 2 * r * ps * yscale ) < 0.2 * ps * yscale );
@@ -1061,10 +1053,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::SubPixelMeasurementTool::Measure" ) {
    DOCTEST_CHECK( msr_obj[ "Mu" ][ 2 ] == doctest::Approx( 0 ));
    DOCTEST_CHECK( std::abs( msr_obj[ "Inertia" ][ 0 ] - r * r / 4 ) < 0.07 );
    DOCTEST_CHECK( std::abs( msr_obj[ "Inertia" ][ 1 ] - r * r / 4 ) < 0.07 );
-   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 0 ] == 1 );
-   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 1 ] == 0 );
-   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 2 ] == 0 );
-   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 3 ] == 1 );
+   DOCTEST_CHECK( AreOrthogonalAxisAlignedUnitVectors( msr_obj[ "MajorAxes" ] ));
    DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsCube" ][ 0 ] - 2 * r * std::sqrt( 12.0 / 16.0 )) < 0.02 );
    DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsCube" ][ 1 ] - 2 * r * std::sqrt( 12.0 / 16.0 )) < 0.02 );
    DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsEllipsoid" ][ 0 ] - 2 * r ) < 0.02 );
@@ -1144,10 +1133,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::SubPixelMeasurementTool::Measure" ) {
    DOCTEST_CHECK( msr_obj[ "Mu" ][ 2 ] == doctest::Approx( 0 ));
    DOCTEST_CHECK( std::abs( msr_obj[ "Inertia" ][ 0 ] - r * r / 4 * ps * ps ) < 0.07 * ps * ps );
    DOCTEST_CHECK( std::abs( msr_obj[ "Inertia" ][ 1 ] - r * r / 4 * ps * ps ) < 0.07 * ps * ps );
-   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 0 ] == 1 );
-   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 1 ] == 0 );
-   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 2 ] == 0 );
-   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 3 ] == 1 );
+   DOCTEST_CHECK( AreOrthogonalAxisAlignedUnitVectors( msr_obj[ "MajorAxes" ] ));
    DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsCube" ][ 0 ] - 2 * r * std::sqrt( 12.0 / 16.0 ) * ps ) < 0.02 * ps );
    DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsCube" ][ 1 ] - 2 * r * std::sqrt( 12.0 / 16.0 ) * ps ) < 0.02 * ps );
    DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsEllipsoid" ][ 0 ] - 2 * r * ps ) < 0.02 * ps );
@@ -1227,10 +1213,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::SubPixelMeasurementTool::Measure" ) {
    DOCTEST_CHECK( msr_obj[ "Mu" ][ 2 ] == doctest::Approx( 0 ));
    DOCTEST_CHECK( std::abs( msr_obj[ "Inertia" ][ 0 ] - r * r / 4 * ps * ps * yscale * yscale ) < 0.07 * ps * ps * yscale * yscale );
    DOCTEST_CHECK( std::abs( msr_obj[ "Inertia" ][ 1 ] - r * r / 4 * ps * ps ) < 0.07 * ps * ps );
-   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 0 ] == 0 );
-   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 1 ] == 1 );
-   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 2 ] == 1 );
-   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 3 ] == 0 );
+   DOCTEST_CHECK( AreOrthogonalAxisAlignedUnitVectors( msr_obj[ "MajorAxes" ] ));
    DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsCube" ][ 0 ] - 2 * r * std::sqrt( 12.0 / 16.0 ) * ps * yscale ) < 0.02 * ps * yscale );
    DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsCube" ][ 1 ] - 2 * r * std::sqrt( 12.0 / 16.0 ) * ps ) < 0.02 * ps );
    DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsEllipsoid" ][ 0 ] - 2 * r * ps * yscale ) < 0.02 * ps * yscale );
