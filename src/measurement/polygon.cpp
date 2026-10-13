@@ -231,7 +231,7 @@ ConvexHull::ConvexHull( dip::Polygon const& polygon ) {
    for( dip::uint ii = 1; ii < inVertices.size(); ++ii ) {
       UpdateMinLength( inVertices[ ii ], inVertices[ ii - 1 ] );
    }
-   DIP_THROW_IF( minLength == std::numeric_limits< dfloat >::max(), "All vertices are colinear, cannot compute convex hull" );
+   DIP_THROW_IF( minLength == std::numeric_limits< dfloat >::max(), "All vertices are coincident, cannot compute convex hull" );
    dfloat eps = minLength * 1e-9;
    // We ignore parallelogram distances that are 9 orders of magnitude smaller than the minimum distance
    // between vertices, to prevent numerical precision errors (vertex locations are rounded to floating-point
@@ -246,7 +246,7 @@ ConvexHull::ConvexHull( dip::Polygon const& polygon ) {
       // While the first three vertices are colinear, we discard the middle one and continue.
       v2 = v3;
       ++v3;
-      DIP_THROW_IF( v3 == inVertices.end(), "All vertices are colinear, cannot compute convex hull" );
+      DIP_THROW_IF( v3 == inVertices.end(), "All vertices are collinear, cannot compute convex hull" );
       // Note that this error should not occur for any polygon generated from a chain code (i.e. representing a
       // set of pixels in an image). We have this test here in case the polygon has a different source.
       // We could, instead of throwing, return the two vertices that compose the bounding box. But that could

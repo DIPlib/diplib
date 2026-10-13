@@ -299,10 +299,7 @@ dip::uint RefinePolygon(
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
-
 #include "diplib/generation.h"
-#include "diplib/measurement.h"
-#include "diplib/regions.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing FindZeroCubic()") {
    dip::dfloat t = dip::FindZeroCubic( -1.5, -0.5, 0.5, 1.5 );
@@ -318,7 +315,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing FindZeroLinear()") {
    DOCTEST_CHECK( t == doctest::Approx( 0.1 ));
 }
 
-DOCTEST_TEST_CASE("[DIPlib] testing ChainCode::Polygon(grey) and SubPixelMeasurementTool on an image view") {
+DOCTEST_TEST_CASE("[DIPlib] testing ChainCode::Polygon(grey) on an image view") {
    // A band-limited disk, off the pixel grid, in a larger image. We measure it in a view of that image,
    // and in a copy of the same view. The two must give identical results.
    dip::dfloat r = 20;
@@ -328,7 +325,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing ChainCode::Polygon(grey) and SubPixelMeasure
    dip::Image view = big.At( dip::Range( 10, 69 ), dip::Range( 15, 74 ));
    dip::Image copy = view.Copy();
    DOCTEST_REQUIRE( view.Origin() != view.Data() ); // the bug was triggered only in this case
-   dip::Image lab = dip::Label( copy > 0.5 );
+   dip::Image lab = dip::Convert( copy > 0.5, dip::DT_UINT8 ); // Copyless conversion to uint8 simulates labeling for single-object image.
    dip::ChainCodeArray ccs = dip::GetImageChainCodes( lab );
    DOCTEST_REQUIRE( ccs.size() == 1 );
    for( char const* interpolation : { "linear", "3-cubic" } ) {
@@ -339,26 +336,18 @@ DOCTEST_TEST_CASE("[DIPlib] testing ChainCode::Polygon(grey) and SubPixelMeasure
       DOCTEST_CHECK( pv.Area() == doctest::Approx( pc.Area() ));
       DOCTEST_CHECK( pv.Length() == doctest::Approx( pc.Length() ));
    }
-   dip::SubPixelMeasurementTool measurementTool;
-   auto mc = measurementTool.Measure( lab, copy, { "Area", "Perimeter" }, 0.5, "3-cubic" );
-   auto mv = measurementTool.Measure( lab, view, { "Area", "Perimeter" }, 0.5, "3-cubic" );
-   DOCTEST_REQUIRE( mc.ObjectExists( 1 ));
-   DOCTEST_REQUIRE( mv.ObjectExists( 1 ));
-   DOCTEST_CHECK( std::abs( mc[ 1 ][ "Area" ][ 0 ] - dip::pi * r * r ) < 0.6 );
-   DOCTEST_CHECK( mv[ 1 ][ "Area" ][ 0 ] == doctest::Approx( mc[ 1 ][ "Area" ][ 0 ] ));
-   DOCTEST_CHECK( mv[ 1 ][ "Perimeter" ][ 0 ] == doctest::Approx( mc[ 1 ][ "Perimeter" ][ 0 ] ));
 }
 
-DOCTEST_TEST_CASE("[DIPlib] testing ChainCode::Polygon(grey) and SubPixelMeasurementTool with a 1-pixel object") {
+DOCTEST_TEST_CASE("[DIPlib] testing ChainCode::Polygon(grey) with a 1-pixel object") {
    dip::Image grey( { 20, 20 }, 1, dip::DT_SFLOAT );
    grey.Fill( 0 );
    grey.At( 7, 12 ) = 1.0;
-   dip::Image lab = dip::Label( grey > 0.5 );
+   dip::Image lab = dip::Convert( grey > 0.5, dip::DT_UINT8 ); // Copyless conversion to uint8 simulates labeling for single-object image.
    dip::ChainCodeArray ccs = dip::GetImageChainCodes( lab );
    DOCTEST_REQUIRE( ccs.size() == 1 );
    DOCTEST_REQUIRE( ccs[ 0 ].codes.empty() );
-   for( char const* interpolation : { "linear", "3-cubic" } ) {
-      dip::Polygon p;
+   dip::Polygon p;
+   for( char const* interpolation : { "3-cubic", "linear" } ) {
       DOCTEST_REQUIRE_NOTHROW( p = ccs[ 0 ].Polygon( grey, 0.5, interpolation ));
       DOCTEST_REQUIRE( p.vertices.size() == 4 );
       DOCTEST_CHECK( p.IsClockWise() == ccs[ 0 ].Polygon().IsClockWise() );
@@ -372,15 +361,11 @@ DOCTEST_TEST_CASE("[DIPlib] testing ChainCode::Polygon(grey) and SubPixelMeasure
       DOCTEST_CHECK( bb.bottomRight.y > 12.0 );
       DOCTEST_CHECK( bb.bottomRight.y < 13.0 );
    }
-   dip::Polygon p = ccs[ 0 ].Polygon( grey, 0.5, "linear" );
-   DOCTEST_CHECK( p.Area() == doctest::Approx( 0.5 )); // a diamond with diagonals of 1 pixel
-   dip::SubPixelMeasurementTool measurementTool;
-   dip::Measurement msr;
-   DOCTEST_REQUIRE_NOTHROW( msr = measurementTool.Measure( lab, grey, { "Size", "Perimeter" }, 0.5, "3-cubic" ));
-   DOCTEST_CHECK( msr[ 1 ][ "Size" ][ 0 ] > 0.0 );
+   // Using linear interpolation, the polygon should be a diamond with diagonals of 1 pixel.
+   DOCTEST_CHECK( p.Area() == doctest::Approx( 0.5 ));
 }
 
-DOCTEST_TEST_CASE("[DIPlib] testing SubPixelMeasurementTool with a threshold equal to pixel values") {
+DOCTEST_TEST_CASE("[DIPlib] testing ChainCode::Polygon(grey) with a threshold equal to pixel values") {
    // An integer threshold on an integer-valued image puts some of the vertices exactly on pixel centers,
    // producing repeated vertices. The convex hull must still be correct.
    dip::dfloat r = 50;
@@ -389,14 +374,17 @@ DOCTEST_TEST_CASE("[DIPlib] testing SubPixelMeasurementTool with a threshold equ
    dip::DrawBandlimitedBall( grey, 2 * r, { 70.37, 64.81 }, { 170 }, "filled", 1.0, 3.0 );
    grey = dip::Convert( grey, dip::DT_UINT8 );
    for( dip::dfloat threshold : { 125.0, 125.5 } ) {
-      dip::Image lab = dip::Label( grey > threshold );
-      dip::SubPixelMeasurementTool measurementTool;
-      auto msr = measurementTool.Measure( lab, grey, { "Size", "Feret", "ConvexArea" }, threshold, "linear" );
-      DOCTEST_REQUIRE( msr.ObjectExists( 1 ));
-      DOCTEST_CHECK( std::abs( msr[ 1 ][ "Feret" ][ 0 ] - 2 * r ) < 0.5 ); // max
-      DOCTEST_CHECK( std::abs( msr[ 1 ][ "Feret" ][ 1 ] - 2 * r ) < 0.5 ); // min
-      DOCTEST_CHECK( msr[ 1 ][ "ConvexArea" ][ 0 ] >= msr[ 1 ][ "Size" ][ 0 ] );
-      DOCTEST_CHECK( msr[ 1 ][ "ConvexArea" ][ 0 ] < msr[ 1 ][ "Size" ][ 0 ] * 1.01 );
+      dip::Image lab = dip::Convert( grey > threshold, dip::DT_UINT8 ); // Copyless conversion to uint8 simulates labeling for single-object image.
+      dip::ChainCodeArray ccs = dip::GetImageChainCodes( lab );
+      dip::Polygon p = ccs[ 0 ].Polygon( grey, threshold, "linear" );
+      auto ch = p.ConvexHull();
+      auto f = ch.Feret();
+      DOCTEST_CHECK( std::abs( f.maxDiameter - 2 * r ) < 0.5 );
+      DOCTEST_CHECK( std::abs( f.minDiameter - 2 * r ) < 0.5 );
+      dip::dfloat cv_area = ch.Area();
+      dip::dfloat p_area = p.Area();
+      DOCTEST_CHECK( cv_area >= p_area );
+      DOCTEST_CHECK( cv_area < p_area * 1.01 );
    }
 }
 
@@ -407,7 +395,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing ChainCode::Polygon(grey) with an object touc
    big.Fill( 0 );
    dip::DrawBandlimitedBall( big, 40, { 22.3, 21.6 }, { 1 }, "filled", 1.0, 3.0 );
    dip::Image view = big.At( dip::Range( 10, 69 ), dip::Range( 10, 69 ));
-   dip::Image lab = dip::Label( view > 0.5 );
+   dip::Image lab = dip::Convert( view > 0.5, dip::DT_UINT8 ); // Copyless conversion to uint8 simulates labeling for single-object image.
    dip::ChainCodeArray ccs = dip::GetImageChainCodes( lab );
    DOCTEST_REQUIRE( ccs.size() == 1 );
    for( char const* interpolation : { "linear", "3-cubic" } ) {
