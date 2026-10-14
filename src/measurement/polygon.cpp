@@ -25,6 +25,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <deque>
+#include <limits>
 #include <utility>
 
 #include "diplib.h"
@@ -218,11 +219,19 @@ ConvexHull::ConvexHull( dip::Polygon const& polygon ) {
       return;
    }
 
-   // Find shortest vertex for scale
-   dfloat minLength = Distance( inVertices.front(), inVertices.back() );
+   // Find shortest edge for scale. Zero-length edges (repeated vertices) are ignored, otherwise `eps` would be 0.
+   dfloat minLength = std::numeric_limits< dfloat >::max();
+   auto UpdateMinLength = [ &minLength ]( VertexFloat const& v1, VertexFloat const& v2 ) {
+      dfloat length = Distance( v1, v2 );
+      if( length > 0 ) {
+         minLength = std::min( minLength, length );
+      }
+   };
+   UpdateMinLength( inVertices.front(), inVertices.back() );
    for( dip::uint ii = 1; ii < inVertices.size(); ++ii ) {
-      minLength = std::min( minLength, Distance( inVertices[ ii ], inVertices[ ii - 1 ] ));
+      UpdateMinLength( inVertices[ ii ], inVertices[ ii - 1 ] );
    }
+   DIP_THROW_IF( minLength == std::numeric_limits< dfloat >::max(), "All vertices are colinear, cannot compute convex hull" );
    dfloat eps = minLength * 1e-9;
    // We ignore parallelogram distances that are 9 orders of magnitude smaller than the minimum distance
    // between vertices, to prevent numerical precision errors (vertex locations are rounded to floating-point

@@ -91,16 +91,20 @@ dfloat FindZeroLinear( dfloat p0, dfloat p1 ) {
    return p0 / ( p0 - p1 );
 }
 
-// Reads `out.size()` values starting at `startCoords`, every `step` pixels. Does not check that the coordinates are inside the image.
+// Reads `out.size()` values starting at `startCoords`, every `step` pixels. Coordinates outside the image are
+// clamped to the image domain (i.e. the image is extended by replicating its edge pixels). This happens for
+// objects touching the image edge.
 template< typename TPI >
 void SamplePixels( Image const& in, FloatArray& out, VertexInteger const& startCoords, VertexInteger const& step ) {
    DIP_ASSERT( in.DataType() == DataType( TPI( 0 )));
    TPI const* ptr = static_cast< TPI const* >( in.Origin() );
+   dip::sint maxX = static_cast< dip::sint >( in.Size( 0 )) - 1;
+   dip::sint maxY = static_cast< dip::sint >( in.Size( 1 )) - 1;
    auto coords = startCoords;
    for( dfloat& value : out ) {
-      DIP_ASSERT( coords.x >= 0 && coords.x < static_cast< dip::sint >( in.Size( 0 )));
-      DIP_ASSERT( coords.y >= 0 && coords.y < static_cast< dip::sint >( in.Size( 1 )));
-      value = static_cast< dfloat >( ptr[ coords.x * in.Stride( 0 ) + coords.y * in.Stride( 1 ) ] );
+      dip::sint x = clamp( coords.x, dip::sint( 0 ), maxX );
+      dip::sint y = clamp( coords.y, dip::sint( 0 ), maxY );
+      value = static_cast< dfloat >( ptr[ x * in.Stride( 0 ) + y * in.Stride( 1 ) ] );
       coords += step;
    }
 }
@@ -155,22 +159,31 @@ dip::Polygon ChainCode::Polygon( dip::Image const& grey, dfloat threshold, Strin
    DIP_THROW_IF( !grey.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( grey.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( codes.size() == 1, "Received a weird chain code as input (N==1)" );
-   DIP_THROW_IF( Empty() || codes.empty(), "Received empty chain code" );
+   DIP_THROW_IF( Empty(), "Received empty chain code" );
    bool cubic{};
    DIP_STACK_TRACE_THIS( cubic = BooleanFromString( interpolation, S::CUBIC_ORDER_3, S::LINEAR ));
    SampleFunction sampleFunction{};
    DIP_OVL_ASSIGN_REAL( sampleFunction, SamplePixels, grey.DataType() );
    FloatArray samples( cubic ? 4 : 2 );
 
-   // This function works only for 8-connected chain codes, convert it if it's 4-connected.
-   ChainCode const& cc = is8connected ? *this : ConvertTo8Connected();
-
    static constexpr VertexInteger cardinal[ 4 ] = {{ 0, -1 }, { -1, 0 }, { 0, 1 }, { 1, 0 }};
    auto DecrementMod4 = []( unsigned& k ) { k = ( k == 0 ) ? 3 : ( k - 1 ); };
 
-   VertexInteger pos = cc.start;
    dip::Polygon polygon;
    auto& vertices = polygon.vertices;
+
+   if( codes.empty() ) {
+      // A 1-pixel object: one vertex in each of the four directions, in the same order as `ChainCode::Polygon()`.
+      for( unsigned k : { 0u, 3u, 2u, 1u } ) {
+         vertices.push_back( Interpolate( grey, start, cardinal[ k ], sampleFunction, threshold, cubic, samples ));
+      }
+      return polygon;
+   }
+
+   // This function works only for 8-connected chain codes, convert it if it's 4-connected.
+   ChainCode const& cc = is8connected ? *this : ConvertTo8Connected();
+
+   VertexInteger pos = cc.start;
    Code m = cc.codes.back();
    for( Code n : cc.codes ) {
       if( !( n.IsBorder() && m.IsBorder() )) {
@@ -334,6 +347,77 @@ DOCTEST_TEST_CASE("[DIPlib] testing ChainCode::Polygon(grey) and SubPixelMeasure
    DOCTEST_CHECK( std::abs( mc[ 1 ][ "Area" ][ 0 ] - dip::pi * r * r ) < 0.6 );
    DOCTEST_CHECK( mv[ 1 ][ "Area" ][ 0 ] == doctest::Approx( mc[ 1 ][ "Area" ][ 0 ] ));
    DOCTEST_CHECK( mv[ 1 ][ "Perimeter" ][ 0 ] == doctest::Approx( mc[ 1 ][ "Perimeter" ][ 0 ] ));
+}
+
+DOCTEST_TEST_CASE("[DIPlib] testing ChainCode::Polygon(grey) and SubPixelMeasurementTool with a 1-pixel object") {
+   dip::Image grey( { 20, 20 }, 1, dip::DT_SFLOAT );
+   grey.Fill( 0 );
+   grey.At( 7, 12 ) = 1.0;
+   dip::Image lab = dip::Label( grey > 0.5 );
+   dip::ChainCodeArray ccs = dip::GetImageChainCodes( lab );
+   DOCTEST_REQUIRE( ccs.size() == 1 );
+   DOCTEST_REQUIRE( ccs[ 0 ].codes.empty() );
+   for( char const* interpolation : { "linear", "3-cubic" } ) {
+      dip::Polygon p;
+      DOCTEST_REQUIRE_NOTHROW( p = ccs[ 0 ].Polygon( grey, 0.5, interpolation ));
+      DOCTEST_REQUIRE( p.vertices.size() == 4 );
+      DOCTEST_CHECK( p.IsClockWise() == ccs[ 0 ].Polygon().IsClockWise() );
+      dip::BoundingBoxFloat bb = p.BoundingBox();
+      DOCTEST_CHECK( bb.topLeft.x > 6.0 );
+      DOCTEST_CHECK( bb.topLeft.x < 7.0 );
+      DOCTEST_CHECK( bb.bottomRight.x > 7.0 );
+      DOCTEST_CHECK( bb.bottomRight.x < 8.0 );
+      DOCTEST_CHECK( bb.topLeft.y > 11.0 );
+      DOCTEST_CHECK( bb.topLeft.y < 12.0 );
+      DOCTEST_CHECK( bb.bottomRight.y > 12.0 );
+      DOCTEST_CHECK( bb.bottomRight.y < 13.0 );
+   }
+   dip::Polygon p = ccs[ 0 ].Polygon( grey, 0.5, "linear" );
+   DOCTEST_CHECK( p.Area() == doctest::Approx( 0.5 )); // a diamond with diagonals of 1 pixel
+   dip::SubPixelMeasurementTool measurementTool;
+   dip::Measurement msr;
+   DOCTEST_REQUIRE_NOTHROW( msr = measurementTool.Measure( lab, grey, { "Size", "Perimeter" }, 0.5, "3-cubic" ));
+   DOCTEST_CHECK( msr[ 1 ][ "Size" ][ 0 ] > 0.0 );
+}
+
+DOCTEST_TEST_CASE("[DIPlib] testing SubPixelMeasurementTool with a threshold equal to pixel values") {
+   // An integer threshold on an integer-valued image puts some of the vertices exactly on pixel centers,
+   // producing repeated vertices. The convex hull must still be correct.
+   dip::dfloat r = 50;
+   dip::Image grey( { 140, 130 }, 1, dip::DT_SFLOAT );
+   grey.Fill( 40 );
+   dip::DrawBandlimitedBall( grey, 2 * r, { 70.37, 64.81 }, { 170 }, "filled", 1.0, 3.0 );
+   grey = dip::Convert( grey, dip::DT_UINT8 );
+   for( dip::dfloat threshold : { 125.0, 125.5 } ) {
+      dip::Image lab = dip::Label( grey > threshold );
+      dip::SubPixelMeasurementTool measurementTool;
+      auto msr = measurementTool.Measure( lab, grey, { "Size", "Feret", "ConvexArea" }, threshold, "linear" );
+      DOCTEST_REQUIRE( msr.ObjectExists( 1 ));
+      DOCTEST_CHECK( std::abs( msr[ 1 ][ "Feret" ][ 0 ] - 2 * r ) < 0.5 ); // max
+      DOCTEST_CHECK( std::abs( msr[ 1 ][ "Feret" ][ 1 ] - 2 * r ) < 0.5 ); // min
+      DOCTEST_CHECK( msr[ 1 ][ "ConvexArea" ][ 0 ] >= msr[ 1 ][ "Size" ][ 0 ] );
+      DOCTEST_CHECK( msr[ 1 ][ "ConvexArea" ][ 0 ] < msr[ 1 ][ "Size" ][ 0 ] * 1.01 );
+   }
+}
+
+DOCTEST_TEST_CASE("[DIPlib] testing ChainCode::Polygon(grey) with an object touching the image edge") {
+   // The object touches the left and top edges of `view`. The pixels just outside of `view` are background,
+   // reading those would move vertices outside of the image.
+   dip::Image big( { 80, 80 }, 1, dip::DT_SFLOAT );
+   big.Fill( 0 );
+   dip::DrawBandlimitedBall( big, 40, { 22.3, 21.6 }, { 1 }, "filled", 1.0, 3.0 );
+   dip::Image view = big.At( dip::Range( 10, 69 ), dip::Range( 10, 69 ));
+   dip::Image lab = dip::Label( view > 0.5 );
+   dip::ChainCodeArray ccs = dip::GetImageChainCodes( lab );
+   DOCTEST_REQUIRE( ccs.size() == 1 );
+   for( char const* interpolation : { "linear", "3-cubic" } ) {
+      dip::Polygon p = ccs[ 0 ].Polygon( view, 0.5, interpolation );
+      dip::BoundingBoxFloat bb = p.BoundingBox();
+      DOCTEST_CHECK( bb.topLeft.x >= 0.0 );
+      DOCTEST_CHECK( bb.topLeft.y >= 0.0 );
+      DOCTEST_CHECK( bb.bottomRight.x <= 59.0 );
+      DOCTEST_CHECK( bb.bottomRight.y <= 59.0 );
+   }
 }
 
 #endif // DIP_CONFIG_ENABLE_DOCTEST

@@ -47,6 +47,10 @@ date: 2020-00-00
 - `dip::Polygon::FitEllipse()` swapped `majorAxis` and `minorAxis` (and returned the orientation of the minor axis
   and a NaN eccentricity) when the origin of the coordinate system was outside of the ellipse, which is the
   typical case for image coordinates. See [issue #236](https://github.com/DIPlib/diplib/issues/236).
+
+- `dip::ConvexHull` (and therefore `dip::Polygon::ConvexHull()`) produced a wrong hull if the polygon had
+  repeated consecutive vertices. This caused wrong Feret diameters and convex area/perimeter measurements.
+
 ### Updated dependencies
 
 ### Build changes
