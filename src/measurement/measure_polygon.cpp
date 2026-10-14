@@ -476,6 +476,14 @@ EllipseParameters Polygon::FitEllipse() const {
    dfloat x = ( 2 * c * d - b * e ) / denom;
    dfloat y = ( 2 * a * e - b * d ) / denom;
    dfloat theta = std::atan2( -b, c - a ) / 2;
+   // The equation is normalized with the constant term equal to -1. When the origin is outside
+   // the ellipse (the usual case in image coordinates) the quadratic coefficients are negative,
+   // which swaps the two axis lengths and rotates theta by 90 degrees. Make sure majorAxis is
+   // the longest axis and theta its orientation.
+   if( majorAxis < minorAxis ) {
+      std::swap( majorAxis, minorAxis );
+      theta += ( theta > 0 ) ? -pi / 2 : pi / 2;
+   }
    return {
       {x, y},
       2 * majorAxis,
@@ -555,4 +563,36 @@ DOCTEST_TEST_CASE("[DIPlib] testing chain code polygons") {
    DOCTEST_CHECK( f.minDiameter == doctest::Approx( 1 ));
 }
 
+DOCTEST_TEST_CASE("[DIPlib] testing Polygon::FitEllipse()") {
+   // Vertices on an ellipse with axes 800 and 760, rotated by `angle`, centered at `center`.
+   auto MakeEllipse = []( dip::VertexFloat center, dip::dfloat angle ) {
+      dip::Polygon p;
+      dip::dfloat c = std::cos( angle );
+      dip::dfloat s = std::sin( angle );
+      for( dip::uint ii = 0; ii < 1000; ++ii ) {
+         dip::dfloat t = 2.0 * dip::pi * static_cast< dip::dfloat >( ii ) / 1000.0;
+         dip::dfloat x = 400.0 * std::cos( t );
+         dip::dfloat y = 380.0 * std::sin( t );
+         p.vertices.push_back( { center.x + c * x - s * y, center.y + s * x + c * y } );
+      }
+      return p;
+   };
+   dip::dfloat expectedEccentricity = std::sqrt( 1.0 - ( 760.0 * 760.0 ) / ( 800.0 * 800.0 ));
+   // Centered at the origin
+   dip::EllipseParameters e = MakeEllipse( { 0.0, 0.0 }, 0.3 ).FitEllipse();
+   DOCTEST_CHECK( e.majorAxis == doctest::Approx( 800.0 ));
+   DOCTEST_CHECK( e.minorAxis == doctest::Approx( 760.0 ));
+   DOCTEST_CHECK( e.orientation == doctest::Approx( 0.3 ));
+   DOCTEST_CHECK( e.eccentricity == doctest::Approx( expectedEccentricity ));
+   // Origin outside of the ellipse, as is typical in image coordinates
+   for( dip::dfloat angle : { 0.0, 0.3, -1.2 } ) {
+      e = MakeEllipse( { 640.0, 500.0 }, angle ).FitEllipse();
+      DOCTEST_CHECK( e.center.x == doctest::Approx( 640.0 ));
+      DOCTEST_CHECK( e.center.y == doctest::Approx( 500.0 ));
+      DOCTEST_CHECK( e.majorAxis == doctest::Approx( 800.0 ));
+      DOCTEST_CHECK( e.minorAxis == doctest::Approx( 760.0 ));
+      DOCTEST_CHECK( e.orientation == doctest::Approx( angle ));
+      DOCTEST_CHECK( e.eccentricity == doctest::Approx( expectedEccentricity ));
+   }
+}
 #endif // DIP_CONFIG_ENABLE_DOCTEST
