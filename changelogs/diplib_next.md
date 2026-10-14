@@ -44,6 +44,9 @@ date: 2020-00-00
 
 ### Bug fixes
 
+   - `dip::ConvexHull` (and therefore `dip::Polygon::ConvexHull()`) produced a wrong hull if the polygon had
+     repeated consecutive vertices. This caused wrong Feret diameters and convex area/perimeter measurements.
+
 ### Updated dependencies
 
 ### Build changes
