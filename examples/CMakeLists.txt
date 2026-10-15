@@ -62,7 +62,7 @@ add_executable(test_binary cpp/test_binary.cpp)
 target_compile_definitions(test_binary PRIVATE DIP_EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
 target_link_libraries(test_binary DIP)
 
-# This program shows how to use dip::ChainCode::Polygon and dip::RefinePolygon
+# This program shows how to use dip::ChainCode::RefinedPolygon and dip::RefinePolygon
 add_executable(outline_representation cpp/outline_representation.cpp)
 target_link_libraries(outline_representation DIP)
 

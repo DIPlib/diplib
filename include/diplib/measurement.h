@@ -1125,7 +1125,7 @@ class DIP_NO_EXPORT MeasurementTool {
 /// \ref dip::SubPixelMeasurementTool::Measure method.
 ///
 /// This class is very similar to \ref dip::MeasurementTool, but differs in that it uses a
-/// grey-level image to refine the object outlines (see \ref dip::ChainCode::Polygon(Image const&, dfloat, String const&))
+/// grey-level image to refine the object outlines (see \ref dip::ChainCode::RefinedPolygon)
 /// before applying the polygon-based and convex-hull-based measurement features. This only works in 2D, and
 /// is not as fast as `dip::MeasurementTool`. Objects are measured from their outline as if they were solid, any
 /// holes in the objects are ignored.
@@ -1194,7 +1194,7 @@ class DIP_NO_EXPORT SubPixelMeasurementTool : public MeasurementTool {
       /// of pixels in `label`. If this is not the case, measurement results are not precise. `grey` must
       /// additionally have a smooth transition from foreground to background intensities at the object
       /// edges. `interpolation` is the interpolation method used to find the edge location, valid values
-      /// are `"linear"` and `"3-cubic"`. See \ref dip::ChainCode::Polygon(Image const&, dfloat, String const&).
+      /// are `"linear"` and `"3-cubic"`. See \ref dip::ChainCode::RefinedPolygon.
       ///
       /// `features` is an array with feature names. See the \ref dip::MeasurementTool::Features method for
       /// information on how to obtain those names. Some features are composite features, they compute

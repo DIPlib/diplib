@@ -24,7 +24,7 @@ date: 2020-00-00
 - The "Gravity" measurement feature now has an alias "GreyCenter". The "Size" measurement feature now has
   aliases "Area" and "Volume". The "GreySize" measurement feature now has aliases "GreyArea" and "GreyVolume".
 
-- Added an overload to `dip::ChainCode::Polygon()` that takes a gray-scale image as input, and uses interpolation
+- Added `dip::ChainCode::RefinedPolygon()` that takes a gray-scale image as input, and uses interpolation
   to produce a polygon that more accurately represents the object.
   See [Issue #234](https://github.com/DIPlib/diplib/issues/234)
 
@@ -33,7 +33,7 @@ date: 2020-00-00
   See [Issue #234](https://github.com/DIPlib/diplib/issues/234)
 
 - Added `dip::SubPixelMeasurementTool`. This is similar to `dip::MeasurementTool`, but it works only on 2D
-  images for size and shape features. It uses `dip::ChainCode::Polygon()` to find a more precise outline,
+  images for size and shape features. It uses `dip::ChainCode::RefinedPolygon()` to find a more precise outline,
   and performs measurements on that outline.
   See [Issue #234](https://github.com/DIPlib/diplib/issues/234)
 

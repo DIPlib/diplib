@@ -515,7 +515,7 @@ Measurement SubPixelMeasurementTool::Measure(
    auto itCC = chainCodeArray.begin();
    auto itObj = measurement.FirstObject(); // these two arrays are ordered the same way
    do {
-      Polygon polygon = itCC->Polygon( grey, threshold, interpolation );
+      Polygon polygon = itCC->RefinedPolygon( grey, threshold, interpolation );
       ConvexHull convexHull;
       if( doConvHullBased ) {
          convexHull = polygon.ConvexHull();

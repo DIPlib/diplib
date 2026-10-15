@@ -1011,8 +1011,8 @@ inline dip::ConvexHull Polygon::ConvexHull() const {
 /// never more than 0.5 pixels away, the default of 0.7 gives some leeway in case of imprecise normals. The smaller the
 /// step size is, the more precise the boundary location can be determined, within limits.
 ///
-/// `dip::ChainCode::Polygon` has an overload
-/// that returns a refined shape, and which is cheaper than this function. The advantage of this function is that
+/// \ref dip::ChainCode::RefinedPolygon` does the same as `dip::ChainCode::Polygon`, but
+/// returns a refined shape, and is cheaper than this function. The advantage of this function is that
 /// it can be used with a modified polygon, or with a polygon obtained through different means. Also, the vertices
 /// tend to stay spaced better with this function.
 ///

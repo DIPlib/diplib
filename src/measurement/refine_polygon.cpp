@@ -154,7 +154,7 @@ dfloat SamplePixelInterpolated(
 
 } // namespace
 
-dip::Polygon ChainCode::Polygon( dip::Image const& grey, dfloat threshold, String const& interpolation ) const {
+dip::Polygon ChainCode::RefinedPolygon( dip::Image const& grey, dfloat threshold, String const& interpolation ) const {
    DIP_THROW_IF( !grey.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !grey.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( grey.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
@@ -229,13 +229,13 @@ dip::uint RefinePolygon(
    DIP_THROW_IF( !grey.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !grey.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( grey.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
-   dip::Image gradient;
+   Image gradient;
    if( c_gradient.IsForged() ) {
       gradient = c_gradient.QuickCopy();
       DIP_THROW_IF( gradient.TensorElements() != 2, E::NTENSORELEM_DONT_MATCH );
       DIP_THROW_IF( gradient.Sizes() != grey.Sizes(), E::SIZES_DONT_MATCH );
    } else {
-      gradient = dip::Gradient( grey );
+      gradient = Gradient( grey );
    }
    DIP_THROW_IF( stepSize <= 0, E::INVALID_PARAMETER );
    bool cubic{};
@@ -329,8 +329,8 @@ DOCTEST_TEST_CASE("[DIPlib] testing ChainCode::Polygon(grey) on an image view") 
    dip::ChainCodeArray ccs = dip::GetImageChainCodes( lab );
    DOCTEST_REQUIRE( ccs.size() == 1 );
    for( char const* interpolation : { "linear", "3-cubic" } ) {
-      dip::Polygon pc = ccs[ 0 ].Polygon( copy, 0.5, interpolation );
-      dip::Polygon pv = ccs[ 0 ].Polygon( view, 0.5, interpolation );
+      dip::Polygon pc = ccs[ 0 ].RefinedPolygon( copy, 0.5, interpolation );
+      dip::Polygon pv = ccs[ 0 ].RefinedPolygon( view, 0.5, interpolation );
       DOCTEST_REQUIRE( pv.vertices.size() == pc.vertices.size() );
       DOCTEST_CHECK( std::abs( pc.Area() - dip::pi * r * r ) < 0.6 );
       DOCTEST_CHECK( pv.Area() == doctest::Approx( pc.Area() ));
@@ -348,7 +348,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing ChainCode::Polygon(grey) with a 1-pixel obje
    DOCTEST_REQUIRE( ccs[ 0 ].codes.empty() );
    dip::Polygon p;
    for( char const* interpolation : { "3-cubic", "linear" } ) {
-      DOCTEST_REQUIRE_NOTHROW( p = ccs[ 0 ].Polygon( grey, 0.5, interpolation ));
+      DOCTEST_REQUIRE_NOTHROW( p = ccs[ 0 ].RefinedPolygon( grey, 0.5, interpolation ));
       DOCTEST_REQUIRE( p.vertices.size() == 4 );
       DOCTEST_CHECK( p.IsClockWise() == ccs[ 0 ].Polygon().IsClockWise() );
       dip::BoundingBoxFloat bb = p.BoundingBox();
@@ -376,7 +376,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing ChainCode::Polygon(grey) with a threshold eq
    for( dip::dfloat threshold : { 125.0, 125.5 } ) {
       dip::Image lab = dip::Convert( grey > threshold, dip::DT_UINT8 ); // Copyless conversion to uint8 simulates labeling for single-object image.
       dip::ChainCodeArray ccs = dip::GetImageChainCodes( lab );
-      dip::Polygon p = ccs[ 0 ].Polygon( grey, threshold, "linear" );
+      dip::Polygon p = ccs[ 0 ].RefinedPolygon( grey, threshold, "linear" );
       auto ch = p.ConvexHull();
       auto f = ch.Feret();
       DOCTEST_CHECK( std::abs( f.maxDiameter - 2 * r ) < 0.5 );
@@ -399,7 +399,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing ChainCode::Polygon(grey) with an object touc
    dip::ChainCodeArray ccs = dip::GetImageChainCodes( lab );
    DOCTEST_REQUIRE( ccs.size() == 1 );
    for( char const* interpolation : { "linear", "3-cubic" } ) {
-      dip::Polygon p = ccs[ 0 ].Polygon( view, 0.5, interpolation );
+      dip::Polygon p = ccs[ 0 ].RefinedPolygon( view, 0.5, interpolation );
       dip::BoundingBoxFloat bb = p.BoundingBox();
       DOCTEST_CHECK( bb.topLeft.x >= 0.0 );
       DOCTEST_CHECK( bb.topLeft.y >= 0.0 );

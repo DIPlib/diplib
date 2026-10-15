@@ -1,5 +1,5 @@
 /*
- * This program shows how to use dip::ChainCode::Polygon and dip::RefinePolygon.
+ * This program shows how to use dip::ChainCode::RefinedPolygon and dip::RefinePolygon.
  * It measures accuracy (bias, mean error) and precision (standard deviation of the error) of different
  * methods to represent an outline as a polygon.
  */
@@ -52,7 +52,7 @@ int main() {
             auto radiusStats = p.RadiusStatistics();
             radius_cv[ 1 ].Push( radiusStats.StandardDeviation() / radiusStats.Mean() );
             for( dip::uint jj = 0; jj < 2; ++jj ) {
-               p = ccs[ 0 ].Polygon( img, threshold, interpolation[ jj ] );
+               p = ccs[ 0 ].RefinedPolygon( img, threshold, interpolation[ jj ] );
                area_error[ jj * 3 + 2 ].Push( p.Area() - expected_area );
                perimeter_error[ jj * 3 + 2 ].Push( p.Perimeter() - expected_perimeter );
                radiusStats = p.RadiusStatistics();

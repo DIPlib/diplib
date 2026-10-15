@@ -1614,7 +1614,7 @@ doc_url_pairs = [
     ('dip.ChainCode.BoundingBox', 'dip-ChainCode.html#dip-ChainCode-BoundingBox-C'),
     ('dip.ChainCode.LongestRun', 'dip-ChainCode.html#dip-ChainCode-LongestRun-C'),
     ('dip.ChainCode.Polygon', 'dip-ChainCode.html#dip-ChainCode-Polygon-String-CL-C'),
-    ('dip.ChainCode.Polygon', 'dip-ChainCode.html#dip-ChainCode-Polygon-Image-CL-dfloat--String-CL-C'),
+    ('dip.ChainCode.RefinedPolygon', 'dip-ChainCode.html#dip-ChainCode-RefinedPolygon-dip-Image-CL-dfloat--String-CL-C'),
     ('dip.ChainCode.ConvexHull', 'dip-ChainCode.html#dip-ChainCode-ConvexHull-C'),
     ('dip.ChainCode.Image', 'dip-ChainCode.html#dip-ChainCode-Image-dip-Image-L-C'),
     ('dip.ChainCode.Coordinates', 'dip-ChainCode.html#dip-ChainCode-Coordinates-C'),

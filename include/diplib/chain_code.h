@@ -245,7 +245,7 @@ struct DIP_NO_EXPORT ChainCode {
    /// `interpolation` is either `"linear"` or `"3-cubic"`. Two or four pixels in a line perpendicular to the contour
    /// are extracted. The intersection of the interpolated linear or 3rd order cubic spline with `threshold` is determined.
    /// That is where the vertex is placed.
-   DIP_EXPORT dip::Polygon Polygon( Image const& grey, dfloat threshold = 0.0, String const& interpolation = S::LINEAR ) const;
+   DIP_EXPORT dip::Polygon RefinedPolygon( dip::Image const& grey, dfloat threshold = 0.0, String const& interpolation = S::LINEAR ) const;
 
    /// Returns the convex hull of the object, see \ref dip::ChainCode::Polygon.
    dip::ConvexHull ConvexHull() const {
