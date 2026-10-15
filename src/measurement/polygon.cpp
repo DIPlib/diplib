@@ -1,5 +1,5 @@
 /*
- * (c)2016-2022, Cris Luengo.
+ * (c)2016-2026, Cris Luengo.
  * Based on original DIPlib code: (c)2011, Cris Luengo.
  *
  * The algorithm to convert a simple polygon to a convex hull is from:
@@ -142,30 +142,23 @@ Polygon& Polygon::Simplify( dfloat tolerance ) {
    return *this;
 }
 
-namespace {
-
-void InsertPoints( Polygon::Vertices& vertices, VertexFloat start, VertexFloat end, dfloat distance ) {
-   VertexFloat line = end - start;
-   dfloat length = Norm( line );
-   dfloat N = std::ceil( length / distance );
-   distance = length / N;
-   VertexFloat inc = line * ( distance / length );
-   for( dip::uint ii = 0; ii < static_cast< dip::uint >( N ); ++ii ) {
-      vertices.push_back( start );
-      start += inc;
-   }
-}
-
-} // namespace
-
 Polygon& Polygon::Augment( dfloat distance ) {
    if( !vertices.empty() ) {
       Polygon::Vertices newVertices;
       newVertices.reserve( vertices.size()); // minimum number of points, but we'll probably have more...
-      for( dip::uint ii = 1; ii < vertices.size(); ++ii ) {
-         InsertPoints( newVertices, vertices[ ii - 1 ], vertices[ ii ], distance );
+      for( auto edge: Edges() ) {
+         VertexFloat start = edge.v1;
+         VertexFloat line = edge.v2 - start;
+         dfloat length = Norm( line );
+         dfloat N = std::ceil( length / distance );
+         distance = length / N;
+         VertexFloat inc = line * ( distance / length );
+         for( dip::uint ii = 0; ii < static_cast< dip::uint >( N ); ++ii ) {
+            newVertices.push_back( start );
+            start += inc;
+         }
+
       }
-      InsertPoints( newVertices, vertices.back(), vertices.front(), distance );
       vertices = std::move( newVertices );
    }
    return *this;
@@ -370,6 +363,31 @@ DOCTEST_TEST_CASE("[DIPlib] testing polygon manipulation") {
    DOCTEST_CHECK( p5.Length() == doctest::Approx( 35.0511 ));
    p2.Reverse();
    DOCTEST_CHECK( p.IsClockWise() != p2.IsClockWise() );
+}
+
+DOCTEST_TEST_CASE("[DIPlib] testing polygon edge iterator") {
+   dip::Polygon p;
+   p.vertices = {{ 0.2,  2 },
+                 { 0,    0 },
+                 { 5,    0.2 },
+                 { 10,   0 },
+                 { 10.2, 6 },
+                 { 10,   10 },
+                 { 5,    9.8 },
+                 { 0,    10 },
+                 { -0.2, 6 }}; // a noisy square, 10x10
+   DOCTEST_REQUIRE( p.vertices.size() == 9 );
+   auto it = dip::Polygon::EdgeIterator( p );
+   DOCTEST_REQUIRE( it );
+   DOCTEST_CHECK(( *it ).v1 == dip::VertexFloat{ -0.2, 6 } );
+   DOCTEST_CHECK(( *it ).v2 == dip::VertexFloat{ 0.2, 2 } );
+   ++it;
+   DOCTEST_CHECK(( *it ).v1 == dip::VertexFloat{ 0.2, 2 } );
+   DOCTEST_CHECK(( *it ).v2 == dip::VertexFloat{ 0, 0 } );
+   for( dip::uint ii = 0 ; ii < 7; ++ii ) {
+      DOCTEST_CHECK( ++it );
+   }
+   DOCTEST_CHECK_FALSE( ++it );
 }
 
 DOCTEST_TEST_CASE("[DIPlib] testing point-in-polygon algorithm") {

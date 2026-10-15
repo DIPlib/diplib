@@ -37,6 +37,8 @@ date: 2020-00-00
   and performs measurements on that outline.
   See [Issue #234](https://github.com/DIPlib/diplib/issues/234)
 
+- Added `dip::Polygon::Edges()` and `dip::Polygon::EdgeIterator`.
+
 ### Changed functionality
 
 - The "Mass" measurement feature is renamed to "Sum", which should reduce confusion. "Mass" is an alias,

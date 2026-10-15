@@ -1,5 +1,5 @@
 /*
- * (c)2016-2025, Cris Luengo.
+ * (c)2016-2026, Cris Luengo.
  * Based on original DIPlib code: (c)2011, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -51,9 +51,9 @@ dfloat Polygon::Area() const {
    if( vertices.size() < 3 ) {
       return 0; // Should we generate an error instead?
    }
-   dfloat sum = CrossProduct( vertices.back(), vertices[ 0 ] );
-   for( dip::uint ii = 1; ii < vertices.size(); ++ii ) {
-      sum += CrossProduct( vertices[ ii - 1 ], vertices[ ii ] );
+   dfloat sum = 0;
+   for( auto const& edge : Edges() ) {
+      sum += CrossProduct( edge.v1, edge.v2 );
    }
    return sum / 2.0;
 }
@@ -62,17 +62,14 @@ VertexFloat Polygon::Centroid() const {
    if( vertices.size() < 3 ) {
       return { 0, 0 }; // Should we generate an error instead?
    }
-   dfloat v = CrossProduct( vertices.back(), vertices[ 0 ] );
-   dfloat sum = v;
-   dfloat xsum = ( vertices.back().x + vertices[ 0 ].x ) * v;
-   dfloat ysum = ( vertices.back().y + vertices[ 0 ].y ) * v;
-   for( dip::uint ii = 1; ii < vertices.size(); ++ii ) {
-      v = CrossProduct( vertices[ ii - 1 ], vertices[ ii ] );
+   dfloat sum = 0;
+   VertexFloat vsum{ 0, 0 };
+   for( auto const& edge : Edges() ) {
+      dfloat v = CrossProduct( edge.v1, edge.v2 );
       sum += v;
-      xsum += ( vertices[ ii - 1 ].x + vertices[ ii ].x ) * v;
-      ysum += ( vertices[ ii - 1 ].y + vertices[ ii ].y ) * v;
+      vsum += ( edge.v1 + edge.v2 ) * v;
    }
-   return sum == 0.0 ? VertexFloat{ 0.0, 0.0 } : VertexFloat{ xsum, ysum } / ( 3 * sum );
+   return sum == 0.0 ? VertexFloat{ 0.0, 0.0 } : vsum / ( 3 * sum );
 }
 
 dip::CovarianceMatrix Polygon::CovarianceMatrixVertices( VertexFloat const& g ) const {
@@ -86,27 +83,21 @@ dip::CovarianceMatrix Polygon::CovarianceMatrixVertices( VertexFloat const& g ) 
    return C;
 }
 
-namespace {
-
-dip::CovarianceMatrix GreenIntegralCovariance( VertexFloat const& v0, VertexFloat const& v1 ) {
-   // See for example https://medium.com/@aleozlx/the-maths-behind-contour-moments-from-opencv-491e5c348b91
-   dfloat v = CrossProduct( v0, v1 );
-   return dip::CovarianceMatrix{
-         /* xx = */ v / 12.0 * ( v0.x * ( v0.x + v1.x ) + v1.x * v1.x ),
-         /* yy = */ v / 12.0 * ( v0.y * ( v0.y + v1.y ) + v1.y * v1.y ),
-         /* xy = */ v / 24.0 * ( v0.x * ( 2 * v0.y + v1.y ) + v1.x * ( v0.y + 2 * v1.y )),
-   };
-}
-
-} // namespace
-
 dip::CovarianceMatrix Polygon::CovarianceMatrixSolid( VertexFloat const& g ) const {
+   // See for example https://medium.com/@aleozlx/the-maths-behind-contour-moments-from-opencv-491e5c348b91
    if( vertices.size() < 3 ) {
       return {};
    }
-   dip::CovarianceMatrix C = GreenIntegralCovariance( vertices.back() - g, vertices.front() - g );
-   for( dip::uint ii = 1; ii < vertices.size(); ++ii ) {
-      C += GreenIntegralCovariance( vertices[ ii - 1 ] - g, vertices[ ii ] - g );
+   dip::CovarianceMatrix C{};
+   for( auto const& edge : Edges() ) {
+      VertexFloat v1 = edge.v1 - g;
+      VertexFloat v2 = edge.v2 - g;
+      dfloat v = CrossProduct( v1, v2 );
+      C += dip::CovarianceMatrix{
+         /* xx = */ v / 12.0 * ( v1.x * ( v1.x + v2.x ) + v2.x * v2.x ),
+         /* yy = */ v / 12.0 * ( v1.y * ( v1.y + v2.y ) + v2.y * v2.y ),
+         /* xy = */ v / 24.0 * ( v1.x * ( 2 * v1.y + v2.y ) + v2.x * ( v1.y + 2 * v2.y )),
+      };
    }
    C /= Area();
    return C;
@@ -116,9 +107,9 @@ dfloat Polygon::Length() const {
    if( vertices.size() < 2 ) {
       return 0; // Should we generate an error instead?
    }
-   dfloat sum = Distance( vertices.back(), vertices[ 0 ] );
-   for( dip::uint ii = 1; ii < vertices.size(); ++ii ) {
-      sum += Distance( vertices[ ii - 1 ], vertices[ ii ] );
+   dfloat sum = 0;
+   for( auto const& edge : Edges() ) {
+      sum += Distance( edge.v1, edge.v2 );
    }
    return sum;
 }
@@ -405,27 +396,24 @@ dfloat AngleDifference( dfloat a, dfloat b ) { // a and b are assumed in the [-p
 } // namespace
 
 dfloat Polygon::BendingEnergy() const {
+   if( vertices.size() <= 2 ) {
+      return 0;
+   }
    // BE = sum ( k * k * dist )
    // k = diff / dist
    // => BE = sum ( diff * diff / dist )
    dfloat be = 0;
-   if( vertices.size() > 2 ) {
-      dfloat prev = dip::Angle( vertices[ 0 ], vertices[ 1 ] );
-      dip::uint ii = 1;
-      for( ; ii < vertices.size() - 1; ++ii ) {
-         dfloat a = Angle( vertices[ ii ], vertices[ ii + 1 ] );
-         dfloat diff = AngleDifference( a, prev );
-         be += diff * diff * 2.0 / Distance( vertices[ ii - 1 ], vertices[ ii + 1 ] );
-         prev = a;
-      }
-      // Add the two points that require straddling the boundary
-      dfloat a = Angle( vertices[ ii ], vertices[ 0 ] );
-      dfloat diff = AngleDifference( a, prev );
-      be += diff * diff * 2.0 / Distance( vertices[ ii - 1 ], vertices[ 0 ] );
-      prev = a;
-      a = Angle( vertices[ 0 ], vertices[ 1 ] );
-      diff = AngleDifference( a, prev );
-      be += diff * diff * 2.0 / Distance( vertices[ ii ], vertices[ 1 ] );
+   dip::uint last = vertices.size() - 1;
+   dfloat prev_angle = dip::Angle( vertices[ last - 1 ], vertices[ last ] );
+   dfloat prev_dist = dip::Distance( vertices[ last - 1 ], vertices[ last ] );
+   // Note that the first edge iterated over is the one that goes from `last` to 0.
+   for( auto const& edge : Edges() ) {
+      dfloat angle = Angle( edge.v1, edge.v2 );
+      dfloat dist = Distance( edge.v1, edge.v2 );
+      dfloat diff = AngleDifference( angle, prev_angle);
+      be += diff * diff * 2.0 / ( dist + prev_dist );
+      prev_angle = angle;
+      prev_dist = dist;
    }
    return be;
 }
@@ -561,6 +549,19 @@ DOCTEST_TEST_CASE("[DIPlib] testing chain code polygons") {
    f = h.Feret();
    DOCTEST_CHECK( f.maxDiameter == doctest::Approx( std::sqrt( 2 )));
    DOCTEST_CHECK( f.minDiameter == doctest::Approx( 1 ));
+}
+
+DOCTEST_TEST_CASE("[DIPlib] testing Polygon::BendingEnergy()") {
+   dip::uint n = 1000;
+   dip::dfloat r = 20;
+   dip::Polygon p;
+   p.vertices.resize(n);
+   dip::dfloat delta_phi = 2 * dip::pi / static_cast< dip::dfloat >( n );
+   dip::dfloat phi = 0;
+   for( dip::uint ii = 0; ii < n; ++ii, phi += delta_phi ) {
+      p.vertices[ ii ] = { r * std::cos( phi ), r * std::sin( phi) };
+   }
+   DOCTEST_CHECK( p.BendingEnergy() == doctest::Approx( 2 * dip::pi / r ));
 }
 
 DOCTEST_TEST_CASE("[DIPlib] testing Polygon::FitEllipse()") {

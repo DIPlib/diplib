@@ -831,6 +831,115 @@ struct DIP_NO_EXPORT Polygon {
    /// Note that, when testing for multiple points, it likely is more efficient to render the
    /// polygon (\ref dip::DrawPolygon2D) and test points by indexing into that image.
    DIP_EXPORT bool Contains( VertexFloat point ) const;
+
+   /// \brief Iterator that iterates over pairs of consecutive vertices (i.e. edges).
+   ///
+   /// Because it is assumed that the polygon is a closed contour, the edges includes
+   /// the one from the last to the first vertex. This is always the first edge
+   /// returned. The second edge is the one from the first to the second vertex.
+   ///
+   /// An end iterator for the polygon can be obtained through the second form of the constructor,
+   /// with a second, boolean argument. However, it is not strictly necessary to create an end
+   /// iterator, since the iterator tests false if all pairs of edges have been seen.
+   ///
+   /// It is not possible to change polygon vertices using this iterator.
+   class EdgeIterator {
+      public:
+         /// Contains a pair of vertices representing an edge of the polygon.
+         struct VertexPair {
+            VertexFloat v1; ///< The first vertex
+            VertexFloat v2; ///< The second vertex
+         };
+
+         /// Iterator category.
+         using iterator_category = std::forward_iterator_tag;
+         /// The data type obtained when dereferencing the iterator.
+         using value_type = VertexPair;
+         /// The type of a reference to an edge.
+         using reference = VertexPair const&;
+         /// The type of a pointer to an edge.
+         using pointer = VertexPair const*;
+
+         /// Construct an iterator to the first edge.
+         EdgeIterator( Polygon const& polygon ) : polygon_( polygon ) {
+            vertices_.v1 = polygon.vertices.back();
+            vertices_.v2 = polygon.vertices.front();
+         }
+         /// Construct the end iterator.
+         EdgeIterator( Polygon const& polygon, bool ) : polygon_( polygon ) {
+            ii_ = polygon_.vertices.size();
+         }
+
+         /// Dereference.
+         reference operator*() const { return vertices_; }
+         /// Dereference.
+         pointer operator->() const { return &vertices_; }
+
+         /// Pre-increment.
+         EdgeIterator& operator++() {
+            ++ii_;
+            if( *this ) {
+               vertices_.v1 = vertices_.v2;
+               vertices_.v2 = polygon_.vertices[ ii_ ];
+            }
+            return *this;
+         }
+         /// Post-increment.
+         EdgeIterator operator++( int ) {
+            EdgeIterator tmp( *this );
+            operator++();
+            return tmp;
+         }
+
+         /// Test to see if the iterator is still pointing at an edge.
+         explicit operator bool() const { return ii_ < polygon_.vertices.size(); }
+
+         /// Equality comparison.
+         bool operator==( EdgeIterator const& other ) const {
+            return ( polygon_.vertices == other.polygon_.vertices ) && ( ii_ == other.ii_ );
+         }
+         /// Inequality comparison.
+         bool operator!=( EdgeIterator const& other ) const {
+            return !( *this == other );
+         }
+
+      private:
+         Polygon const& polygon_;
+         dip::uint ii_ = 0;
+         VertexPair vertices_;
+   };
+
+   /// \brief A class that pretends to hold the edges of the polygon.
+   ///
+   /// It is possible to iterate over edges by iterating from \ref begin to \ref end.
+   class EdgeContainer {
+      public:
+         /// Constructor.
+         EdgeContainer( Polygon const& polygon_ ) : polygon_( polygon_ ) {};
+         /// Return an iterator to the first edge.
+         EdgeIterator begin() const {
+            return EdgeIterator( polygon_ );
+         }
+         /// Return an iterator to one past the last edge.
+         EdgeIterator end() const {
+            return EdgeIterator( polygon_, true );
+         }
+      private:
+         Polygon const& polygon_;
+   };
+
+   /// Returns a fake container we can iterate over to vist all the edges of the polygon.
+   ///
+   /// Example:
+   /// ```cpp
+   /// dip::Polygon p = ...
+   /// for( auto const& edge : p.Edges() ) {
+   ///    std::cout << "edge of length " << dip::Distance( edge.v1, edge.v2 ) << '\n';
+   /// }
+   /// ```
+   EdgeContainer Edges() const {
+      return EdgeContainer( *this );
+   };
 };
 
 /// \brief A convex hull is a convex polygon. It can be constructed from a simple \ref dip::Polygon,
