@@ -2974,6 +2974,7 @@ doc_url_pairs = [
     ('dip.SubPixelMeasurementTool', 'dip-SubPixelMeasurementTool.html'),
     ('dip.SubPixelMeasurementTool.SubPixelMeasurementTool', 'dip-SubPixelMeasurementTool.html#dip-SubPixelMeasurementTool-SubPixelMeasurementTool'),
     ('dip.SubPixelMeasurementTool.Measure', 'dip-SubPixelMeasurementTool.html#dip-SubPixelMeasurementTool-Measure-Image-CL-Image-CL-StringArray--dfloat--String-CL-UnsignedArray-CL-C'),
+    ('dip.SubPixelMeasurementTool.Measure', 'dip-SubPixelMeasurementTool.html#dip-SubPixelMeasurementTool-Measure-std-vector%3CPolygon%3E-CL-StringArray--dip-PixelSize-CL-UnsignedArray-CL-C'),
     ('dip.ObjectToMeasurement', 'measurement.html#dip-ObjectToMeasurement-Image-CL-Image-L-Measurement-IteratorFeature-CL'),
     ('dip.MeasurementWriteCSV', 'measurement.html#dip-MeasurementWriteCSV-Measurement-CL-String-CL-StringSet-CL'),
     ('dip.Minimum', 'dip-Measurement-IteratorFeature.html#dip-Minimum-Measurement-IteratorFeature-CL'),

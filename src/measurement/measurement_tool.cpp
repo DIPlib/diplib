@@ -19,6 +19,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <numeric>
 #include <vector>
 
 #include "diplib.h"
@@ -162,9 +163,6 @@ MeasurementTool::MeasurementTool() {
    }
 }
 
-using LineBasedFeatureArray = std::vector< Feature::LineBased* >;
-using FeatureArray = std::vector< Feature::Base* >;
-
 
 namespace {
 
@@ -201,77 +199,35 @@ class MeasureLineFilter : public Framework::ScanLineFilter {
       ObjectIdToIndexMap const& objectIndices;
 };
 
-} // namespace
-
-Measurement MeasurementTool::Measure(
-      Image const& label,
-      Image const& grey,
-      StringArray features, // copy
+// Fill out the object IDs
+std::vector< LabelType > SetObjectIDs(
+      Measurement& measurement,
       UnsignedArray const& objectIDs,
-      dip::uint connectivity
-) const {
-   // Check input
-   DIP_THROW_IF( !label.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !label.IsScalar(), E::IMAGE_NOT_SCALAR );
-   DIP_THROW_IF( !label.DataType().IsUInt(), E::DATA_TYPE_NOT_SUPPORTED );
-   if( grey.IsForged() ) {
-      DIP_THROW_IF( !grey.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
-      DIP_STACK_TRACE_THIS( grey.CompareProperties( label, Option::CmpProp::Sizes ));
-   }
-
-   Measurement measurement;
-
-   // Fill out the object IDs
+      Image const& label
+) {
    std::vector< LabelType > labelList;
    if( objectIDs.empty() ) {
       labelList = ListObjectLabels( label, Image{}, S::EXCLUDE );
       UnsignedArray ids( labelList.size() );
       std::copy( labelList.begin(), labelList.end(), ids.begin() );
-      measurement.SetObjectIDs( ids );
+      measurement.SetObjectIDs( std::move( ids ));
    } else {
       measurement.SetObjectIDs( objectIDs );
    }
+   return labelList;
+}
 
-   // Parse the features array and prepare measurements
-   DIP_THROW_IF( features.empty(), "No features given" );
-   FeatureArray featureArray;
-   featureArray.reserve( features.size() );
-   for( dip::uint ii = 0; ii < features.size(); ++ii ) { // NOTE! `features` can expand every iteration
-      String const& name = features[ ii ];
-      if( !measurement.FeatureExists( name )) {
-         Feature::Base* feature = features_[ Index( name ) ].get();
-         if( feature->information.needsGreyValue ) {
-            DIP_THROW_IF( !grey.IsForged(), "Measurement feature requires grey-value image" );
-         }
-         featureArray.push_back( feature );
-         DIP_START_STACK_TRACE
-            Feature::ValueInformationArray values = feature->Initialize( label, grey, measurement.NumberOfObjects() );
-            measurement.AddFeature( feature->information.name, values, feature->information.aliases );
-         DIP_END_STACK_TRACE
-         if( feature->type == Feature::Type::COMPOSITE ) {
-            StringArray names = dynamic_cast< Feature::Composite* >( feature )->Dependencies();
-            for( auto const& n : names ) {
-               features.push_back( n ); // Add features needed for composite measure to the list of features to process in this loop
-            }
-         }
-      }
-   }
-
-   // Allocate memory for all features and objects
-   measurement.Forge();
-   if( measurement.NumberOfObjects() == 0 ) {
-      // There's no objects to be measured. We're done.
-      return measurement;
-   }
-
-   // Figure out which types of measurements we want to do
-   bool doLineBased = false;
+// Figure out which types of measurements we want to do
+LineBasedFeatureArray FeatureTypes(
+      FeatureArray const& featureArray,
+      bool& doLineBased,      // output argument, initialized to false
+      bool& doImageBased,     // output argument, initialized to false
+      bool& doChaincodeBased, // output argument, initialized to false
+      bool& doPolygonBased,   // output argument, initialized to false
+      bool& doConvHullBased,  // output argument, initialized to false
+      bool& doComposite       // output argument, initialized to false
+) {
    LineBasedFeatureArray lineBasedFeatures;
-   bool doImageBased = false;
-   bool doChaincodeBased = false;
-   bool doPolygonBased = false;
-   bool doConvHullBased = false;
-   bool doComposite = false;
    for( auto const& feature : featureArray ) {
       switch( feature->type ) {
          case Feature::Type::LINE_BASED:
@@ -295,6 +251,128 @@ Measurement MeasurementTool::Measure(
             break;
       }
    }
+   return lineBasedFeatures;
+}
+
+// Process all polygon and convex hull features for one object
+void ProcessPolygonFeatures(
+   Measurement::IteratorObject& itObj,
+   Polygon const& polygon,
+   FeatureArray const& featureArray,
+   bool doConvHullBased
+) {
+   ConvexHull convexHull;
+   if( doConvHullBased ) {
+      convexHull = polygon.ConvexHull();
+   }
+   for( auto const& feature : featureArray ) {
+      if( feature->type == Feature::Type::POLYGON_BASED ) {
+         auto cell = itObj[ feature->information.name ];
+         dynamic_cast< Feature::PolygonBased* >( feature )->Measure( polygon, cell.data() );
+      } else if( feature->type == Feature::Type::CONVEXHULL_BASED ) {
+         auto cell = itObj[ feature->information.name ];
+         dynamic_cast< Feature::ConvexHullBased* >( feature )->Measure( convexHull, cell.data() );
+      }
+   }
+}
+
+// Process all composite features for all objects
+void ProcessCompositeFeatures(
+   Measurement& measurement,
+   FeatureArray const& featureArray
+) {
+   Measurement::IteratorObject row = measurement.FirstObject();
+   do {
+      for( auto const& feature : featureArray ) {
+         if( feature->type == Feature::Type::COMPOSITE ) {
+            auto cell = row[ feature->information.name ];
+            dynamic_cast< Feature::Composite* >( feature )->Compose( row, cell.data() );
+         }
+      }
+   } while( ++row );
+}
+
+} // namespace
+
+
+// Parse the features array and prepare measurements
+FeatureArray MeasurementTool::AddFeatures(
+      Measurement& measurement,
+      StringArray features,
+      Image const& label,
+      Image const& grey
+) const {
+   DIP_THROW_IF( features.empty(), "No features given" );
+   FeatureArray featureArray;
+   featureArray.reserve( features.size() );
+   for( dip::uint ii = 0; ii < features.size(); ++ii ) { // NOTE! `features` can expand every iteration
+      String const& name = features[ ii ];
+      if( !measurement.FeatureExists( name )) {
+         Feature::Base* feature = features_[ Index( name ) ].get();
+         if( feature->information.needsGreyValue ) {
+            DIP_THROW_IF( !grey.IsForged(), "Measurement feature requires grey-value image" );
+         }
+         featureArray.push_back( feature );
+         DIP_START_STACK_TRACE
+            Feature::ValueInformationArray values = feature->Initialize( label, grey, measurement.NumberOfObjects() );
+         measurement.AddFeature( feature->information.name, values, feature->information.aliases );
+         DIP_END_STACK_TRACE
+         if( feature->type == Feature::Type::COMPOSITE ) {
+            StringArray names = dynamic_cast< Feature::Composite* >( feature )->Dependencies();
+            for( auto const& n : names ) {
+               features.push_back( n ); // Add features needed for composite measure to the list of features to process in this loop
+            }
+         }
+      }
+   }
+   return featureArray;
+}
+
+Measurement MeasurementTool::Measure(
+      Image const& label,
+      Image const& grey,
+      StringArray features, // copy
+      UnsignedArray const& objectIDs,
+      dip::uint connectivity
+) const {
+   // Check input
+   DIP_THROW_IF( !label.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !label.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( !label.DataType().IsUInt(), E::DATA_TYPE_NOT_SUPPORTED );
+   if( grey.IsForged() ) {
+      DIP_THROW_IF( !grey.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
+      DIP_STACK_TRACE_THIS( grey.CompareProperties( label, Option::CmpProp::Sizes ));
+   }
+   DIP_THROW_IF( features.empty(), "No features given" );
+
+   Measurement measurement;
+   std::vector< LabelType > labelList = SetObjectIDs( measurement, objectIDs, label );
+   FeatureArray featureArray;
+   DIP_STACK_TRACE_THIS( featureArray = AddFeatures( measurement, std::move( features ), label, grey ));
+
+   // Allocate memory for all features and objects
+   measurement.Forge();
+   if( measurement.NumberOfObjects() == 0 ) {
+      // There's no objects to be measured. We're done.
+      return measurement;
+   }
+
+   // Figure out which types of measurements we want to do
+   bool doLineBased = false;
+   bool doImageBased = false;
+   bool doChaincodeBased = false;
+   bool doPolygonBased = false;
+   bool doConvHullBased = false;
+   bool doComposite = false;
+   LineBasedFeatureArray lineBasedFeatures = FeatureTypes(
+      featureArray,
+      doLineBased,
+      doImageBased,
+      doChaincodeBased,
+      doPolygonBased,
+      doConvHullBased,
+      doComposite
+   );
 
    // Let the line based functions do their work
    if( doLineBased ) {
@@ -369,15 +447,7 @@ Measurement MeasurementTool::Measure(
 
    // Let the composite functions do their work
    if( doComposite ) {
-      Measurement::IteratorObject row = measurement.FirstObject();
-      do {
-         for( auto const& feature : featureArray ) {
-            if( feature->type == Feature::Type::COMPOSITE ) {
-               auto cell = row[ feature->information.name ];
-               dynamic_cast< Feature::Composite* >( feature )->Compose( row, cell.data() );
-            }
-         }
-      } while( ++row );
+      ProcessCompositeFeatures( measurement, featureArray );
    }
 
    // Clean up
@@ -437,42 +507,12 @@ Measurement SubPixelMeasurementTool::Measure(
    DIP_THROW_IF( !grey.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !grey.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_STACK_TRACE_THIS( grey.CompareProperties( label, Option::CmpProp::Sizes ));
+   DIP_THROW_IF( features.empty(), "No features given" );
 
    Measurement measurement;
-
-   // Fill out the object IDs
-   std::vector< LabelType > labelList;
-   if( objectIDs.empty() ) {
-      labelList = ListObjectLabels( label, Image{}, S::EXCLUDE );
-      UnsignedArray ids( labelList.size() );
-      std::copy( labelList.begin(), labelList.end(), ids.begin() );
-      measurement.SetObjectIDs( ids );
-   } else {
-      measurement.SetObjectIDs( objectIDs );
-   }
-
-   // Parse the features array and prepare measurements
-   DIP_THROW_IF( features.empty(), "No features given" );
+   std::vector< LabelType > labelList = SetObjectIDs( measurement, objectIDs, label );
    FeatureArray featureArray;
-   featureArray.reserve( features.size() );
-   for( dip::uint ii = 0; ii < features.size(); ++ii ) { // NOTE! `features` can expand every iteration
-      String const& name = features[ ii ];
-      if( !measurement.FeatureExists( name )) {
-         Feature::Base* feature = features_[ Index( name ) ].get();
-         DIP_ASSERT( !feature->information.needsGreyValue );
-         featureArray.push_back( feature );
-         DIP_START_STACK_TRACE
-            Feature::ValueInformationArray values = feature->Initialize( label, grey, measurement.NumberOfObjects() );
-            measurement.AddFeature( feature->information.name, values, feature->information.aliases );
-         DIP_END_STACK_TRACE
-         if( feature->type == Feature::Type::COMPOSITE ) {
-            StringArray names = dynamic_cast< Feature::Composite* >( feature )->Dependencies();
-            for( auto const& n : names ) {
-               features.push_back( n ); // Add features needed for composite measure to the list of features to process in this loop
-            }
-         }
-      }
-   }
+   DIP_STACK_TRACE_THIS( featureArray = AddFeatures( measurement, std::move( features ), label, grey ));
 
    // Allocate memory for all features and objects
    measurement.Forge();
@@ -482,27 +522,22 @@ Measurement SubPixelMeasurementTool::Measure(
    }
 
    // Figure out which types of measurements we want to do
+   bool doLineBased = false;
+   bool doImageBased = false;
+   bool doChaincodeBased = false;
    bool doPolygonBased = false;
    bool doConvHullBased = false;
    bool doComposite = false;
-   for( auto const& feature : featureArray ) {
-      switch( feature->type ) {
-         case Feature::Type::LINE_BASED:
-         case Feature::Type::IMAGE_BASED:
-         case Feature::Type::CHAINCODE_BASED:
-            DIP_ASSERT( true );
-            break;
-         case Feature::Type::POLYGON_BASED:
-            doPolygonBased = true;
-            break;
-         case Feature::Type::CONVEXHULL_BASED:
-            doConvHullBased = true;
-            break;
-         case Feature::Type::COMPOSITE:
-            doComposite = true;
-            break;
-      }
-   }
+   LineBasedFeatureArray lineBasedFeatures = FeatureTypes(
+      featureArray,
+      doLineBased,
+      doImageBased,
+      doChaincodeBased,
+      doPolygonBased,
+      doConvHullBased,
+      doComposite
+   );
+   DIP_THROW_IF( doLineBased || doImageBased || doChaincodeBased, "The SubPixelMeasurementTool object cannot use features that are not based solely on polygons" );
    DIP_ASSERT( doPolygonBased || doConvHullBased );
 
    // Let the chaincode based functions do their work
@@ -516,32 +551,88 @@ Measurement SubPixelMeasurementTool::Measure(
    auto itObj = measurement.FirstObject(); // these two arrays are ordered the same way
    do {
       Polygon polygon = itCC->RefinedPolygon( grey, threshold, interpolation );
-      ConvexHull convexHull;
-      if( doConvHullBased ) {
-         convexHull = polygon.ConvexHull();
-      }
-      for( auto const& feature : featureArray ) {
-         if( feature->type == Feature::Type::POLYGON_BASED ) {
-            auto cell = itObj[ feature->information.name ];
-            dynamic_cast< Feature::PolygonBased* >( feature )->Measure( polygon, cell.data() );
-         } else if( feature->type == Feature::Type::CONVEXHULL_BASED ) {
-            auto cell = itObj[ feature->information.name ];
-            dynamic_cast< Feature::ConvexHullBased* >( feature )->Measure( convexHull, cell.data() );
-         }
-      }
+      ProcessPolygonFeatures( itObj, polygon, featureArray, doConvHullBased );
    } while( ++itCC, ++itObj );
 
    // Let the composite functions do their work
    if( doComposite ) {
-      Measurement::IteratorObject row = measurement.FirstObject();
-      do {
-         for( auto const& feature : featureArray ) {
-            if( feature->type == Feature::Type::COMPOSITE ) {
-               auto cell = row[ feature->information.name ];
-               dynamic_cast< Feature::Composite* >( feature )->Compose( row, cell.data() );
-            }
-         }
-      } while( ++row );
+      ProcessCompositeFeatures( measurement, featureArray );
+   }
+
+   // Clean up
+   for( auto const& feature : featureArray ) {
+      feature->Cleanup();
+   }
+
+   return measurement;
+}
+
+Measurement SubPixelMeasurementTool::Measure(
+         std::vector< Polygon > const& polygons,
+         StringArray features, // we take a copy of this array
+         dip::PixelSize const& pixelSize,
+         UnsignedArray const& objectIDs
+) const {
+   // Check input
+   DIP_THROW_IF( polygons.empty(), E::ARRAY_PARAMETER_EMPTY );
+   DIP_THROW_IF( features.empty(), "No features given" );
+
+   Measurement measurement;
+
+   // Fill out the object IDs
+   std::vector< LabelType > labelList;
+   if( objectIDs.empty() ) {
+      UnsignedArray ids( polygons.size() );
+      std::iota( ids.begin(), ids.end(), 1 );
+      measurement.SetObjectIDs( std::move( ids ));
+   } else {
+      DIP_THROW_IF( objectIDs.size() != polygons.size(), E::ARRAY_SIZES_DONT_MATCH );
+      measurement.SetObjectIDs( objectIDs );
+   }
+
+   // Parse the features array and prepare measurements
+   dip::Image label; // This image only serves to pass pixel size and dimensionality information to the measurement features
+   label.SetSizes( { 256, 256 } ); // An arbitrary size. It needs to be 2D.
+   label.SetPixelSize( pixelSize );
+   FeatureArray featureArray;
+   DIP_STACK_TRACE_THIS( featureArray = AddFeatures( measurement, std::move( features ), label, {} ));
+
+   // Allocate memory for all features and objects
+   measurement.Forge();
+   if( measurement.NumberOfObjects() == 0 ) {
+      // There's no objects to be measured. We're done.
+      return measurement;
+   }
+
+   // Figure out which types of measurements we want to do
+   bool doLineBased = false;
+   bool doImageBased = false;
+   bool doChaincodeBased = false;
+   bool doPolygonBased = false;
+   bool doConvHullBased = false;
+   bool doComposite = false;
+   LineBasedFeatureArray lineBasedFeatures = FeatureTypes(
+      featureArray,
+      doLineBased,
+      doImageBased,
+      doChaincodeBased,
+      doPolygonBased,
+      doConvHullBased,
+      doComposite
+   );
+   DIP_THROW_IF( doLineBased || doImageBased || doChaincodeBased, "The SubPixelMeasurementTool object cannot use features that are not based solely on polygons" );
+   DIP_ASSERT( doPolygonBased || doConvHullBased );
+
+   // Let the chaincode based functions do their work
+   auto itP = polygons.begin();
+   auto itObj = measurement.FirstObject(); // these two arrays are ordered the same way
+   do {
+      ProcessPolygonFeatures( itObj, *itP, featureArray, doConvHullBased );
+   } while( ++itP, ++itObj );
+
+   // Let the composite functions do their work
+   if( doComposite ) {
+      ProcessCompositeFeatures( measurement, featureArray );
    }
 
    // Clean up
@@ -1217,6 +1308,99 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::SubPixelMeasurementTool::Measure" ) {
    DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsCube" ][ 0 ] - 2 * r * std::sqrt( 12.0 / 16.0 ) * ps * yscale ) < 0.02 * ps * yscale );
    DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsCube" ][ 1 ] - 2 * r * std::sqrt( 12.0 / 16.0 ) * ps ) < 0.02 * ps );
    DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsEllipsoid" ][ 0 ] - 2 * r * ps * yscale ) < 0.02 * ps * yscale );
+   DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsEllipsoid" ][ 1 ] - 2 * r * ps ) < 0.02 * ps );
+}
+
+DOCTEST_TEST_CASE( "[DIPlib] testing dip::SubPixelMeasurementTool::Measure, polygon overload" ) {
+   // A test polygon
+   dip::dfloat r = 22;
+   dip::uint n = 300;
+   dip::Polygon polygon;
+   polygon.vertices.resize( n );
+   dip::dfloat delta_phi = 2 * dip::pi / static_cast< dip::dfloat >( n );
+   dip::dfloat phi = 0;
+   for( dip::uint ii = 0; ii < n; ++ii, phi += delta_phi ) {
+      polygon.vertices[ ii ] = { 25 + r * std::cos( phi ), 25 + r * std::sin( phi) };
+   }
+
+   // Measure everything
+   dip::SubPixelMeasurementTool measurementTool;
+   dip::dfloat ps = 0.21;
+   auto msr = measurementTool.Measure( { polygon }, {
+         "Area",
+         "Minimum",
+         "Maximum",
+         "CartesianBox",
+         "Perimeter",
+         "Feret",
+         "CentroidDiameter",
+         "ConvexArea",
+         "ConvexPerimeter",
+         "AspectRatioFeret",
+         "Radius",
+         "P2A",
+         "Roundness",
+         "Circularity",
+         "PodczeckShapes",
+         "Solidity",
+         "Convexity",
+         "EllipseVariance",
+         "Eccentricity",
+         "BendingEnergy",
+         "Center",
+         "Mu",
+         "Inertia",
+         "MajorAxes",
+         "DimensionsCube",
+         "DimensionsEllipsoid",
+   }, dip::PixelSize( ps * dip::Units::Micrometer() ) );
+   DOCTEST_REQUIRE( msr.IsForged() );
+   DOCTEST_REQUIRE( msr.ObjectExists( 1 ));
+   auto msr_obj = msr[ 1 ];
+   DOCTEST_CHECK( std::abs( msr_obj[ "Area" ][ 0 ] - dip::pi * r * r * ps * ps ) < 0.6 * ps * ps );
+   DOCTEST_CHECK( msr_obj[ "Minimum" ][ 0 ] == doctest::Approx( 3 * ps ));
+   DOCTEST_CHECK( msr_obj[ "Minimum" ][ 1 ] == doctest::Approx( 3 * ps ));
+   DOCTEST_CHECK( msr_obj[ "Maximum" ][ 0 ] == doctest::Approx( 47 * ps ));
+   DOCTEST_CHECK( msr_obj[ "Maximum" ][ 1 ] == doctest::Approx( 47 * ps ));
+   DOCTEST_CHECK( msr_obj[ "CartesianBox" ][ 0 ] == doctest::Approx(( 2 * r ) * ps ));
+   DOCTEST_CHECK( msr_obj[ "CartesianBox" ][ 1 ] == doctest::Approx(( 2 * r ) * ps ));
+   DOCTEST_CHECK( std::abs( msr_obj[ "Perimeter" ][ 0 ] - 2 * dip::pi * r * ps ) < 0.04 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Feret" ][ 0 ] - 2 * r * ps ) < 0.04 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Feret" ][ 1 ] - 2 * r * ps ) < 0.04 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Feret" ][ 2 ] - 2 * r * ps ) < 0.04 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "CentroidDiameter" ][ 0 ] - 2 * r * ps ) < 0.04 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "CentroidDiameter" ][ 1 ] - 2 * r * ps ) < 0.04 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "ConvexArea" ][ 0 ] - dip::pi * r * r * ps * ps ) < 0.6 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "ConvexPerimeter" ][ 0 ] - 2 * dip::pi * r * ps ) < 0.04 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "AspectRatioFeret" ][ 0 ] - 1 ) < 1e-6 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Radius" ][ 0 ] - r * ps ) < 0.02 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Radius" ][ 1 ] - r * ps ) < 0.002 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Radius" ][ 2 ] - r * ps ) < 0.02 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Radius" ][ 3 ] - 0 ) < 0.005 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "P2A" ][ 0 ] - 1 ) < 5e-5 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Roundness" ][ 0 ] - 1 ) < 5e-4 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Circularity" ][ 0 ] - 0 ) < 5e-4 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "PodczeckShapes" ][ 0 ] - dip::pi / 4 ) < 1e-3 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "PodczeckShapes" ][ 1 ] - 1 ) < 2e-3 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "PodczeckShapes" ][ 2 ] - dip::pi / 2 ) < 2e-3 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "PodczeckShapes" ][ 3 ] - 1 ) < 2e-3 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "PodczeckShapes" ][ 4 ] - dip::pi ) < 2e-3 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Solidity" ][ 0 ] - 1 ) < 5e-4 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Convexity" ][ 0 ] - 1 ) < 1e-6 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "EllipseVariance" ][ 0 ] - 0 ) < 5e-4 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Eccentricity" ][ 0 ] - 0 ) < 5e-8 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "BendingEnergy" ][ 0 ] - 2 * dip::pi / r / ps ) < 0.1 / ps );
+   DOCTEST_CHECK( msr_obj[ "Center" ][ 0 ] == doctest::Approx( 25 * ps ));
+   DOCTEST_CHECK( msr_obj[ "Center" ][ 1 ] == doctest::Approx( 25 * ps ));
+   DOCTEST_CHECK( std::abs( msr_obj[ "Mu" ][ 0 ] - r * r / 4 * ps * ps ) < 0.07 * ps * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Mu" ][ 1 ] - r * r / 4 * ps * ps ) < 0.07 * ps * ps );
+   DOCTEST_CHECK( msr_obj[ "Mu" ][ 2 ] == doctest::Approx( 0 ));
+   DOCTEST_CHECK( std::abs( msr_obj[ "Inertia" ][ 0 ] - r * r / 4 * ps * ps ) < 0.07 * ps * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Inertia" ][ 1 ] - r * r / 4 * ps * ps ) < 0.07 * ps * ps );
+   DOCTEST_CHECK( AreOrthogonalAxisAlignedUnitVectors( msr_obj[ "MajorAxes" ] ));
+   DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsCube" ][ 0 ] - 2 * r * std::sqrt( 12.0 / 16.0 ) * ps ) < 0.02 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsCube" ][ 1 ] - 2 * r * std::sqrt( 12.0 / 16.0 ) * ps ) < 0.02 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsEllipsoid" ][ 0 ] - 2 * r * ps ) < 0.02 * ps );
    DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsEllipsoid" ][ 1 ] - 2 * r * ps ) < 0.02 * ps );
 }
 

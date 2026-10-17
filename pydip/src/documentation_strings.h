@@ -2930,6 +2930,7 @@ constexpr char const* dip·MeasurementTool·Features·C = "Returns a table with 
 constexpr char const* dip·SubPixelMeasurementTool = "Performs sub-pixel precise measurements on 2D images.";
 constexpr char const* dip·SubPixelMeasurementTool·SubPixelMeasurementTool = "Constructor.";
 constexpr char const* dip·SubPixelMeasurementTool·Measure·Image·CL·Image·CL·StringArray··dfloat··String·CL·UnsignedArray·CL·C = "Measures one or more features on one or more objects in the labeled image.";
+constexpr char const* dip·SubPixelMeasurementTool·Measure·std·vectorltPolygongt·CL·StringArray··dip·PixelSize·CL·UnsignedArray·CL·C = "Measures one or more features on one or more polygons.";
 constexpr char const* dip·ObjectToMeasurement·Image·CL·Image·L·Measurement·IteratorFeature·CL = "Paints each object with the selected measurement feature values.";
 constexpr char const* dip·MeasurementWriteCSV·Measurement·CL·String·CL·StringSet·CL = "Writes a `dip::Measurement` structure to a CSV file.";
 constexpr char const* dip·Minimum·Measurement·IteratorFeature·CL = "Returns the smallest feature value in the first column of `featureValues`.";

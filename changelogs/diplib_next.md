@@ -26,16 +26,16 @@ date: 2020-00-00
 
 - Added `dip::ChainCode::RefinedPolygon()` that takes a gray-scale image as input, and uses interpolation
   to produce a polygon that more accurately represents the object.
-  See [Issue #234](https://github.com/DIPlib/diplib/issues/234)
+  See [Issue #234](https://github.com/DIPlib/diplib/issues/234).
 
 - Added `dip::RefinePolygon()`, which moves the vertices of a polygon to align more precisely with the outline
   of an object.
-  See [Issue #234](https://github.com/DIPlib/diplib/issues/234)
+  See [Issue #234](https://github.com/DIPlib/diplib/issues/234).
 
 - Added `dip::SubPixelMeasurementTool`. This is similar to `dip::MeasurementTool`, but it works only on 2D
   images for size and shape features. It uses `dip::ChainCode::RefinedPolygon()` to find a more precise outline,
-  and performs measurements on that outline.
-  See [Issue #234](https://github.com/DIPlib/diplib/issues/234)
+  and performs measurements on that outline. An overload to `Measure` directly takes polygons as input. 
+  See [Issue #234](https://github.com/DIPlib/diplib/issues/234), [Issue #241](https://github.com/DIPlib/diplib/issues/241).
 
 - Added `dip::Polygon::Edges()` and `dip::Polygon::EdgeIterator`.
 

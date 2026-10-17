@@ -918,6 +918,10 @@ class DIP_CLASS_EXPORT Composite : public Base {
 
 } // namespace Feature
 
+// Used only internally
+using FeatureArray = std::vector< Feature::Base* >;
+using LineBasedFeatureArray = std::vector< Feature::LineBased* >;
+
 
 //
 // MeasurementTool class
@@ -1115,14 +1119,16 @@ class DIP_NO_EXPORT MeasurementTool {
          DIP_THROW_IF( it == featureIndices_.end(), "Feature name not known: " + name );
          return it.value();
       }
+
+      FeatureArray AddFeatures( Measurement& measurement, StringArray features, Image const& label, Image const& grey ) const;
 };
 
 
 /// \brief Performs sub-pixel precise measurements on 2D images.
 ///
 /// The SubPixelMeasurementTool class knows about defined polygon-based measurement features,
-/// and can apply them to a 2D image with sub-pixel precision through its
-/// \ref dip::SubPixelMeasurementTool::Measure method.
+/// and can apply them to a 2D image with sub-pixel precision through its \ref Measure method.
+/// An overload of this method accepts polygons directly.
 ///
 /// This class is very similar to \ref dip::MeasurementTool, but differs in that it uses a
 /// grey-level image to refine the object outlines (see \ref dip::ChainCode::RefinedPolygon)
@@ -1214,6 +1220,44 @@ class DIP_NO_EXPORT SubPixelMeasurementTool : public MeasurementTool {
             StringArray features, // we take a copy of this array
             dfloat threshold = 0,
             String const& interpolation = S::LINEAR,
+            UnsignedArray const& objectIDs = {}
+      ) const;
+
+      /// \brief Measures one or more features on one or more polygons.
+      ///
+      /// `polygons` is an array of polygons. Their vertices are in pixels. `pixelSize` is the size of
+      /// those pixels.
+      ///
+      /// `features` is an array with feature names. See the \ref dip::MeasurementTool::Features method for
+      /// information on how to obtain those names. Some features are composite features, they compute
+      /// values based on other features. Thus, it is possible that the output \ref dip::Measurement object
+      /// contains features not directly requested, but needed to compute another feature.
+      ///
+      /// `objectIDs` is an array with the IDs for each of the polygons. If given, the sizes of the two
+      /// arrays must match. If not given, objects will be numbered sequentially starting at 1. That is,
+      /// `polygons[ ii ]` will have ID `ii + 1`.
+      ///
+      /// As a usage example, the following code replicates the overload above:
+      /// ```cpp
+      /// dip::Image grey = ...
+      /// dip::dfloat threshold = 0.5;
+      /// dip::Image label = dip.Label( grey > threshold );
+      ///
+      /// dip::ChainCodeArray chainCodeArray = dip::GetImageChainCodes( label );
+      /// std::vector< dip::Polygon > polygons( chainCodeArray.size() );
+      /// std::transform( chainCodeArray.begin(), chainCodeArray.end(), polygons.begin(),
+      ///                 []( dip::ChainCode const& cc ){
+      ///                       return cc.RefinedPolygon( grey, threshold, interpolation ); } );
+      /// dip::UnsignedArray ids( chainCodeArray.size() );
+      /// std::transform( chainCodeArray.begin(), chainCodeArray.end(), ids.begin(),
+      ///                 []( dip::ChainCode const& cc ){ return cc.objectID; } );
+      /// dip::SubPixelMeasurementTool msrTool;
+      /// dip::Measurement msr = msrTool.Measure( polygons, features, label.PixelSize(), ids );
+      /// ```
+      DIP_EXPORT Measurement Measure(
+            std::vector< Polygon > const& polygons,
+            StringArray features, // we take a copy of this array
+            dip::PixelSize const& pixelSize = {},
             UnsignedArray const& objectIDs = {}
       ) const;
 };

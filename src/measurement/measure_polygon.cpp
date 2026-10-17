@@ -555,11 +555,11 @@ DOCTEST_TEST_CASE("[DIPlib] testing Polygon::BendingEnergy()") {
    dip::uint n = 1000;
    dip::dfloat r = 20;
    dip::Polygon p;
-   p.vertices.resize(n);
+   p.vertices.resize( n );
    dip::dfloat delta_phi = 2 * dip::pi / static_cast< dip::dfloat >( n );
    dip::dfloat phi = 0;
    for( dip::uint ii = 0; ii < n; ++ii, phi += delta_phi ) {
-      p.vertices[ ii ] = { r * std::cos( phi ), r * std::sin( phi) };
+      p.vertices[ ii ] = { r * std::cos( phi ), r * std::sin( phi ) };
    }
    DOCTEST_CHECK( p.BendingEnergy() == doctest::Approx( 2 * dip::pi / r ));
 }

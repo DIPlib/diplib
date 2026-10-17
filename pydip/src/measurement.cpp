@@ -283,7 +283,7 @@ void init_measurement( py::module& m ) {
    }, "feature"_a, "parameter"_a, "value"_a, doc_strings::dip·MeasurementTool·Configure·String·CL·String·CL·dfloat··C );
    tool.def( "Measure", []( dip::Image const& label, dip::Image const& grey, dip::StringArray const& features, dip::UnsignedArray const& objectIDs, dip::uint connectivity ) {
       return measurementTool().Measure( label, grey, features, objectIDs, connectivity );
-   }, "label"_a, "grey"_a = dip::Image{}, "features"_a = dip::StringArray{ "Size" }, "objectIDs"_a = dip::StringArray{}, "connectivity"_a = 0, doc_strings::dip·MeasurementTool·Measure·Image·CL·Image·CL·StringArray··UnsignedArray·CL·dip·uint··C );
+   }, "label"_a, "grey"_a = dip::Image{}, "features"_a = dip::StringArray{ "Size" }, "objectIDs"_a = dip::UnsignedArray{}, "connectivity"_a = 0, doc_strings::dip·MeasurementTool·Measure·Image·CL·Image·CL·StringArray··UnsignedArray·CL·dip·uint··C );
    tool.def( "Features", []() {
                 auto features = measurementTool().Features();
                 std::vector< std::tuple< dip::String, dip::String >> out;
@@ -305,7 +305,10 @@ void init_measurement( py::module& m ) {
    }, "feature"_a, "parameter"_a, "value"_a, doc_strings::dip·MeasurementTool·Configure·String·CL·String·CL·dfloat··C );
    sptool.def( "Measure", []( dip::Image const& label, dip::Image const& grey, dip::StringArray const& features, dip::dfloat threshold, dip::String const& interpolation, dip::UnsignedArray const& objectIDs ) {
       return subPixelMeasurementTool().Measure( label, grey, features, threshold, interpolation, objectIDs );
-   }, "label"_a, "grey"_a = dip::Image{}, "features"_a = dip::StringArray{ "Area" }, "threshold"_a = 0, "interpolation"_a = dip::S::LINEAR, "objectIDs"_a = dip::StringArray{}, doc_strings::dip·SubPixelMeasurementTool·Measure·Image·CL·Image·CL·StringArray··dfloat··String·CL·UnsignedArray·CL·C );
+   }, "label"_a, "grey"_a = dip::Image{}, "features"_a = dip::StringArray{ "Area" }, "threshold"_a = 0, "interpolation"_a = dip::S::LINEAR, "objectIDs"_a = dip::UnsignedArray{}, doc_strings::dip·SubPixelMeasurementTool·Measure·Image·CL·Image·CL·StringArray··dfloat··String·CL·UnsignedArray·CL·C );
+   sptool.def( "Measure", []( std::vector< dip::Polygon > const& polygons, dip::StringArray const& features, dip::PixelSize const& pixelSizes, dip::UnsignedArray const& objectIDs ) {
+      return subPixelMeasurementTool().Measure( polygons, features, pixelSizes, objectIDs );
+   }, "polygons"_a, "features"_a = dip::StringArray{ "Area" }, "pixelSizes"_a = dip::PixelSize{}, "objectIDs"_a = dip::UnsignedArray{}, doc_strings::dip·SubPixelMeasurementTool·Measure·std·vectorltPolygongt·CL·StringArray··dip·PixelSize·CL·UnsignedArray·CL·C );
    sptool.def( "Features", []() {
                 auto features = subPixelMeasurementTool().Features();
                 std::vector< std::tuple< dip::String, dip::String >> out;
