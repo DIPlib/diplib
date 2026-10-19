@@ -896,7 +896,7 @@ struct DIP_NO_EXPORT Polygon {
 
          /// Equality comparison.
          bool operator==( EdgeIterator const& other ) const {
-            return ( polygon_.vertices == other.polygon_.vertices ) && ( ii_ == other.ii_ );
+            return ( &polygon_ == &other.polygon_ ) && ( ii_ == other.ii_ );
          }
          /// Inequality comparison.
          bool operator!=( EdgeIterator const& other ) const {
