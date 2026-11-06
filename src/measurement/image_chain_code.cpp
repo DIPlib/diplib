@@ -85,6 +85,10 @@ ChainCode GetOneChainCode(
                          (( nc.x == dims.x ) && ( dir == down )) ||
                          (( nc.y == 0 ) && ( dir == right )) ||
                          (( nc.y == dims.y ) && ( dir == left ) );
+         if( out.codes.empty() ) {
+            // Update the start direction, to ensure we run into it when we come back around
+            startdir = dir;
+         }
          out.Push( { dir, isBorder } );
          // New position
          coord = nc;
@@ -267,6 +271,30 @@ DOCTEST_TEST_CASE("[DIPlib] testing chain codes on image border") {
    p1 = cc.Polygon();
    p2 = cc.Polygon( "lose" );
    DOCTEST_CHECK( p1.vertices.size() == p2.vertices.size() + 3 );
+}
+
+DOCTEST_TEST_CASE("[DIPlib] testing chain codes on start point") {
+   // https://github.com/DIPlib/diplib/issues/244
+   const char* rows[ 7 ] = {
+      "...........",
+      "...........",
+      "...XX.XX...",
+      ".XXXXXXXXX.",
+      "XXXXXXXXXXX",
+      "XXXXXXXXXXX",
+      "XXXXXXXXXXX"
+   };
+   dip::Image img( { 11, 7 }, 1, dip::DT_BIN );
+   img.Fill( 0 );
+   for( dip::uint y = 0; y < 7; ++y ) {
+      for( dip::uint x = 0; x < 11; ++x ) {
+         img.At( x, y ) = ( rows[ y ][ x ] == '.' ); // object = '.'
+      }
+   }
+   for( auto const& start : { dip::UnsignedArray{ 0, 0 }, dip::UnsignedArray{ 3, 1 }, dip::UnsignedArray{ 5, 2 } } ) {
+      dip::ChainCode cc = dip::GetSingleChainCode( img, start, 2 );
+      DOCTEST_CHECK( cc.codes.size() == 26 ); // With the bug, the 3rd test case loops indefinitely
+   }
 }
 
 #endif // DIP_CONFIG_ENABLE_DOCTEST
