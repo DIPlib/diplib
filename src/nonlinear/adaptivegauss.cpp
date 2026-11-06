@@ -686,8 +686,6 @@ class AdaptiveWindowConvolutionLineFilter : public Framework::FullLineFilter {
       }
 
       void Filter( Framework::FullLineFilterParameters const& params ) override {
-         TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
-         dip::sint inStride = params.inBuffer.stride;
          TPO* out = static_cast< TPO* >( params.outBuffer.buffer );
          dip::sint outStride = params.outBuffer.stride;
          dip::sint outTensorStride = params.outBuffer.tensorStride;
@@ -726,7 +724,6 @@ class AdaptiveWindowConvolutionLineFilter : public Framework::FullLineFilter {
             }
             // Prepare next buffer element
             inCoords[ params.dimension ]++;
-            in += inStride;
             out += outStride;
          }
       }
