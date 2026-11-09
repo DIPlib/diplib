@@ -37,10 +37,25 @@ struct ObjectData { dip::uint index; bool done; };
 using ObjectIdList = tsl::robin_map< LabelType, ObjectData >; // key is the objectID (label)
 
 template< typename TPI >
+bool DiagonalIsNotObject(
+   TPI const* data,
+   VertexInteger const dims,
+   LabelType label,
+   VertexInteger const coord,
+   ChainCode::CodeTable const& codeTable,
+   unsigned dir1,
+   unsigned dir2
+) {
+   VertexInteger nc = coord + codeTable.pos[ dir1 ] + codeTable.pos[ dir2 ];
+   dip::sint no = codeTable.offset[ dir1 ] + codeTable.offset[ dir2 ];
+   return ( nc.x < 0 ) || ( nc.x > dims.x ) || ( nc.y < 0 ) || ( nc.y > dims.y ) || ( data[ no ] != label );
+}
+
+template< typename TPI >
 ChainCode GetOneChainCode(
       void const* data_ptr,
       VertexInteger coord, // starting coordinates
-      VertexInteger const& dims,  // largest coordinates in image
+      VertexInteger const dims,  // largest coordinates in image
       dip::uint connectivity,
       ChainCode::CodeTable const& codeTable,
       bool startDir0 = false
@@ -70,8 +85,26 @@ ChainCode GetOneChainCode(
          if(( nc.x < 0 ) || ( nc.x > dims.x ) || ( nc.y < 0 ) || ( nc.y > dims.y ) || ( data[ no ] != label )) {
             break;
          }
-         ++dir;
-         DIP_THROW_IF( dir == last + 1, "Start coordinates not on object boundary" );
+         dir += out.is8connected ? 2 : 1; // Look only in 4-connected neighbors for a background pixel
+         if( dir > last ) {
+            if( !out.is8connected ) {
+               // For a 4-connected chain code, the background can be diagonally connected also
+               if( DiagonalIsNotObject( data, dims, label, coord, codeTable, up, right )) {
+                  dir = right;
+                  break;
+               } else if ( DiagonalIsNotObject( data, dims, label, coord, codeTable, right, down )) {
+                  dir = down;
+                  break;
+               } else if ( DiagonalIsNotObject( data, dims, label, coord, codeTable, down, left )) {
+                  dir = left;
+                  break;
+               } else if ( DiagonalIsNotObject( data, dims, label, coord, codeTable, left, up )) {
+                  dir = up;
+                  break;
+               }
+            }
+            DIP_THROW( "Start coordinates not on object boundary" );
+         }
       }
    }
    unsigned startdir = dir;
