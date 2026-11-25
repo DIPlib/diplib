@@ -232,8 +232,9 @@ void LabelFirstPass(
       // The last pixel:
       if( *img ) {
          coords[ procDim ] = length - 1;
+         bool testAll = lastLabel == 0;
          for( dip::uint ii = 0; ii < neighborList.Size(); ++ii ) {
-            if( neighborIsForward[ ii ] && neighorIsInImage[ ii ] && neighborList.IsInImage( ii, coords, c_img.Sizes() )) {
+            if(( testAll || neighborIsForward[ ii ] ) && neighorIsInImage[ ii ] && neighborList.IsInImage( ii, coords, c_img.Sizes() )) {
                LabelType lab = img[ neighborOffsets[ ii ]];
                if( lab ) {
                   if( lastLabel ) {
@@ -570,6 +571,30 @@ DOCTEST_TEST_CASE("[DIPlib] testing dip::Label") {
    DOCTEST_CHECK( n == 2 );
    DOCTEST_CHECK( dip::Maximum( lab ).As< dip::LabelType >() == 2 );
    DOCTEST_CHECK( dip::All(( lab > 0 ) == img ).As< bool >() );
+
+   // Two touching pixels, the second one being the last on its line along the processing dimension (the last
+   // along x here), with the previous pixel on that line not set. There was a bug where the last pixel on a
+   // line was not merged with neighbors that it shares with the previous pixel on the line.
+   dip::Image small( { 4, 4, 4 }, 1, dip::DT_BIN );
+   auto test = [ & ]( dip::UnsignedArray const& a, dip::UnsignedArray const& b, dip::uint connectivity ) {
+      small.Fill( 0 );
+      small.At( a ) = true;
+      small.At( b ) = true;
+      return dip::Label( small, lab, connectivity );
+   };
+   // Face neighbors (differ in one coordinate)
+   DOCTEST_CHECK( test( { 3, 2, 2 }, { 3, 3, 2 }, 1 ) == 1 );
+   DOCTEST_CHECK( test( { 3, 2, 2 }, { 3, 3, 2 }, 2 ) == 1 );
+   DOCTEST_CHECK( test( { 3, 2, 2 }, { 3, 3, 2 }, 3 ) == 1 );
+   // Edge neighbors (differ in two coordinates)
+   DOCTEST_CHECK( test( { 2, 2, 2 }, { 3, 3, 2 }, 1 ) == 2 );
+   DOCTEST_CHECK( test( { 2, 2, 2 }, { 3, 3, 2 }, 2 ) == 1 );
+   DOCTEST_CHECK( test( { 2, 2, 2 }, { 3, 3, 2 }, 3 ) == 1 );
+   DOCTEST_CHECK( test( { 3, 2, 2 }, { 3, 3, 3 }, 2 ) == 1 );
+   // Corner neighbors (differ in three coordinates)
+   DOCTEST_CHECK( test( { 2, 2, 2 }, { 3, 3, 3 }, 2 ) == 2 );
+   DOCTEST_CHECK( test( { 2, 2, 2 }, { 3, 3, 3 }, 3 ) == 1 );
+   DOCTEST_CHECK( test( { 2, 1, 1 }, { 3, 2, 2 }, 3 ) == 1 );
 }
 
 #endif // DIP_CONFIG_ENABLE_DOCTEST

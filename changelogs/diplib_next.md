@@ -58,6 +58,8 @@ date: 2020-00-00
   when `dip::GetImageChainCodes()` called that function.  
   See [issue #244](https://github.com/DIPlib/diplib/issues/244).
 
+- `dip::Label()` would not always correctly handle the last pixel along the processing dimension.
+
 ### Updated dependencies
 
 ### Build changes
